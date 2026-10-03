@@ -1,94 +1,110 @@
-@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-  --bg-dark: #070a12;
-  --bg-card: #0d121f;
-  --bg-card-hover: #131a2c;
-  --border-dim: #1e293b;
-  --cyan-glow: #06b6d4;
-  --amber-glow: #f59e0b;
-  --emerald-glow: #10b981;
+  --bg-page: #0a0d14;
+  --bg-card: #111622;
+  --bg-unity-dark: #1e1e1e;
+  --bg-unity-panel: #252526;
+  --bg-unity-header: #2d2d2d;
+  --border-unity: #333333;
+  --text-main: #f1f5f9;
+  --text-muted: #94a3b8;
+  --accent-cyan: #38bdf8;
+  --accent-amber: #f59e0b;
 }
 
 body {
-  font-family: 'Inter', sans-serif;
-  background-color: var(--bg-dark);
-  color: #e2e8f0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--bg-page);
+  color: var(--text-main);
+  overflow-x: hidden;
 }
 
 .font-mono {
   font-family: 'Fira Code', monospace;
 }
 
-/* Blueprint Grid Background */
-.blueprint-grid {
-  background-size: 32px 32px;
-  background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+/* Subtle background vignette */
+.bg-vignette {
+  background: radial-gradient(circle at 50% 20%, rgba(20, 28, 45, 0.6) 0%, rgba(10, 13, 20, 1) 75%);
 }
 
-.blueprint-grid-dense {
-  background-size: 16px 16px;
-  background-image: 
-    linear-gradient(to right, rgba(6, 182, 212, 0.04) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(6, 182, 212, 0.04) 1px, transparent 1px);
+/* Unity Editor Window Styling */
+.unity-window {
+  background: #1e1e1e;
+  border: 1px solid #383838;
+  border-radius: 10px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
-/* Game Dev Card Glows */
-.game-card-glow {
-  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-  border: 1px solid rgba(30, 41, 59, 0.9);
-}
-.game-card-glow:hover {
-  transform: translateY(-4px);
-  border-color: rgba(6, 182, 212, 0.5);
-  box-shadow: 0 16px 36px -10px rgba(6, 182, 212, 0.2), 0 0 20px rgba(6, 182, 212, 0.1);
+.unity-header {
+  background: #282828;
+  border-bottom: 1px solid #383838;
 }
 
-.game-card-glow-amber:hover {
-  border-color: rgba(245, 158, 11, 0.5) !important;
-  box-shadow: 0 16px 36px -10px rgba(245, 158, 11, 0.25), 0 0 20px rgba(245, 158, 11, 0.12) !important;
+.unity-panel {
+  background: #222222;
+  border-color: #333333;
 }
 
-/* Tactile Button Press */
-.btn-tactile {
+.unity-tab-active {
+  background: #1e1e1e;
+  border-bottom: 2px solid #38bdf8;
+  color: #ffffff;
+}
+
+.unity-tree-item {
+  color: #cccccc;
   transition: all 0.15s ease;
 }
-.btn-tactile:active {
-  transform: scale(0.97);
+.unity-tree-item:hover {
+  background: #2a2d32;
+  color: #ffffff;
+}
+.unity-tree-item.active {
+  background: #094771;
+  color: #ffffff;
 }
 
-/* Cut Line Graphic */
-.cut-line {
-  position: relative;
-  border-bottom: 2px dashed #f59e0b;
-}
-.cut-line::after {
-  content: 'CUT LINE — INTERNAL ENGINE CODE';
-  position: absolute;
-  top: -10px;
-  right: 12px;
-  background: #0d121f;
-  padding: 0 8px;
-  font-size: 10px;
-  color: #f59e0b;
-  font-family: 'Fira Code', monospace;
-  letter-spacing: 0.05em;
+/* Viewport Aspect Ratio Frames */
+.viewport-frame {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  background: #151515;
 }
 
-/* Custom Scrollbar */
+.viewport-portrait {
+  width: 250px !important;
+  height: 440px !important;
+  margin: 0 auto;
+  border-radius: 16px;
+  border: 4px solid #333;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+}
+
+.viewport-landscape {
+  width: 100% !important;
+  aspect-ratio: 16/9;
+  border-radius: 8px;
+}
+
+.viewport-free {
+  width: 100% !important;
+  min-height: 380px;
+  border-radius: 8px;
+}
+
+/* Custom Scrollbars */
 ::-webkit-scrollbar {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #070a12;
+  background: #151515;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1e293b;
-  border-radius: 4px;
+  background: #333333;
+  border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+  background: #444444;
 }
