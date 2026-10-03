@@ -1,0 +1,96 @@
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --bg-dark: #070a12;
+  --bg-card: #0d121f;
+  --bg-card-hover: #12192b;
+  --border-dim: #1e293b;
+  --cyan-glow: #06b6d4;
+  --amber-glow: #f59e0b;
+  --emerald-glow: #10b981;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-dark);
+  color: #e2e8f0;
+}
+
+.font-mono {
+  font-family: 'Fira Code', monospace;
+}
+
+/* Blueprint Grid Background */
+.blueprint-grid {
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+.blueprint-grid-dense {
+  background-size: 20px 20px;
+  background-image: 
+    linear-gradient(to right, rgba(6, 182, 212, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(6, 182, 212, 0.05) 1px, transparent 1px);
+}
+
+/* Card Glow Effect */
+.card-glow-cyan {
+  border: 1px solid rgba(6, 182, 212, 0.2);
+  transition: all 0.3s ease;
+}
+.card-glow-cyan:hover {
+  border-color: rgba(6, 182, 212, 0.6);
+  box-shadow: 0 0 25px rgba(6, 182, 212, 0.15);
+  transform: translateY(-2px);
+}
+
+.card-glow-amber {
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  transition: all 0.3s ease;
+}
+.card-glow-amber:hover {
+  border-color: rgba(245, 158, 11, 0.6);
+  box-shadow: 0 0 25px rgba(245, 158, 11, 0.15);
+  transform: translateY(-2px);
+}
+
+/* Modal lightbox */
+#lightbox-modal {
+  backdrop-filter: blur(12px);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #070a12;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Cut Line Graphic */
+.cut-line {
+  position: relative;
+  border-bottom: 2px dashed #f59e0b;
+}
+.cut-line::after {
+  content: 'CUT LINE — INTERNAL ENGINE CODE';
+  position: absolute;
+  top: -10px;
+  right: 12px;
+  background: #0d121f;
+  padding: 0 8px;
+  font-size: 10px;
+  color: #f59e0b;
+  font-family: 'Fira Code', monospace;
+  letter-spacing: 0.05em;
+}
