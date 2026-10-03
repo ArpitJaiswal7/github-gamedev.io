@@ -34,39 +34,57 @@
 <body class="bg-brand-dark text-slate-200 antialiased selection:bg-cyan-500 selection:text-black blueprint-grid">
 
   <!-- ================= Navigation ================= -->
-  <header class="sticky top-0 z-40 w-full backdrop-blur-md bg-brand-dark/85 border-b border-slate-800/80">
+  <header class="sticky top-0 z-40 w-full backdrop-blur-md bg-brand-dark/90 border-b border-slate-800/80">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Developer Branding & Engine Indicator -->
       <a href="#" class="flex items-center space-x-3 group">
         <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center font-mono font-bold text-white shadow-lg shadow-cyan-500/20 group-hover:scale-105 transition-transform">
-          AJ
+          <i data-lucide="gamepad-2" class="w-5 h-5 text-white"></i>
         </div>
         <div>
-          <div class="font-bold text-slate-100 tracking-wide font-mono text-sm sm:text-base">ARPIT JAISWAL</div>
-          <div class="text-[11px] text-cyan-400 font-mono tracking-tight hidden sm:block">SENIOR UNITY & SYSTEMS ENGINEER</div>
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-slate-100 tracking-wide font-mono text-sm sm:text-base">ARPIT JAISWAL</span>
+            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-cyan-400 hidden sm:inline-block">v2026.1</span>
+          </div>
+          <div class="text-[11px] text-cyan-400 font-mono tracking-tight flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            SENIOR UNITY & GAMEPLAY SYSTEMS ENGINEER
+          </div>
         </div>
       </a>
 
       <!-- Desktop Nav -->
-      <nav class="hidden md:flex items-center space-x-7 text-xs font-mono tracking-wider text-slate-300">
-        <a href="#shipped" class="hover:text-cyan-400 transition-colors">SHIPPED GAMES</a>
-        <a href="#blueprints" class="hover:text-cyan-400 transition-colors">SYSTEMS BLUEPRINTS</a>
-        <a href="#mechanics-lab" class="hover:text-cyan-400 transition-colors flex items-center gap-1.5 text-amber-400">
+      <nav class="hidden md:flex items-center space-x-6 text-xs font-mono tracking-wider text-slate-300">
+        <a href="#shipped" class="hover:text-cyan-400 transition-colors flex items-center gap-1.5">
+          <span class="text-slate-500">//</span> SHIPPED TITLES
+        </a>
+        <a href="#mechanics-lab" class="hover:text-amber-400 transition-colors flex items-center gap-1.5 text-amber-400 font-medium">
           <span class="relative flex h-2 w-2">
             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
             <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
           </span>
           MECHANICS LAB
         </a>
-        <a href="#prototypes" class="hover:text-cyan-400 transition-colors">GIT REPOS</a>
-        <a href="#contact" class="hover:text-cyan-400 transition-colors">CONTACT</a>
+        <a href="#blueprints" class="hover:text-cyan-400 transition-colors flex items-center gap-1.5">
+          <span class="text-slate-500">//</span> BLUEPRINTS (9)
+        </a>
+        <a href="#experience" class="hover:text-cyan-400 transition-colors flex items-center gap-1.5">
+          <span class="text-slate-500">//</span> STUDIO TRACK
+        </a>
+        <a href="#contact" class="hover:text-cyan-400 transition-colors flex items-center gap-1.5">
+          <span class="text-slate-500">//</span> CONTACT
+        </a>
       </nav>
 
-      <div class="flex items-center space-x-3">
-        <a href="https://github.com/ArpitJaiswal7" target="_blank" rel="noopener" class="p-2 rounded-lg bg-slate-800/80 border border-slate-700/60 hover:text-cyan-400 hover:border-cyan-500/40 transition-colors" title="GitHub Profile">
+      <!-- Action Buttons -->
+      <div class="flex items-center space-x-2.5">
+        <a href="https://github.com/ArpitJaiswal7" target="_blank" rel="noopener" class="p-2 rounded-lg bg-slate-900 border border-slate-800 hover:text-cyan-400 hover:border-cyan-500/40 transition-colors btn-tactile" title="GitHub Profile">
           <i data-lucide="github" class="w-4 h-4"></i>
         </a>
-        <a href="#contact" class="px-3.5 py-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/40 text-cyan-400 font-mono text-xs font-medium hover:bg-cyan-500 hover:text-black transition-all">
-          GET IN TOUCH
+        <a href="#contact" class="px-3.5 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-mono text-xs font-bold transition-all shadow-md shadow-cyan-500/20 btn-tactile flex items-center gap-1.5">
+          <i data-lucide="file-down" class="w-3.5 h-3.5"></i>
+          <span>RESUME</span>
         </a>
       </div>
     </div>
@@ -74,470 +92,271 @@
 
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-24">
 
-    <!-- ================= Hero Section ================= -->
-    <section class="relative pt-6 pb-12 overflow-hidden">
+    <!-- ================= SCREEN 1: HERO SECTION ================= -->
+    <section class="relative pt-4 pb-8 overflow-hidden">
       <!-- Glow Gradients -->
       <div class="absolute top-1/4 -left-20 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
       <div class="absolute top-1/3 -right-20 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
       <div class="relative z-10 max-w-4xl space-y-6">
-        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-mono">
-          <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
-          <span>Gameplay Systems & Architecture Specialist • PAN India</span>
+        <!-- Live Status Pill -->
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/90 border border-slate-800 text-xs font-mono">
+          <span class="flex h-2 w-2 relative">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+          <span class="text-slate-400">STATUS:</span>
+          <span class="text-emerald-400 font-medium">AVAILABLE FOR SENIOR GAMEPLAY & SYSTEMS ROLES</span>
+          <span class="text-slate-600">•</span>
+          <span class="text-slate-400">PAN INDIA & REMOTE</span>
         </div>
 
-        <h1 class="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-tight">
-          Architecting High-Performance <span class="bg-gradient-to-r from-cyan-400 via-teal-300 to-amber-400 bg-clip-text text-transparent">Game Systems & Core Mechanics</span> in Unity.
+        <!-- Big Impact Headline -->
+        <h1 class="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight">
+          Architecting Production <br class="hidden sm:inline">
+          <span class="bg-gradient-to-r from-cyan-400 via-teal-300 to-amber-400 bg-clip-text text-transparent">Game Systems & Core Mechanics</span> in Unity.
         </h1>
 
-        <p class="text-base sm:text-lg text-slate-400 leading-relaxed max-w-3xl">
-          Senior Unity developer with <strong class="text-slate-200">3.5+ years of studio experience</strong> building scalable game frameworks, deterministic algorithmic hint solvers, procedural $N \times N$ geometry shaders, zero-cost offline bot leaderboards, and real-time multiplayer networking.
+        <!-- Executive Narrative -->
+        <p class="text-base sm:text-lg text-slate-300 leading-relaxed max-w-3xl">
+          Senior Unity developer with <strong class="text-white font-semibold">3.5+ years of studio experience</strong> building scalable game frameworks, deterministic algorithmic hint solvers, procedural $N \times N$ geometry shaders, zero-cost offline bot leaderboards, and cross-platform native mobile pipelines.
         </p>
 
-        <!-- Metrics Grid -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 pb-2">
-          <div class="bg-brand-card/90 border border-slate-800 p-4 rounded-xl">
-            <div class="text-2xl sm:text-3xl font-bold font-mono text-cyan-400">3.5+</div>
-            <div class="text-xs text-slate-400 mt-1 uppercase tracking-wider font-mono">Years Experience</div>
+        <!-- Engine & Tech Stack Badges -->
+        <div class="flex flex-wrap items-center gap-2 pt-1 pb-1 text-xs font-mono">
+          <span class="px-2.5 py-1 rounded-md bg-slate-900/90 border border-slate-800 text-cyan-300 flex items-center gap-1.5">
+            <i data-lucide="box" class="w-3.5 h-3.5 text-cyan-400"></i> Unity 3D / 2D
+          </span>
+          <span class="px-2.5 py-1 rounded-md bg-slate-900/90 border border-slate-800 text-cyan-300 flex items-center gap-1.5">
+            <i data-lucide="code-2" class="w-3.5 h-3.5 text-cyan-400"></i> C# (Zero GC Hot Paths)
+          </span>
+          <span class="px-2.5 py-1 rounded-md bg-slate-900/90 border border-slate-800 text-cyan-300 flex items-center gap-1.5">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5 text-cyan-400"></i> HLSL / ShaderLab
+          </span>
+          <span class="px-2.5 py-1 rounded-md bg-slate-900/90 border border-slate-800 text-cyan-300 flex items-center gap-1.5">
+            <i data-lucide="smartphone" class="w-3.5 h-3.5 text-cyan-400"></i> Android NDK & iOS Bridge
+          </span>
+          <span class="px-2.5 py-1 rounded-md bg-slate-900/90 border border-slate-800 text-amber-300 flex items-center gap-1.5">
+            <i data-lucide="shield-check" class="w-3.5 h-3.5 text-amber-400"></i> Cut-Line Architecture (NDA)
+          </span>
+        </div>
+
+        <!-- Metric Counters Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2">
+          <div class="bg-brand-card/90 border border-slate-800 p-4 rounded-xl shadow-lg">
+            <div class="flex items-center justify-between">
+              <span class="text-2xl sm:text-3xl font-bold font-mono text-cyan-400">3.5+</span>
+              <i data-lucide="clock" class="w-4 h-4 text-cyan-500/60"></i>
+            </div>
+            <div class="text-[11px] text-slate-400 mt-1 uppercase tracking-wider font-mono">Years Studio Work</div>
           </div>
-          <div class="bg-brand-card/90 border border-slate-800 p-4 rounded-xl">
-            <div class="text-2xl sm:text-3xl font-bold font-mono text-emerald-400">3 Titles</div>
-            <div class="text-xs text-slate-400 mt-1 uppercase tracking-wider font-mono">Live Google Play</div>
+
+          <div class="bg-brand-card/90 border border-slate-800 p-4 rounded-xl shadow-lg">
+            <div class="flex items-center justify-between">
+              <span class="text-2xl sm:text-3xl font-bold font-mono text-emerald-400">3 Titles</span>
+              <i data-lucide="play-circle" class="w-4 h-4 text-emerald-500/60"></i>
+            </div>
+            <div class="text-[11px] text-slate-400 mt-1 uppercase tracking-wider font-mono">Live Google Play</div>
           </div>
-          <div class="bg-brand-card/90 border border-slate-800 p-4 rounded-xl">
-            <div class="text-2xl sm:text-3xl font-bold font-mono text-amber-400">5.0 ★</div>
-            <div class="text-xs text-slate-400 mt-1 uppercase tracking-wider font-mono">Top Store Rating</div>
+
+          <div class="bg-brand-card/90 border border-slate-800 p-4 rounded-xl shadow-lg">
+            <div class="flex items-center justify-between">
+              <span class="text-2xl sm:text-3xl font-bold font-mono text-amber-400">5.0 ★</span>
+              <i data-lucide="crown" class="w-4 h-4 text-amber-500/60"></i>
+            </div>
+            <div class="text-[11px] text-slate-400 mt-1 uppercase tracking-wider font-mono">Top Store Rating</div>
           </div>
-          <div class="bg-brand-card/90 border border-slate-800 p-4 rounded-xl">
-            <div class="text-2xl sm:text-3xl font-bold font-mono text-purple-400">9 Sheets</div>
-            <div class="text-xs text-slate-400 mt-1 uppercase tracking-wider font-mono">Production Subsystems</div>
+
+          <div class="bg-brand-card/90 border border-slate-800 p-4 rounded-xl shadow-lg">
+            <div class="flex items-center justify-between">
+              <span class="text-2xl sm:text-3xl font-bold font-mono text-purple-400">9 Sheets</span>
+              <i data-lucide="layers" class="w-4 h-4 text-purple-500/60"></i>
+            </div>
+            <div class="text-[11px] text-slate-400 mt-1 uppercase tracking-wider font-mono">Production Blueprints</div>
           </div>
         </div>
 
-        <div class="flex flex-wrap items-center gap-4 pt-2">
-          <a href="#shipped" class="px-5 py-2.5 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-bold font-mono text-xs hover:brightness-110 shadow-lg shadow-cyan-500/20 transition-all flex items-center gap-2">
+        <!-- Quick Jump Buttons -->
+        <div class="flex flex-wrap items-center gap-3 pt-3">
+          <a href="#shipped" class="px-5 py-2.5 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-bold font-mono text-xs hover:brightness-110 shadow-lg shadow-cyan-500/20 transition-all flex items-center gap-2 btn-tactile">
             <i data-lucide="play" class="w-4 h-4 fill-current"></i>
             EXPLORE SHIPPED GAMES
           </a>
-          <a href="#blueprints" class="px-5 py-2.5 rounded-lg bg-slate-800/80 border border-slate-700/80 text-slate-200 font-mono text-xs hover:border-cyan-400/50 hover:text-cyan-400 transition-all flex items-center gap-2">
-            <i data-lucide="cpu" class="w-4 h-4"></i>
-            INSPECT BLUEPRINTS
-          </a>
-          <a href="#mechanics-lab" class="px-5 py-2.5 rounded-lg bg-amber-500/10 border border-amber-500/40 text-amber-400 font-mono text-xs hover:bg-amber-500 hover:text-black transition-all flex items-center gap-2">
-            <i data-lucide="sparkles" class="w-4 h-4"></i>
+          <a href="#mechanics-lab" class="px-5 py-2.5 rounded-lg bg-amber-500/10 border border-amber-500/40 text-amber-400 font-mono text-xs hover:bg-amber-500 hover:text-black transition-all flex items-center gap-2 btn-tactile">
+            <i data-lucide="terminal" class="w-4 h-4"></i>
             TRY MECHANICS LAB
+          </a>
+          <a href="#blueprints" class="px-5 py-2.5 rounded-lg bg-slate-800/80 border border-slate-700 text-slate-200 font-mono text-xs hover:border-cyan-400/50 hover:text-cyan-400 transition-all flex items-center gap-2 btn-tactile">
+            <i data-lucide="cpu" class="w-4 h-4"></i>
+            INSPECT 9 BLUEPRINTS
           </a>
         </div>
       </div>
     </section>
 
-    <!-- ================= Section 1: Commercial Shipped Titles ================= -->
-    <section id="shipped" class="space-y-8">
-      <div class="border-b border-slate-800 pb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+    <!-- ================= SCREEN 1: COMMERCIAL SHIPPED TITLES (ZONE 1) ================= -->
+    <section id="shipped" class="space-y-8 pt-4">
+      <div class="border-b border-slate-800 pb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-3">
         <div>
-          <div class="text-xs font-mono text-cyan-400 tracking-wider uppercase">Live Production Portfolio</div>
-          <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight mt-1">Shipped Google Play Games</h2>
+          <div class="text-xs font-mono text-cyan-400 tracking-wider uppercase flex items-center gap-1.5">
+            <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-cyan-400"></i>
+            <span>COMMERCIAL SHIPPED TITLES • GOOGLE PLAY</span>
+          </div>
+          <h2 class="text-2xl sm:text-4xl font-extrabold text-white tracking-tight mt-1">Live Production Portfolio</h2>
         </div>
-        <p class="text-xs font-mono text-slate-400">All titles powered by modular, reusable architecture subsystems</p>
+        <div class="text-xs font-mono text-slate-400 bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800">
+          Powered by modular, decoupled architecture subsystems
+        </div>
       </div>
 
+      <!-- The 3-Card Grid (Side-by-side on desktop) -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
         <!-- Card 1: MeowSweeper -->
-        <div class="bg-brand-card rounded-2xl border border-slate-800 p-6 flex flex-col justify-between card-glow-cyan">
-          <div class="space-y-4">
-            <div class="flex items-start justify-between">
-              <div>
-                <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 text-xs font-mono font-medium border border-emerald-500/20">
-                  <i data-lucide="star" class="w-3 h-3 fill-current"></i> 4.6 Rating
-                </div>
-                <h3 class="text-xl font-bold text-white mt-2">MeowSweeper: Sudoku Brain Game</h3>
+        <div class="bg-brand-card rounded-2xl border overflow-hidden flex flex-col justify-between game-card-glow shadow-xl">
+          <div>
+            <!-- Banner Image -->
+            <div class="relative overflow-hidden aspect-video border-b border-slate-800">
+              <img src="assets/games/meowsweeper-banner.jpg" alt="MeowSweeper Sudoku Brain Game" class="w-full h-full object-cover transition-transform duration-500 hover:scale-105">
+              <div class="absolute top-3 right-3">
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-black/80 backdrop-blur-md text-emerald-400 text-xs font-mono font-bold border border-emerald-500/40 shadow-lg">
+                  <i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i> 4.6 Rating
+                </span>
               </div>
             </div>
 
-            <p class="text-slate-400 text-xs sm:text-sm leading-relaxed">
-              Hybrid Queens / Star-Battle, Sudoku, and Minesweeper logic puzzle. Engineered with discrete multi-touch input locks, persistent cross-level powerup wallets, and an ordered hint-technique cascade.
-            </p>
+            <!-- Card Content -->
+            <div class="p-5 space-y-3.5">
+              <div>
+                <div class="text-[11px] font-mono text-cyan-400 uppercase tracking-wider">Logic Puzzle • Queens × Sudoku</div>
+                <h3 class="text-xl font-bold text-white mt-1">MeowSweeper: Sudoku Brain Game</h3>
+              </div>
 
-            <div class="space-y-2 pt-2 border-t border-slate-800/80">
-              <div class="text-[11px] font-mono text-slate-400 uppercase tracking-wider">Integrated Subsystems:</div>
-              <div class="flex flex-wrap gap-1.5">
-                <span class="px-2 py-0.5 rounded bg-slate-800/90 text-cyan-300 text-[11px] font-mono">Sheet 10: Meowdoku Engine</span>
-                <span class="px-2 py-0.5 rounded bg-slate-800/90 text-cyan-300 text-[11px] font-mono">Sheet 06: Offline Leaderboard</span>
-                <span class="px-2 py-0.5 rounded bg-slate-800/90 text-cyan-300 text-[11px] font-mono">Sheet 13: Argos Localization</span>
-                <span class="px-2 py-0.5 rounded bg-slate-800/90 text-cyan-300 text-[11px] font-mono">Sheet 04: IAP System</span>
+              <p class="text-slate-300 text-xs sm:text-sm leading-relaxed">
+                Hybrid Queens / Star-Battle, Sudoku, and Minesweeper logic puzzle. Engineered with discrete multi-touch input locks, persistent cross-level powerup wallets, and an ordered hint-technique cascade.
+              </p>
+
+              <!-- Integrated Subsystems -->
+              <div class="space-y-1.5 pt-2 border-t border-slate-800/80">
+                <div class="text-[11px] font-mono text-slate-400 uppercase tracking-wider">Integrated Architecture Subsystems:</div>
+                <div class="flex flex-wrap gap-1.5">
+                  <span class="px-2 py-0.5 rounded bg-slate-800/90 text-cyan-300 text-[11px] font-mono">Sheet 10: Meowdoku Engine</span>
+                  <span class="px-2 py-0.5 rounded bg-slate-800/90 text-cyan-300 text-[11px] font-mono">Sheet 06: Offline Leaderboard</span>
+                  <span class="px-2 py-0.5 rounded bg-slate-800/90 text-cyan-300 text-[11px] font-mono">Sheet 13: Argos Localization</span>
+                  <span class="px-2 py-0.5 rounded bg-slate-800/90 text-cyan-300 text-[11px] font-mono">Sheet 04: IAP Store Gateway</span>
+                </div>
               </div>
             </div>
           </div>
 
-          <div class="pt-6 mt-4 border-t border-slate-800/80 flex items-center justify-between">
-            <span class="text-xs font-mono text-slate-500">com.meow.sweeper.sudoku...</span>
-            <a href="https://play.google.com/store/apps/details?id=com.meow.sweeper.sudoku.puzzle.game" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 text-xs font-mono font-medium text-cyan-400 hover:text-cyan-300">
-              Google Play <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+          <!-- Card Footer -->
+          <div class="p-5 pt-0 mt-3 flex items-center justify-between border-t border-slate-800/80">
+            <span class="text-[11px] font-mono text-slate-500">com.meow.sweeper.sudoku...</span>
+            <a href="https://play.google.com/store/apps/details?id=com.meow.sweeper.sudoku.puzzle.game" target="_blank" rel="noopener" class="px-4 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-black border border-emerald-500/30 text-xs font-mono font-bold transition-all flex items-center gap-1.5 btn-tactile">
+              <span>Google Play</span>
+              <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
             </a>
           </div>
         </div>
 
         <!-- Card 2: Calm Jigsaw -->
-        <div class="bg-brand-card rounded-2xl border border-slate-800 p-6 flex flex-col justify-between card-glow-cyan">
-          <div class="space-y-4">
-            <div class="flex items-start justify-between">
-              <div>
-                <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 text-xs font-mono font-medium border border-emerald-500/20">
-                  <i data-lucide="star" class="w-3 h-3 fill-current"></i> 4.7 Rating
-                </div>
-                <h3 class="text-xl font-bold text-white mt-2">Calm Jigsaw</h3>
+        <div class="bg-brand-card rounded-2xl border overflow-hidden flex flex-col justify-between game-card-glow shadow-xl">
+          <div>
+            <!-- Banner Image -->
+            <div class="relative overflow-hidden aspect-video border-b border-slate-800">
+              <img src="assets/games/calm-jigsaw-banner.jpg" alt="Calm Jigsaw Puzzle" class="w-full h-full object-cover transition-transform duration-500 hover:scale-105">
+              <div class="absolute top-3 right-3">
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-black/80 backdrop-blur-md text-emerald-400 text-xs font-mono font-bold border border-emerald-500/40 shadow-lg">
+                  <i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i> 4.7 Rating
+                </span>
               </div>
             </div>
 
-            <p class="text-slate-400 text-xs sm:text-sm leading-relaxed">
-              Zen puzzle featuring procedural $N \times N$ grid cuts with 9 mathematical tab/blank edge signatures (zero pre-sliced art assets needed). Supported by multi-tier on-disk image caching and non-blocking OTA level sync.
-            </p>
+            <!-- Card Content -->
+            <div class="p-5 space-y-3.5">
+              <div>
+                <div class="text-[11px] font-mono text-cyan-400 uppercase tracking-wider">Procedural $N \times N$ Zen Jigsaw</div>
+                <h3 class="text-xl font-bold text-white mt-1">Calm Jigsaw</h3>
+              </div>
 
-            <div class="space-y-2 pt-2 border-t border-slate-800/80">
-              <div class="text-[11px] font-mono text-slate-400 uppercase tracking-wider">Integrated Subsystems:</div>
-              <div class="flex flex-wrap gap-1.5">
-                <span class="px-2 py-0.5 rounded bg-slate-800/90 text-cyan-300 text-[11px] font-mono">Sheet 09: Jigsaw Board Renderer</span>
-                <span class="px-2 py-0.5 rounded bg-slate-800/90 text-cyan-300 text-[11px] font-mono">Sheet 02: Native Image Pipeline</span>
-                <span class="px-2 py-0.5 rounded bg-slate-800/90 text-cyan-300 text-[11px] font-mono">Sheet 08: Level Sync (OTA)</span>
+              <p class="text-slate-300 text-xs sm:text-sm leading-relaxed">
+                Zen puzzle featuring procedural $N \times N$ grid cuts with 9 mathematical tab/blank edge signatures (zero pre-sliced art assets needed). Supported by multi-tier on-disk image caching and non-blocking OTA level sync.
+              </p>
+
+              <!-- Integrated Subsystems -->
+              <div class="space-y-1.5 pt-2 border-t border-slate-800/80">
+                <div class="text-[11px] font-mono text-slate-400 uppercase tracking-wider">Integrated Architecture Subsystems:</div>
+                <div class="flex flex-wrap gap-1.5">
+                  <span class="px-2 py-0.5 rounded bg-slate-800/90 text-cyan-300 text-[11px] font-mono">Sheet 09: Jigsaw Board Renderer</span>
+                  <span class="px-2 py-0.5 rounded bg-slate-800/90 text-cyan-300 text-[11px] font-mono">Sheet 02: Native Image Pipeline</span>
+                  <span class="px-2 py-0.5 rounded bg-slate-800/90 text-cyan-300 text-[11px] font-mono">Sheet 08: Level Sync (OTA)</span>
+                </div>
               </div>
             </div>
           </div>
 
-          <div class="pt-6 mt-4 border-t border-slate-800/80 flex items-center justify-between">
-            <span class="text-xs font-mono text-slate-500">com.calm.jigsaw.puzzle</span>
-            <a href="https://play.google.com/store/apps/details?id=com.calm.jigsaw.puzzle" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 text-xs font-mono font-medium text-cyan-400 hover:text-cyan-300">
-              Google Play <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+          <!-- Card Footer -->
+          <div class="p-5 pt-0 mt-3 flex items-center justify-between border-t border-slate-800/80">
+            <span class="text-[11px] font-mono text-slate-500">com.calm.jigsaw.puzzle</span>
+            <a href="https://play.google.com/store/apps/details?id=com.calm.jigsaw.puzzle" target="_blank" rel="noopener" class="px-4 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-black border border-emerald-500/30 text-xs font-mono font-bold transition-all flex items-center gap-1.5 btn-tactile">
+              <span>Google Play</span>
+              <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
             </a>
           </div>
         </div>
 
         <!-- Card 3: Calm Jigsaw Solitaire -->
-        <div class="bg-brand-card rounded-2xl border border-slate-800 p-6 flex flex-col justify-between card-glow-cyan">
-          <div class="space-y-4">
-            <div class="flex items-start justify-between">
-              <div>
-                <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-amber-500/10 text-amber-400 text-xs font-mono font-medium border border-amber-500/20">
-                  <i data-lucide="crown" class="w-3 h-3"></i> 5.0 Flawless
-                </div>
-                <h3 class="text-xl font-bold text-white mt-2">Calm Jigsaw Solitaire</h3>
+        <div class="bg-brand-card rounded-2xl border overflow-hidden flex flex-col justify-between game-card-glow game-card-glow-amber shadow-xl">
+          <div>
+            <!-- Banner Image -->
+            <div class="relative overflow-hidden aspect-video border-b border-slate-800">
+              <img src="assets/games/calm-jigsaw-solitaire-banner.jpg" alt="Calm Jigsaw Solitaire" class="w-full h-full object-cover transition-transform duration-500 hover:scale-105">
+              <div class="absolute top-3 right-3">
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-black/80 backdrop-blur-md text-amber-400 text-xs font-mono font-bold border border-amber-500/50 shadow-lg shadow-amber-500/20">
+                  <i data-lucide="crown" class="w-3.5 h-3.5 fill-current"></i> 5.0 Flawless
+                </span>
               </div>
             </div>
 
-            <p class="text-slate-400 text-xs sm:text-sm leading-relaxed">
-              Innovative crossover mechanic merging jigsaw tab fitting with solitaire card column queues and spatial stacking. Polished with procedural noise flame VFX and editor asset organization.
-            </p>
+            <!-- Card Content -->
+            <div class="p-5 space-y-3.5">
+              <div>
+                <div class="text-[11px] font-mono text-amber-400 uppercase tracking-wider">Hybrid Mechanic • Jigsaw × Solitaire</div>
+                <h3 class="text-xl font-bold text-white mt-1">Calm Jigsaw Solitaire</h3>
+              </div>
 
-            <div class="space-y-2 pt-2 border-t border-slate-800/80">
-              <div class="text-[11px] font-mono text-slate-400 uppercase tracking-wider">Integrated Subsystems:</div>
-              <div class="flex flex-wrap gap-1.5">
-                <span class="px-2 py-0.5 rounded bg-slate-800/90 text-cyan-300 text-[11px] font-mono">Sheet 09: Jigsaw Renderer + Stack</span>
-                <span class="px-2 py-0.5 rounded bg-slate-800/90 text-cyan-300 text-[11px] font-mono">Sheet 11: Asset Organizer Tool</span>
-                <span class="px-2 py-0.5 rounded bg-slate-800/90 text-cyan-300 text-[11px] font-mono">Sheet 12: Flame Flicker VFX</span>
-                <span class="px-2 py-0.5 rounded bg-slate-800/90 text-cyan-300 text-[11px] font-mono">Sheet 02 & 08: Platform Services</span>
+              <p class="text-slate-300 text-xs sm:text-sm leading-relaxed">
+                Innovative crossover mechanic merging jigsaw tab fitting with solitaire card column queues and spatial stacking. Polished with procedural noise flame VFX and editor asset organization.
+              </p>
+
+              <!-- Integrated Subsystems -->
+              <div class="space-y-1.5 pt-2 border-t border-slate-800/80">
+                <div class="text-[11px] font-mono text-slate-400 uppercase tracking-wider">Integrated Architecture Subsystems:</div>
+                <div class="flex flex-wrap gap-1.5">
+                  <span class="px-2 py-0.5 rounded bg-slate-800/90 text-cyan-300 text-[11px] font-mono">Sheet 09: Jigsaw + Solitaire Queues</span>
+                  <span class="px-2 py-0.5 rounded bg-slate-800/90 text-cyan-300 text-[11px] font-mono">Sheet 11: Asset Organizer Tool</span>
+                  <span class="px-2 py-0.5 rounded bg-slate-800/90 text-cyan-300 text-[11px] font-mono">Sheet 12: Flame Flicker Noise VFX</span>
+                  <span class="px-2 py-0.5 rounded bg-slate-800/90 text-cyan-300 text-[11px] font-mono">Sheet 02 & 08: Platform Services</span>
+                </div>
               </div>
             </div>
           </div>
 
-          <div class="pt-6 mt-4 border-t border-slate-800/80 flex items-center justify-between">
-            <span class="text-xs font-mono text-slate-500">com.calm.jigsaw.solitaire</span>
-            <a href="https://play.google.com/store/apps/details?id=com.calm.jigsaw.solitaire" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 text-xs font-mono font-medium text-cyan-400 hover:text-cyan-300">
-              Google Play <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+          <!-- Card Footer -->
+          <div class="p-5 pt-0 mt-3 flex items-center justify-between border-t border-slate-800/80">
+            <span class="text-[11px] font-mono text-slate-500">com.calm.jigsaw.solitaire</span>
+            <a href="https://play.google.com/store/apps/details?id=com.calm.jigsaw.solitaire" target="_blank" rel="noopener" class="px-4 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500 text-amber-400 hover:text-black border border-amber-500/30 text-xs font-mono font-bold transition-all flex items-center gap-1.5 btn-tactile">
+              <span>Google Play</span>
+              <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
             </a>
           </div>
         </div>
-      </div>
-    </section>
-
-    <!-- ================= Section 2: Systems Architecture Blueprints ================= -->
-    <section id="blueprints" class="space-y-8">
-      <div class="border-b border-slate-800 pb-4 flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <div class="text-xs font-mono text-cyan-400 tracking-wider uppercase">NDA-Safe System Boundary Diagrams</div>
-          <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight mt-1">9 Production Architecture Blueprints</h2>
-          <p class="text-xs sm:text-sm text-slate-400 mt-2 max-w-2xl">
-            Each blueprint illustrates clean surface API boundaries, state machines, and resilience safeguards. The <span class="text-amber-400 font-mono">"Cut-Line"</span> pattern cleanly demarcates public interface contracts from proprietary internal algorithms.
-          </p>
-        </div>
-
-        <!-- Filter Buttons -->
-        <div class="flex flex-wrap gap-2 text-xs font-mono">
-          <button data-filter="all" class="filter-btn px-3 py-1.5 rounded-lg border bg-cyan-500/20 text-cyan-400 border-cyan-500/50 transition-all">All (9)</button>
-          <button data-filter="platform" class="filter-btn px-3 py-1.5 rounded-lg border bg-slate-800/60 text-slate-400 border-slate-700/60 hover:text-slate-200 transition-all">Platform</button>
-          <button data-filter="gameplay" class="filter-btn px-3 py-1.5 rounded-lg border bg-slate-800/60 text-slate-400 border-slate-700/60 hover:text-slate-200 transition-all">Gameplay</button>
-          <button data-filter="liveops" class="filter-btn px-3 py-1.5 rounded-lg border bg-slate-800/60 text-slate-400 border-slate-700/60 hover:text-slate-200 transition-all">LiveOps & IAP</button>
-          <button data-filter="tooling" class="filter-btn px-3 py-1.5 rounded-lg border bg-slate-800/60 text-slate-400 border-slate-700/60 hover:text-slate-200 transition-all">Editor & VFX</button>
-        </div>
-      </div>
-
-      <!-- Blueprint Cards Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-        <!-- Sheet 02: Native Image Pipeline -->
-        <div class="blueprint-card bg-brand-card rounded-2xl border border-slate-800 overflow-hidden flex flex-col justify-between card-glow-cyan" data-domain="platform" data-img="assets/blueprints/sheet-02-native-image-pipeline.png">
-          <div>
-            <div class="relative group cursor-pointer overflow-hidden border-b border-slate-800 open-blueprint">
-              <img src="assets/blueprints/sheet-02-native-image-pipeline.png" alt="Native Image Pipeline Architecture" class="w-full h-48 object-cover object-top group-hover:scale-105 transition-transform duration-300">
-              <div class="absolute inset-0 bg-brand-dark/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                <span class="px-3 py-1.5 rounded-lg bg-cyan-500 text-black font-mono font-bold text-xs flex items-center gap-1.5 shadow-lg">
-                  <i data-lucide="zoom-in" class="w-4 h-4"></i> Inspect Blueprint
-                </span>
-              </div>
-            </div>
-            <div class="p-5 space-y-2">
-              <div class="flex items-center justify-between text-[11px] font-mono">
-                <span class="blueprint-badge text-cyan-400">Sheet 02 — Surface Cut</span>
-                <span class="text-slate-500">Android / iOS / Editor</span>
-              </div>
-              <h3 class="text-lg font-bold text-white">Native Image Pipeline</h3>
-              <p class="text-xs text-slate-400 leading-relaxed">
-                Unified C# API abstracting native Android & iOS bridges. Features multi-tier on-disk caching ($256 \to 1024$), request de-duplication, and an auto-resuming connectivity monitor.
-              </p>
-            </div>
-          </div>
-          <div class="p-5 pt-0">
-            <button class="open-blueprint w-full py-2 rounded-lg bg-slate-800/80 hover:bg-cyan-500/10 text-cyan-400 hover:border-cyan-500/40 border border-slate-700/60 font-mono text-xs transition-all flex items-center justify-center gap-1.5">
-              <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i> Full View
-            </button>
-          </div>
-        </div>
-
-        <!-- Sheet 09: Jigsaw Board Renderer -->
-        <div class="blueprint-card bg-brand-card rounded-2xl border border-slate-800 overflow-hidden flex flex-col justify-between card-glow-cyan" data-domain="gameplay" data-img="assets/blueprints/sheet-09-jigsaw-board-renderer.png">
-          <div>
-            <div class="relative group cursor-pointer overflow-hidden border-b border-slate-800 open-blueprint">
-              <img src="assets/blueprints/sheet-09-jigsaw-board-renderer.png" alt="Jigsaw Board Renderer Architecture" class="w-full h-48 object-cover object-top group-hover:scale-105 transition-transform duration-300">
-              <div class="absolute inset-0 bg-brand-dark/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                <span class="px-3 py-1.5 rounded-lg bg-cyan-500 text-black font-mono font-bold text-xs flex items-center gap-1.5 shadow-lg">
-                  <i data-lucide="zoom-in" class="w-4 h-4"></i> Inspect Blueprint
-                </span>
-              </div>
-            </div>
-            <div class="p-5 space-y-2">
-              <div class="flex items-center justify-between text-[11px] font-mono">
-                <span class="blueprint-badge text-cyan-400">Sheet 09 — Surface Cut</span>
-                <span class="text-slate-500">Core Gameplay Logic</span>
-              </div>
-              <h3 class="text-lg font-bold text-white">Jigsaw Board Renderer</h3>
-              <p class="text-xs text-slate-400 leading-relaxed">
-                Dynamic procedural $N \times N$ board generator. Classifies pieces into 9 tab/blank edge signatures with custom shader UV quad projections. Zero pre-baked piece assets required.
-              </p>
-            </div>
-          </div>
-          <div class="p-5 pt-0">
-            <button class="open-blueprint w-full py-2 rounded-lg bg-slate-800/80 hover:bg-cyan-500/10 text-cyan-400 hover:border-cyan-500/40 border border-slate-700/60 font-mono text-xs transition-all flex items-center justify-center gap-1.5">
-              <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i> Full View
-            </button>
-          </div>
-        </div>
-
-        <!-- Sheet 10: Meowdoku Engine -->
-        <div class="blueprint-card bg-brand-card rounded-2xl border border-slate-800 overflow-hidden flex flex-col justify-between card-glow-cyan" data-domain="gameplay" data-img="assets/blueprints/sheet-10-meowdoku.png">
-          <div>
-            <div class="relative group cursor-pointer overflow-hidden border-b border-slate-800 open-blueprint">
-              <img src="assets/blueprints/sheet-10-meowdoku.png" alt="Meowdoku Architecture" class="w-full h-48 object-cover object-top group-hover:scale-105 transition-transform duration-300">
-              <div class="absolute inset-0 bg-brand-dark/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                <span class="px-3 py-1.5 rounded-lg bg-cyan-500 text-black font-mono font-bold text-xs flex items-center gap-1.5 shadow-lg">
-                  <i data-lucide="zoom-in" class="w-4 h-4"></i> Inspect Blueprint
-                </span>
-              </div>
-            </div>
-            <div class="p-5 space-y-2">
-              <div class="flex items-center justify-between text-[11px] font-mono">
-                <span class="blueprint-badge text-cyan-400">Sheet 10 — Surface Cut</span>
-                <span class="text-slate-500">Core Gameplay Logic</span>
-              </div>
-              <h3 class="text-lg font-bold text-white">Meowdoku Controller & Solver</h3>
-              <p class="text-xs text-slate-400 leading-relaxed">
-                Multi-touch gesture router (tap/place/drag) with animation input locks. Deterministic hint solver cascade proves deductions mathematically, decoupled from a persistent cross-level wallet.
-              </p>
-            </div>
-          </div>
-          <div class="p-5 pt-0">
-            <button class="open-blueprint w-full py-2 rounded-lg bg-slate-800/80 hover:bg-cyan-500/10 text-cyan-400 hover:border-cyan-500/40 border border-slate-700/60 font-mono text-xs transition-all flex items-center justify-center gap-1.5">
-              <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i> Full View
-            </button>
-          </div>
-        </div>
-
-        <!-- Sheet 06: Offline Leaderboard -->
-        <div class="blueprint-card bg-brand-card rounded-2xl border border-slate-800 overflow-hidden flex flex-col justify-between card-glow-cyan" data-domain="liveops" data-img="assets/blueprints/sheet-06-offline-leaderboard.png">
-          <div>
-            <div class="relative group cursor-pointer overflow-hidden border-b border-slate-800 open-blueprint">
-              <img src="assets/blueprints/sheet-06-offline-leaderboard.png" alt="Offline Leaderboard Architecture" class="w-full h-48 object-cover object-top group-hover:scale-105 transition-transform duration-300">
-              <div class="absolute inset-0 bg-brand-dark/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                <span class="px-3 py-1.5 rounded-lg bg-cyan-500 text-black font-mono font-bold text-xs flex items-center gap-1.5 shadow-lg">
-                  <i data-lucide="zoom-in" class="w-4 h-4"></i> Inspect Blueprint
-                </span>
-              </div>
-            </div>
-            <div class="p-5 space-y-2">
-              <div class="flex items-center justify-between text-[11px] font-mono">
-                <span class="blueprint-badge text-cyan-400">Sheet 06 — Surface Cut</span>
-                <span class="text-slate-500">LiveOps / Retention</span>
-              </div>
-              <h3 class="text-lg font-bold text-white">Offline Leaderboard</h3>
-              <p class="text-xs text-slate-400 leading-relaxed">
-                Zero-server-cost bot simulation engine generating dynamic seasonal leagues and rank advancement. Features idempotent reward claims and anti-rollback clamping.
-              </p>
-            </div>
-          </div>
-          <div class="p-5 pt-0">
-            <button class="open-blueprint w-full py-2 rounded-lg bg-slate-800/80 hover:bg-cyan-500/10 text-cyan-400 hover:border-cyan-500/40 border border-slate-700/60 font-mono text-xs transition-all flex items-center justify-center gap-1.5">
-              <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i> Full View
-            </button>
-          </div>
-        </div>
-
-        <!-- Sheet 08: Level Sync -->
-        <div class="blueprint-card bg-brand-card rounded-2xl border border-slate-800 overflow-hidden flex flex-col justify-between card-glow-cyan" data-domain="platform" data-img="assets/blueprints/sheet-08-level-sync.png">
-          <div>
-            <div class="relative group cursor-pointer overflow-hidden border-b border-slate-800 open-blueprint">
-              <img src="assets/blueprints/sheet-08-level-sync.png" alt="Level Sync Architecture" class="w-full h-48 object-cover object-top group-hover:scale-105 transition-transform duration-300">
-              <div class="absolute inset-0 bg-brand-dark/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                <span class="px-3 py-1.5 rounded-lg bg-cyan-500 text-black font-mono font-bold text-xs flex items-center gap-1.5 shadow-lg">
-                  <i data-lucide="zoom-in" class="w-4 h-4"></i> Inspect Blueprint
-                </span>
-              </div>
-            </div>
-            <div class="p-5 space-y-2">
-              <div class="flex items-center justify-between text-[11px] font-mono">
-                <span class="blueprint-badge text-cyan-400">Sheet 08 — Surface Cut</span>
-                <span class="text-slate-500">Platform Services</span>
-              </div>
-              <h3 class="text-lg font-bold text-white">Level Sync (OTA Content)</h3>
-              <p class="text-xs text-slate-400 leading-relaxed">
-                Background manifest-diffing synchronizer that never blocks game boot sequence. Applies content updates cleanly on subsequent launch with automatic stale cache purging.
-              </p>
-            </div>
-          </div>
-          <div class="p-5 pt-0">
-            <button class="open-blueprint w-full py-2 rounded-lg bg-slate-800/80 hover:bg-cyan-500/10 text-cyan-400 hover:border-cyan-500/40 border border-slate-700/60 font-mono text-xs transition-all flex items-center justify-center gap-1.5">
-              <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i> Full View
-            </button>
-          </div>
-        </div>
-
-        <!-- Sheet 04: IAP System -->
-        <div class="blueprint-card bg-brand-card rounded-2xl border border-slate-800 overflow-hidden flex flex-col justify-between card-glow-cyan" data-domain="liveops" data-img="assets/blueprints/sheet-04-iap-system.png">
-          <div>
-            <div class="relative group cursor-pointer overflow-hidden border-b border-slate-800 open-blueprint">
-              <img src="assets/blueprints/sheet-04-iap-system.png" alt="IAP System Architecture" class="w-full h-48 object-cover object-top group-hover:scale-105 transition-transform duration-300">
-              <div class="absolute inset-0 bg-brand-dark/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                <span class="px-3 py-1.5 rounded-lg bg-cyan-500 text-black font-mono font-bold text-xs flex items-center gap-1.5 shadow-lg">
-                  <i data-lucide="zoom-in" class="w-4 h-4"></i> Inspect Blueprint
-                </span>
-              </div>
-            </div>
-            <div class="p-5 space-y-2">
-              <div class="flex items-center justify-between text-[11px] font-mono">
-                <span class="blueprint-badge text-cyan-400">Sheet 04 — Surface Cut</span>
-                <span class="text-slate-500">Monetization</span>
-              </div>
-              <h3 class="text-lg font-bold text-white">IAP System & Store Gateway</h3>
-              <p class="text-xs text-slate-400 leading-relaxed">
-                Dual-currency purchase gateway (real money vs soft currency) with strict grant-then-confirm verification and editor simulation testing harnesses.
-              </p>
-            </div>
-          </div>
-          <div class="p-5 pt-0">
-            <button class="open-blueprint w-full py-2 rounded-lg bg-slate-800/80 hover:bg-cyan-500/10 text-cyan-400 hover:border-cyan-500/40 border border-slate-700/60 font-mono text-xs transition-all flex items-center justify-center gap-1.5">
-              <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i> Full View
-            </button>
-          </div>
-        </div>
-
-        <!-- Sheet 13: Argos Localization -->
-        <div class="blueprint-card bg-brand-card rounded-2xl border border-slate-800 overflow-hidden flex flex-col justify-between card-glow-cyan" data-domain="tooling" data-img="assets/blueprints/sheet-13-argos-localization.png">
-          <div>
-            <div class="relative group cursor-pointer overflow-hidden border-b border-slate-800 open-blueprint">
-              <img src="assets/blueprints/sheet-13-argos-localization.png" alt="Argos Localization Tool Architecture" class="w-full h-48 object-cover object-top group-hover:scale-105 transition-transform duration-300">
-              <div class="absolute inset-0 bg-brand-dark/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                <span class="px-3 py-1.5 rounded-lg bg-cyan-500 text-black font-mono font-bold text-xs flex items-center gap-1.5 shadow-lg">
-                  <i data-lucide="zoom-in" class="w-4 h-4"></i> Inspect Blueprint
-                </span>
-              </div>
-            </div>
-            <div class="p-5 space-y-2">
-              <div class="flex items-center justify-between text-[11px] font-mono">
-                <span class="blueprint-badge text-cyan-400">Sheet 13 — Surface Cut</span>
-                <span class="text-slate-500">Editor Tooling / IPC</span>
-              </div>
-              <h3 class="text-lg font-bold text-white">Argos Localization IPC</h3>
-              <p class="text-xs text-slate-400 leading-relaxed">
-                Cross-process communication tool linking Unity C# to an offline Python translation subprocess over <code class="text-cyan-300 font-mono">stdin/stdout</code> JSON codecs without third-party dependencies.
-              </p>
-            </div>
-          </div>
-          <div class="p-5 pt-0">
-            <button class="open-blueprint w-full py-2 rounded-lg bg-slate-800/80 hover:bg-cyan-500/10 text-cyan-400 hover:border-cyan-500/40 border border-slate-700/60 font-mono text-xs transition-all flex items-center justify-center gap-1.5">
-              <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i> Full View
-            </button>
-          </div>
-        </div>
-
-        <!-- Sheet 11: Asset Organizer Tool -->
-        <div class="blueprint-card bg-brand-card rounded-2xl border border-slate-800 overflow-hidden flex flex-col justify-between card-glow-cyan" data-domain="tooling" data-img="assets/blueprints/sheet-11-asset-organizer-tool.png">
-          <div>
-            <div class="relative group cursor-pointer overflow-hidden border-b border-slate-800 open-blueprint">
-              <img src="assets/blueprints/sheet-11-asset-organizer-tool.png" alt="Asset Organizer Tool Architecture" class="w-full h-48 object-cover object-top group-hover:scale-105 transition-transform duration-300">
-              <div class="absolute inset-0 bg-brand-dark/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                <span class="px-3 py-1.5 rounded-lg bg-cyan-500 text-black font-mono font-bold text-xs flex items-center gap-1.5 shadow-lg">
-                  <i data-lucide="zoom-in" class="w-4 h-4"></i> Inspect Blueprint
-                </span>
-              </div>
-            </div>
-            <div class="p-5 space-y-2">
-              <div class="flex items-center justify-between text-[11px] font-mono">
-                <span class="blueprint-badge text-cyan-400">Sheet 11 — Surface Cut</span>
-                <span class="text-slate-500">Unity Editor DX</span>
-              </div>
-              <h3 class="text-lg font-bold text-white">Asset Organizer Tool</h3>
-              <p class="text-xs text-slate-400 leading-relaxed">
-                Developer productivity tool adding project window asset pinning, custom category badges, and asset movement watchers to accelerate high-volume asset workflows.
-              </p>
-            </div>
-          </div>
-          <div class="p-5 pt-0">
-            <button class="open-blueprint w-full py-2 rounded-lg bg-slate-800/80 hover:bg-cyan-500/10 text-cyan-400 hover:border-cyan-500/40 border border-slate-700/60 font-mono text-xs transition-all flex items-center justify-center gap-1.5">
-              <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i> Full View
-            </button>
-          </div>
-        </div>
-
-        <!-- Sheet 12: Flame Flicker Effect -->
-        <div class="blueprint-card bg-brand-card rounded-2xl border border-slate-800 overflow-hidden flex flex-col justify-between card-glow-cyan" data-domain="tooling" data-img="assets/blueprints/sheet-12-flame-flicker-effect.png">
-          <div>
-            <div class="relative group cursor-pointer overflow-hidden border-b border-slate-800 open-blueprint">
-              <img src="assets/blueprints/sheet-12-flame-flicker-effect.png" alt="Flame Flicker Effect Architecture" class="w-full h-48 object-cover object-top group-hover:scale-105 transition-transform duration-300">
-              <div class="absolute inset-0 bg-brand-dark/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                <span class="px-3 py-1.5 rounded-lg bg-cyan-500 text-black font-mono font-bold text-xs flex items-center gap-1.5 shadow-lg">
-                  <i data-lucide="zoom-in" class="w-4 h-4"></i> Inspect Blueprint
-                </span>
-              </div>
-            </div>
-            <div class="p-5 space-y-2">
-              <div class="flex items-center justify-between text-[11px] font-mono">
-                <span class="blueprint-badge text-cyan-400">Sheet 12 — Surface Cut</span>
-                <span class="text-slate-500">Tech Art & Shaders</span>
-              </div>
-              <h3 class="text-lg font-bold text-white">Flame Flicker Effect</h3>
-              <p class="text-xs text-slate-400 leading-relaxed">
-                Lightweight 2-file procedural noise shader and C# driver. Creates dynamic ambient fire visuals on UI canvases without expensive sprite flipbook memory on mobile.
-              </p>
-            </div>
-          </div>
-          <div class="p-5 pt-0">
-            <button class="open-blueprint w-full py-2 rounded-lg bg-slate-800/80 hover:bg-cyan-500/10 text-cyan-400 hover:border-cyan-500/40 border border-slate-700/60 font-mono text-xs transition-all flex items-center justify-center gap-1.5">
-              <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i> Full View
-            </button>
-          </div>
-        </div>
 
       </div>
     </section>
 
-    <!-- ================= Section 3: Interactive Mechanics Lab ================= -->
-    <section id="mechanics-lab" class="space-y-6">
+    <!-- ================= SCREEN 2: INTERACTIVE MECHANICS LAB (ZONE 2) ================= -->
+    <section id="mechanics-lab" class="space-y-6 pt-6">
       <div class="border-b border-slate-800 pb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-2">
         <div>
           <div class="text-xs font-mono text-amber-400 tracking-wider uppercase flex items-center gap-2">
@@ -572,14 +391,12 @@
             <div class="text-xs font-mono text-slate-400 mb-3">
               Tap to place/remove 🐱. Right-click / hold to mark ✕.
             </div>
-            <div id="meowdoku-board" class="grid grid-cols-5 gap-1.5 p-3 bg-slate-900/80 rounded-xl border border-slate-700/60 shadow-inner">
-              <!-- Rendered via script.js -->
-            </div>
+            <div id="meowdoku-board" class="grid grid-cols-5 gap-1.5 p-3 bg-slate-900/80 rounded-xl border border-slate-700/60 shadow-inner"></div>
             <div class="flex items-center gap-3 mt-4">
-              <button id="btn-meowdoku-hint" class="px-4 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-black font-mono font-bold text-xs shadow-lg shadow-cyan-500/20 transition-all flex items-center gap-1.5">
+              <button id="btn-meowdoku-hint" class="px-4 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-black font-mono font-bold text-xs shadow-lg shadow-cyan-500/20 transition-all flex items-center gap-1.5 btn-tactile">
                 <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Run Hint Cascade
               </button>
-              <button id="btn-meowdoku-reset" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono text-xs border border-slate-700 transition-all">
+              <button id="btn-meowdoku-reset" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono text-xs border border-slate-700 transition-all btn-tactile">
                 Reset Board
               </button>
             </div>
@@ -594,9 +411,7 @@
                 Unlike brute-force solvers, the Meowdoku engine models human deduction by proving moves step-by-step through region-row-column constraints.
               </p>
             </div>
-            <div id="meowdoku-logs" class="h-56 bg-slate-950 rounded-xl border border-slate-800 p-3 overflow-y-auto space-y-1 blueprint-grid-dense font-mono text-xs">
-              <!-- Logs populated via script.js -->
-            </div>
+            <div id="meowdoku-logs" class="h-56 bg-slate-950 rounded-xl border border-slate-800 p-3 overflow-y-auto space-y-1 blueprint-grid-dense font-mono text-xs"></div>
             <div class="text-[11px] font-mono text-slate-500 flex items-center gap-2">
               <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Live execution in browser • Zero external dependencies
             </div>
@@ -710,90 +525,315 @@
       </div>
     </section>
 
-    <!-- ================= Section 4: Prototypes & Open Repositories ================= -->
-    <section id="prototypes" class="space-y-8">
-      <div class="border-b border-slate-800 pb-4">
-        <div class="text-xs font-mono text-cyan-400 tracking-wider uppercase">Open Source Repositories & Architecture Samples</div>
-        <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight mt-1">Multiplayer & Systems Prototypes</h2>
+    <!-- ================= SCREEN 2: SYSTEMS ARCHITECTURE BLUEPRINTS (ZONE 3) ================= -->
+    <section id="blueprints" class="space-y-8 pt-6">
+      <div class="border-b border-slate-800 pb-4 flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <div class="text-xs font-mono text-cyan-400 tracking-wider uppercase flex items-center gap-1.5">
+            <i data-lucide="layers" class="w-3.5 h-3.5 text-cyan-400"></i>
+            <span>NDA-SAFE SYSTEM BOUNDARY DIAGRAMS</span>
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight mt-1">9 Production Architecture Blueprints</h2>
+          <p class="text-xs sm:text-sm text-slate-400 mt-2 max-w-2xl">
+            Each blueprint illustrates clean surface API boundaries, state machines, and resilience safeguards. The <span class="text-amber-400 font-mono">"Cut-Line"</span> pattern cleanly demarcates public interface contracts from proprietary internal algorithms.
+          </p>
+        </div>
+
+        <!-- Filter Buttons -->
+        <div class="flex flex-wrap gap-2 text-xs font-mono">
+          <button data-filter="all" class="filter-btn px-3 py-1.5 rounded-lg border bg-cyan-500/20 text-cyan-400 border-cyan-500/50 transition-all btn-tactile">All (9)</button>
+          <button data-filter="platform" class="filter-btn px-3 py-1.5 rounded-lg border bg-slate-800/60 text-slate-400 border-slate-700/60 hover:text-slate-200 transition-all btn-tactile">Platform</button>
+          <button data-filter="gameplay" class="filter-btn px-3 py-1.5 rounded-lg border bg-slate-800/60 text-slate-400 border-slate-700/60 hover:text-slate-200 transition-all btn-tactile">Gameplay</button>
+          <button data-filter="liveops" class="filter-btn px-3 py-1.5 rounded-lg border bg-slate-800/60 text-slate-400 border-slate-700/60 hover:text-slate-200 transition-all btn-tactile">LiveOps & IAP</button>
+          <button data-filter="tooling" class="filter-btn px-3 py-1.5 rounded-lg border bg-slate-800/60 text-slate-400 border-slate-700/60 hover:text-slate-200 transition-all btn-tactile">Editor & VFX</button>
+        </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-        <!-- Bullet Chess -->
-        <div class="bg-brand-card rounded-xl border border-slate-800 p-5 space-y-3 card-glow-cyan">
-          <div class="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400">
-            <i data-lucide="swords" class="w-4 h-4"></i>
-          </div>
-          <h3 class="text-base font-bold text-white">Bullet Chess</h3>
-          <p class="text-xs text-slate-400 leading-relaxed">
-            Real-time multiplayer chess with Photon PUN-2 networking and Stockfish engine evaluation API.
-          </p>
-          <div class="pt-2 text-[11px] font-mono text-slate-500">Photon PUN-2 • Stockfish API</div>
-        </div>
+      <!-- Blueprint Cards Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-        <!-- Arrow Strike -->
-        <div class="bg-brand-card rounded-xl border border-slate-800 p-5 space-y-3 card-glow-cyan">
-          <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-            <i data-lucide="compass" class="w-4 h-4"></i>
+        <!-- Sheet 02: Native Image Pipeline -->
+        <div class="blueprint-card bg-brand-card rounded-2xl border border-slate-800 overflow-hidden flex flex-col justify-between game-card-glow" data-domain="platform" data-img="assets/blueprints/sheet-02-native-image-pipeline.png">
+          <div>
+            <div class="relative group cursor-pointer overflow-hidden border-b border-slate-800 open-blueprint">
+              <img src="assets/blueprints/sheet-02-native-image-pipeline.png" alt="Native Image Pipeline Architecture" class="w-full h-48 object-cover object-top group-hover:scale-105 transition-transform duration-300">
+              <div class="absolute inset-0 bg-brand-dark/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                <span class="px-3 py-1.5 rounded-lg bg-cyan-500 text-black font-mono font-bold text-xs flex items-center gap-1.5 shadow-lg">
+                  <i data-lucide="zoom-in" class="w-4 h-4"></i> Inspect Blueprint
+                </span>
+              </div>
+            </div>
+            <div class="p-5 space-y-2">
+              <div class="flex items-center justify-between text-[11px] font-mono">
+                <span class="blueprint-badge text-cyan-400">Sheet 02 — Surface Cut</span>
+                <span class="text-slate-500">Android / iOS / Editor</span>
+              </div>
+              <h3 class="text-lg font-bold text-white">Native Image Pipeline</h3>
+              <p class="text-xs text-slate-400 leading-relaxed">
+                Unified C# API abstracting native Android & iOS bridges. Features multi-tier on-disk caching ($256 \to 1024$), request de-duplication, and an auto-resuming connectivity monitor.
+              </p>
+            </div>
           </div>
-          <h3 class="text-base font-bold text-white">Arrow Strike: Maze Escape</h3>
-          <p class="text-xs text-slate-400 leading-relaxed">
-            Grid-based puzzle game with swarm arrow movement mechanics and infinite procedural maze levels.
-          </p>
-          <div class="pt-2">
-            <a href="https://gitlab.com/work1134611/unity8984322/arrowstrike" target="_blank" rel="noopener" class="text-xs font-mono text-cyan-400 hover:underline flex items-center gap-1">
-              GitLab Repo <i data-lucide="external-link" class="w-3 h-3"></i>
-            </a>
-          </div>
-        </div>
-
-        <!-- Tycoon RTS -->
-        <div class="bg-brand-card rounded-xl border border-slate-800 p-5 space-y-3 card-glow-cyan">
-          <div class="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400">
-            <i data-lucide="layout-grid" class="w-4 h-4"></i>
-          </div>
-          <h3 class="text-base font-bold text-white">Tycoon RTS Grid</h3>
-          <p class="text-xs text-slate-400 leading-relaxed">
-            Grid placement economy simulation with automated AI agents performing resource delivery and scheduling.
-          </p>
-          <div class="pt-2">
-            <a href="https://gitlab.com/work1134611/unity8984322/tycoon-3d-game-demo" target="_blank" rel="noopener" class="text-xs font-mono text-cyan-400 hover:underline flex items-center gap-1">
-              GitLab Repo <i data-lucide="external-link" class="w-3 h-3"></i>
-            </a>
+          <div class="p-5 pt-0">
+            <button class="open-blueprint w-full py-2 rounded-lg bg-slate-800/80 hover:bg-cyan-500/10 text-cyan-400 hover:border-cyan-500/40 border border-slate-700/60 font-mono text-xs transition-all flex items-center justify-center gap-1.5 btn-tactile">
+              <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i> Full View
+            </button>
           </div>
         </div>
 
-        <!-- Tank Battle -->
-        <div class="bg-brand-card rounded-xl border border-slate-800 p-5 space-y-3 card-glow-cyan">
-          <div class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-            <i data-lucide="shield-alert" class="w-4 h-4"></i>
+        <!-- Sheet 09: Jigsaw Board Renderer -->
+        <div class="blueprint-card bg-brand-card rounded-2xl border border-slate-800 overflow-hidden flex flex-col justify-between game-card-glow" data-domain="gameplay" data-img="assets/blueprints/sheet-09-jigsaw-board-renderer.png">
+          <div>
+            <div class="relative group cursor-pointer overflow-hidden border-b border-slate-800 open-blueprint">
+              <img src="assets/blueprints/sheet-09-jigsaw-board-renderer.png" alt="Jigsaw Board Renderer Architecture" class="w-full h-48 object-cover object-top group-hover:scale-105 transition-transform duration-300">
+              <div class="absolute inset-0 bg-brand-dark/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                <span class="px-3 py-1.5 rounded-lg bg-cyan-500 text-black font-mono font-bold text-xs flex items-center gap-1.5 shadow-lg">
+                  <i data-lucide="zoom-in" class="w-4 h-4"></i> Inspect Blueprint
+                </span>
+              </div>
+            </div>
+            <div class="p-5 space-y-2">
+              <div class="flex items-center justify-between text-[11px] font-mono">
+                <span class="blueprint-badge text-cyan-400">Sheet 09 — Surface Cut</span>
+                <span class="text-slate-500">Core Gameplay Logic</span>
+              </div>
+              <h3 class="text-lg font-bold text-white">Jigsaw Board Renderer</h3>
+              <p class="text-xs text-slate-400 leading-relaxed">
+                Dynamic procedural $N \times N$ board generator. Classifies pieces into 9 tab/blank edge signatures with custom shader UV quad projections. Zero pre-baked piece assets required.
+              </p>
+            </div>
           </div>
-          <h3 class="text-base font-bold text-white">Tank Battle AI</h3>
-          <p class="text-xs text-slate-400 leading-relaxed">
-            Wave defense combat game featuring state-machine enemy pathfinding, base defense, and powerup drops.
-          </p>
-          <div class="pt-2">
-            <a href="https://gitlab.com/work1134611/unity8984322/tank-battle-ai-demo" target="_blank" rel="noopener" class="text-xs font-mono text-cyan-400 hover:underline flex items-center gap-1">
-              GitLab Repo <i data-lucide="external-link" class="w-3 h-3"></i>
-            </a>
+          <div class="p-5 pt-0">
+            <button class="open-blueprint w-full py-2 rounded-lg bg-slate-800/80 hover:bg-cyan-500/10 text-cyan-400 hover:border-cyan-500/40 border border-slate-700/60 font-mono text-xs transition-all flex items-center justify-center gap-1.5 btn-tactile">
+              <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i> Full View
+            </button>
           </div>
         </div>
+
+        <!-- Sheet 10: Meowdoku Engine -->
+        <div class="blueprint-card bg-brand-card rounded-2xl border border-slate-800 overflow-hidden flex flex-col justify-between game-card-glow" data-domain="gameplay" data-img="assets/blueprints/sheet-10-meowdoku.png">
+          <div>
+            <div class="relative group cursor-pointer overflow-hidden border-b border-slate-800 open-blueprint">
+              <img src="assets/blueprints/sheet-10-meowdoku.png" alt="Meowdoku Architecture" class="w-full h-48 object-cover object-top group-hover:scale-105 transition-transform duration-300">
+              <div class="absolute inset-0 bg-brand-dark/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                <span class="px-3 py-1.5 rounded-lg bg-cyan-500 text-black font-mono font-bold text-xs flex items-center gap-1.5 shadow-lg">
+                  <i data-lucide="zoom-in" class="w-4 h-4"></i> Inspect Blueprint
+                </span>
+              </div>
+            </div>
+            <div class="p-5 space-y-2">
+              <div class="flex items-center justify-between text-[11px] font-mono">
+                <span class="blueprint-badge text-cyan-400">Sheet 10 — Surface Cut</span>
+                <span class="text-slate-500">Core Gameplay Logic</span>
+              </div>
+              <h3 class="text-lg font-bold text-white">Meowdoku Controller & Solver</h3>
+              <p class="text-xs text-slate-400 leading-relaxed">
+                Multi-touch gesture router (tap/place/drag) with animation input locks. Deterministic hint solver cascade proves deductions mathematically, decoupled from a persistent cross-level wallet.
+              </p>
+            </div>
+          </div>
+          <div class="p-5 pt-0">
+            <button class="open-blueprint w-full py-2 rounded-lg bg-slate-800/80 hover:bg-cyan-500/10 text-cyan-400 hover:border-cyan-500/40 border border-slate-700/60 font-mono text-xs transition-all flex items-center justify-center gap-1.5 btn-tactile">
+              <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i> Full View
+            </button>
+          </div>
+        </div>
+
+        <!-- Sheet 06: Offline Leaderboard -->
+        <div class="blueprint-card bg-brand-card rounded-2xl border border-slate-800 overflow-hidden flex flex-col justify-between game-card-glow" data-domain="liveops" data-img="assets/blueprints/sheet-06-offline-leaderboard.png">
+          <div>
+            <div class="relative group cursor-pointer overflow-hidden border-b border-slate-800 open-blueprint">
+              <img src="assets/blueprints/sheet-06-offline-leaderboard.png" alt="Offline Leaderboard Architecture" class="w-full h-48 object-cover object-top group-hover:scale-105 transition-transform duration-300">
+              <div class="absolute inset-0 bg-brand-dark/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                <span class="px-3 py-1.5 rounded-lg bg-cyan-500 text-black font-mono font-bold text-xs flex items-center gap-1.5 shadow-lg">
+                  <i data-lucide="zoom-in" class="w-4 h-4"></i> Inspect Blueprint
+                </span>
+              </div>
+            </div>
+            <div class="p-5 space-y-2">
+              <div class="flex items-center justify-between text-[11px] font-mono">
+                <span class="blueprint-badge text-cyan-400">Sheet 06 — Surface Cut</span>
+                <span class="text-slate-500">LiveOps / Retention</span>
+              </div>
+              <h3 class="text-lg font-bold text-white">Offline Leaderboard</h3>
+              <p class="text-xs text-slate-400 leading-relaxed">
+                Zero-server-cost bot simulation engine generating dynamic seasonal leagues and rank advancement. Features idempotent reward claims and anti-rollback clamping.
+              </p>
+            </div>
+          </div>
+          <div class="p-5 pt-0">
+            <button class="open-blueprint w-full py-2 rounded-lg bg-slate-800/80 hover:bg-cyan-500/10 text-cyan-400 hover:border-cyan-500/40 border border-slate-700/60 font-mono text-xs transition-all flex items-center justify-center gap-1.5 btn-tactile">
+              <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i> Full View
+            </button>
+          </div>
+        </div>
+
+        <!-- Sheet 08: Level Sync -->
+        <div class="blueprint-card bg-brand-card rounded-2xl border border-slate-800 overflow-hidden flex flex-col justify-between game-card-glow" data-domain="platform" data-img="assets/blueprints/sheet-08-level-sync.png">
+          <div>
+            <div class="relative group cursor-pointer overflow-hidden border-b border-slate-800 open-blueprint">
+              <img src="assets/blueprints/sheet-08-level-sync.png" alt="Level Sync Architecture" class="w-full h-48 object-cover object-top group-hover:scale-105 transition-transform duration-300">
+              <div class="absolute inset-0 bg-brand-dark/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                <span class="px-3 py-1.5 rounded-lg bg-cyan-500 text-black font-mono font-bold text-xs flex items-center gap-1.5 shadow-lg">
+                  <i data-lucide="zoom-in" class="w-4 h-4"></i> Inspect Blueprint
+                </span>
+              </div>
+            </div>
+            <div class="p-5 space-y-2">
+              <div class="flex items-center justify-between text-[11px] font-mono">
+                <span class="blueprint-badge text-cyan-400">Sheet 08 — Surface Cut</span>
+                <span class="text-slate-500">Platform Services</span>
+              </div>
+              <h3 class="text-lg font-bold text-white">Level Sync (OTA Content)</h3>
+              <p class="text-xs text-slate-400 leading-relaxed">
+                Background manifest-diffing synchronizer that never blocks game boot sequence. Applies content updates cleanly on subsequent launch with automatic stale cache purging.
+              </p>
+            </div>
+          </div>
+          <div class="p-5 pt-0">
+            <button class="open-blueprint w-full py-2 rounded-lg bg-slate-800/80 hover:bg-cyan-500/10 text-cyan-400 hover:border-cyan-500/40 border border-slate-700/60 font-mono text-xs transition-all flex items-center justify-center gap-1.5 btn-tactile">
+              <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i> Full View
+            </button>
+          </div>
+        </div>
+
+        <!-- Sheet 04: IAP System -->
+        <div class="blueprint-card bg-brand-card rounded-2xl border border-slate-800 overflow-hidden flex flex-col justify-between game-card-glow" data-domain="liveops" data-img="assets/blueprints/sheet-04-iap-system.png">
+          <div>
+            <div class="relative group cursor-pointer overflow-hidden border-b border-slate-800 open-blueprint">
+              <img src="assets/blueprints/sheet-04-iap-system.png" alt="IAP System Architecture" class="w-full h-48 object-cover object-top group-hover:scale-105 transition-transform duration-300">
+              <div class="absolute inset-0 bg-brand-dark/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                <span class="px-3 py-1.5 rounded-lg bg-cyan-500 text-black font-mono font-bold text-xs flex items-center gap-1.5 shadow-lg">
+                  <i data-lucide="zoom-in" class="w-4 h-4"></i> Inspect Blueprint
+                </span>
+              </div>
+            </div>
+            <div class="p-5 space-y-2">
+              <div class="flex items-center justify-between text-[11px] font-mono">
+                <span class="blueprint-badge text-cyan-400">Sheet 04 — Surface Cut</span>
+                <span class="text-slate-500">Monetization</span>
+              </div>
+              <h3 class="text-lg font-bold text-white">IAP System & Store Gateway</h3>
+              <p class="text-xs text-slate-400 leading-relaxed">
+                Dual-currency purchase gateway (real money vs soft currency) with strict grant-then-confirm verification and editor simulation testing harnesses.
+              </p>
+            </div>
+          </div>
+          <div class="p-5 pt-0">
+            <button class="open-blueprint w-full py-2 rounded-lg bg-slate-800/80 hover:bg-cyan-500/10 text-cyan-400 hover:border-cyan-500/40 border border-slate-700/60 font-mono text-xs transition-all flex items-center justify-center gap-1.5 btn-tactile">
+              <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i> Full View
+            </button>
+          </div>
+        </div>
+
+        <!-- Sheet 13: Argos Localization -->
+        <div class="blueprint-card bg-brand-card rounded-2xl border border-slate-800 overflow-hidden flex flex-col justify-between game-card-glow" data-domain="tooling" data-img="assets/blueprints/sheet-13-argos-localization.png">
+          <div>
+            <div class="relative group cursor-pointer overflow-hidden border-b border-slate-800 open-blueprint">
+              <img src="assets/blueprints/sheet-13-argos-localization.png" alt="Argos Localization Tool Architecture" class="w-full h-48 object-cover object-top group-hover:scale-105 transition-transform duration-300">
+              <div class="absolute inset-0 bg-brand-dark/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                <span class="px-3 py-1.5 rounded-lg bg-cyan-500 text-black font-mono font-bold text-xs flex items-center gap-1.5 shadow-lg">
+                  <i data-lucide="zoom-in" class="w-4 h-4"></i> Inspect Blueprint
+                </span>
+              </div>
+            </div>
+            <div class="p-5 space-y-2">
+              <div class="flex items-center justify-between text-[11px] font-mono">
+                <span class="blueprint-badge text-cyan-400">Sheet 13 — Surface Cut</span>
+                <span class="text-slate-500">Editor Tooling / IPC</span>
+              </div>
+              <h3 class="text-lg font-bold text-white">Argos Localization IPC</h3>
+              <p class="text-xs text-slate-400 leading-relaxed">
+                Cross-process communication tool linking Unity C# to an offline Python translation subprocess over <code class="text-cyan-300 font-mono">stdin/stdout</code> JSON codecs without third-party dependencies.
+              </p>
+            </div>
+          </div>
+          <div class="p-5 pt-0">
+            <button class="open-blueprint w-full py-2 rounded-lg bg-slate-800/80 hover:bg-cyan-500/10 text-cyan-400 hover:border-cyan-500/40 border border-slate-700/60 font-mono text-xs transition-all flex items-center justify-center gap-1.5 btn-tactile">
+              <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i> Full View
+            </button>
+          </div>
+        </div>
+
+        <!-- Sheet 11: Asset Organizer Tool -->
+        <div class="blueprint-card bg-brand-card rounded-2xl border border-slate-800 overflow-hidden flex flex-col justify-between game-card-glow" data-domain="tooling" data-img="assets/blueprints/sheet-11-asset-organizer-tool.png">
+          <div>
+            <div class="relative group cursor-pointer overflow-hidden border-b border-slate-800 open-blueprint">
+              <img src="assets/blueprints/sheet-11-asset-organizer-tool.png" alt="Asset Organizer Tool Architecture" class="w-full h-48 object-cover object-top group-hover:scale-105 transition-transform duration-300">
+              <div class="absolute inset-0 bg-brand-dark/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                <span class="px-3 py-1.5 rounded-lg bg-cyan-500 text-black font-mono font-bold text-xs flex items-center gap-1.5 shadow-lg">
+                  <i data-lucide="zoom-in" class="w-4 h-4"></i> Inspect Blueprint
+                </span>
+              </div>
+            </div>
+            <div class="p-5 space-y-2">
+              <div class="flex items-center justify-between text-[11px] font-mono">
+                <span class="blueprint-badge text-cyan-400">Sheet 11 — Surface Cut</span>
+                <span class="text-slate-500">Unity Editor DX</span>
+              </div>
+              <h3 class="text-lg font-bold text-white">Asset Organizer Tool</h3>
+              <p class="text-xs text-slate-400 leading-relaxed">
+                Developer productivity tool adding project window asset pinning, custom category badges, and asset movement watchers to accelerate high-volume asset workflows.
+              </p>
+            </div>
+          </div>
+          <div class="p-5 pt-0">
+            <button class="open-blueprint w-full py-2 rounded-lg bg-slate-800/80 hover:bg-cyan-500/10 text-cyan-400 hover:border-cyan-500/40 border border-slate-700/60 font-mono text-xs transition-all flex items-center justify-center gap-1.5 btn-tactile">
+              <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i> Full View
+            </button>
+          </div>
+        </div>
+
+        <!-- Sheet 12: Flame Flicker Effect -->
+        <div class="blueprint-card bg-brand-card rounded-2xl border border-slate-800 overflow-hidden flex flex-col justify-between game-card-glow" data-domain="tooling" data-img="assets/blueprints/sheet-12-flame-flicker-effect.png">
+          <div>
+            <div class="relative group cursor-pointer overflow-hidden border-b border-slate-800 open-blueprint">
+              <img src="assets/blueprints/sheet-12-flame-flicker-effect.png" alt="Flame Flicker Effect Architecture" class="w-full h-48 object-cover object-top group-hover:scale-105 transition-transform duration-300">
+              <div class="absolute inset-0 bg-brand-dark/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                <span class="px-3 py-1.5 rounded-lg bg-cyan-500 text-black font-mono font-bold text-xs flex items-center gap-1.5 shadow-lg">
+                  <i data-lucide="zoom-in" class="w-4 h-4"></i> Inspect Blueprint
+                </span>
+              </div>
+            </div>
+            <div class="p-5 space-y-2">
+              <div class="flex items-center justify-between text-[11px] font-mono">
+                <span class="blueprint-badge text-cyan-400">Sheet 12 — Surface Cut</span>
+                <span class="text-slate-500">Tech Art & Shaders</span>
+              </div>
+              <h3 class="text-lg font-bold text-white">Flame Flicker Effect</h3>
+              <p class="text-xs text-slate-400 leading-relaxed">
+                Lightweight 2-file procedural noise shader and C# driver. Creates dynamic ambient fire visuals on UI canvases without expensive sprite flipbook memory on mobile.
+              </p>
+            </div>
+          </div>
+          <div class="p-5 pt-0">
+            <button class="open-blueprint w-full py-2 rounded-lg bg-slate-800/80 hover:bg-cyan-500/10 text-cyan-400 hover:border-cyan-500/40 border border-slate-700/60 font-mono text-xs transition-all flex items-center justify-center gap-1.5 btn-tactile">
+              <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i> Full View
+            </button>
+          </div>
+        </div>
+
       </div>
     </section>
 
-    <!-- ================= Section 5: Experience & Studio History ================= -->
-    <section class="space-y-6">
+    <!-- ================= SCREEN 2: STUDIO EXPERIENCE (ZONE 4) ================= -->
+    <section id="experience" class="space-y-6 pt-6">
       <div class="border-b border-slate-800 pb-4">
-        <div class="text-xs font-mono text-cyan-400 tracking-wider uppercase">Professional Background</div>
-        <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight mt-1">Studio Experience</h2>
+        <div class="text-xs font-mono text-cyan-400 tracking-wider uppercase flex items-center gap-1.5">
+          <i data-lucide="briefcase" class="w-3.5 h-3.5 text-cyan-400"></i>
+          <span>PROFESSIONAL BACKGROUND</span>
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight mt-1">Studio Track Record</h2>
       </div>
 
       <div class="space-y-4">
-        <div class="bg-brand-card rounded-xl border border-slate-800 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <!-- Vasundhara Infotech -->
+        <div class="bg-brand-card rounded-xl border border-slate-800 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 game-card-glow">
           <div class="space-y-1">
             <div class="text-base font-bold text-white">Senior Unity Developer</div>
             <div class="text-xs font-mono text-cyan-400">Vasundhara Infotech / Vasundhara Games • Surat, GJ</div>
-            <div class="text-xs text-slate-400 max-w-2xl pt-1">
-              Architected core puzzle mechanics, procedural jigsaw renderers, offline leaderboards, and native image caching pipelines across top-ranking commercial titles on Google Play.
+            <div class="text-xs text-slate-300 max-w-2xl pt-1 leading-relaxed">
+              Architected core puzzle mechanics, procedural jigsaw renderers, offline leaderboards, and native image caching pipelines across top-ranking commercial titles on Google Play (*MeowSweeper*, *Calm Jigsaw*, *Calm Jigsaw Solitaire*).
             </div>
           </div>
           <div class="text-xs font-mono text-slate-400 whitespace-nowrap bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800">
@@ -801,12 +841,13 @@
           </div>
         </div>
 
-        <div class="bg-brand-card rounded-xl border border-slate-800 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <!-- Studio Krew -->
+        <div class="bg-brand-card rounded-xl border border-slate-800 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 game-card-glow">
           <div class="space-y-1">
             <div class="text-base font-bold text-white">Game Developer</div>
             <div class="text-xs font-mono text-cyan-400">Studio Krew • Delhi (Remote)</div>
-            <div class="text-xs text-slate-400 max-w-2xl pt-1">
-              Engineered multiplayer card game logic, tournament lobbies, in-app purchases, and responsive mobile UI across production titles.
+            <div class="text-xs text-slate-300 max-w-2xl pt-1 leading-relaxed">
+              Engineered multiplayer card game logic, tournament lobbies, state synchronization, in-app purchases, and responsive mobile UI across production titles.
             </div>
           </div>
           <div class="text-xs font-mono text-slate-400 whitespace-nowrap bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800">
@@ -814,11 +855,12 @@
           </div>
         </div>
 
-        <div class="bg-brand-card rounded-xl border border-slate-800 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <!-- Appzia Technologies -->
+        <div class="bg-brand-card rounded-xl border border-slate-800 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 game-card-glow">
           <div class="space-y-1">
             <div class="text-base font-bold text-white">Unity Game Developer</div>
             <div class="text-xs font-mono text-cyan-400">Appzia Technologies • Pune</div>
-            <div class="text-xs text-slate-400 max-w-2xl pt-1">
+            <div class="text-xs text-slate-300 max-w-2xl pt-1 leading-relaxed">
               Engineered game loops, Firebase real-time database sync, ad mediation networks, and mobile performance optimization.
             </div>
           </div>
@@ -829,23 +871,23 @@
       </div>
     </section>
 
-    <!-- ================= Section 6: Contact & Footer ================= -->
-    <section id="contact" class="bg-gradient-to-b from-brand-card to-slate-950 rounded-3xl border border-slate-800 p-8 sm:p-12 text-center space-y-6 relative overflow-hidden">
+    <!-- ================= SCREEN 2: CONTACT & FOOTER (ZONE 5) ================= -->
+    <section id="contact" class="bg-gradient-to-b from-brand-card to-slate-950 rounded-3xl border border-slate-800 p-8 sm:p-12 text-center space-y-6 relative overflow-hidden shadow-2xl">
       <div class="max-w-2xl mx-auto space-y-3 relative z-10">
         <h2 class="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">Ready to build extraordinary games together?</h2>
-        <p class="text-xs sm:text-sm text-slate-400 leading-relaxed">
+        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
           Open to Senior Unity Developer, Gameplay Programmer, and Systems Engineer roles across PAN India and remote globally.
         </p>
       </div>
 
       <div class="flex flex-wrap items-center justify-center gap-3 pt-2 relative z-10">
-        <a href="mailto:arpitjaiswal071@gmail.com" class="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-mono font-bold text-xs transition-all flex items-center gap-2 shadow-lg shadow-cyan-500/20">
+        <a href="mailto:arpitjaiswal071@gmail.com" class="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-mono font-bold text-xs transition-all flex items-center gap-2 shadow-lg shadow-cyan-500/20 btn-tactile">
           <i data-lucide="mail" class="w-4 h-4"></i> arpitjaiswal071@gmail.com
         </a>
-        <a href="https://github.com/ArpitJaiswal7" target="_blank" rel="noopener" class="px-5 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 font-mono text-xs transition-all flex items-center gap-2">
+        <a href="https://github.com/ArpitJaiswal7" target="_blank" rel="noopener" class="px-5 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 font-mono text-xs transition-all flex items-center gap-2 btn-tactile">
           <i data-lucide="github" class="w-4 h-4"></i> GitHub Profile
         </a>
-        <a href="https://gitlab.com/work1134611" target="_blank" rel="noopener" class="px-5 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 font-mono text-xs transition-all flex items-center gap-2">
+        <a href="https://gitlab.com/work1134611" target="_blank" rel="noopener" class="px-5 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 font-mono text-xs transition-all flex items-center gap-2 btn-tactile">
           <i data-lucide="git-branch" class="w-4 h-4"></i> GitLab Profile
         </a>
       </div>
@@ -859,7 +901,7 @@
   </main>
 
   <!-- ================= Blueprint Lightbox Modal ================= -->
-  <div id="lightbox-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/90 p-4 sm:p-8">
+  <div id="lightbox-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/90 p-4 sm:p-8 backdrop-blur-md">
     <div id="lightbox-container" class="relative max-w-5xl w-full max-h-[90vh] flex flex-col items-center bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl">
       <!-- Modal Header -->
       <div class="w-full px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/80">
@@ -867,7 +909,7 @@
           <h3 id="lightbox-title" class="text-base font-bold text-white font-mono">Blueprint Title</h3>
           <div id="lightbox-desc" class="text-xs text-cyan-400 font-mono">System Specification</div>
         </div>
-        <button id="lightbox-close" class="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors">
+        <button id="lightbox-close" class="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors btn-tactile">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
