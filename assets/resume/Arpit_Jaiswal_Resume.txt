@@ -1,0 +1,46 @@
+================================================================================
+ARPIT JAISWAL - SENIOR UNITY & GAMEPLAY SYSTEMS ENGINEER
+Email: arpitjaiswal071@gmail.com | PAN India & Remote
+GitHub: https://github.com/ArpitJaiswal7
+GitLab: https://gitlab.com/work1134611
+Portfolio: https://arpitjaiswal7.github.io/github-gamedev.io/
+================================================================================
+
+PROFESSIONAL SUMMARY
+Senior Unity Developer & Gameplay Systems Architect with 3.5+ years of studio 
+experience delivering 3 published Google Play games (rated up to 5.0★), real-time 
+multiplayer networking, procedural geometry shaders, zero-cost bot-simulated 
+leaderboards, and native mobile bridges across Android and iOS.
+
+CORE COMPETENCIES & TECH STACK
+• Engine & Graphics: Unity3D, C# (Zero-GC hot paths), HLSL / ShaderLab, URP.
+• Architecture & Systems: Decoupled Cut-Line NDA architecture, FSM state machines.
+• Algorithmic Gameplay: Procedural N×N Jigsaw Mesh Generator (9 shape signatures), 
+  Deterministic Hint Cascade Solvers.
+• Platforms & Native: Android (NDK/JNI), iOS (Obj-C bridges), WebGL.
+• LiveOps & Monetization: Simulated Bot Leaderboards, Background Manifest-Diff OTA 
+  Level Sync, Dual-Currency Store Gateway (Grant-then-confirm).
+• Tooling & IPC: Offline Machine Translation IPC (Unity C# to Python argostranslate), 
+  Unity Editor Asset Organizer DX tooling.
+
+COMMERCIAL SHIPPED GAMES (GOOGLE PLAY)
+1. Calm Jigsaw Solitaire (Rating: 5.0★ Flawless)
+   - Hybrid crossover mechanic merging jigsaw tab-fitting with solitaire column queues.
+   - Built custom procedural noise flame flicker VFX shader and editor DX tooling.
+2. Calm Jigsaw (Rating: 4.7★)
+   - Procedural N×N board generator using 9 tab/blank edge signatures (zero pre-sliced art).
+   - Multi-tier on-disk native image caching pipeline and non-blocking OTA Level Sync.
+3. MeowSweeper: Sudoku Brain Game (Rating: 4.6★)
+   - Queens / Star-Battle / Sudoku hybrid logic puzzle engine with multi-touch gesture locks.
+   - Deterministic hint cascade solver proving deductions via region exclusion.
+
+STUDIO WORK EXPERIENCE
+• Senior Unity Developer | Vasundhara Infotech / Vasundhara Games (Surat, GJ)
+  Dec 2023 – Feb 2024 & Dec 2025 – Present
+  - Architected core puzzle gameplay, procedural rendering, offline bot leaderboards, 
+    and native image caching across top commercial Google Play titles.
+• Game Developer | Studio Krew (Delhi, Remote)
+  Mar 2024 – May 2024
+  - Engineered multiplayer card logic, tournament lobbies, and IAP store gateways.
+• Unity Game Developer | Appzia Technologies (Pune)
+  - Developed game loops, Firebase real-time sync, ad mediation, and mobile optimizations.

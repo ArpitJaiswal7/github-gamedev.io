@@ -4,113 +4,616 @@
 // ========================================================
 
 document.addEventListener('DOMContentLoaded', () => {
-  initUnityWorkstation();
+  initNavigation();
+  initResumeDropdown();
+  initUnityLab();
   initBlueprintTerminal();
-  initMeowdokuGame();
-  initFlameShaderDemo();
-  initJigsawClassifierDemo();
   initLightbox();
+
+  if (window.lucide) {
+    lucide.createIcons();
+  }
 });
 
 // --------------------------------------------------------
-// 1. Unity Editor Workstation Interactivity (Zone 2)
+// 1. Navigation: Smooth Scrolling & Dynamic Highlighting
 // --------------------------------------------------------
-function initUnityWorkstation() {
-  const aspectSelect = document.getElementById('viewport-aspect-select');
-  const viewportScreen = document.getElementById('active-viewport-screen');
-  const mechanicBtns = document.querySelectorAll('.mechanic-selector-btn');
-  const consoleBox = document.getElementById('unity-console-logs');
-  const clearConsoleBtn = document.getElementById('btn-clear-console');
+let isManualScrolling = false;
+let scrollTimeout = null;
 
-  // Aspect Ratio Switching
-  if (aspectSelect && viewportScreen) {
-    aspectSelect.addEventListener('change', (e) => {
-      const val = e.target.value;
-      viewportScreen.classList.remove('viewport-portrait', 'viewport-landscape', 'viewport-free');
-      if (val === 'portrait') {
-        viewportScreen.classList.add('viewport-portrait');
-        addConsoleLog(`[Display] Aspect ratio set to 9:16 Portrait (Mobile) [250x440]`);
-      } else if (val === 'landscape') {
-        viewportScreen.classList.add('viewport-landscape');
-        addConsoleLog(`[Display] Aspect ratio set to 16:9 Landscape`);
-      } else {
-        viewportScreen.classList.add('viewport-free');
-        addConsoleLog(`[Display] Aspect ratio set to Free Aspect`);
-      }
-    });
-  }
+function initNavigation() {
+  const navLinks = document.querySelectorAll('.nav-link');
+  const brandLogo = document.getElementById('brand-logo');
+  const mobileToggle = document.getElementById('mobile-menu-toggle');
+  const mobileMenu = document.getElementById('mobile-nav-menu');
+  const mobileMenuIcon = document.getElementById('mobile-menu-icon');
 
-  // Hierarchy Tree Mechanic Selection
-  const views = {
-    meowdoku: document.getElementById('meowdoku-game-view'),
-    jigsaw: document.getElementById('jigsaw-game-view'),
-    flame: document.getElementById('flame-game-view')
-  };
+  // Smooth scroll handler for nav links
+  navLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+      const targetHash = link.getAttribute('href');
+      if (!targetHash || !targetHash.startsWith('#')) return;
 
-  mechanicBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      mechanicBtns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+      e.preventDefault();
+      const targetSection = document.querySelector(targetHash);
+      if (!targetSection) return;
 
-      const target = btn.getAttribute('data-mechanic');
-      Object.keys(views).forEach(key => {
-        if (views[key]) {
-          if (key === target) {
-            views[key].classList.remove('hidden');
-            views[key].classList.add('flex');
-          } else {
-            views[key].classList.add('hidden');
-            views[key].classList.remove('flex');
-          }
-        }
+      isManualScrolling = true;
+      clearTimeout(scrollTimeout);
+
+      // Fixed sticky header height offset (80px + padding)
+      const headerOffset = 88;
+      const elementPosition = targetSection.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
       });
 
-      addConsoleLog(`[SceneManager] Loaded Scene: Core_${target.toUpperCase()}_Sandbox`);
+      // Instantly update active class on clicked link
+      setActiveNavLink(targetHash);
+
+      // Update URL hash without causing a page jump
+      if (history.pushState) {
+        history.pushState(null, '', targetHash);
+      }
+
+      // Close mobile menu if open
+      if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
+        mobileMenu.classList.add('hidden');
+        if (mobileMenuIcon) {
+          mobileMenuIcon.setAttribute('data-lucide', 'menu');
+          if (window.lucide) lucide.createIcons();
+        }
+      }
+
+      // Reset manual scroll lockout after smooth scroll settles
+      scrollTimeout = setTimeout(() => {
+        isManualScrolling = false;
+      }, 850);
     });
   });
 
-  // Clear Console
-  if (clearConsoleBtn && consoleBox) {
-    clearConsoleBtn.addEventListener('click', () => {
-      consoleBox.innerHTML = '';
-      addConsoleLog(`[Console] Cleared logs. Standing by.`);
-    });
-  }
-
-  // Maximize Viewport
-  const maxBtn = document.getElementById('btn-maximize-viewport');
-  if (maxBtn) {
-    maxBtn.addEventListener('click', () => {
-      const modal = document.getElementById('lightbox-modal');
-      const modalImg = document.getElementById('lightbox-img');
-      const modalTitle = document.getElementById('lightbox-title');
-      if (modal && modalImg) {
-        modalTitle.textContent = "Viewport Fullscreen Mode [Press ESC to return]";
-        modalImg.src = "assets/games/meowsweeper-banner.jpg";
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
+  // Brand logo scroll to top
+  if (brandLogo) {
+    brandLogo.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      removeActiveNavLinks();
+      if (history.pushState) {
+        history.pushState(null, '', window.location.pathname);
       }
     });
   }
 
-  addConsoleLog(`[Engine] Unity 2026.1 LTS Engine initialized.`);
-  addConsoleLog(`[Profiler] Initial memory: 18.2 MB | Draw Calls: 14 | V-Sync: 60 FPS.`);
+  // Mobile menu toggle
+  if (mobileToggle && mobileMenu) {
+    mobileToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isHidden = mobileMenu.classList.toggle('hidden');
+      if (mobileMenuIcon) {
+        mobileMenuIcon.setAttribute('data-lucide', isHidden ? 'menu' : 'x');
+        if (window.lucide) lucide.createIcons();
+      }
+    });
+
+    // Close mobile menu if clicked outside
+    document.addEventListener('click', (e) => {
+      if (!mobileMenu.contains(e.target) && !mobileToggle.contains(e.target)) {
+        mobileMenu.classList.add('hidden');
+        if (mobileMenuIcon) {
+          mobileMenuIcon.setAttribute('data-lucide', 'menu');
+          if (window.lucide) lucide.createIcons();
+        }
+      }
+    });
+  }
+
+  // Active state synchronization on natural scroll
+  const sections = document.querySelectorAll('section[id]');
+  window.addEventListener('scroll', () => {
+    if (isManualScrolling) return;
+
+    const scrollY = window.pageYOffset;
+    const headerOffset = 120;
+
+    sections.forEach(section => {
+      const sectionHeight = section.offsetHeight;
+      const sectionTop = section.offsetTop - headerOffset;
+      const sectionId = '#' + section.getAttribute('id');
+
+      if (scrollY >= sectionTop && scrollY < sectionTop + sectionHeight) {
+        setActiveNavLink(sectionId);
+      }
+    });
+
+    // If at top of page, clear highlights
+    if (scrollY < 150) {
+      removeActiveNavLinks();
+    }
+  }, { passive: true });
 }
 
-function addConsoleLog(msg, type = 'info') {
-  const box = document.getElementById('unity-console-logs');
-  if (!box) return;
-  const line = document.createElement('div');
-  line.className = 'py-0.5 flex items-start gap-1.5';
-  
-  const time = new Date().toTimeString().split(' ')[0];
-  line.innerHTML = `<span class="text-slate-500">[${time}]</span> <span class="${type === 'warn' ? 'text-amber-400' : 'text-slate-300'}">${msg}</span>`;
-  box.appendChild(line);
-  box.scrollTop = box.scrollHeight;
+function setActiveNavLink(hash) {
+  document.querySelectorAll('.nav-link').forEach(link => {
+    if (link.getAttribute('href') === hash) {
+      link.classList.add('active');
+    } else {
+      link.classList.remove('active');
+    }
+  });
+}
+
+function removeActiveNavLinks() {
+  document.querySelectorAll('.nav-link').forEach(link => {
+    link.classList.remove('active');
+  });
 }
 
 // --------------------------------------------------------
-// 2. Blueprint Split-View Terminal (Zone 3)
+// 2. Split Download Resume Button & Dropdown
+// --------------------------------------------------------
+function initResumeDropdown() {
+  const container = document.getElementById('resume-dropdown-container');
+  const toggleBtn = document.getElementById('resume-dropdown-toggle');
+  const menu = document.getElementById('resume-dropdown-menu');
+  const caretIcon = document.getElementById('resume-caret-icon');
+  const webpageBtn = document.getElementById('btn-webpage-resume');
+
+  if (!toggleBtn || !menu) return;
+
+  function openDropdown() {
+    menu.classList.remove('hidden');
+    toggleBtn.setAttribute('aria-expanded', 'true');
+    if (caretIcon) caretIcon.classList.add('rotate-180');
+  }
+
+  function closeDropdown() {
+    menu.classList.add('hidden');
+    toggleBtn.setAttribute('aria-expanded', 'false');
+    if (caretIcon) caretIcon.classList.remove('rotate-180');
+  }
+
+  toggleBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isClosed = menu.classList.contains('hidden');
+    if (isClosed) {
+      openDropdown();
+    } else {
+      closeDropdown();
+    }
+  });
+
+  // Close dropdown on outside click
+  document.addEventListener('click', (e) => {
+    if (container && !container.contains(e.target)) {
+      closeDropdown();
+    }
+  });
+
+  // Close on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeDropdown();
+    }
+  });
+
+  // Close on selecting any item
+  document.querySelectorAll('.resume-menu-item').forEach(item => {
+    item.addEventListener('click', () => {
+      closeDropdown();
+    });
+  });
+
+  // Webpage HTML View Feedback Toast
+  if (webpageBtn) {
+    webpageBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      showToast('Interactive Web Resume (.html): Coming soon! Arpit will share the dedicated HTML document shortly. In the meantime, you can download the full Word (.docx) or PDF version above.');
+    });
+  }
+}
+
+// Toast Notification Utility
+function showToast(message) {
+  let toast = document.getElementById('global-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'global-toast';
+    toast.className = 'fixed bottom-6 right-6 z-50 max-w-sm p-4 rounded-xl bg-slate-900 border border-sky-500/40 text-slate-100 text-xs shadow-2xl transition-all duration-300 transform translate-y-4 opacity-0 flex items-start gap-3 backdrop-blur-md';
+    document.body.appendChild(toast);
+  }
+
+  toast.innerHTML = `
+    <div class="p-1 rounded-md bg-sky-500/20 text-sky-400 mt-0.5">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+    </div>
+    <div class="flex-1 leading-relaxed">${message}</div>
+    <button onclick="this.parentElement.classList.add('opacity-0', 'translate-y-4')" class="text-slate-400 hover:text-white">&times;</button>
+  `;
+
+  // Trigger animation
+  requestAnimationFrame(() => {
+    toast.classList.remove('opacity-0', 'translate-y-4');
+    toast.classList.add('opacity-100', 'translate-y-0');
+  });
+
+  setTimeout(() => {
+    toast.classList.remove('opacity-100', 'translate-y-0');
+    toast.classList.add('opacity-0', 'translate-y-4');
+  }, 4500);
+}
+
+// --------------------------------------------------------
+// 3. Unity Lab: Interactive Workstation & Mechanics
+// --------------------------------------------------------
+let flameAnimationId = null;
+
+function initUnityLab() {
+  const mechanicButtons = document.querySelectorAll('.mechanic-selector-btn');
+  const meowdokuView = document.getElementById('meowdoku-game-view');
+  const jigsawView = document.getElementById('jigsaw-game-view');
+  const flameView = document.getElementById('flame-game-view');
+  const aspectSelect = document.getElementById('viewport-aspect-select');
+  const viewportScreen = document.getElementById('active-viewport-screen');
+  const btnMaximize = document.getElementById('btn-maximize-viewport');
+  const consoleLogs = document.getElementById('unity-console-logs');
+  const btnClearConsole = document.getElementById('btn-clear-console');
+
+  function logConsole(message, type = 'info') {
+    if (!consoleLogs) return;
+    const time = new Date().toLocaleTimeString('en-US', { hour12: false });
+    const logItem = document.createElement('div');
+    const color = type === 'warning' ? 'text-amber-400' : (type === 'success' ? 'text-emerald-400' : 'text-slate-300');
+    logItem.className = `flex items-center gap-2 ${color}`;
+    logItem.innerHTML = `<span class="text-slate-500 font-mono text-[10px]">[${time}]</span> <span>${message}</span>`;
+    consoleLogs.appendChild(logItem);
+    consoleLogs.scrollTop = consoleLogs.scrollHeight;
+  }
+
+  // Initial welcome log
+  logConsole('Unity 2026.1 LTS - Ready. Script Assemblies reloaded.', 'success');
+  logConsole('Meowdoku solver initialized. Deterministic hint tree ready.');
+
+  // Mechanic switching
+  mechanicButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      mechanicButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const mechanic = btn.getAttribute('data-mechanic');
+      if (flameAnimationId) {
+        cancelAnimationFrame(flameAnimationId);
+        flameAnimationId = null;
+      }
+
+      if (mechanic === 'meowdoku') {
+        meowdokuView.classList.remove('hidden');
+        meowdokuView.classList.add('flex');
+        jigsawView.classList.add('hidden');
+        flameView.classList.add('hidden');
+        logConsole('Switched active scene to: Meowdoku Solver (Discrete Multi-touch)');
+      } else if (mechanic === 'jigsaw') {
+        meowdokuView.classList.add('hidden');
+        jigsawView.classList.remove('hidden');
+        jigsawView.classList.add('flex');
+        flameView.classList.add('hidden');
+        renderJigsawMesh();
+        logConsole('Switched active scene to: Jigsaw 9-Signature Procedural Mesh');
+      } else if (mechanic === 'flame') {
+        meowdokuView.classList.add('hidden');
+        jigsawView.classList.add('hidden');
+        flameView.classList.remove('hidden');
+        flameView.classList.add('flex');
+        startFlameSimulation();
+        logConsole('Switched active scene to: Flame Noise Procedural Shader');
+      }
+    });
+  });
+
+  // Viewport aspect ratio switching
+  if (aspectSelect && viewportScreen) {
+    aspectSelect.addEventListener('change', () => {
+      const mode = aspectSelect.value;
+      viewportScreen.classList.remove('viewport-portrait', 'viewport-landscape', 'viewport-free');
+      if (mode === 'portrait') {
+        viewportScreen.classList.add('viewport-portrait');
+        logConsole('Camera projection updated: 9:16 Portrait (Mobile Native)');
+      } else if (mode === 'landscape') {
+        viewportScreen.classList.add('viewport-landscape');
+        logConsole('Camera projection updated: 16:9 Landscape');
+      } else {
+        viewportScreen.classList.add('viewport-free');
+        logConsole('Camera projection updated: Free Aspect Dynamic Scale');
+      }
+    });
+  }
+
+  // Maximize button toggles free aspect
+  if (btnMaximize && aspectSelect && viewportScreen) {
+    btnMaximize.addEventListener('click', () => {
+      if (viewportScreen.classList.contains('viewport-free')) {
+        aspectSelect.value = 'portrait';
+        aspectSelect.dispatchEvent(new Event('change'));
+      } else {
+        aspectSelect.value = 'free';
+        aspectSelect.dispatchEvent(new Event('change'));
+      }
+    });
+  }
+
+  // Play / Pause / Reload buttons
+  const btnPlay = document.getElementById('unity-btn-play');
+  const btnPause = document.getElementById('unity-btn-pause');
+  const btnReload = document.getElementById('unity-btn-reload');
+
+  if (btnPlay) {
+    btnPlay.addEventListener('click', () => {
+      logConsole('PlayMode started: 60.0 FPS, V-Sync enabled, 0 GC allocations.', 'success');
+    });
+  }
+  if (btnPause) {
+    btnPause.addEventListener('click', () => {
+      logConsole('PlayMode paused (TimeScale: 0.0)', 'warning');
+    });
+  }
+  if (btnReload) {
+    btnReload.addEventListener('click', () => {
+      logConsole('Compiling scripts & reloading domain assemblies...', 'info');
+      setTimeout(() => {
+        logConsole('Assembly reload complete: 0 errors, 0 warnings.', 'success');
+      }, 400);
+    });
+  }
+
+  // Clear console
+  if (btnClearConsole && consoleLogs) {
+    btnClearConsole.addEventListener('click', () => {
+      consoleLogs.innerHTML = '';
+      logConsole('Console cleared.');
+    });
+  }
+
+  // Initialize mini Meowdoku board
+  initMeowdokuBoard(logConsole);
+}
+
+// --------------------------------------------------------
+// 4. Meowdoku Mini Demo Logic
+// --------------------------------------------------------
+function initMeowdokuBoard(logger) {
+  const board = document.getElementById('meowdoku-board');
+  const btnHint = document.getElementById('btn-meowdoku-hint');
+  const btnReset = document.getElementById('btn-meowdoku-reset');
+  if (!board) return;
+
+  const gridSize = 5;
+  // 5x5 board state: 0 = empty, 1 = queen 🐱, 2 = cross ✕
+  let boardState = [
+    [0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0]
+  ];
+
+  function renderGrid() {
+    board.innerHTML = '';
+    for (let r = 0; r < gridSize; r++) {
+      for (let c = 0; c < gridSize; c++) {
+        const cell = document.createElement('div');
+        cell.className = 'meow-cell';
+        cell.dataset.r = r;
+        cell.dataset.c = c;
+
+        const val = boardState[r][c];
+        if (val === 1) {
+          cell.textContent = '🐱';
+        } else if (val === 2) {
+          cell.textContent = '✕';
+          cell.classList.add('marked-cross');
+        } else {
+          cell.textContent = '';
+        }
+
+        // Left-click cycles: Empty -> 🐱 -> ✕ -> Empty
+        cell.addEventListener('click', () => {
+          boardState[r][c] = (boardState[r][c] + 1) % 3;
+          renderGrid();
+          if (logger) {
+            const sym = boardState[r][c] === 1 ? '🐱 Queen' : (boardState[r][c] === 2 ? '✕ Cross' : 'Empty');
+            logger(`User touch event: Cell (${r}, ${c}) set to ${sym}`);
+          }
+        });
+
+        // Right click toggles cross
+        cell.addEventListener('contextmenu', (e) => {
+          e.preventDefault();
+          boardState[r][c] = boardState[r][c] === 2 ? 0 : 2;
+          renderGrid();
+        });
+
+        board.appendChild(cell);
+      }
+    }
+  }
+
+  // Hint cascade demo
+  if (btnHint) {
+    btnHint.addEventListener('click', () => {
+      btnHint.disabled = true;
+      btnHint.classList.add('opacity-50');
+      if (logger) logger('Executing deterministic hint technique cascade...');
+
+      setTimeout(() => {
+        // Find first empty cell
+        let targetR = -1, targetC = -1;
+        for (let r = 0; r < gridSize; r++) {
+          for (let c = 0; c < gridSize; c++) {
+            if (boardState[r][c] === 0) {
+              targetR = r;
+              targetC = c;
+              break;
+            }
+          }
+          if (targetR !== -1) break;
+        }
+
+        if (targetR !== -1) {
+          const cellEl = board.querySelector(`[data-r="${targetR}"][data-c="${targetC}"]`);
+          if (cellEl) {
+            cellEl.classList.add('highlight-hint');
+            if (logger) logger(`[Technique 1: Row Scan] Discovered forced candidate at (${targetR}, ${targetC}).`, 'success');
+          }
+
+          setTimeout(() => {
+            boardState[targetR][targetC] = 1;
+            renderGrid();
+            btnHint.disabled = false;
+            btnHint.classList.remove('opacity-50');
+            if (logger) logger(`Placed guaranteed Queen at (${targetR}, ${targetC}). Locks released.`, 'success');
+          }, 600);
+        } else {
+          btnHint.disabled = false;
+          btnHint.classList.remove('opacity-50');
+          if (logger) logger('All grid cells occupied. Reset to replay.', 'warning');
+        }
+      }, 300);
+    });
+  }
+
+  if (btnReset) {
+    btnReset.addEventListener('click', () => {
+      boardState = [
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0]
+      ];
+      renderGrid();
+      if (logger) logger('Meowdoku board state cleared.');
+    });
+  }
+
+  renderGrid();
+}
+
+// --------------------------------------------------------
+// 5. Jigsaw Procedural Mesh Canvas Preview
+// --------------------------------------------------------
+function renderJigsawMesh() {
+  const canvas = document.getElementById('jigsaw-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width;
+  const h = canvas.height;
+
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(0, 0, w, h);
+
+  const cols = 3;
+  const rows = 3;
+  const cellW = w / cols;
+  const cellH = h / rows;
+
+  ctx.strokeStyle = '#38bdf8';
+  ctx.lineWidth = 2.5;
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const x = c * cellW;
+      const y = r * cellH;
+
+      ctx.save();
+      ctx.translate(x, y);
+
+      // Draw jigsaw piece boundary with simulated tab/blank Bezier bumps
+      ctx.beginPath();
+      ctx.rect(4, 4, cellW - 8, cellH - 8);
+      ctx.fillStyle = (r + c) % 2 === 0 ? 'rgba(56, 189, 248, 0.12)' : 'rgba(245, 158, 11, 0.12)';
+      ctx.fill();
+      ctx.stroke();
+
+      // Draw center signature ID
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '10px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(`SIG-${r * 3 + c + 1}`, cellW / 2, cellH / 2 + 4);
+
+      ctx.restore();
+    }
+  }
+
+  // Draw procedural connector tabs
+  ctx.fillStyle = '#38bdf8';
+  ctx.beginPath();
+  ctx.arc(cellW, cellH / 2, 7, 0, Math.PI * 2);
+  ctx.arc(cellW * 2, cellH * 1.5, 7, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+// --------------------------------------------------------
+// 6. Procedural Flame Noise Simulation
+// --------------------------------------------------------
+function startFlameSimulation() {
+  const canvas = document.getElementById('flame-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width;
+  const h = canvas.height;
+
+  const particles = [];
+  for (let i = 0; i < 40; i++) {
+    particles.push({
+      x: w / 2 + (Math.random() - 0.5) * 60,
+      y: h - 20 - Math.random() * 80,
+      vx: (Math.random() - 0.5) * 1.5,
+      vy: -1.5 - Math.random() * 2.5,
+      radius: 12 + Math.random() * 16,
+      life: Math.random() * 0.8 + 0.2
+    });
+  }
+
+  function loop() {
+    ctx.fillStyle = '#080c14';
+    ctx.fillRect(0, 0, w, h);
+
+    particles.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.life -= 0.02;
+      p.radius *= 0.98;
+
+      if (p.life <= 0 || p.y < 20) {
+        p.x = w / 2 + (Math.random() - 0.5) * 60;
+        p.y = h - 25;
+        p.vx = (Math.random() - 0.5) * 1.5;
+        p.vy = -1.5 - Math.random() * 2.5;
+        p.radius = 12 + Math.random() * 16;
+        p.life = 1.0;
+      }
+
+      const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius);
+      grad.addColorStop(0, 'rgba(255, 200, 50, 0.8)');
+      grad.addColorStop(0.5, 'rgba(255, 80, 0, 0.5)');
+      grad.addColorStop(1, 'rgba(100, 0, 0, 0)');
+
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    flameAnimationId = requestAnimationFrame(loop);
+  }
+
+  loop();
+}
+
+// --------------------------------------------------------
+// 7. Blueprint Split-View Terminal (Zone 3)
 // --------------------------------------------------------
 const blueprintsData = [
   {
@@ -229,7 +732,6 @@ function initBlueprintTerminal() {
       stageDomain.textContent = `INDEPENDENT SYSTEM — ${bp.domain.toUpperCase()}`;
       stageDesc.textContent = bp.desc;
       stageImg.src = bp.img;
-      addConsoleLog(`[BlueprintTerminal] Swapped active schematic to: ${bp.title}`);
     });
 
     navContainer.appendChild(item);
@@ -251,195 +753,7 @@ function initBlueprintTerminal() {
 }
 
 // --------------------------------------------------------
-// 3. Meowdoku Solver Logic (Playable)
-// --------------------------------------------------------
-function initMeowdokuGame() {
-  const container = document.getElementById('meowdoku-board');
-  const hintBtn = document.getElementById('btn-meowdoku-hint');
-  const resetBtn = document.getElementById('btn-meowdoku-reset');
-  if (!container) return;
-
-  const N = 5;
-  const regions = [
-    [0, 0, 1, 1, 1],
-    [0, 0, 2, 2, 1],
-    [0, 3, 2, 2, 4],
-    [3, 3, 3, 4, 4],
-    [3, 3, 4, 4, 4]
-  ];
-
-  const regionColors = [
-    'rgba(239, 68, 68, 0.2)',
-    'rgba(59, 130, 246, 0.2)',
-    'rgba(16, 185, 129, 0.2)',
-    'rgba(245, 158, 11, 0.2)',
-    'rgba(168, 85, 247, 0.2)'
-  ];
-
-  const solution = [
-    [0, 1, 0, 0, 0],
-    [0, 0, 0, 1, 0],
-    [1, 0, 0, 0, 0],
-    [0, 0, 1, 0, 0],
-    [0, 0, 0, 0, 1]
-  ];
-
-  let grid = Array(N).fill(null).map(() => Array(N).fill(0));
-
-  function render() {
-    container.innerHTML = '';
-    for (let r = 0; r < N; r++) {
-      for (let c = 0; c < N; c++) {
-        const cell = document.createElement('button');
-        cell.className = 'w-9 h-9 sm:w-11 sm:h-11 flex items-center justify-center font-bold text-base rounded border border-slate-700/60 transition-all select-none hover:brightness-125';
-        cell.style.backgroundColor = regionColors[regions[r][c]];
-
-        if (grid[r][c] === 1) {
-          cell.innerHTML = '🐱';
-          cell.classList.add('bg-sky-500/40', 'border-sky-400');
-        } else if (grid[r][c] === -1) {
-          cell.innerHTML = '<span class="text-slate-500 text-xs">✕</span>';
-        }
-
-        cell.addEventListener('click', () => {
-          grid[r][c] = (grid[r][c] === 1) ? 0 : 1;
-          addConsoleLog(`[Meowdoku] Placed input at [Row ${r+1}, Col ${c+1}]`);
-          render();
-        });
-
-        cell.addEventListener('contextmenu', (e) => {
-          e.preventDefault();
-          grid[r][c] = (grid[r][c] === -1) ? 0 : -1;
-          render();
-        });
-
-        container.appendChild(cell);
-      }
-    }
-  }
-
-  if (hintBtn) {
-    hintBtn.addEventListener('click', () => {
-      addConsoleLog(`[Solver] Running Hint Cascade: Proving Region Exclusion...`);
-      for (let r = 0; r < N; r++) {
-        for (let c = 0; c < N; c++) {
-          if (solution[r][c] === 1 && grid[r][c] !== 1) {
-            grid[r][c] = 1;
-            addConsoleLog(`[Solver] Proved Cat location at [Row ${r+1}, Col ${c+1}]. Applied!`);
-            render();
-            return;
-          }
-        }
-      }
-      addConsoleLog(`[Solver] Board already completed!`);
-    });
-  }
-
-  if (resetBtn) {
-    resetBtn.addEventListener('click', () => {
-      grid = Array(N).fill(null).map(() => Array(N).fill(0));
-      addConsoleLog(`[Meowdoku] Reset puzzle state.`);
-      render();
-    });
-  }
-
-  render();
-}
-
-// --------------------------------------------------------
-// 4. Flame Shader Demo
-// --------------------------------------------------------
-function initFlameShaderDemo() {
-  const canvas = document.getElementById('flame-canvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  let t = 0;
-
-  function render() {
-    canvas.width = 280;
-    canvas.height = 260;
-    ctx.fillStyle = '#151515';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    t += 0.05;
-    const cx = canvas.width / 2;
-    const cy = canvas.height - 30;
-
-    // Gradient halo
-    const rad = ctx.createRadialGradient(cx, cy - 60, 5, cx, cy - 60, 90);
-    rad.addColorStop(0, 'rgba(245, 158, 11, 0.5)');
-    rad.addColorStop(0.6, 'rgba(239, 68, 68, 0.15)');
-    rad.addColorStop(1, 'transparent');
-    ctx.fillStyle = rad;
-    ctx.beginPath();
-    ctx.arc(cx, cy - 60, 100, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Procedural flame body
-    ctx.fillStyle = '#f59e0b';
-    ctx.beginPath();
-    ctx.moveTo(cx - 20, cy);
-    for (let i = 0; i <= 20; i++) {
-      const step = i / 20;
-      const curY = cy - step * 100;
-      const noise = Math.sin(step * 4 + t) * 12;
-      ctx.lineTo(cx + (20 * (1 - step)) + noise, curY);
-    }
-    for (let i = 20; i >= 0; i--) {
-      const step = i / 20;
-      const curY = cy - step * 100;
-      const noise = Math.sin(step * 4 + t + 2) * 12;
-      ctx.lineTo(cx - (20 * (1 - step)) + noise, curY);
-    }
-    ctx.closePath();
-    ctx.fill();
-
-    requestAnimationFrame(render);
-  }
-  render();
-}
-
-// --------------------------------------------------------
-// 5. Jigsaw Classifier Demo
-// --------------------------------------------------------
-function initJigsawClassifierDemo() {
-  const canvas = document.getElementById('jigsaw-canvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const dim = 3;
-
-  function render() {
-    canvas.width = 280;
-    canvas.height = 280;
-    ctx.fillStyle = '#151515';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    const pad = 20;
-    const size = (canvas.width - pad * 2) / dim;
-
-    for (let r = 0; r < dim; r++) {
-      for (let c = 0; c < dim; c++) {
-        const x = pad + c * size;
-        const y = pad + r * size;
-        ctx.strokeStyle = '#38bdf8';
-        ctx.lineWidth = 1.5;
-        ctx.strokeRect(x + 2, y + 2, size - 4, size - 4);
-
-        ctx.fillStyle = 'rgba(56, 189, 248, 0.08)';
-        ctx.fillRect(x + 2, y + 2, size - 4, size - 4);
-
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = '10px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText(`[${r},${c}]`, x + size / 2, y + size / 2);
-      }
-    }
-  }
-  render();
-}
-
-// --------------------------------------------------------
-// 6. Lightbox Inspection Modal
+// 8. Lightbox Inspection Modal
 // --------------------------------------------------------
 function initLightbox() {
   const modal = document.getElementById('lightbox-modal');
