@@ -1,0 +1,1516 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Asset Organizer Tool | Unity Editor Systems Showcase — Arpit Jaiswal</title>
+  <meta name="description" content="Interactive Unity Editor Simulator for the Asset Organizer Tool (com.arrowstrike.asset-organizer): Project Window badges, C/R hover tag-buttons, single-window multi-asset Explorer reveal, and Build Report style asset grouping.">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              page: '#0a0d14',
+              card: '#111622',
+              cardHover: '#161c2b',
+              border: '#1e293b',
+              cyan: '#38bdf8',
+              amber: '#f59e0b',
+              emerald: '#10b981'
+            },
+            unity: {
+              bg: '#202020',
+              panel: '#282828',
+              header: '#303030',
+              toolbar: '#383838',
+              border: '#191919',
+              rowEven: '#2b2b2b',
+              rowOdd: '#262626',
+              selected: '#2c5d87',
+              text: '#dcdcdc',
+              muted: '#8c8c8c'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    body {
+      background-color: #0a0d14;
+      background-image: radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.08) 0%, transparent 60%);
+    }
+
+    /* Unity Ping Highlight Pulse Animation */
+    @keyframes unityPingPulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.95), inset 0 0 0 2px #facc15;
+        background-color: rgba(250, 204, 21, 0.28);
+      }
+      50% {
+        box-shadow: 0 0 0 6px rgba(250, 204, 21, 0), inset 0 0 0 2px #facc15;
+        background-color: rgba(250, 204, 21, 0.18);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(250, 204, 21, 0), inset 0 0 0 0 transparent;
+      }
+    }
+
+    .unity-ping-active {
+      animation: unityPingPulse 1.15s ease-out 2;
+    }
+
+    /* Custom Scrollbars for Unity Editor Panels */
+    .unity-scroll::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    .unity-scroll::-webkit-scrollbar-track {
+      background: #202020;
+    }
+    .unity-scroll::-webkit-scrollbar-thumb {
+      background: #484848;
+      border-radius: 4px;
+    }
+    .unity-scroll::-webkit-scrollbar-thumb:hover {
+      background: #5a5a5a;
+    }
+
+    /* Native Color Input Styling */
+    input[type="color"].unity-color-picker {
+      -webkit-appearance: none;
+      appearance: none;
+      border: 1px solid #141414;
+      border-radius: 3px;
+      padding: 0;
+      cursor: pointer;
+      background: none;
+    }
+    input[type="color"].unity-color-picker::-webkit-color-swatch-wrapper {
+      padding: 0;
+    }
+    input[type="color"].unity-color-picker::-webkit-color-swatch {
+      border: none;
+      border-radius: 2px;
+    }
+  </style>
+</head>
+<body class="text-slate-100 antialiased selection:bg-sky-500 selection:text-black min-h-screen flex flex-col">
+
+  <!-- ================= TOP BAR ================= -->
+  <header class="sticky top-0 z-40 w-full backdrop-blur-md bg-[#0a0d14]/90 border-b border-slate-800/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-slate-900 border border-slate-700/80 flex items-center justify-center text-amber-400 shadow-md shadow-amber-500/10">
+          <i data-lucide="pin" class="w-4 h-4"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-white text-sm sm:text-base tracking-tight">Asset Organizer Tool</span>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-semibold">UPM v1.0.0 • Verified</span>
+          </div>
+          <p class="text-[11px] text-slate-400 hidden sm:block">Unity Editor Tooling • Project Window Badges, Hover C/R Tag-Button &amp; Build Report Grouping</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2.5">
+        <button id="btn-reset-demo" type="button" class="px-3 py-1.5 rounded-lg border border-slate-700 hover:border-slate-500 bg-slate-900/90 text-slate-300 hover:text-white text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer">
+          <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 text-sky-400"></i>
+          <span>Reset Demo State</span>
+        </button>
+
+        <a href="AssetOrganizerTool.unitypackage" download="AssetOrganizerTool.unitypackage" class="px-3.5 py-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-xs transition-all flex items-center gap-1.5 shadow-lg shadow-sky-500/20">
+          <i data-lucide="package-check" class="w-4 h-4"></i>
+          <span>Download .unitypackage</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= MAIN CONTENT ================= -->
+  <main class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 flex-1">
+
+    <!-- Interactive Controls Cheat-Sheet Banner -->
+    <section class="rounded-xl bg-[#111622] border border-slate-800/90 p-3.5 shadow-xl">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+          <span class="text-xs font-bold uppercase tracking-wider text-sky-400 font-mono">Live Unity Editor Sandbox — Try Every Feature Below</span>
+        </div>
+        <span class="text-[11px] text-slate-400 font-mono">Editor-Only Package • Zero Runtime Cost</span>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 text-xs">
+        <div class="p-2.5 rounded-lg bg-slate-900/70 border border-slate-800 flex items-start gap-2.5">
+          <kbd class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 font-mono text-[11px] shrink-0 mt-0.5">Hover Top-Right</kbd>
+          <p class="text-slate-300 leading-snug">Hover the <strong class="text-white">top-right corner</strong> of any asset in Project Window to enable the <strong class="text-amber-300">C</strong> tag-button. Leave the corner rect to disable it.</p>
+        </div>
+
+        <div class="p-2.5 rounded-lg bg-slate-900/70 border border-slate-800 flex items-start gap-2.5">
+          <kbd class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-mono text-[11px] shrink-0 mt-0.5">Press R / Click</kbd>
+          <p class="text-slate-300 leading-snug">While hovering the tag-button, press <strong class="text-emerald-300">R</strong> to flip <strong class="text-white">C &rarr; R</strong>. Click <strong class="text-white">C</strong> to copy full drive path; <strong class="text-sky-300">Ctrl+Click</strong> to reveal all selected in 1 Explorer window.</p>
+        </div>
+
+        <div class="p-2.5 rounded-lg bg-slate-900/70 border border-slate-800 flex items-start gap-2.5">
+          <kbd class="px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/40 font-mono text-[11px] shrink-0 mt-0.5">Pin / Context</kbd>
+          <p class="text-slate-300 leading-snug">Select single or <strong class="text-white">multiple assets</strong> (<code class="text-sky-300">Ctrl+Click</code>), then press <strong class="text-white">Ctrl+Win+P</strong> (or <strong class="text-white">Alt+P</strong> here) or <strong class="text-white">Right-Click</strong> to pin/unpin or add to group.</p>
+        </div>
+
+        <div class="p-2.5 rounded-lg bg-slate-900/70 border border-slate-800 flex items-start gap-2.5">
+          <kbd class="px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/40 font-mono text-[11px] shrink-0 mt-0.5">Drag &amp; Color</kbd>
+          <p class="text-slate-300 leading-snug">Drag assets from Project into any group, drag pinned rows between groups, drag <strong class="text-white">&equiv;</strong> to reorder groups, or pick group tag colors live.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= UNITY EDITOR SIMULATOR WORKSPACE ================= -->
+    <section class="rounded-xl overflow-hidden border border-slate-700/80 shadow-2xl bg-unity-bg select-none">
+      
+      <!-- Simulated Unity Editor Window Title Bar -->
+      <div class="bg-[#181818] px-3 py-1.5 border-b border-black flex items-center justify-between text-[11px] text-neutral-400 font-mono">
+        <div class="flex items-center gap-2">
+          <div class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-red-500/80"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-500/80"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500/80"></span>
+          </div>
+          <span class="ml-2 text-neutral-300 font-semibold">ArrowStrike — Unity 6000.3.14f1 (Editor Tooling Sandbox)</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <span id="shortcut-status-pill" class="px-2 py-0.5 rounded bg-neutral-800 text-neutral-300 border border-neutral-700">
+            Shortcut: <strong class="text-amber-300">Ctrl+Win+P</strong> (or <strong class="text-sky-300">Alt+P</strong> in browser)
+          </span>
+        </div>
+      </div>
+
+      <!-- Split Dock Container: Left = Project Window | Right = Pinned Assets Window -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 min-h-[560px]">
+
+        <!-- ================= LEFT PANE: UNITY PROJECT WINDOW ================= -->
+        <div class="lg:col-span-5 flex flex-col border-b lg:border-b-0 lg:border-r border-black bg-unity-panel">
+          
+          <!-- Unity Dock Tab Header -->
+          <div class="bg-unity-header px-2 pt-1 flex items-center justify-between border-b border-unity-border">
+            <div class="flex items-center">
+              <div class="bg-unity-panel text-unity-text text-xs font-medium px-3 py-1 rounded-t border-t-2 border-sky-400 flex items-center gap-1.5">
+                <i data-lucide="folder-kanban" class="w-3.5 h-3.5 text-amber-400"></i>
+                <span>Project</span>
+              </div>
+            </div>
+            <span class="text-[10px] text-neutral-400 pr-1">Right-click asset(s) or hover top-right corner</span>
+          </div>
+
+          <!-- Project Window Toolbar -->
+          <div class="bg-unity-toolbar px-2 py-1 border-b border-unity-border flex items-center justify-between gap-2 text-[11px]">
+            <div class="flex items-center gap-1 text-neutral-300 truncate">
+              <i data-lucide="folder" class="w-3.5 h-3.5 text-amber-400 shrink-0"></i>
+              <span class="text-neutral-400">Assets</span>
+              <span class="text-neutral-500">&rsaquo;</span>
+              <span class="text-white font-medium truncate">[Developer] / ShapeSystem</span>
+            </div>
+
+            <div class="flex items-center gap-1 shrink-0">
+              <button id="btn-select-all-project" type="button" class="px-2 py-0.5 rounded bg-[#2d2d2d] hover:bg-[#444] text-neutral-200 border border-neutral-700 text-[10px]" title="Select multiple assets to test batch pinning and Ctrl+Click multi-reveal">
+                Select 4 Assets
+              </button>
+              <button id="btn-clear-selection-project" type="button" class="px-1.5 py-0.5 rounded bg-[#2d2d2d] hover:bg-[#444] text-neutral-300 border border-neutral-700 text-[10px]" title="Clear selection">
+                None
+              </button>
+            </div>
+          </div>
+
+          <!-- Project Window Assets Viewport (Tile or List View) -->
+          <div id="project-window-viewport" class="flex-1 p-2.5 overflow-y-auto unity-scroll relative">
+            <!-- Populated dynamically by JS -->
+          </div>
+
+          <!-- Project Window Bottom Status & View Mode Bar -->
+          <div class="bg-unity-toolbar px-2.5 py-1 border-t border-unity-border flex items-center justify-between text-[11px] text-neutral-300">
+            <div id="project-selected-path-label" class="truncate text-neutral-400 font-mono text-[10px]">
+              Assets/[Developer]/ShapeSystem
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <span class="text-[10px] text-neutral-400">View:</span>
+              <button id="btn-view-tiles" type="button" class="px-2 py-0.5 rounded text-[10px] font-medium bg-sky-600 text-white">
+                Tiles
+              </button>
+              <button id="btn-view-list" type="button" class="px-2 py-0.5 rounded text-[10px] font-medium bg-[#2a2a2a] text-neutral-300 hover:bg-[#3a3a3a]">
+                List
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= RIGHT PANE: PINNED ASSETS TOOL WINDOW ================= -->
+        <div class="lg:col-span-7 flex flex-col bg-unity-panel">
+          
+          <!-- Unity Dock Tab Header -->
+          <div class="bg-unity-header px-2 pt-1 flex items-center justify-between border-b border-unity-border">
+            <div class="flex items-center">
+              <div class="bg-unity-panel text-unity-text text-xs font-medium px-3 py-1 rounded-t border-t-2 border-amber-400 flex items-center gap-1.5">
+                <i data-lucide="star" class="w-3.5 h-3.5 text-amber-400"></i>
+                <span>Pinned Assets</span>
+              </div>
+            </div>
+            <span class="text-[10px] text-neutral-400 pr-1">Asset Organizer Tool v1.0.0</span>
+          </div>
+
+          <!-- Top Action Toolbar -->
+          <div class="bg-unity-toolbar px-2 py-1 border-b border-unity-border flex flex-wrap items-center justify-between gap-1.5 text-[11px]">
+            <div class="flex items-center gap-1">
+              <button id="btn-new-group" type="button" class="px-2 py-0.5 rounded bg-[#2d2d2d] hover:bg-[#444] text-neutral-100 border border-neutral-700 flex items-center gap-1 font-medium">
+                <span class="text-emerald-400 font-bold">+</span>
+                <span>New Group</span>
+              </button>
+              <button id="btn-pin-selected-toolbar" type="button" class="px-2 py-0.5 rounded bg-[#2d2d2d] hover:bg-[#444] text-neutral-100 border border-neutral-700">
+                Pin Selected
+              </button>
+              <button id="btn-pin-to-group-toolbar" type="button" class="px-2 py-0.5 rounded bg-[#2d2d2d] hover:bg-[#444] text-neutral-100 border border-neutral-700">
+                Pin to Group...
+              </button>
+            </div>
+
+            <div class="flex items-center gap-1">
+              <button id="btn-expand-all" type="button" class="px-2 py-0.5 rounded bg-[#2d2d2d] hover:bg-[#444] text-neutral-300 border border-neutral-700 text-[10px]">
+                Expand All
+              </button>
+              <button id="btn-collapse-all" type="button" class="px-2 py-0.5 rounded bg-[#2d2d2d] hover:bg-[#444] text-neutral-300 border border-neutral-700 text-[10px]">
+                Collapse All
+              </button>
+            </div>
+          </div>
+
+          <!-- Filter & Search Bar Row (Build Report Tool Inspired) -->
+          <div class="bg-unity-toolbar px-2 py-1 border-b border-unity-border flex items-center gap-2 text-[11px]">
+            <div class="flex items-center gap-1 shrink-0">
+              <span class="text-neutral-400">Filter:</span>
+              <select id="select-type-filter" class="bg-[#252525] text-neutral-200 border border-neutral-700 rounded px-1.5 py-0.5 text-[11px] focus:outline-none focus:border-sky-500">
+                <option value="All">All</option>
+              </select>
+            </div>
+
+            <div class="relative flex-1 flex items-center">
+              <i data-lucide="search" class="w-3 h-3 text-neutral-400 absolute left-2 pointer-events-none"></i>
+              <input id="input-search-pinned" type="text" placeholder="Search pinned assets by name or path..." class="w-full bg-[#1e1e1e] text-neutral-100 placeholder-neutral-500 border border-neutral-700 rounded-full pl-6 pr-6 py-0.5 text-[11px] focus:outline-none focus:border-sky-500">
+              <button id="btn-clear-search" type="button" class="hidden absolute right-1.5 text-neutral-400 hover:text-white text-xs leading-none">&times;</button>
+            </div>
+          </div>
+
+          <!-- Build Report Style Column Headers -->
+          <div class="bg-[#2f2f2f] px-2 py-1 border-b border-unity-border grid grid-cols-12 items-center text-[10px] font-bold text-neutral-300 uppercase tracking-wider">
+            <div class="col-span-1">Ping</div>
+            <div class="col-span-6 cursor-pointer hover:text-white flex items-center gap-1" data-sort="path">
+              <span>Tag &amp; Asset Path / Filename</span>
+              <span id="sort-indicator-path" class="text-sky-400"></span>
+            </div>
+            <div class="col-span-2 cursor-pointer hover:text-white flex items-center gap-1" data-sort="type">
+              <span>Type</span>
+              <span id="sort-indicator-type" class="text-sky-400"></span>
+            </div>
+            <div class="col-span-2 cursor-pointer hover:text-white text-right pr-2" data-sort="size">
+              <span>Size</span>
+              <span id="sort-indicator-size" class="text-sky-400"></span>
+            </div>
+            <div class="col-span-1 text-right pr-1">%</div>
+          </div>
+
+          <!-- Scrollable Groups & Pinned Asset Rows Container -->
+          <div id="pinned-groups-viewport" class="flex-1 p-2 overflow-y-auto unity-scroll space-y-2">
+            <!-- Populated dynamically by JS -->
+          </div>
+
+          <!-- Bottom Status Summary & Selected Asset Pill (Build Report Tool Style) -->
+          <div class="border-t border-unity-border bg-unity-toolbar">
+            <div id="pinned-summary-strip" class="px-2.5 py-0.5 text-[10px] text-neutral-400 border-b border-unity-border flex items-center justify-between">
+              <span>Selected: 1 | Total Pinned: 5 assets</span>
+              <span>Drag groups (&equiv;) to reorder • Drag assets between groups</span>
+            </div>
+            <div id="pinned-bottom-pill-bar" class="px-2.5 py-1.5 bg-[#232323] flex items-center gap-2 text-xs min-h-[34px]">
+              <!-- Populated dynamically by JS -->
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ================= ARCHITECTURE & VERIFIED IMPLEMENTATION DETAILS ================= -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      
+      <!-- Left: Verified Architecture Diagram (Upgraded Sheet 11) -->
+      <div class="lg:col-span-7 rounded-xl bg-[#111622] border border-slate-800 p-5 shadow-xl flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between gap-2 mb-3">
+            <div>
+              <span class="text-[10px] font-mono uppercase tracking-widest text-sky-400 block">Sheet 11 — Surface Cut (Verified Implementation)</span>
+              <h2 class="text-lg font-bold text-white">System Architecture &amp; Editor Hooks</h2>
+            </div>
+            <span class="px-2.5 py-1 rounded-md bg-sky-500/10 border border-sky-500/30 text-sky-300 text-xs font-mono">Editor-Only Assembly</span>
+          </div>
+
+          <p class="text-xs text-slate-300 leading-relaxed mb-4">
+            Built as a modular Unity Package (<code class="text-sky-300">com.arrowstrike.asset-organizer</code>) with zero runtime footprint. Uses <code class="text-amber-300">O(1)</code> GUID hash lookups inside <code class="text-sky-300">EditorApplication.projectWindowItemOnGUI</code> and native OS shell interop for multi-asset selection in Windows Explorer and macOS Finder.
+          </p>
+
+          <!-- Interactive Architecture Flow Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 my-2">
+            <div class="p-3 rounded-lg bg-slate-900/90 border border-slate-700/80">
+              <div class="text-xs font-bold text-sky-400 mb-1 flex items-center gap-1.5">
+                <i data-lucide="mouse-pointer-click" class="w-3.5 h-3.5"></i>
+                <span>Project Window Hooks</span>
+              </div>
+              <p class="text-[11px] text-slate-300 leading-normal">
+                Context menu (<code class="text-slate-200">Assets/Asset Organizer</code>), <code class="text-amber-300">Ctrl+Win+P</code> Win32 key poll, and top-right <code class="text-amber-300">C</code>/<code class="text-emerald-300">R</code> hover tag-button.
+              </p>
+            </div>
+
+            <div class="p-3 rounded-lg bg-amber-500/10 border border-amber-500/40">
+              <div class="text-xs font-bold text-amber-300 mb-1 flex items-center gap-1.5">
+                <i data-lucide="database" class="w-3.5 h-3.5"></i>
+                <span>PinnedAssetsStore</span>
+              </div>
+              <p class="text-[11px] text-slate-200 leading-normal">
+                Per-project JSON store in <code class="text-amber-200">ProjectSettings/</code>. Tracks groups, colors, GUIDs, sizes &amp; duplicate-pin prevention.
+              </p>
+            </div>
+
+            <div class="p-3 rounded-lg bg-slate-900/90 border border-slate-700/80">
+              <div class="text-xs font-bold text-emerald-400 mb-1 flex items-center gap-1.5">
+                <i data-lucide="folder-search" class="w-3.5 h-3.5"></i>
+                <span>OSFileExplorerUtility</span>
+              </div>
+              <p class="text-[11px] text-slate-300 leading-normal">
+                Calls Win32 <code class="text-emerald-300">SHOpenFolderAndSelectItems</code> &amp; macOS <code class="text-emerald-300">osascript</code> to highlight multiple files in a single OS window.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
+          <span><strong class="text-slate-200">AssetChangeWatcher:</strong> <code class="text-sky-300">AssetPostprocessor</code> auto-heals paths on move/rename/delete.</span>
+          <span class="font-mono text-emerald-400">0 Bytes Runtime Memory</span>
+        </div>
+      </div>
+
+      <!-- Right: Key Engineering Highlights -->
+      <div class="lg:col-span-5 rounded-xl bg-[#111622] border border-slate-800 p-5 shadow-xl space-y-3">
+        <span class="text-[10px] font-mono uppercase tracking-widest text-amber-400 block">Under The Hood</span>
+        <h3 class="text-base font-bold text-white">Core Engineering Highlights</h3>
+
+        <div class="space-y-2.5 text-xs">
+          <div class="p-2.5 rounded-lg bg-slate-900/70 border border-slate-800/90">
+            <div class="font-semibold text-white mb-0.5">1. Collaborative Badge + Hover Button (C / R)</div>
+            <p class="text-slate-400 leading-relaxed">
+              Renders procedural anti-aliased SDF circular badges in both Tile and List views. Entering the top-right corner rect transforms the badge into an interactive <strong class="text-amber-300">C</strong> (Copy full drive path) or <strong class="text-emerald-300">R</strong> (Reveal) button without losing multi-selection.
+            </p>
+          </div>
+
+          <div class="p-2.5 rounded-lg bg-slate-900/70 border border-slate-800/90">
+            <div class="font-semibold text-white mb-0.5">2. Multi-Asset Single-Window Explorer Reveal</div>
+            <p class="text-slate-400 leading-relaxed">
+              Unity's built-in <code class="text-slate-300">RevealInFinder</code> opens N separate windows for N files. We P/Invoke <code class="text-sky-300">shell32.dll!SHOpenFolderAndSelectItems</code> with child <code class="text-sky-300">ITEMIDLIST</code> pointers on Windows and batch POSIX file lists in Finder on macOS.
+            </p>
+          </div>
+
+          <div class="p-2.5 rounded-lg bg-slate-900/70 border border-slate-800/90">
+            <div class="font-semibold text-white mb-0.5">3. Build Report Inspired Inspection &amp; Drag-and-Drop</div>
+            <p class="text-slate-400 leading-relaxed">
+              Displays formatted folder + bold filename paths, asset types, disk byte sizes, percentage breakdown, live color pickers before each group name, group drag-reordering, and instant Project Window ping.
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ================= RIGHT-CLICK CONTEXT MENU POPUP ================= -->
+  <div id="unity-context-menu" class="hidden fixed z-50 w-64 rounded-md bg-[#2b2b2b] border border-[#141414] shadow-2xl py-1 text-xs text-neutral-200 select-none">
+    <div class="px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-neutral-400 border-b border-neutral-700/70">
+      Assets &rsaquo; Asset Organizer
+    </div>
+    <button id="ctx-pin-toggle" type="button" class="w-full px-3 py-1.5 text-left hover:bg-[#2c5d87] hover:text-white flex items-center justify-between">
+      <span>Pin / Unpin Asset</span>
+      <span class="text-[10px] text-neutral-400 font-mono">Ctrl+Win+P</span>
+    </button>
+    <button id="ctx-pin-to-group" type="button" class="w-full px-3 py-1.5 text-left hover:bg-[#2c5d87] hover:text-white flex items-center justify-between">
+      <span>Pin and Add to Group...</span>
+      <i data-lucide="folder-plus" class="w-3.5 h-3.5 text-amber-400"></i>
+    </button>
+    <button id="ctx-unpin" type="button" class="w-full px-3 py-1.5 text-left hover:bg-[#2c5d87] hover:text-white flex items-center justify-between">
+      <span>Unpin Selected</span>
+    </button>
+    <div class="my-1 border-t border-neutral-700/70"></div>
+    <button id="ctx-copy-full-path" type="button" class="w-full px-3 py-1.5 text-left hover:bg-[#2c5d87] hover:text-white flex items-center justify-between">
+      <span>Copy Full Disk Path</span>
+      <span class="text-[10px] text-amber-300 font-mono">C</span>
+    </button>
+    <button id="ctx-reveal-explorer" type="button" class="w-full px-3 py-1.5 text-left hover:bg-[#2c5d87] hover:text-white flex items-center justify-between">
+      <span>Reveal Selected in Explorer</span>
+      <span class="text-[10px] text-emerald-300 font-mono">Ctrl+Click</span>
+    </button>
+  </div>
+
+  <!-- ================= CREATE / SELECT GROUP MODAL ================= -->
+  <div id="group-modal-backdrop" class="hidden fixed inset-0 z-50 bg-black/65 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="w-full max-w-md rounded-lg bg-[#2a2a2a] border border-neutral-700 shadow-2xl overflow-hidden text-xs text-neutral-200">
+      <div class="bg-[#1e1e1e] px-3.5 py-2 border-b border-black flex items-center justify-between">
+        <span id="group-modal-title" class="font-bold text-white">Pin and Add to Group</span>
+        <button id="btn-close-group-modal" type="button" class="text-neutral-400 hover:text-white text-base leading-none">&times;</button>
+      </div>
+
+      <div class="p-4 space-y-4">
+        <!-- Existing Groups Picker Section -->
+        <div id="existing-groups-section" class="space-y-2">
+          <div class="text-[11px] font-semibold text-neutral-300">Select an existing group:</div>
+          <div id="modal-existing-groups-list" class="max-h-36 overflow-y-auto unity-scroll space-y-1.5 pr-1">
+            <!-- Populated dynamically -->
+          </div>
+          <div class="border-t border-neutral-700 pt-2"></div>
+        </div>
+
+        <!-- Create New Group Section -->
+        <div class="space-y-2.5">
+          <div id="modal-no-groups-notice" class="hidden p-2 rounded bg-sky-500/10 border border-sky-500/30 text-sky-200 text-[11px]">
+            No custom groups exist yet. Create a group below with a name and tag color to pin your selected asset(s).
+          </div>
+          <div class="text-[11px] font-semibold text-white">Create New Group</div>
+          <div class="flex items-center gap-2">
+            <label class="text-neutral-400 shrink-0">Tag &amp; Name:</label>
+            <input id="input-new-group-color" type="color" value="#38bdf8" class="unity-color-picker w-8 h-6 shrink-0" title="Choose group tag color">
+            <input id="input-new-group-name" type="text" placeholder="e.g. Core Gameplay Scripts" class="flex-1 bg-[#1b1b1b] text-white border border-neutral-600 rounded px-2.5 py-1 text-xs focus:outline-none focus:border-sky-400">
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2">
+          <button id="btn-cancel-group-modal" type="button" class="px-3 py-1 rounded bg-[#383838] hover:bg-[#484848] text-neutral-200 border border-neutral-600">
+            Cancel
+          </button>
+          <button id="btn-confirm-create-group" type="button" class="px-3.5 py-1 rounded bg-sky-600 hover:bg-sky-500 text-white font-semibold">
+            Create &amp; Pin
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= SIMULATED WINDOWS EXPLORER / MACOS FINDER MODAL ================= -->
+  <div id="explorer-modal-backdrop" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="w-full max-w-xl rounded-xl bg-[#191919] border border-neutral-700 shadow-2xl overflow-hidden text-xs text-neutral-200">
+      <!-- Explorer Title Bar -->
+      <div class="bg-[#242424] px-3.5 py-2 border-b border-neutral-800 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i data-lucide="folder-open" class="w-4 h-4 text-amber-400"></i>
+          <span class="font-semibold text-white">Windows Explorer / macOS Finder — Single Window Multi-Item Selection</span>
+        </div>
+        <button id="btn-close-explorer-modal" type="button" class="text-neutral-400 hover:text-white text-base leading-none">&times;</button>
+      </div>
+
+      <!-- Address Bar -->
+      <div class="bg-[#202020] px-3 py-1.5 border-b border-neutral-800 flex items-center gap-2 font-mono text-[11px] text-neutral-300">
+        <span class="text-neutral-500">Address:</span>
+        <div class="flex-1 bg-[#141414] border border-neutral-700 rounded px-2 py-0.5 text-sky-300 truncate">
+          D:\UnityProjects\GitlabProjects\ArrowStrike\Assets\[Developer]\ShapeSystem
+        </div>
+      </div>
+
+      <!-- Files List inside Explorer -->
+      <div class="p-3 space-y-1 max-h-72 overflow-y-auto unity-scroll" id="explorer-files-list">
+        <!-- Populated dynamically -->
+      </div>
+
+      <div class="bg-[#222] px-3.5 py-2 border-t border-neutral-800 flex items-center justify-between text-[11px] text-neutral-400">
+        <span id="explorer-status-count" class="text-emerald-400 font-medium">Selected 3 items in single Explorer instance</span>
+        <span class="font-mono text-[10px]">Win32: SHOpenFolderAndSelectItems • macOS: Finder reveal</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= TOAST NOTIFICATION ================= -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 pointer-events-none flex flex-col gap-2 items-end"></div>
+
+  <!-- ================= INTERACTIVE SIMULATOR LOGIC ================= -->
+  <script>
+    const PARENT_DRIVE_ROOT = "D:\\UnityProjects\\GitlabProjects\\ArrowStrike\\";
+
+    const INITIAL_ASSETS = [
+      { guid: "a01", fileName: "CyberPortraits.spriteatlasv2", folderPath: "Assets/[Developer]/ShapeSystem/Sprites/", type: "SpriteAtlas", sizeBytes: 527974, icon: "image" },
+      { guid: "a02", fileName: "2bit_faces.png", folderPath: "Assets/[Developer]/ShapeSystem/Sprites/", type: "Sprite", sizeBytes: 29184, icon: "image" },
+      { guid: "a03", fileName: "Cyber_Faces_001.png", folderPath: "Assets/[Developer]/ShapeSystem/Sprites/", type: "Sprite", sizeBytes: 2560, icon: "image" },
+      { guid: "a04", fileName: "Cyber_Faces_002.png", folderPath: "Assets/[Developer]/ShapeSystem/Sprites/", type: "Sprite", sizeBytes: 2252, icon: "image" },
+      { guid: "a05", fileName: "Cyber_Faces_003.png", folderPath: "Assets/[Developer]/ShapeSystem/Sprites/", type: "Sprite", sizeBytes: 1536, icon: "image" },
+      { guid: "a06", fileName: "ShapeLevelManager.cs", folderPath: "Assets/[Developer]/ShapeSystem/Scripts/", type: "Script", sizeBytes: 20740, icon: "file-code" },
+      { guid: "a07", fileName: "ShapeArrow.cs", folderPath: "Assets/[Developer]/ShapeSystem/Scripts/", type: "Script", sizeBytes: 14176, icon: "file-code" },
+      { guid: "a08", fileName: "SolvableShapeGenerator.cs", folderPath: "Assets/[Developer]/ShapeSystem/Scripts/", type: "Script", sizeBytes: 10455, icon: "file-code" },
+      { guid: "a09", fileName: "ShapeGridSystem.cs", folderPath: "Assets/[Developer]/ShapeSystem/Scripts/", type: "Script", sizeBytes: 9728, icon: "file-code" },
+      { guid: "a10", fileName: "StarShapeLevel.asset", folderPath: "Assets/[Developer]/ShapeSystem/Levels/", type: "ShapeLevelConfig", sizeBytes: 653, icon: "file-cog" },
+      { guid: "a11", fileName: "SwordPixelLevel.asset", folderPath: "Assets/[Developer]/ShapeSystem/Levels/", type: "ShapeLevelConfig", sizeBytes: 710, icon: "file-cog" },
+      { guid: "a12", fileName: "ArrowStrike_Gameplay.prefab", folderPath: "Assets/[Developer]/ShapeSystem/Prefabs/", type: "Prefab", sizeBytes: 45210, icon: "box" }
+    ];
+
+    let groups = [];
+    let pinnedEntries = []; // { guid, groupId }
+    let selectedProjectGuids = new Set(["a01", "a05"]);
+    let selectedPinnedGuid = "a05";
+    let projectViewMode = "tiles"; // 'tiles' | 'list'
+    let searchQuery = "";
+    let selectedTypeFilter = "All";
+    let sortColumn = null; // 'path' | 'type' | 'size'
+    let sortAsc = true;
+
+    // Hover C / R Tag-Button state
+    let hoveredTagGuid = null;
+    let isRevealModeR = false;
+
+    // Modal state
+    let modalTargetGuids = [];
+
+    // Drag state
+    let dragPayload = null; // { type: 'project-assets' | 'pinned-asset' | 'group-reorder', guids?: [], guid?: string, groupIndex?: number }
+
+    function resetDemoData() {
+      groups = [
+        { id: "ungrouped", name: "Ungrouped", color: "#ffd614", isExpanded: true, isDefault: true },
+        { id: "grp-ui", name: "UI Sprites & Atlases", color: "#38bdf8", isExpanded: true, isDefault: false },
+        { id: "grp-core", name: "Core Gameplay Scripts", color: "#34d399", isExpanded: true, isDefault: false }
+      ];
+      pinnedEntries = [
+        { guid: "a10", groupId: "ungrouped" },
+        { guid: "a01", groupId: "grp-ui" },
+        { guid: "a02", groupId: "grp-ui" },
+        { guid: "a05", groupId: "grp-ui" },
+        { guid: "a06", groupId: "grp-core" },
+        { guid: "a07", groupId: "grp-core" }
+      ];
+      selectedProjectGuids = new Set(["a01", "a05"]);
+      selectedPinnedGuid = "a05";
+      hoveredTagGuid = null;
+      isRevealModeR = false;
+      renderAll();
+    }
+
+    function getAssetByGuid(guid) {
+      return INITIAL_ASSETS.find(a => a.guid === guid);
+    }
+
+    function getPinnedEntry(guid) {
+      return pinnedEntries.find(e => e.guid === guid);
+    }
+
+    function getGroupById(groupId) {
+      return groups.find(g => g.id === groupId) || groups[0];
+    }
+
+    function getFullDiskPath(asset) {
+      return PARENT_DRIVE_ROOT + (asset.folderPath + asset.fileName).replace(/\//g, "\\");
+    }
+
+    function formatBytes(bytes) {
+      if (bytes < 1024) return bytes + " B";
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+      return (bytes / (1024 * 1024)).toFixed(2) + " MB";
+    }
+
+    function showToast(title, subtitle, accent = "sky") {
+      const container = document.getElementById("toast-container");
+      const borderCol = accent === "amber" ? "border-amber-500/60" : accent === "emerald" ? "border-emerald-500/60" : "border-sky-500/60";
+      const toast = document.createElement("div");
+      toast.className = `pointer-events-auto max-w-md rounded-lg bg-[#161c2b]/95 border ${borderCol} px-3.5 py-2.5 shadow-2xl text-xs text-slate-100 transition-all duration-300`;
+      toast.innerHTML = `
+        <div class="font-bold text-white mb-0.5">${title}</div>
+        <div class="text-[11px] text-slate-300 font-mono break-all">${subtitle}</div>
+      `;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = "0";
+        setTimeout(() => toast.remove(), 300);
+      }, 3200);
+    }
+
+    // ================= PIN / UNPIN / GROUP OPERATIONS =================
+    function pinAssetsToGroup(guids, groupId = "ungrouped") {
+      let count = 0;
+      guids.forEach(guid => {
+        const existing = getPinnedEntry(guid);
+        if (existing) {
+          existing.groupId = groupId;
+        } else {
+          pinnedEntries.push({ guid, groupId });
+        }
+        count++;
+      });
+      const grp = getGroupById(groupId);
+      if (grp) grp.isExpanded = true;
+      if (guids.length > 0) selectedPinnedGuid = guids[0];
+      renderAll();
+      if (count > 0 && grp) {
+        showToast(`Pinned ${count} asset(s) to "${grp.name}"`, `Tag color applied in Project Window & Pinned Assets Window.`, "amber");
+      }
+    }
+
+    function togglePinForGuids(guids) {
+      if (!guids || guids.length === 0) return;
+      const allPinned = guids.every(g => !!getPinnedEntry(g));
+      if (allPinned) {
+        pinnedEntries = pinnedEntries.filter(e => !guids.includes(e.guid));
+        renderAll();
+        showToast(`Unpinned ${guids.length} asset(s)`, `Removed circular tag from Project Window.`);
+      } else {
+        guids.forEach(guid => {
+          if (!getPinnedEntry(guid)) {
+            pinnedEntries.push({ guid, groupId: "ungrouped" });
+          }
+        });
+        selectedPinnedGuid = guids[0];
+        renderAll();
+        showToast(`Pinned ${guids.length} asset(s) to Ungrouped`, `Yellow circular badge added at top-right corner.`, "amber");
+      }
+    }
+
+    function pingAssetInProjectWindow(guid) {
+      selectedPinnedGuid = guid;
+      selectedProjectGuids = new Set([guid]);
+      const asset = getAssetByGuid(guid);
+      if (asset) {
+        document.getElementById("project-selected-path-label").textContent = asset.folderPath + asset.fileName;
+      }
+      renderAll();
+
+      requestAnimationFrame(() => {
+        const el = document.querySelector(`[data-project-guid="${guid}"]`);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+          el.classList.remove("unity-ping-active");
+          void el.offsetWidth;
+          el.classList.add("unity-ping-active");
+        }
+      });
+    }
+
+    // ================= C / R TAG-BUTTON EXECUTION =================
+    function executeTagButtonClick(guid, isCtrlOrCmd) {
+      const asset = getAssetByGuid(guid);
+      if (!asset) return;
+
+      if (isCtrlOrCmd) {
+        // Ctrl+Mouse1: Reveal all currently selected assets in a SINGLE Explorer/Finder window
+        const targetGuids = Array.from(selectedProjectGuids);
+        if (!targetGuids.includes(guid)) targetGuids.push(guid);
+        openSimulatedExplorerModal(targetGuids);
+        return;
+      }
+
+      if (isRevealModeR) {
+        // 'R' mode + Mouse1: Reveal single hovered asset in Explorer/Finder
+        openSimulatedExplorerModal([guid]);
+      } else {
+        // 'C' mode + Mouse1: Copy ONLY the single hovered asset's complete full disk path (from parent drive)
+        const fullPath = getFullDiskPath(asset);
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(fullPath).catch(() => {});
+        }
+        showToast(`Copied Complete Disk Path (Single Asset)`, fullPath, "emerald");
+      }
+    }
+
+    function openSimulatedExplorerModal(highlightedGuids) {
+      const highlightSet = new Set(highlightedGuids);
+      const listEl = document.getElementById("explorer-files-list");
+      listEl.innerHTML = "";
+
+      INITIAL_ASSETS.forEach(asset => {
+        const isSelected = highlightSet.has(asset.guid);
+        const row = document.createElement("div");
+        row.className = `px-3 py-1.5 rounded flex items-center justify-between font-mono text-[11px] ${
+          isSelected
+            ? "bg-sky-600/35 border border-sky-400/70 text-white font-semibold"
+            : "text-neutral-400 hover:bg-neutral-800/50"
+        }`;
+        row.innerHTML = `
+          <div class="flex items-center gap-2 truncate">
+            <span class="w-2 h-2 rounded-full ${isSelected ? "bg-sky-400" : "bg-transparent"}"></span>
+            <span class="truncate">${getFullDiskPath(asset)}</span>
+          </div>
+          <span class="text-[10px] shrink-0 ml-3 ${isSelected ? "text-sky-200" : "text-neutral-500"}">
+            ${isSelected ? "SELECTED IN OS WINDOW" : formatBytes(asset.sizeBytes)}
+          </span>
+        `;
+        listEl.appendChild(row);
+      });
+
+      document.getElementById("explorer-status-count").textContent =
+        `Selected ${highlightSet.size} pre-selected Unity asset(s) together inside a single OS Explorer/Finder window`;
+      document.getElementById("explorer-modal-backdrop").classList.remove("hidden");
+    }
+
+    // ================= RENDER PROJECT WINDOW =================
+    function renderProjectWindow() {
+      const viewport = document.getElementById("project-window-viewport");
+      viewport.innerHTML = "";
+
+      const btnTiles = document.getElementById("btn-view-tiles");
+      const btnList = document.getElementById("btn-view-list");
+      if (projectViewMode === "tiles") {
+        btnTiles.className = "px-2 py-0.5 rounded text-[10px] font-medium bg-sky-600 text-white";
+        btnList.className = "px-2 py-0.5 rounded text-[10px] font-medium bg-[#2a2a2a] text-neutral-300 hover:bg-[#3a3a3a]";
+      } else {
+        btnList.className = "px-2 py-0.5 rounded text-[10px] font-medium bg-sky-600 text-white";
+        btnTiles.className = "px-2 py-0.5 rounded text-[10px] font-medium bg-[#2a2a2a] text-neutral-300 hover:bg-[#3a3a3a]";
+      }
+
+      if (projectViewMode === "tiles") {
+        const grid = document.createElement("div");
+        grid.className = "grid grid-cols-3 sm:grid-cols-4 gap-2.5";
+
+        INITIAL_ASSETS.forEach(asset => {
+          const isSelected = selectedProjectGuids.has(asset.guid);
+          const pinned = getPinnedEntry(asset.guid);
+          const group = pinned ? getGroupById(pinned.groupId) : null;
+          const isTagHovered = hoveredTagGuid === asset.guid;
+
+          const card = document.createElement("div");
+          card.dataset.projectGuid = asset.guid;
+          card.draggable = true;
+          card.className = `group relative rounded p-2 flex flex-col items-center justify-between cursor-pointer transition-all border ${
+            isSelected
+              ? "bg-unity-selected border-sky-400/70 text-white"
+              : "bg-[#2f2f2f] hover:bg-[#363636] border-transparent text-neutral-200"
+          }`;
+
+          // Icon Container with Top-Right Small Rect for Tag / C-R Button
+          const iconBox = document.createElement("div");
+          iconBox.className = "relative w-12 h-12 rounded bg-[#222] border border-neutral-700/70 flex items-center justify-center mb-1.5";
+          iconBox.innerHTML = `<i data-lucide="${asset.icon}" class="w-6 h-6 ${isSelected ? "text-sky-300" : "text-neutral-300"}"></i>`;
+
+          // Small Top-Right Corner Rect (Tag-cum-Button)
+          const cornerRect = createTopRightTagOrButtonElement(asset, pinned, group, isTagHovered, false);
+          iconBox.appendChild(cornerRect);
+
+          const nameLabel = document.createElement("div");
+          nameLabel.className = "w-full text-[10px] text-center leading-tight truncate";
+          nameLabel.title = asset.folderPath + asset.fileName;
+          nameLabel.textContent = asset.fileName;
+
+          card.appendChild(iconBox);
+          card.appendChild(nameLabel);
+
+          attachProjectItemEvents(card, asset);
+          grid.appendChild(card);
+        });
+
+        viewport.appendChild(grid);
+      } else {
+        // List View
+        const list = document.createElement("div");
+        list.className = "space-y-0.5";
+
+        INITIAL_ASSETS.forEach(asset => {
+          const isSelected = selectedProjectGuids.has(asset.guid);
+          const pinned = getPinnedEntry(asset.guid);
+          const group = pinned ? getGroupById(pinned.groupId) : null;
+          const isTagHovered = hoveredTagGuid === asset.guid;
+
+          const row = document.createElement("div");
+          row.dataset.projectGuid = asset.guid;
+          row.draggable = true;
+          row.className = `group relative px-2 py-1 rounded flex items-center justify-between cursor-pointer text-xs ${
+            isSelected ? "bg-unity-selected text-white" : "hover:bg-[#323232] text-neutral-200"
+          }`;
+
+          const left = document.createElement("div");
+          left.className = "flex items-center gap-2 min-w-0 flex-1";
+
+          const iconWrap = document.createElement("div");
+          iconWrap.className = "relative w-5 h-5 flex items-center justify-center shrink-0";
+          iconWrap.innerHTML = `<i data-lucide="${asset.icon}" class="w-4 h-4 text-neutral-300"></i>`;
+
+          // Small Top-Right Tag-cum-Button on the List View Icon
+          const cornerRect = createTopRightTagOrButtonElement(asset, pinned, group, isTagHovered, true);
+          iconWrap.appendChild(cornerRect);
+
+          const label = document.createElement("span");
+          label.className = "truncate text-[11px]";
+          label.textContent = asset.fileName;
+
+          left.appendChild(iconWrap);
+          left.appendChild(label);
+
+          const rightType = document.createElement("span");
+          rightType.className = "text-[10px] text-neutral-400 font-mono shrink-0 ml-2";
+          rightType.textContent = asset.type;
+
+          row.appendChild(left);
+          row.appendChild(rightType);
+
+          attachProjectItemEvents(row, asset);
+          list.appendChild(row);
+        });
+
+        viewport.appendChild(list);
+      }
+
+      lucide.createIcons();
+    }
+
+    function createTopRightTagOrButtonElement(asset, pinned, group, isTagHovered, isListView) {
+      const hitZone = document.createElement("div");
+      hitZone.className = isListView
+        ? "absolute -top-1 -right-1.5 w-4 h-4 flex items-center justify-center z-20"
+        : "absolute -top-1.5 -right-1.5 w-5 h-5 flex items-center justify-center z-20";
+
+      const badge = document.createElement("div");
+      const baseColor = group ? group.color : "#ffd614";
+
+      if (isTagHovered) {
+        const activeLetter = isRevealModeR ? "R" : "C";
+        const activeBg = isRevealModeR ? "#10b981" : baseColor;
+        badge.className = "w-5 h-5 rounded-full border-2 border-neutral-950 shadow-md flex items-center justify-center text-[10px] font-extrabold text-neutral-950 cursor-pointer transform scale-110 transition-transform";
+        badge.style.backgroundColor = activeBg;
+        badge.textContent = activeLetter;
+        badge.title = isRevealModeR
+          ? "R (Reveal Mode)\n• Click: Reveal this asset in Explorer/Finder\n• Ctrl+Click: Reveal all selected assets in 1 window\n• Press C or R: Switch to Copy mode"
+          : "C (Copy Full Path Mode)\n• Click: Copy complete path from parent drive (D:\\...)\n• Press R: Switch button to Reveal (R)\n• Ctrl+Click: Reveal all selected assets in 1 window";
+      } else if (pinned) {
+        badge.className = isListView
+          ? "w-2.5 h-2.5 rounded-full border border-neutral-950 shadow-xs transition-all"
+          : "w-3.5 h-3.5 rounded-full border-2 border-neutral-950 shadow-xs transition-all";
+        badge.style.backgroundColor = baseColor;
+      } else {
+        // When not pinned and not hovering the small top-right rect, button is disabled/hidden
+        // (shows a faint target ring when hovering the parent asset so user knows where the corner rect is)
+        badge.className = isListView
+          ? "w-2.5 h-2.5 rounded-full border border-amber-400/0 group-hover:border-amber-400/45 transition-all"
+          : "w-3.5 h-3.5 rounded-full border border-amber-400/0 group-hover:border-amber-400/45 transition-all";
+      }
+
+      hitZone.appendChild(badge);
+
+      hitZone.addEventListener("mouseenter", () => {
+        hoveredTagGuid = asset.guid;
+        isRevealModeR = false;
+        renderProjectWindow();
+      });
+
+      hitZone.addEventListener("mouseleave", () => {
+        if (hoveredTagGuid === asset.guid) {
+          hoveredTagGuid = null;
+          isRevealModeR = false;
+          renderProjectWindow();
+        }
+      });
+
+      hitZone.addEventListener("mousedown", (e) => {
+        if (e.button === 0) {
+          e.stopPropagation();
+          e.preventDefault();
+          executeTagButtonClick(asset.guid, e.ctrlKey || e.metaKey);
+        }
+      });
+
+      hitZone.addEventListener("click", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+      });
+
+      return hitZone;
+    }
+
+    function attachProjectItemEvents(element, asset) {
+      element.addEventListener("click", (e) => {
+        if (e.ctrlKey || e.metaKey) {
+          if (selectedProjectGuids.has(asset.guid)) {
+            selectedProjectGuids.delete(asset.guid);
+          } else {
+            selectedProjectGuids.add(asset.guid);
+          }
+        } else {
+          selectedProjectGuids = new Set([asset.guid]);
+        }
+        document.getElementById("project-selected-path-label").textContent = asset.folderPath + asset.fileName;
+        renderProjectWindow();
+      });
+
+      element.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!selectedProjectGuids.has(asset.guid)) {
+          selectedProjectGuids = new Set([asset.guid]);
+          renderProjectWindow();
+        }
+        openContextMenu(e.clientX, e.clientY);
+      });
+
+      element.addEventListener("dragstart", (e) => {
+        if (!selectedProjectGuids.has(asset.guid)) {
+          selectedProjectGuids = new Set([asset.guid]);
+        }
+        dragPayload = {
+          type: "project-assets",
+          guids: Array.from(selectedProjectGuids)
+        };
+        e.dataTransfer.effectAllowed = "copyMove";
+      });
+    }
+
+    // ================= RENDER PINNED ASSETS WINDOW =================
+    function renderPinnedWindow() {
+      updateTypeFilterDropdown();
+
+      const viewport = document.getElementById("pinned-groups-viewport");
+      viewport.innerHTML = "";
+
+      const totalPinnedBytes = Math.max(1, pinnedEntries.reduce((acc, e) => {
+        const a = getAssetByGuid(e.guid);
+        return acc + (a ? a.sizeBytes : 0);
+      }, 0));
+
+      groups.forEach((group, groupIndex) => {
+        const groupItems = getFilteredAndSortedGroupEntries(group.id);
+        const isFiltering = searchQuery.trim() !== "" || selectedTypeFilter !== "All";
+        if (isFiltering && groupItems.length === 0 && groups.length > 1) return;
+
+        const groupBytes = groupItems.reduce((acc, item) => acc + item.asset.sizeBytes, 0);
+
+        const groupBox = document.createElement("div");
+        groupBox.className = "rounded bg-[#242424] border border-neutral-800 overflow-hidden transition-all";
+        groupBox.style.borderLeft = `4px solid ${group.color}`;
+
+        // Group Header Bar
+        const header = document.createElement("div");
+        header.draggable = true;
+        header.className = "bg-[#2d2d2d] px-2 py-1.5 flex items-center justify-between gap-2 cursor-grab active:cursor-grabbing";
+
+        // Left side: Drag Handle + Foldout + Circular Tag + Color Picker right before Group Name
+        const left = document.createElement("div");
+        left.className = "flex items-center gap-1.5 min-w-0 flex-1";
+
+        const handle = document.createElement("span");
+        handle.className = "text-neutral-400 hover:text-white px-1 font-mono text-sm cursor-grab";
+        handle.title = "Drag to reorder group";
+        handle.innerHTML = "&equiv;";
+
+        const foldBtn = document.createElement("button");
+        foldBtn.type = "button";
+        foldBtn.className = "text-neutral-300 hover:text-white text-[10px] w-4";
+        foldBtn.textContent = group.isExpanded ? "▼" : "►";
+        foldBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          group.isExpanded = !group.isExpanded;
+          renderPinnedWindow();
+        });
+
+        const tagDot = document.createElement("span");
+        tagDot.className = "w-3 h-3 rounded-full border border-neutral-950 shrink-0";
+        tagDot.style.backgroundColor = group.color;
+
+        const colorPicker = document.createElement("input");
+        colorPicker.type = "color";
+        colorPicker.value = group.color;
+        colorPicker.className = "unity-color-picker w-7 h-4 shrink-0";
+        colorPicker.title = "Change group tag color (updates Project Window badges live)";
+        colorPicker.addEventListener("input", (e) => {
+          group.color = e.target.value;
+          renderAll();
+        });
+        colorPicker.addEventListener("click", (e) => e.stopPropagation());
+
+        const titleBtn = document.createElement("button");
+        titleBtn.type = "button";
+        titleBtn.className = "font-bold text-xs text-white truncate text-left hover:text-sky-300";
+        titleBtn.textContent = `${group.name} (${groupItems.length})`;
+        titleBtn.addEventListener("click", () => {
+          group.isExpanded = !group.isExpanded;
+          renderPinnedWindow();
+        });
+
+        left.appendChild(handle);
+        left.appendChild(foldBtn);
+        left.appendChild(tagDot);
+        left.appendChild(colorPicker);
+        left.appendChild(titleBtn);
+
+        // Right side: Group Size + Delete button for custom groups
+        const right = document.createElement("div");
+        right.className = "flex items-center gap-2 shrink-0 text-[11px]";
+
+        const sizeBadge = document.createElement("span");
+        sizeBadge.className = "text-neutral-400 font-mono text-[10px]";
+        sizeBadge.textContent = formatBytes(groupBytes);
+        right.appendChild(sizeBadge);
+
+        if (!group.isDefault) {
+          const delBtn = document.createElement("button");
+          delBtn.type = "button";
+          delBtn.className = "px-1.5 py-0.2 rounded bg-[#3a3a3a] hover:bg-red-500/80 text-neutral-300 hover:text-white text-xs leading-tight";
+          delBtn.title = "Delete group (moves assets to Ungrouped)";
+          delBtn.innerHTML = "&times;";
+          delBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            pinnedEntries.forEach(pe => {
+              if (pe.groupId === group.id) pe.groupId = "ungrouped";
+            });
+            groups = groups.filter(g => g.id !== group.id);
+            renderAll();
+            showToast(`Deleted group "${group.name}"`, `Moved contained assets to Ungrouped.`);
+          });
+          right.appendChild(delBtn);
+        }
+
+        header.appendChild(left);
+        header.appendChild(right);
+
+        // Group Reorder Drag Events
+        header.addEventListener("dragstart", (e) => {
+          dragPayload = { type: "group-reorder", groupIndex };
+          e.dataTransfer.effectAllowed = "move";
+        });
+
+        groupBox.appendChild(header);
+
+        // Group Rows Body
+        if (group.isExpanded) {
+          const rowsContainer = document.createElement("div");
+          rowsContainer.className = "divide-y divide-neutral-800/60";
+
+          if (groupItems.length === 0) {
+            const empty = document.createElement("div");
+            empty.className = "px-3 py-3 text-center text-[11px] text-neutral-500 italic";
+            empty.textContent = "Drag & drop assets here from Project Window or other groups.";
+            rowsContainer.appendChild(empty);
+          } else {
+            groupItems.forEach((item, idx) => {
+              const { entry, asset } = item;
+              const isSelected = selectedPinnedGuid === entry.guid;
+              const pct = ((asset.sizeBytes * 100) / totalPinnedBytes).toFixed(1) + "%";
+
+              const row = document.createElement("div");
+              row.draggable = true;
+              row.className = `px-2 py-1 grid grid-cols-12 items-center text-[11px] cursor-pointer transition-colors ${
+                isSelected
+                  ? "bg-unity-selected text-white"
+                  : idx % 2 === 0
+                  ? "bg-unity-rowEven hover:bg-[#343434] text-neutral-200"
+                  : "bg-unity-rowOdd hover:bg-[#343434] text-neutral-200"
+              }`;
+
+              row.innerHTML = `
+                <div class="col-span-1 flex items-center">
+                  <button type="button" class="btn-ping px-1.5 py-0.5 rounded bg-[#3a3a3a] hover:bg-sky-500 hover:text-black text-[10px] font-medium border border-neutral-700">
+                    Ping
+                  </button>
+                </div>
+                <div class="col-span-6 flex items-center gap-1.5 min-w-0 pr-2">
+                  <span class="w-2.5 h-2.5 rounded-full border border-neutral-950 shrink-0" style="background-color: ${group.color}"></span>
+                  <i data-lucide="${asset.icon}" class="w-3.5 h-3.5 shrink-0 ${isSelected ? "text-sky-200" : "text-neutral-300"}"></i>
+                  <div class="truncate">
+                    <span class="${isSelected ? "text-sky-100" : "text-neutral-400"}">${idx + 1}. ${asset.folderPath}</span><strong class="text-white font-semibold">${asset.fileName}</strong>
+                  </div>
+                </div>
+                <div class="col-span-2 truncate text-[10px] font-mono ${isSelected ? "text-sky-100" : "text-neutral-400"}">
+                  ${asset.type}
+                </div>
+                <div class="col-span-2 text-right pr-2 font-mono text-[10px]">
+                  ${formatBytes(asset.sizeBytes)}
+                </div>
+                <div class="col-span-1 flex items-center justify-end gap-1.5">
+                  <span class="font-mono text-[10px] ${isSelected ? "text-sky-100" : "text-neutral-400"}">${pct}</span>
+                  <button type="button" class="btn-unpin text-neutral-400 hover:text-red-400 font-bold text-xs px-1" title="Unpin asset">&times;</button>
+                </div>
+              `;
+
+              // Clicking anywhere on row pings the asset in Project Window
+              row.addEventListener("click", (e) => {
+                if (e.target.closest(".btn-unpin")) {
+                  pinnedEntries = pinnedEntries.filter(pe => pe.guid !== entry.guid);
+                  if (selectedPinnedGuid === entry.guid) selectedPinnedGuid = null;
+                  renderAll();
+                  return;
+                }
+                pingAssetInProjectWindow(entry.guid);
+              });
+
+              // Dragging an asset row between groups
+              row.addEventListener("dragstart", (e) => {
+                e.stopPropagation();
+                dragPayload = { type: "pinned-asset", guid: entry.guid };
+                e.dataTransfer.effectAllowed = "move";
+              });
+
+              rowsContainer.appendChild(row);
+            });
+          }
+
+          groupBox.appendChild(rowsContainer);
+        }
+
+        // Drop Target Handling on Group Box (accepts Project assets, Pinned assets from other groups, or Group Reorder)
+        groupBox.addEventListener("dragover", (e) => {
+          if (!dragPayload) return;
+          e.preventDefault();
+          groupBox.style.outline = `2px solid ${group.color}`;
+        });
+
+        groupBox.addEventListener("dragleave", () => {
+          groupBox.style.outline = "none";
+        });
+
+        groupBox.addEventListener("drop", (e) => {
+          e.preventDefault();
+          groupBox.style.outline = "none";
+          if (!dragPayload) return;
+
+          if (dragPayload.type === "group-reorder") {
+            const fromIdx = dragPayload.groupIndex;
+            const toIdx = groupIndex;
+            if (fromIdx !== toIdx && fromIdx >= 0 && fromIdx < groups.length) {
+              const [moved] = groups.splice(fromIdx, 1);
+              groups.splice(toIdx, 0, moved);
+              renderAll();
+              showToast(`Reordered group "${moved.name}"`, `Updated group order in Pinned Assets Window.`);
+            }
+          } else if (dragPayload.type === "pinned-asset") {
+            const entry = getPinnedEntry(dragPayload.guid);
+            if (entry) {
+              entry.groupId = group.id;
+              group.isExpanded = true;
+              selectedPinnedGuid = entry.guid;
+              renderAll();
+              showToast(`Moved asset to "${group.name}"`, `Updated asset group and Project Window circular tag color.`, "amber");
+            }
+          } else if (dragPayload.type === "project-assets") {
+            pinAssetsToGroup(dragPayload.guids, group.id);
+          }
+
+          dragPayload = null;
+        });
+
+        viewport.appendChild(groupBox);
+      });
+
+      renderBottomStatusBar(totalPinnedBytes);
+      lucide.createIcons();
+    }
+
+    function renderBottomStatusBar(totalPinnedBytes) {
+      const summaryEl = document.getElementById("pinned-summary-strip");
+      const pillBarEl = document.getElementById("pinned-bottom-pill-bar");
+
+      const selectedEntry = selectedPinnedGuid ? getPinnedEntry(selectedPinnedGuid) : null;
+      const selectedAsset = selectedEntry ? getAssetByGuid(selectedEntry.guid) : null;
+      const selectedGroup = selectedEntry ? getGroupById(selectedEntry.groupId) : null;
+
+      summaryEl.innerHTML = `
+        <span>Selected: ${selectedAsset ? `1 (${formatBytes(selectedAsset.sizeBytes)})` : "0"} &nbsp;|&nbsp; Total Pinned: ${pinnedEntries.length} asset(s) (${formatBytes(totalPinnedBytes)})</span>
+        <span class="hidden sm:inline">Click any row to Ping in Project Window</span>
+      `;
+
+      if (selectedAsset && selectedGroup) {
+        pillBarEl.innerHTML = `
+          <button id="btn-bottom-pill-ping" type="button" class="px-2.5 py-1 rounded bg-[#333] hover:bg-[#444] border border-neutral-600 text-white font-semibold flex items-center gap-1.5 text-xs shadow-xs cursor-pointer">
+            <i data-lucide="${selectedAsset.icon}" class="w-3.5 h-3.5 text-sky-400"></i>
+            <span>${selectedAsset.fileName}</span>
+          </button>
+          <span class="text-[11px] text-neutral-400">is in group</span>
+          <span class="px-2 py-0.5 rounded bg-[#2d2d2d] border border-neutral-700 text-neutral-200 font-medium flex items-center gap-1.5 text-[11px]">
+            <span class="w-2.5 h-2.5 rounded-full border border-black" style="background-color: ${selectedGroup.color}"></span>
+            <span>${selectedGroup.name}</span>
+          </span>
+          <span class="text-[10px] text-neutral-500 font-mono truncate ml-2 hidden md:inline">${selectedAsset.folderPath}${selectedAsset.fileName}</span>
+        `;
+        document.getElementById("btn-bottom-pill-ping").addEventListener("click", () => {
+          pingAssetInProjectWindow(selectedAsset.guid);
+        });
+      } else {
+        pillBarEl.innerHTML = `<span class="text-[11px] text-neutral-400">Click any pinned asset row above to ping it in the Project Window, or drag assets between groups.</span>`;
+      }
+    }
+
+    function getFilteredAndSortedGroupEntries(groupId) {
+      const q = searchQuery.trim().toLowerCase();
+      let list = pinnedEntries
+        .filter(e => e.groupId === groupId)
+        .map(entry => ({ entry, asset: getAssetByGuid(entry.guid) }))
+        .filter(item => !!item.asset);
+
+      if (selectedTypeFilter !== "All") {
+        list = list.filter(item => item.asset.type === selectedTypeFilter);
+      }
+
+      if (q !== "") {
+        list = list.filter(item =>
+          item.asset.fileName.toLowerCase().includes(q) ||
+          item.asset.folderPath.toLowerCase().includes(q)
+        );
+      }
+
+      if (sortColumn) {
+        list.sort((a, b) => {
+          let cmp = 0;
+          if (sortColumn === "path") {
+            cmp = (a.asset.folderPath + a.asset.fileName).localeCompare(b.asset.folderPath + b.asset.fileName);
+          } else if (sortColumn === "type") {
+            cmp = a.asset.type.localeCompare(b.asset.type);
+          } else if (sortColumn === "size") {
+            cmp = a.asset.sizeBytes - b.asset.sizeBytes;
+          }
+          return sortAsc ? cmp : -cmp;
+        });
+      }
+
+      return list;
+    }
+
+    function updateTypeFilterDropdown() {
+      const select = document.getElementById("select-type-filter");
+      const counts = {};
+      pinnedEntries.forEach(e => {
+        const a = getAssetByGuid(e.guid);
+        if (a) counts[a.type] = (counts[a.type] || 0) + 1;
+      });
+
+      const prev = selectedTypeFilter;
+      select.innerHTML = `<option value="All">All (${pinnedEntries.length})</option>`;
+      Object.keys(counts).forEach(t => {
+        const opt = document.createElement("option");
+        opt.value = t;
+        opt.textContent = `${t} (${counts[t]})`;
+        if (t === prev) opt.selected = true;
+        select.appendChild(opt);
+      });
+    }
+
+    function renderAll() {
+      renderProjectWindow();
+      renderPinnedWindow();
+    }
+
+    // ================= CONTEXT MENU & GROUP MODAL =================
+    function openContextMenu(x, y) {
+      const menu = document.getElementById("unity-context-menu");
+      menu.classList.remove("hidden");
+      const maxX = window.innerWidth - 270;
+      const maxY = window.innerHeight - 220;
+      menu.style.left = Math.min(x, maxX) + "px";
+      menu.style.top = Math.min(y, maxY) + "px";
+    }
+
+    function closeContextMenu() {
+      document.getElementById("unity-context-menu").classList.add("hidden");
+    }
+
+    function openGroupModal(guids) {
+      modalTargetGuids = guids || [];
+      const customGroups = groups.filter(g => !g.isDefault);
+      const existingSec = document.getElementById("existing-groups-section");
+      const noticeEl = document.getElementById("modal-no-groups-notice");
+      const listEl = document.getElementById("modal-existing-groups-list");
+
+      listEl.innerHTML = "";
+      if (customGroups.length === 0) {
+        existingSec.classList.add("hidden");
+        noticeEl.classList.remove("hidden");
+      } else {
+        existingSec.classList.remove("hidden");
+        noticeEl.classList.add("hidden");
+        groups.forEach(g => {
+          const row = document.createElement("div");
+          row.className = "flex items-center gap-2 bg-[#222] p-1.5 rounded border border-neutral-700";
+          row.innerHTML = `
+            <span class="w-3 h-3 rounded-full border border-black shrink-0" style="background-color: ${g.color}"></span>
+            <button type="button" class="flex-1 text-left font-medium text-neutral-100 hover:text-sky-300 truncate">${g.name}</button>
+            <span class="text-[10px] text-neutral-400 font-mono">Select &rarr;</span>
+          `;
+          row.addEventListener("click", () => {
+            if (modalTargetGuids.length > 0) {
+              pinAssetsToGroup(modalTargetGuids, g.id);
+            }
+            closeGroupModal();
+          });
+          listEl.appendChild(row);
+        });
+      }
+
+      document.getElementById("input-new-group-name").value = `Group ${customGroups.length + 1}`;
+      document.getElementById("group-modal-backdrop").classList.remove("hidden");
+      document.getElementById("input-new-group-name").focus();
+    }
+
+    function closeGroupModal() {
+      document.getElementById("group-modal-backdrop").classList.add("hidden");
+    }
+
+    // ================= GLOBAL EVENT LISTENERS =================
+    window.addEventListener("click", () => closeContextMenu());
+
+    window.addEventListener("keydown", (e) => {
+      // While hovering top-right tag-button, pressing 'R' or 'C' switches between Copy (C) and Reveal (R)
+      if (hoveredTagGuid && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        if (e.key === "r" || e.key === "R") {
+          e.preventDefault();
+          isRevealModeR = !isRevealModeR;
+          renderProjectWindow();
+          return;
+        }
+        if (e.key === "c" || e.key === "C") {
+          e.preventDefault();
+          isRevealModeR = false;
+          renderProjectWindow();
+          return;
+        }
+      }
+
+      // Shortcut Ctrl+Win+P or Alt+P in browser to toggle pin on selected Project assets
+      if ((e.key === "p" || e.key === "P") && (e.altKey || (e.ctrlKey && e.metaKey))) {
+        e.preventDefault();
+        togglePinForGuids(Array.from(selectedProjectGuids));
+      }
+    });
+
+    // View mode buttons
+    document.getElementById("btn-view-tiles").addEventListener("click", () => {
+      projectViewMode = "tiles";
+      renderProjectWindow();
+    });
+    document.getElementById("btn-view-list").addEventListener("click", () => {
+      projectViewMode = "list";
+      renderProjectWindow();
+    });
+
+    // Selection helpers
+    document.getElementById("btn-select-all-project").addEventListener("click", () => {
+      selectedProjectGuids = new Set(["a01", "a02", "a05", "a06"]);
+      renderProjectWindow();
+      showToast("Selected 4 Assets in Project Window", "Now hover any asset's top-right corner and Ctrl+Click to reveal all 4 in 1 Explorer window, or press Alt+P to batch pin!");
+    });
+    document.getElementById("btn-clear-selection-project").addEventListener("click", () => {
+      selectedProjectGuids.clear();
+      renderProjectWindow();
+    });
+
+    // Toolbar buttons
+    document.getElementById("btn-new-group").addEventListener("click", () => openGroupModal([]));
+    document.getElementById("btn-pin-selected-toolbar").addEventListener("click", () => {
+      togglePinForGuids(Array.from(selectedProjectGuids));
+    });
+    document.getElementById("btn-pin-to-group-toolbar").addEventListener("click", () => {
+      openGroupModal(Array.from(selectedProjectGuids));
+    });
+    document.getElementById("btn-expand-all").addEventListener("click", () => {
+      groups.forEach(g => g.isExpanded = true);
+      renderPinnedWindow();
+    });
+    document.getElementById("btn-collapse-all").addEventListener("click", () => {
+      groups.forEach(g => g.isExpanded = false);
+      renderPinnedWindow();
+    });
+    document.getElementById("btn-reset-demo").addEventListener("click", () => {
+      resetDemoData();
+      showToast("Demo Reset", "Restored default groups and pinned assets.");
+    });
+
+    // Search & Filter
+    document.getElementById("select-type-filter").addEventListener("change", (e) => {
+      selectedTypeFilter = e.target.value;
+      renderPinnedWindow();
+    });
+    const searchInput = document.getElementById("input-search-pinned");
+    const clearSearchBtn = document.getElementById("btn-clear-search");
+    searchInput.addEventListener("input", (e) => {
+      searchQuery = e.target.value;
+      clearSearchBtn.classList.toggle("hidden", searchQuery === "");
+      renderPinnedWindow();
+    });
+    clearSearchBtn.addEventListener("click", () => {
+      searchQuery = "";
+      searchInput.value = "";
+      clearSearchBtn.classList.add("hidden");
+      renderPinnedWindow();
+    });
+
+    // Sortable Columns
+    document.querySelectorAll("[data-sort]").forEach(header => {
+      header.addEventListener("click", () => {
+        const col = header.dataset.sort;
+        if (sortColumn === col) {
+          if (!sortAsc) sortColumn = null;
+          else sortAsc = false;
+        } else {
+          sortColumn = col;
+          sortAsc = true;
+        }
+        ["path", "type", "size"].forEach(c => {
+          const ind = document.getElementById(`sort-indicator-${c}`);
+          if (ind) ind.textContent = sortColumn === c ? (sortAsc ? "▲" : "▼") : "";
+        });
+        renderPinnedWindow();
+      });
+    });
+
+    // Context menu buttons
+    document.getElementById("ctx-pin-toggle").addEventListener("click", () => {
+      togglePinForGuids(Array.from(selectedProjectGuids));
+      closeContextMenu();
+    });
+    document.getElementById("ctx-pin-to-group").addEventListener("click", () => {
+      closeContextMenu();
+      openGroupModal(Array.from(selectedProjectGuids));
+    });
+    document.getElementById("ctx-unpin").addEventListener("click", () => {
+      const guids = Array.from(selectedProjectGuids);
+      pinnedEntries = pinnedEntries.filter(e => !guids.includes(e.guid));
+      renderAll();
+      closeContextMenu();
+    });
+    document.getElementById("ctx-copy-full-path").addEventListener("click", () => {
+      const firstGuid = Array.from(selectedProjectGuids)[0];
+      if (firstGuid) executeTagButtonClick(firstGuid, false);
+      closeContextMenu();
+    });
+    document.getElementById("ctx-reveal-explorer").addEventListener("click", () => {
+      openSimulatedExplorerModal(Array.from(selectedProjectGuids));
+      closeContextMenu();
+    });
+
+    // Group Modal buttons
+    document.getElementById("btn-close-group-modal").addEventListener("click", closeGroupModal);
+    document.getElementById("btn-cancel-group-modal").addEventListener("click", closeGroupModal);
+    document.getElementById("btn-confirm-create-group").addEventListener("click", () => {
+      const name = document.getElementById("input-new-group-name").value.trim() || "New Group";
+      const color = document.getElementById("input-new-group-color").value || "#38bdf8";
+      const newGroup = {
+        id: "grp-" + Date.now(),
+        name,
+        color,
+        isExpanded: true,
+        isDefault: false
+      };
+      groups.push(newGroup);
+      if (modalTargetGuids.length > 0) {
+        pinAssetsToGroup(modalTargetGuids, newGroup.id);
+      } else {
+        renderAll();
+        showToast(`Created group "${name}"`, `Tag color ${color} ready.`);
+      }
+      closeGroupModal();
+    });
+
+    // Explorer Modal close
+    document.getElementById("btn-close-explorer-modal").addEventListener("click", () => {
+      document.getElementById("explorer-modal-backdrop").classList.add("hidden");
+    });
+
+    // Initialize on load
+    resetDemoData();
+  </script>
+</body>
+</html>
