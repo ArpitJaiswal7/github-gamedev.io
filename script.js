@@ -246,374 +246,375 @@ function showToast(message) {
 }
 
 // --------------------------------------------------------
-// 3. Unity Lab: Interactive Workstation & Mechanics
+// 3. Unity Lab: Single-Iframe 6-Artifact + Dual-Runtime Controller
 // --------------------------------------------------------
-let flameAnimationId = null;
+const UNITY_LAB_MANIFEST = {
+  'meowsweeper': {
+    icon: '🐱',
+    title: 'MeowSweeper',
+    scene: 'MeowSweeper_Lab.unity',
+    htmlUrl: 'labs/meowsweeper.html',
+    webglUrl: 'webgl/meowsweeper/index.html',
+    hasWebgl: true,
+    unitySpecs: 'Unity 2022.3 LTS (IL2CPP / WebGL 2.0) • Discrete Multi-Touch + Hint Cascade',
+    desc: 'Meowdoku Hybrid Solver + Deterministic Hint Cascade'
+  },
+  'calm-jigsaw': {
+    icon: '🧩',
+    title: 'Calm Jigsaw',
+    scene: 'CalmJigsaw_9Signature.unity',
+    htmlUrl: 'labs/calm-jigsaw.html',
+    webglUrl: 'webgl/calm-jigsaw/index.html',
+    hasWebgl: true,
+    unitySpecs: 'Unity 2022.3 LTS (URP / Procedural 9-Signature Bezier Mesh)',
+    desc: 'Procedural N×N Bezier Mesh + Full Viewport Board & Right Piece Drawer'
+  },
+  'jigsaw-solitaire': {
+    icon: '🃏',
+    title: 'Calm Jigsaw Solitaire',
+    scene: 'CalmJigsawSolitaire.unity',
+    htmlUrl: 'labs/jigsaw-solitaire.html',
+    webglUrl: 'webgl/jigsaw-solitaire/index.html',
+    hasWebgl: true,
+    unitySpecs: 'Unity 2022.3 LTS (Spatial Group Merging + Ring Expand Shader)',
+    desc: 'Solitaire Column Queues + Spatial Cluster Merging & Powerups'
+  },
+  'offline-leaderboard': {
+    icon: '🏆',
+    title: 'Offline Leaderboard',
+    scene: 'OfflineLeaderboard_LiveOps.unity',
+    htmlUrl: 'labs/offline-leaderboard.html',
+    webglUrl: 'webgl/offline-leaderboard/index.html',
+    hasWebgl: true,
+    unitySpecs: 'Unity 2022.3 LTS (Sheet 06 Bot Convergence & Anti-Rollback Engine)',
+    desc: 'Zero-Server Bot Pacing, League Overtakes & Time-Travel Clamping Simulator'
+  },
+  'native-image-bridge': {
+    icon: '🖼️',
+    title: 'Native Image Bridge',
+    scene: 'NativeImagePipeline_Sim.unity',
+    htmlUrl: 'labs/native-image-bridge.html',
+    webglUrl: 'webgl/native-image-bridge/index.html',
+    hasWebgl: true,
+    unitySpecs: 'Unity 2022.3 LTS (3-Tier RAM LRU + Native Disk Cache + OTA Queue)',
+    desc: '3-Tier Memory LRU + Native Disk I/O + 100+ Gallery Viewport Priority Queue'
+  },
+  'asset-organizer': {
+    icon: '🗂️',
+    title: 'Asset Organizer Tool',
+    scene: 'AssetOrganizer_EditorWindow.unity',
+    htmlUrl: 'labs/asset-organizer.html',
+    webglUrl: null,
+    hasWebgl: false,
+    unitySpecs: 'Unity EditorWindow API (com.arrowstrike.asset-organizer • AssetDatabase)',
+    desc: 'Unity Editor Project Window Badges, C/R Hover Tags & Multi-Asset Explorer Reveal'
+  }
+};
+
+let activeLabDemo = 'meowsweeper';
+let activeLabRuntime = 'html'; // 'html' | 'webgl'
+let labLoaderTimer = null;
 
 function initUnityLab() {
-  const mechanicButtons = document.querySelectorAll('.mechanic-selector-btn');
-  const meowdokuView = document.getElementById('meowdoku-game-view');
-  const jigsawView = document.getElementById('jigsaw-game-view');
-  const flameView = document.getElementById('flame-game-view');
-  const aspectSelect = document.getElementById('viewport-aspect-select');
-  const viewportScreen = document.getElementById('active-viewport-screen');
-  const btnMaximize = document.getElementById('btn-maximize-viewport');
-  const consoleLogs = document.getElementById('unity-console-logs');
-  const btnClearConsole = document.getElementById('btn-clear-console');
+  const tabButtons = document.querySelectorAll('.lab-tab-btn');
+  const btnRuntimeHtml = document.getElementById('lab-runtime-html');
+  const btnRuntimeWebgl = document.getElementById('lab-runtime-webgl');
+  const btnReload = document.getElementById('lab-btn-reload');
+  const btnFullscreen = document.getElementById('lab-btn-fullscreen');
+  const btnFooterRuntime = document.getElementById('lab-footer-runtime-switch');
+  const btnWebglBackHtml = document.getElementById('webgl-btn-back-html');
+  const btnWebglTryBoot = document.getElementById('webgl-btn-try-boot');
+  const workstation = document.getElementById('unity-lab-workstation');
 
-  function logConsole(message, type = 'info') {
-    if (!consoleLogs) return;
-    const time = new Date().toLocaleTimeString('en-US', { hour12: false });
-    const logItem = document.createElement('div');
-    const color = type === 'warning' ? 'text-amber-400' : (type === 'success' ? 'text-emerald-400' : 'text-slate-300');
-    logItem.className = `flex items-center gap-2 ${color}`;
-    logItem.innerHTML = `<span class="text-slate-500 font-mono text-[10px]">[${time}]</span> <span>${message}</span>`;
-    consoleLogs.appendChild(logItem);
-    consoleLogs.scrollTop = consoleLogs.scrollHeight;
-  }
-
-  // Initial welcome log
-  logConsole('Unity 2026.1 LTS - Ready. Script Assemblies reloaded.', 'success');
-  logConsole('Meowdoku solver initialized. Deterministic hint tree ready.');
-
-  // Mechanic switching
-  mechanicButtons.forEach(btn => {
+  // Tab Click Listeners
+  tabButtons.forEach(btn => {
     btn.addEventListener('click', () => {
-      mechanicButtons.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-
-      const mechanic = btn.getAttribute('data-mechanic');
-      if (flameAnimationId) {
-        cancelAnimationFrame(flameAnimationId);
-        flameAnimationId = null;
-      }
-
-      if (mechanic === 'meowdoku') {
-        meowdokuView.classList.remove('hidden');
-        meowdokuView.classList.add('flex');
-        jigsawView.classList.add('hidden');
-        flameView.classList.add('hidden');
-        logConsole('Switched active scene to: Meowdoku Solver (Discrete Multi-touch)');
-      } else if (mechanic === 'jigsaw') {
-        meowdokuView.classList.add('hidden');
-        jigsawView.classList.remove('hidden');
-        jigsawView.classList.add('flex');
-        flameView.classList.add('hidden');
-        renderJigsawMesh();
-        logConsole('Switched active scene to: Jigsaw 9-Signature Procedural Mesh');
-      } else if (mechanic === 'flame') {
-        meowdokuView.classList.add('hidden');
-        jigsawView.classList.add('hidden');
-        flameView.classList.remove('hidden');
-        flameView.classList.add('flex');
-        startFlameSimulation();
-        logConsole('Switched active scene to: Flame Noise Procedural Shader');
+      const demoKey = btn.getAttribute('data-lab-demo');
+      if (demoKey && UNITY_LAB_MANIFEST[demoKey]) {
+        switchLabDemo(demoKey, activeLabRuntime);
       }
     });
   });
 
-  // Viewport aspect ratio switching
-  if (aspectSelect && viewportScreen) {
-    aspectSelect.addEventListener('change', () => {
-      const mode = aspectSelect.value;
-      viewportScreen.classList.remove('viewport-portrait', 'viewport-landscape', 'viewport-free');
-      if (mode === 'portrait') {
-        viewportScreen.classList.add('viewport-portrait');
-        logConsole('Camera projection updated: 9:16 Portrait (Mobile Native)');
-      } else if (mode === 'landscape') {
-        viewportScreen.classList.add('viewport-landscape');
-        logConsole('Camera projection updated: 16:9 Landscape');
-      } else {
-        viewportScreen.classList.add('viewport-free');
-        logConsole('Camera projection updated: Free Aspect Dynamic Scale');
-      }
+  // Runtime Mode Toggle Listeners
+  if (btnRuntimeHtml) {
+    btnRuntimeHtml.addEventListener('click', () => {
+      switchLabDemo(activeLabDemo, 'html');
+    });
+  }
+  if (btnRuntimeWebgl) {
+    btnRuntimeWebgl.addEventListener('click', () => {
+      switchLabDemo(activeLabDemo, 'webgl');
+    });
+  }
+  if (btnFooterRuntime) {
+    btnFooterRuntime.addEventListener('click', () => {
+      const nextRuntime = activeLabRuntime === 'html' ? 'webgl' : 'html';
+      switchLabDemo(activeLabDemo, nextRuntime);
+    });
+  }
+  if (btnWebglBackHtml) {
+    btnWebglBackHtml.addEventListener('click', () => {
+      switchLabDemo(activeLabDemo, 'html');
+    });
+  }
+  if (btnWebglTryBoot) {
+    btnWebglTryBoot.addEventListener('click', () => {
+      bootWebglInIframe(activeLabDemo);
     });
   }
 
-  // Maximize button toggles free aspect
-  if (btnMaximize && aspectSelect && viewportScreen) {
-    btnMaximize.addEventListener('click', () => {
-      if (viewportScreen.classList.contains('viewport-free')) {
-        aspectSelect.value = 'portrait';
-        aspectSelect.dispatchEvent(new Event('change'));
-      } else {
-        aspectSelect.value = 'free';
-        aspectSelect.dispatchEvent(new Event('change'));
-      }
-    });
-  }
-
-  // Play / Pause / Reload buttons
-  const btnPlay = document.getElementById('unity-btn-play');
-  const btnPause = document.getElementById('unity-btn-pause');
-  const btnReload = document.getElementById('unity-btn-reload');
-
-  if (btnPlay) {
-    btnPlay.addEventListener('click', () => {
-      logConsole('PlayMode started: 60.0 FPS, V-Sync enabled, 0 GC allocations.', 'success');
-    });
-  }
-  if (btnPause) {
-    btnPause.addEventListener('click', () => {
-      logConsole('PlayMode paused (TimeScale: 0.0)', 'warning');
-    });
-  }
+  // Reload Current Demo
   if (btnReload) {
     btnReload.addEventListener('click', () => {
-      logConsole('Compiling scripts & reloading domain assemblies...', 'info');
-      setTimeout(() => {
-        logConsole('Assembly reload complete: 0 errors, 0 warnings.', 'success');
-      }, 400);
+      switchLabDemo(activeLabDemo, activeLabRuntime, true);
     });
   }
 
-  // Clear console
-  if (btnClearConsole && consoleLogs) {
-    btnClearConsole.addEventListener('click', () => {
-      consoleLogs.innerHTML = '';
-      logConsole('Console cleared.');
+  // Fullscreen Workstation Wrapper Toggle (Keeps Top Switcher Bar Visible in Fullscreen!)
+  if (btnFullscreen && workstation) {
+    btnFullscreen.addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        if (workstation.requestFullscreen) {
+          workstation.requestFullscreen().catch(() => {
+            workstation.classList.toggle('lab-theater-fullscreen');
+            updateFullscreenButtonUI();
+          });
+        } else {
+          workstation.classList.toggle('lab-theater-fullscreen');
+          updateFullscreenButtonUI();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
     });
+
+    document.addEventListener('fullscreenchange', updateFullscreenButtonUI);
   }
 
-  // Initialize mini Meowdoku board
-  initMeowdokuBoard(logConsole);
+  // Check URL query/hash on initial load (e.g., ?lab=calm-jigsaw)
+  const params = new URLSearchParams(window.location.search);
+  const requestedLab = params.get('lab');
+  if (requestedLab && UNITY_LAB_MANIFEST[requestedLab]) {
+    switchLabDemo(requestedLab, 'html');
+  } else {
+    updateLabUIState();
+  }
 }
 
-// --------------------------------------------------------
-// 4. Meowdoku Mini Demo Logic
-// --------------------------------------------------------
-function initMeowdokuBoard(logger) {
-  const board = document.getElementById('meowdoku-board');
-  const btnHint = document.getElementById('btn-meowdoku-hint');
-  const btnReset = document.getElementById('btn-meowdoku-reset');
-  if (!board) return;
+function updateFullscreenButtonUI() {
+  const label = document.getElementById('lab-fullscreen-label');
+  const icon = document.getElementById('lab-fullscreen-icon');
+  const workstation = document.getElementById('unity-lab-workstation');
+  const isFull = Boolean(document.fullscreenElement) || (workstation && workstation.classList.contains('lab-theater-fullscreen'));
 
-  const gridSize = 5;
-  // 5x5 board state: 0 = empty, 1 = queen 🐱, 2 = cross ✕
-  let boardState = [
-    [0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0]
-  ];
+  if (label) {
+    label.textContent = isFull ? 'Exit Fullscreen' : 'Fullscreen';
+  }
+  if (icon) {
+    icon.setAttribute('data-lucide', isFull ? 'minimize-2' : 'maximize-2');
+    if (window.lucide) lucide.createIcons();
+  }
+}
 
-  function renderGrid() {
-    board.innerHTML = '';
-    for (let r = 0; r < gridSize; r++) {
-      for (let c = 0; c < gridSize; c++) {
-        const cell = document.createElement('div');
-        cell.className = 'meow-cell';
-        cell.dataset.r = r;
-        cell.dataset.c = c;
+function updateLabUIState() {
+  const item = UNITY_LAB_MANIFEST[activeLabDemo];
+  if (!item) return;
 
-        const val = boardState[r][c];
-        if (val === 1) {
-          cell.textContent = '🐱';
-        } else if (val === 2) {
-          cell.textContent = '✕';
-          cell.classList.add('marked-cross');
-        } else {
-          cell.textContent = '';
-        }
+  // Update 6 Demo Tab Pill Styles
+  document.querySelectorAll('.lab-tab-btn').forEach(btn => {
+    const key = btn.getAttribute('data-lab-demo');
+    if (key === activeLabDemo) {
+      btn.className = 'lab-tab-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 bg-sky-500/20 text-sky-300 border border-sky-500/40 shadow-sm';
+    } else {
+      btn.className = 'lab-tab-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 bg-[#21262d] text-slate-300 hover:text-white border border-transparent hover:border-slate-700';
+    }
+  });
 
-        // Left-click cycles: Empty -> 🐱 -> ✕ -> Empty
-        cell.addEventListener('click', () => {
-          boardState[r][c] = (boardState[r][c] + 1) % 3;
-          renderGrid();
-          if (logger) {
-            const sym = boardState[r][c] === 1 ? '🐱 Queen' : (boardState[r][c] === 2 ? '✕ Cross' : 'Empty');
-            logger(`User touch event: Cell (${r}, ${c}) set to ${sym}`);
-          }
-        });
+  // Update Dual-Runtime Segmented Buttons
+  const btnHtml = document.getElementById('lab-runtime-html');
+  const btnWebgl = document.getElementById('lab-runtime-webgl');
+  const dot = document.getElementById('lab-webgl-dot');
 
-        // Right click toggles cross
-        cell.addEventListener('contextmenu', (e) => {
-          e.preventDefault();
-          boardState[r][c] = boardState[r][c] === 2 ? 0 : 2;
-          renderGrid();
-        });
+  if (dot) {
+    dot.className = item.hasWebgl ? 'w-2 h-2 rounded-full bg-emerald-400' : 'w-2 h-2 rounded-full bg-amber-400';
+  }
 
-        board.appendChild(cell);
-      }
+  if (btnHtml && btnWebgl) {
+    if (activeLabRuntime === 'html') {
+      btnHtml.className = 'px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 bg-sky-500 text-slate-950 shadow';
+      btnWebgl.className = 'px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 text-slate-400 hover:text-white';
+    } else {
+      btnHtml.className = 'px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 text-slate-400 hover:text-white';
+      btnWebgl.className = 'px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 bg-purple-500 text-white shadow';
     }
   }
 
-  // Hint cascade demo
-  if (btnHint) {
-    btnHint.addEventListener('click', () => {
-      btnHint.disabled = true;
-      btnHint.classList.add('opacity-50');
-      if (logger) logger('Executing deterministic hint technique cascade...');
+  // Update Header Badge, New Tab Link, and Footer Telemetry
+  const activeBadge = document.getElementById('lab-active-badge');
+  const newTabLink = document.getElementById('lab-btn-newtab');
+  const footerSource = document.getElementById('lab-footer-source');
+  const footerDesc = document.getElementById('lab-footer-desc');
+  const footerRuntimeText = document.getElementById('lab-footer-runtime-text');
 
-      setTimeout(() => {
-        // Find first empty cell
-        let targetR = -1, targetC = -1;
-        for (let r = 0; r < gridSize; r++) {
-          for (let c = 0; c < gridSize; c++) {
-            if (boardState[r][c] === 0) {
-              targetR = r;
-              targetC = c;
-              break;
-            }
-          }
-          if (targetR !== -1) break;
-        }
+  const activeSourceUrl = (activeLabRuntime === 'webgl' && item.webglUrl) ? item.webglUrl : item.htmlUrl;
 
-        if (targetR !== -1) {
-          const cellEl = board.querySelector(`[data-r="${targetR}"][data-c="${targetC}"]`);
-          if (cellEl) {
-            cellEl.classList.add('highlight-hint');
-            if (logger) logger(`[Technique 1: Row Scan] Discovered forced candidate at (${targetR}, ${targetC}).`, 'success');
-          }
-
-          setTimeout(() => {
-            boardState[targetR][targetC] = 1;
-            renderGrid();
-            btnHint.disabled = false;
-            btnHint.classList.remove('opacity-50');
-            if (logger) logger(`Placed guaranteed Queen at (${targetR}, ${targetC}). Locks released.`, 'success');
-          }, 600);
-        } else {
-          btnHint.disabled = false;
-          btnHint.classList.remove('opacity-50');
-          if (logger) logger('All grid cells occupied. Reset to replay.', 'warning');
-        }
-      }, 300);
-    });
+  if (activeBadge) {
+    activeBadge.textContent = `Active Scene: ${item.scene} (${activeLabRuntime === 'webgl' ? 'Unity WebGL' : 'HTML Sim'})`;
   }
-
-  if (btnReset) {
-    btnReset.addEventListener('click', () => {
-      boardState = [
-        [0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0]
-      ];
-      renderGrid();
-      if (logger) logger('Meowdoku board state cleared.');
-    });
+  if (newTabLink) {
+    newTabLink.href = activeSourceUrl;
   }
-
-  renderGrid();
+  if (footerSource) {
+    footerSource.textContent = activeSourceUrl;
+  }
+  if (footerDesc) {
+    footerDesc.textContent = item.desc;
+  }
+  if (footerRuntimeText) {
+    footerRuntimeText.textContent = activeLabRuntime === 'html'
+      ? 'Switch to Unity WebGL Build →'
+      : '⚡ Back to Instant HTML Sim (0.2s) →';
+  }
 }
 
-// --------------------------------------------------------
-// 5. Jigsaw Procedural Mesh Canvas Preview
-// --------------------------------------------------------
-function renderJigsawMesh() {
-  const canvas = document.getElementById('jigsaw-canvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const w = canvas.width;
-  const h = canvas.height;
+function switchLabDemo(demoKey, runtimeMode = 'html', forceReload = false) {
+  const item = UNITY_LAB_MANIFEST[demoKey];
+  if (!item) return;
 
-  ctx.fillStyle = '#0f172a';
-  ctx.fillRect(0, 0, w, h);
+  const isSame = (activeLabDemo === demoKey && activeLabRuntime === runtimeMode && !forceReload);
+  activeLabDemo = demoKey;
+  activeLabRuntime = runtimeMode;
 
-  const cols = 3;
-  const rows = 3;
-  const cellW = w / cols;
-  const cellH = h / rows;
+  updateLabUIState();
+  if (isSame) return;
 
-  ctx.strokeStyle = '#38bdf8';
-  ctx.lineWidth = 2.5;
+  const frame = document.getElementById('unity-lab-frame');
+  const loader = document.getElementById('lab-scene-loader');
+  const loaderIcon = document.getElementById('lab-loader-icon');
+  const loaderTitle = document.getElementById('lab-loader-title');
+  const loaderSub = document.getElementById('lab-loader-sub');
+  const webglPanel = document.getElementById('lab-webgl-panel');
 
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      const x = c * cellW;
-      const y = r * cellH;
+  if (!frame) return;
 
-      ctx.save();
-      ctx.translate(x, y);
+  clearTimeout(labLoaderTimer);
 
-      // Draw jigsaw piece boundary with simulated tab/blank Bezier bumps
-      ctx.beginPath();
-      ctx.rect(4, 4, cellW - 8, cellH - 8);
-      ctx.fillStyle = (r + c) % 2 === 0 ? 'rgba(56, 189, 248, 0.12)' : 'rgba(245, 158, 11, 0.12)';
-      ctx.fill();
-      ctx.stroke();
+  if (runtimeMode === 'webgl') {
+    // Populate WebGL Runtime Launcher Card
+    const cardIcon = document.getElementById('webgl-card-icon');
+    const cardBadge = document.getElementById('webgl-card-badge');
+    const cardTitle = document.getElementById('webgl-card-title');
+    const cardDesc = document.getElementById('webgl-card-desc');
+    const spec1 = document.getElementById('webgl-spec-line1');
+    const btnTryBoot = document.getElementById('webgl-btn-try-boot');
 
-      // Draw center signature ID
-      ctx.fillStyle = '#94a3b8';
-      ctx.font = '10px monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText(`SIG-${r * 3 + c + 1}`, cellW / 2, cellH / 2 + 4);
+    if (cardIcon) cardIcon.textContent = item.icon;
+    if (spec1) spec1.textContent = `• Target: ${item.unitySpecs}`;
 
-      ctx.restore();
-    }
-  }
-
-  // Draw procedural connector tabs
-  ctx.fillStyle = '#38bdf8';
-  ctx.beginPath();
-  ctx.arc(cellW, cellH / 2, 7, 0, Math.PI * 2);
-  ctx.arc(cellW * 2, cellH * 1.5, 7, 0, Math.PI * 2);
-  ctx.fill();
-}
-
-// --------------------------------------------------------
-// 6. Procedural Flame Noise Simulation
-// --------------------------------------------------------
-function startFlameSimulation() {
-  const canvas = document.getElementById('flame-canvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const w = canvas.width;
-  const h = canvas.height;
-
-  const particles = [];
-  for (let i = 0; i < 40; i++) {
-    particles.push({
-      x: w / 2 + (Math.random() - 0.5) * 60,
-      y: h - 20 - Math.random() * 80,
-      vx: (Math.random() - 0.5) * 1.5,
-      vy: -1.5 - Math.random() * 2.5,
-      radius: 12 + Math.random() * 16,
-      life: Math.random() * 0.8 + 0.2
-    });
-  }
-
-  function loop() {
-    ctx.fillStyle = '#080c14';
-    ctx.fillRect(0, 0, w, h);
-
-    particles.forEach(p => {
-      p.x += p.vx;
-      p.y += p.vy;
-      p.life -= 0.02;
-      p.radius *= 0.98;
-
-      if (p.life <= 0 || p.y < 20) {
-        p.x = w / 2 + (Math.random() - 0.5) * 60;
-        p.y = h - 25;
-        p.vx = (Math.random() - 0.5) * 1.5;
-        p.vy = -1.5 - Math.random() * 2.5;
-        p.radius = 12 + Math.random() * 16;
-        p.life = 1.0;
+    if (!item.hasWebgl) {
+      if (cardBadge) cardBadge.textContent = 'UNITY EDITORWINDOW TOOL';
+      if (cardTitle) cardTitle.textContent = `${item.title} — Unity Editor API Simulator`;
+      if (cardDesc) {
+        cardDesc.innerHTML = `Because <strong class="text-white">${item.title}</strong> is a Unity Editor extension (<code class="text-sky-300 font-mono">UnityEditor.AssetDatabase</code>), its full interactive experience runs in the <strong class="text-sky-300">⚡ Instant Lab Sim</strong> tab (which also includes the downloadable <code class="text-emerald-300 font-mono">.unitypackage</code>!).`;
       }
+      if (btnTryBoot) btnTryBoot.classList.add('hidden');
+    } else {
+      if (cardBadge) cardBadge.textContent = 'UNITY WEBGL 2.0 WASM BUILD';
+      if (cardTitle) cardTitle.textContent = `${item.title} — Compiled Unity WebGL Runtime`;
+      if (cardDesc) {
+        cardDesc.innerHTML = `Ready to mount compiled C# / IL2CPP WebAssembly build from <code class="text-purple-300 font-mono">${item.webglUrl}</code> inside this single isolated viewport.`;
+      }
+      if (btnTryBoot) btnTryBoot.classList.remove('hidden');
+    }
 
-      const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius);
-      grad.addColorStop(0, 'rgba(255, 200, 50, 0.8)');
-      grad.addColorStop(0.5, 'rgba(255, 80, 0, 0.5)');
-      grad.addColorStop(1, 'rgba(100, 0, 0, 0)');
-
-      ctx.fillStyle = grad;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-      ctx.fill();
-    });
-
-    flameAnimationId = requestAnimationFrame(loop);
+    if (webglPanel) {
+      webglPanel.classList.remove('hidden');
+      webglPanel.classList.add('flex');
+    }
+    return;
   }
 
-  loop();
+  // Hide WebGL overlay when in Instant HTML Sim mode
+  if (webglPanel) {
+    webglPanel.classList.add('hidden');
+    webglPanel.classList.remove('flex');
+  }
+
+  // Show Authentic Unity SceneManager Transition Curtain
+  if (loader) {
+    if (loaderIcon) loaderIcon.textContent = item.icon;
+    if (loaderTitle) {
+      loaderTitle.innerHTML = `SceneManager.LoadSceneAsync("<span class="text-sky-400">${item.scene}</span>")`;
+    }
+    if (loaderSub) {
+      loaderSub.textContent = 'GC.Collect() complete • Single instance active in iframe';
+    }
+    loader.classList.remove('hidden');
+  }
+
+  const hideLoader = () => {
+    clearTimeout(labLoaderTimer);
+    if (loader) loader.classList.add('hidden');
+  };
+
+  frame.onload = hideLoader;
+  // Fallback timeout in case onload fires early on cached local files
+  labLoaderTimer = setTimeout(hideLoader, 320);
+
+  // Swap the single iframe src (100% unloads previous DOM, timers & canvases)
+  frame.src = forceReload
+    ? `${item.htmlUrl}?t=${Date.now()}`
+    : item.htmlUrl;
 }
 
+function bootWebglInIframe(demoKey) {
+  const item = UNITY_LAB_MANIFEST[demoKey];
+  if (!item || !item.webglUrl) return;
+
+  const frame = document.getElementById('unity-lab-frame');
+  const webglPanel = document.getElementById('lab-webgl-panel');
+  const loader = document.getElementById('lab-scene-loader');
+  const loaderIcon = document.getElementById('lab-loader-icon');
+  const loaderTitle = document.getElementById('lab-loader-title');
+  const loaderSub = document.getElementById('lab-loader-sub');
+
+  if (webglPanel) {
+    webglPanel.classList.add('hidden');
+    webglPanel.classList.remove('flex');
+  }
+
+  if (loader) {
+    if (loaderIcon) loaderIcon.textContent = '🎮';
+    if (loaderTitle) {
+      loaderTitle.innerHTML = `createUnityInstance("<span class="text-purple-400">${item.webglUrl}</span>")`;
+    }
+    if (loaderSub) {
+      loaderSub.textContent = 'Booting Unity WebGL 2.0 WASM Binary • Single-Iframe Auto GC';
+    }
+    loader.classList.remove('hidden');
+  }
+
+  if (frame) {
+    frame.onload = () => {
+      if (loader) loader.classList.add('hidden');
+    };
+    setTimeout(() => {
+      if (loader) loader.classList.add('hidden');
+    }, 450);
+    frame.src = item.webglUrl;
+  }
+}
+
+// Global helper so Shipped Games cards & Blueprints can jump directly to any demo in Unity Lab
+window.openLabDemo = function(demoKey, runtimeMode = 'html') {
+  switchLabDemo(demoKey, runtimeMode);
+};
+
 // --------------------------------------------------------
-// 7. Blueprint Split-View Terminal (Zone 3)
+// 4. Blueprint Split-View Terminal (Zone 3)
 // --------------------------------------------------------
 const blueprintsData = [
   {
@@ -623,7 +624,8 @@ const blueprintsData = [
     domain: 'Platform Services',
     engine: 'Unity (Android + iOS)',
     desc: 'Fetches, resizes, and caches remote images across Android, iOS, and Unity Editor through one shared C# API surface.',
-    img: 'assets/blueprints/sheet-02-native-image-pipeline.png'
+    img: 'assets/blueprints/sheet-02-native-image-pipeline.png',
+    labDemo: 'native-image-bridge'
   },
   {
     id: 'sheet-09',
@@ -632,7 +634,8 @@ const blueprintsData = [
     domain: 'Core Gameplay Logic',
     engine: 'Unity',
     desc: 'Dynamic procedural N×N board generator using 9 tab/blank edge signatures with custom shader UV quad projections.',
-    img: 'assets/blueprints/sheet-09-jigsaw-board-renderer.png'
+    img: 'assets/blueprints/sheet-09-jigsaw-board-renderer.png',
+    labDemo: 'calm-jigsaw'
   },
   {
     id: 'sheet-10',
@@ -641,7 +644,8 @@ const blueprintsData = [
     domain: 'Core Gameplay Logic',
     engine: 'Unity',
     desc: 'Multi-touch gesture router with input locks during animations and an ordered hint-technique cascade.',
-    img: 'assets/blueprints/sheet-10-meowdoku.png'
+    img: 'assets/blueprints/sheet-10-meowdoku.png',
+    labDemo: 'meowsweeper'
   },
   {
     id: 'sheet-06',
@@ -650,7 +654,8 @@ const blueprintsData = [
     domain: 'LiveOps / Retention',
     engine: 'Unity',
     desc: 'Zero-server-cost bot simulation engine generating dynamic seasonal leagues, rank advancement, and anti-rollback clamping.',
-    img: 'assets/blueprints/sheet-06-offline-leaderboard.png'
+    img: 'assets/blueprints/sheet-06-offline-leaderboard.png',
+    labDemo: 'offline-leaderboard'
   },
   {
     id: 'sheet-08',
@@ -659,7 +664,8 @@ const blueprintsData = [
     domain: 'Platform Services',
     engine: 'Unity',
     desc: 'Background manifest-diffing synchronizer that never blocks game boot sequence, applying content cleanly on subsequent launch.',
-    img: 'assets/blueprints/sheet-08-level-sync.png'
+    img: 'assets/blueprints/sheet-08-level-sync.png',
+    labDemo: 'native-image-bridge'
   },
   {
     id: 'sheet-04',
@@ -668,7 +674,8 @@ const blueprintsData = [
     domain: 'Monetization',
     engine: 'Unity (Android + iOS)',
     desc: 'Dual-currency store gateway (real money vs soft currency) with strict grant-then-confirm verification.',
-    img: 'assets/blueprints/sheet-04-iap-system.png'
+    img: 'assets/blueprints/sheet-04-iap-system.png',
+    labDemo: null
   },
   {
     id: 'sheet-13',
@@ -677,7 +684,8 @@ const blueprintsData = [
     domain: 'Editor Tooling / IPC',
     engine: 'Unity + Python (offline)',
     desc: 'Cross-process communication tool linking Unity C# to an offline Python translation subprocess over stdin/stdout JSON codecs.',
-    img: 'assets/blueprints/sheet-13-argos-localization.png'
+    img: 'assets/blueprints/sheet-13-argos-localization.png',
+    labDemo: null
   },
   {
     id: 'sheet-11',
@@ -686,7 +694,8 @@ const blueprintsData = [
     domain: 'Unity Editor DX',
     engine: 'Unity Editor',
     desc: 'Developer productivity tool adding project window asset pinning, custom category badges, and asset movement watchers.',
-    img: 'assets/blueprints/sheet-11-asset-organizer-tool.png'
+    img: 'assets/blueprints/sheet-11-asset-organizer-tool.png',
+    labDemo: 'asset-organizer'
   },
   {
     id: 'sheet-12',
@@ -695,7 +704,8 @@ const blueprintsData = [
     domain: 'Tech Art & Shaders',
     engine: 'Unity',
     desc: 'Lightweight 2-file procedural noise shader and C# driver creating dynamic ambient fire visuals on UI canvases.',
-    img: 'assets/blueprints/sheet-12-flame-flicker-effect.png'
+    img: 'assets/blueprints/sheet-12-flame-flicker-effect.png',
+    labDemo: 'jigsaw-solitaire'
   }
 ];
 
@@ -706,8 +716,26 @@ function initBlueprintTerminal() {
   const stageDomain = document.getElementById('bp-stage-domain');
   const stageDesc = document.getElementById('bp-stage-desc');
   const zoomBtn = document.getElementById('btn-zoom-blueprint');
+  const launchLabBtn = document.getElementById('btn-launch-blueprint-lab');
 
   if (!navContainer) return;
+
+  function syncLaunchLabButton(bp) {
+    if (!launchLabBtn) return;
+    if (bp.labDemo && UNITY_LAB_MANIFEST[bp.labDemo]) {
+      launchLabBtn.classList.remove('hidden');
+      launchLabBtn.classList.add('flex');
+      launchLabBtn.onclick = () => {
+        window.openLabDemo(bp.labDemo, 'html');
+      };
+    } else {
+      launchLabBtn.classList.add('hidden');
+      launchLabBtn.classList.remove('flex');
+    }
+  }
+
+  // Sync initial blueprint (Sheet 02 -> Native Image Bridge)
+  syncLaunchLabButton(blueprintsData[0]);
 
   blueprintsData.forEach((bp, idx) => {
     const item = document.createElement('button');
@@ -732,6 +760,7 @@ function initBlueprintTerminal() {
       stageDomain.textContent = `INDEPENDENT SYSTEM — ${bp.domain.toUpperCase()}`;
       stageDesc.textContent = bp.desc;
       stageImg.src = bp.img;
+      syncLaunchLabButton(bp);
     });
 
     navContainer.appendChild(item);
@@ -753,7 +782,7 @@ function initBlueprintTerminal() {
 }
 
 // --------------------------------------------------------
-// 8. Lightbox Inspection Modal
+// 5. Lightbox Inspection Modal
 // --------------------------------------------------------
 function initLightbox() {
   const modal = document.getElementById('lightbox-modal');

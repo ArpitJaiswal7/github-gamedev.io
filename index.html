@@ -210,8 +210,12 @@
             </div>
           </div>
 
-          <div class="p-5 pt-0">
-            <a href="https://play.google.com/store/apps/details?id=com.meow.sweeper.sudoku.puzzle.game" target="_blank" rel="noopener" class="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-white text-xs font-semibold flex items-center justify-center gap-2 transition-all">
+          <div class="p-5 pt-0 flex gap-2">
+            <a href="#mechanics-lab" onclick="window.openLabDemo && window.openLabDemo('meowsweeper', 'html')" class="flex-1 py-2.5 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/40 text-sky-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all">
+              <i data-lucide="cpu" class="w-3.5 h-3.5 text-sky-400"></i>
+              <span>Play in Unity Lab</span>
+            </a>
+            <a href="https://play.google.com/store/apps/details?id=com.meow.sweeper.sudoku.puzzle.game" target="_blank" rel="noopener" class="flex-1 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-all">
               <i data-lucide="play" class="w-3.5 h-3.5 text-emerald-400 fill-emerald-400"></i>
               <span>Google Play</span>
             </a>
@@ -244,8 +248,12 @@
             </div>
           </div>
 
-          <div class="p-5 pt-0">
-            <a href="https://play.google.com/store/apps/details?id=com.calm.jigsaw.puzzle" target="_blank" rel="noopener" class="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-white text-xs font-semibold flex items-center justify-center gap-2 transition-all">
+          <div class="p-5 pt-0 flex gap-2">
+            <a href="#mechanics-lab" onclick="window.openLabDemo && window.openLabDemo('calm-jigsaw', 'html')" class="flex-1 py-2.5 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/40 text-sky-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all">
+              <i data-lucide="cpu" class="w-3.5 h-3.5 text-sky-400"></i>
+              <span>Play in Unity Lab</span>
+            </a>
+            <a href="https://play.google.com/store/apps/details?id=com.calm.jigsaw.puzzle" target="_blank" rel="noopener" class="flex-1 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-all">
               <i data-lucide="play" class="w-3.5 h-3.5 text-emerald-400 fill-emerald-400"></i>
               <span>Google Play</span>
             </a>
@@ -278,8 +286,12 @@
             </div>
           </div>
 
-          <div class="p-5 pt-0">
-            <a href="https://play.google.com/store/apps/details?id=com.calm.jigsaw.solitaire" target="_blank" rel="noopener" class="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-white text-xs font-semibold flex items-center justify-center gap-2 transition-all">
+          <div class="p-5 pt-0 flex gap-2">
+            <a href="#mechanics-lab" onclick="window.openLabDemo && window.openLabDemo('jigsaw-solitaire', 'html')" class="flex-1 py-2.5 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/40 text-sky-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all">
+              <i data-lucide="cpu" class="w-3.5 h-3.5 text-sky-400"></i>
+              <span>Play in Unity Lab</span>
+            </a>
+            <a href="https://play.google.com/store/apps/details?id=com.calm.jigsaw.solitaire" target="_blank" rel="noopener" class="flex-1 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-all">
               <i data-lucide="play" class="w-3.5 h-3.5 text-emerald-400 fill-emerald-400"></i>
               <span>Google Play</span>
             </a>
@@ -289,208 +301,188 @@
       </div>
     </section>
 
-    <!-- ================= SCREEN 2: EMBEDDED UNITY EDITOR WORKSTATION (ZONE 2: UNITY LAB) ================= -->
-    <section id="mechanics-lab" class="space-y-5 scroll-mt-24">
-      <div>
-        <div class="text-xs font-mono text-sky-400 uppercase tracking-wider flex items-center gap-2">
-          <i data-lucide="cpu" class="w-4 h-4"></i> Interactive Engine Sandbox
+    <!-- ================= SCREEN 2: UNITY LAB — FULL-VIEWPORT INTERACTIVE ARTIFACT & WEBGL WORKSTATION ================= -->
+    <section id="mechanics-lab" class="space-y-4 scroll-mt-24">
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-3">
+        <div>
+          <div class="text-xs font-mono text-sky-400 uppercase tracking-wider flex items-center gap-2">
+            <i data-lucide="cpu" class="w-4 h-4"></i> Interactive Gameplay &amp; Systems Sandbox
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight mt-1">Unity Lab: Playable Vertical Slices &amp; Engine Simulators</h2>
+          <p class="text-xs sm:text-sm text-slate-400 mt-1">
+            Switch between 6 live playable systems below &bull; Only 1 instance runs in memory at a time &bull; Supports embedded &amp; 100% Fullscreen play
+          </p>
         </div>
-        <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight mt-1">Unity Lab: Embedded Editor Workstation</h2>
-        <p class="text-xs sm:text-sm text-slate-400 mt-1">Test real game mechanics live in an authentic game engine layout</p>
+
+        <div class="flex items-center gap-2 text-xs font-mono text-slate-400 bg-[#111622] px-3 py-1.5 rounded-xl border border-slate-800">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="lab-active-badge">Active Scene: MeowSweeper_Lab.unity</span>
+        </div>
       </div>
 
-      <!-- Unity Editor Main Window Container -->
-      <div class="unity-window overflow-hidden">
-        
-        <!-- Unity Editor Top Control Bar -->
-        <div class="unity-header px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs font-mono text-slate-300">
+      <!-- Prefetch hints for instant tab switching -->
+      <link rel="prefetch" href="labs/meowsweeper.html">
+      <link rel="prefetch" href="labs/calm-jigsaw.html">
+      <link rel="prefetch" href="labs/jigsaw-solitaire.html">
+      <link rel="prefetch" href="labs/offline-leaderboard.html">
+      <link rel="prefetch" href="labs/native-image-bridge.html">
+      <link rel="prefetch" href="labs/asset-organizer.html">
+
+      <!-- Unity Lab Full-Window Workstation Wrapper (Can enter 100% Monitor Fullscreen WITH Top Switcher Bar intact!) -->
+      <div id="unity-lab-workstation" class="unity-window overflow-hidden flex flex-col bg-[#0d1117] border border-[#30363d] rounded-2xl shadow-2xl h-[86vh] min-h-[680px] max-h-[960px] transition-all">
+
+        <!-- TOP BAR: 6 DEMO SWITCHER TABS (LEFT) + DUAL-RUNTIME TOGGLE & VIEWPORT CONTROLS (RIGHT) -->
+        <div class="shrink-0 bg-[#161b22] border-b border-[#30363d] px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-2.5 z-20">
           
-          <!-- Window Dots & Unity Branding -->
-          <div class="flex items-center space-x-3">
-            <div class="flex space-x-1.5">
+          <!-- Left: Window Dots + 6 Project Switcher Buttons -->
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <div class="flex items-center space-x-1.5 pr-2.5 border-r border-[#30363d]">
               <span class="w-3 h-3 rounded-full bg-[#ff5f56] inline-block"></span>
               <span class="w-3 h-3 rounded-full bg-[#ffbd2e] inline-block"></span>
               <span class="w-3 h-3 rounded-full bg-[#27c93f] inline-block"></span>
-            </div>
-            <div class="h-4 w-px bg-slate-700"></div>
-            <span class="font-bold text-white flex items-center gap-1.5">
-              <i data-lucide="box" class="w-4 h-4 text-sky-400"></i> Unity 2026.1 LTS
-            </span>
-          </div>
-
-          <!-- Transport Play Controls -->
-          <div class="flex items-center space-x-1 bg-[#1e1e1e] p-1 rounded-md border border-[#383838]">
-            <button id="unity-btn-play" class="px-3 py-1 rounded bg-[#2a2a2a] hover:bg-sky-600 text-white text-[11px] font-bold flex items-center gap-1 transition-colors">
-              <i data-lucide="play" class="w-3 h-3 fill-current text-emerald-400"></i> Play
-            </button>
-            <button id="unity-btn-pause" class="px-2.5 py-1 rounded hover:bg-[#333] text-slate-400 hover:text-white text-[11px] transition-colors">
-              <i data-lucide="pause" class="w-3 h-3"></i>
-            </button>
-            <button id="unity-btn-reload" class="px-2.5 py-1 rounded hover:bg-[#333] text-slate-400 hover:text-white text-[11px] transition-colors">
-              <i data-lucide="rotate-ccw" class="w-3 h-3"></i>
-            </button>
-          </div>
-
-          <!-- Viewport Aspect Ratio & Engine Stats -->
-          <div class="flex items-center space-x-3">
-            <!-- Aspect Ratio Selector -->
-            <div class="flex items-center space-x-1.5 bg-[#1e1e1e] px-2 py-1 rounded border border-[#383838]">
-              <span class="text-slate-400 text-[11px]">Aspect:</span>
-              <select id="viewport-aspect-select" class="bg-transparent text-sky-400 font-mono text-[11px] outline-none cursor-pointer">
-                <option value="portrait" selected>9:16 Portrait (Mobile)</option>
-                <option value="landscape">16:9 Landscape</option>
-                <option value="free">Free Aspect</option>
-              </select>
+              <span class="ml-1.5 font-mono text-xs font-bold text-sky-400 hidden sm:inline">UNITY LAB</span>
             </div>
 
-            <!-- Stats -->
-            <span class="text-slate-400 text-[11px] hidden sm:inline">60 FPS &bull; 18MB</span>
-
-            <!-- Maximize Button -->
-            <button id="btn-maximize-viewport" class="p-1 rounded hover:bg-[#333] text-slate-400 hover:text-white transition-colors" title="Toggle Free Aspect">
-              <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i>
-            </button>
-          </div>
-        </div>
-
-        <!-- Unity Editor 3-Column Layout -->
-        <div class="grid grid-cols-1 md:grid-cols-12 min-h-[500px] border-b border-[#383838]">
-          
-          <!-- Column 1: Project Hierarchy (Left Panel) -->
-          <div class="md:col-span-3 unity-panel border-r p-3 space-y-3 font-mono text-xs">
-            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between pb-1 border-b border-[#333]">
-              <span>Project Hierarchy</span>
-              <i data-lucide="layers" class="w-3.5 h-3.5"></i>
-            </div>
-
-            <!-- Tree Structure -->
-            <div class="space-y-1">
-              <div class="text-[11px] text-slate-500 font-bold px-2 py-1">▼ Core Mechanics</div>
-              <button data-mechanic="meowdoku" class="mechanic-selector-btn active w-full text-left px-3 py-1.5 rounded unity-tree-item flex items-center gap-2">
-                <span>🐱</span> <span>Meowdoku Solver</span>
+            <!-- 6 Demo Tabs (Strictly 1 Active Instance at a Time) -->
+            <div class="flex items-center gap-1.5 flex-wrap" id="unity-lab-tabs" role="tablist">
+              <button type="button" data-lab-demo="meowsweeper" class="lab-tab-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 bg-sky-500/20 text-sky-300 border border-sky-500/40 shadow-sm">
+                <span>🐱</span> <span>MeowSweeper</span>
               </button>
-              <button data-mechanic="jigsaw" class="mechanic-selector-btn w-full text-left px-3 py-1.5 rounded unity-tree-item flex items-center gap-2">
-                <span>🧩</span> <span>Jigsaw 9-Signature</span>
+              <button type="button" data-lab-demo="calm-jigsaw" class="lab-tab-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 bg-[#21262d] text-slate-300 hover:text-white border border-transparent hover:border-slate-700">
+                <span>🧩</span> <span>Calm Jigsaw</span>
               </button>
-              <button data-mechanic="flame" class="mechanic-selector-btn w-full text-left px-3 py-1.5 rounded unity-tree-item flex items-center gap-2">
-                <span>🔥</span> <span>Flame Noise Shader</span>
+              <button type="button" data-lab-demo="jigsaw-solitaire" class="lab-tab-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 bg-[#21262d] text-slate-300 hover:text-white border border-transparent hover:border-slate-700">
+                <span>🃏</span> <span>Jigsaw Solitaire</span>
+              </button>
+              <button type="button" data-lab-demo="offline-leaderboard" class="lab-tab-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 bg-[#21262d] text-slate-300 hover:text-white border border-transparent hover:border-slate-700">
+                <span>🏆</span> <span>Offline Leaderboard</span>
+              </button>
+              <button type="button" data-lab-demo="native-image-bridge" class="lab-tab-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 bg-[#21262d] text-slate-300 hover:text-white border border-transparent hover:border-slate-700">
+                <span>🖼️</span> <span>Native Image Bridge</span>
+              </button>
+              <button type="button" data-lab-demo="asset-organizer" class="lab-tab-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 bg-[#21262d] text-slate-300 hover:text-white border border-transparent hover:border-slate-700">
+                <span>🗂️</span> <span>Asset Organizer</span>
               </button>
             </div>
-
-            <!-- Build Target Info -->
-            <div class="pt-6 border-t border-[#333] space-y-1 text-[11px] text-slate-400">
-              <div class="text-white font-bold">Build Configuration</div>
-              <div>Platform: WebGL / Mobile</div>
-              <div>Renderer: Canvas / WebGL</div>
-              <div>Optimization: Zero GC Allocation</div>
-            </div>
           </div>
 
-          <!-- Column 2: Game Viewport (Center Panel) -->
-          <div class="md:col-span-6 bg-[#181818] p-4 flex flex-col justify-between items-center relative overflow-hidden">
+          <!-- Right: Dual-Runtime Toggle (Instant HTML Sim vs Unity WebGL Build) + Reload + Standalone + Fullscreen -->
+          <div class="flex items-center gap-2 flex-wrap">
             
-            <!-- Viewport Screen Container (Controlled by Aspect Ratio) -->
-            <div id="active-viewport-screen" class="viewport-frame viewport-portrait p-3 flex flex-col justify-between items-center w-full">
-              
-              <!-- Dynamic Game Content Holder -->
-              <div id="game-canvas-container" class="w-full h-full flex flex-col items-center justify-center">
-                <!-- Meowdoku Active View (Default) -->
-                <div id="meowdoku-game-view" class="flex flex-col items-center space-y-3 w-full">
-                  <div class="text-[11px] font-mono text-slate-400 text-center">Tap cell to toggle 🐱 Queen or ✕ Cross</div>
-                  <div id="meowdoku-board" class="grid grid-cols-5 gap-1.5 p-2 bg-[#121620] rounded-xl border border-slate-700 shadow-inner"></div>
-                </div>
-
-                <!-- Jigsaw Active View -->
-                <div id="jigsaw-game-view" class="hidden flex-col items-center space-y-3 w-full">
-                  <div class="text-[11px] font-mono text-slate-400 text-center mb-1">Procedural 9-Signature Edge Mesh</div>
-                  <canvas id="jigsaw-canvas" width="260" height="260" class="rounded-xl border border-slate-700 shadow-lg"></canvas>
-                </div>
-
-                <!-- Flame Active View -->
-                <div id="flame-game-view" class="hidden flex-col items-center space-y-3 w-full">
-                  <div class="text-[11px] font-mono text-slate-400 text-center mb-1">Dynamic Procedural Flame Noise</div>
-                  <canvas id="flame-canvas" width="260" height="240" class="rounded-xl border border-slate-700 shadow-lg"></canvas>
-                </div>
-              </div>
-
-              <!-- In-Viewport Quick Controls -->
-              <div class="flex items-center gap-2 pt-2">
-                <button id="btn-meowdoku-hint" class="px-3 py-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 text-black font-mono font-bold text-[11px] flex items-center gap-1 shadow-md transition-all">
-                  <i data-lucide="sparkles" class="w-3 h-3"></i> Run Hint Cascade
-                </button>
-                <button id="btn-meowdoku-reset" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono text-[11px] border border-slate-700 transition-all">
-                  Reset
-                </button>
-              </div>
+            <!-- Dual-Runtime Segmented Control -->
+            <div class="flex items-center bg-[#0d1117] p-0.5 rounded-xl border border-[#30363d] shadow-inner" title="Switch between Instant HTML Architecture Prototype and Compiled Unity WebGL WASM Build">
+              <button type="button" id="lab-runtime-html" class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 bg-sky-500 text-slate-950 shadow">
+                <span>⚡</span>
+                <span>Instant Lab Sim</span>
+              </button>
+              <button type="button" id="lab-runtime-webgl" class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 text-slate-400 hover:text-white">
+                <span>🎮</span>
+                <span>Unity WebGL</span>
+                <span id="lab-webgl-dot" class="w-2 h-2 rounded-full bg-emerald-400" title="Unity WebGL Runtime Mode"></span>
+              </button>
             </div>
 
-            <!-- Viewport Bottom Stats Bar -->
-            <div class="w-full pt-3 flex items-center justify-between text-[11px] font-mono text-slate-400 border-t border-[#2a2a2a] mt-2">
-              <span>Display 1 (Standalone)</span>
-              <span>V-Sync: 60Hz</span>
-            </div>
-          </div>
+            <div class="h-4 w-px bg-[#30363d] hidden sm:block"></div>
 
-          <!-- Column 3: Unity Inspector (Right Panel) -->
-          <div class="md:col-span-3 unity-panel border-l p-3 space-y-4 font-mono text-xs">
-            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between pb-1 border-b border-[#333]">
-              <span>Inspector</span>
-              <i data-lucide="sliders" class="w-3.5 h-3.5"></i>
-            </div>
+            <!-- Reload Active Demo -->
+            <button type="button" id="lab-btn-reload" class="px-2.5 py-1.5 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-slate-200 border border-[#30363d] text-xs font-semibold cursor-pointer transition flex items-center gap-1" title="Reload Current Artifact">
+              <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+              <span class="hidden lg:inline">Reload</span>
+            </button>
 
-            <!-- Component 1: Transform -->
-            <div class="bg-[#1e1e1e] p-2.5 rounded border border-[#333] space-y-2">
-              <div class="font-bold text-white text-[11px]">▼ Transform</div>
-              <div class="grid grid-cols-3 gap-1 text-[10px] text-slate-400">
-                <div>Pos: 0, 0, 0</div>
-                <div>Rot: 0, 0, 0</div>
-                <div>Scale: 1, 1, 1</div>
-              </div>
-            </div>
+            <!-- Open in New Tab -->
+            <a id="lab-btn-newtab" href="labs/meowsweeper.html" target="_blank" rel="noopener" class="px-2.5 py-1.5 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-slate-200 border border-[#30363d] text-xs font-semibold cursor-pointer transition flex items-center gap-1" title="Open Current Demo in Standalone Browser Tab">
+              <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+              <span class="hidden xl:inline">New Tab</span>
+            </a>
 
-            <!-- Component 2: Active C# Script -->
-            <div class="bg-[#1e1e1e] p-2.5 rounded border border-[#333] space-y-3">
-              <div class="font-bold text-sky-400 text-[11px]">▼ PuzzleController (Script)</div>
-              
-              <div class="space-y-2 text-[11px]">
-                <div class="space-y-1">
-                  <label class="text-slate-400">Grid Dimension</label>
-                  <input id="inspector-grid-size" type="range" min="3" max="5" value="5" class="w-full accent-sky-400">
-                </div>
-
-                <div class="space-y-1">
-                  <label class="text-slate-400">Solver Speed (ms)</label>
-                  <input id="inspector-solver-speed" type="range" min="10" max="100" value="40" class="w-full accent-sky-400">
-                </div>
-
-                <div class="pt-1 text-[10px] text-slate-400 space-y-0.5">
-                  <div>Input Lockout: <span class="text-emerald-400">Active During Hint</span></div>
-                  <div>Save Hash: <span class="text-sky-300">0x8F32C</span></div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Component 3: Public C# API -->
-            <div class="bg-[#1e1e1e] p-2.5 rounded border border-[#333] space-y-1.5 text-[10px]">
-              <div class="font-bold text-slate-300 text-[11px]">Public Interface Methods</div>
-              <div class="text-slate-400 space-y-0.5">
-                <div>&bull; <code class="text-sky-300">SolveNextTechnique()</code></div>
-                <div>&bull; <code class="text-sky-300">ValidatePlacement(int r, int c)</code></div>
-                <div>&bull; <code class="text-sky-300">OnBoardSolved()</code></div>
-              </div>
-            </div>
+            <!-- Fullscreen Workstation Toggle (Keeps Top Switcher Bar Visible in Fullscreen!) -->
+            <button type="button" id="lab-btn-fullscreen" class="px-3 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-bold cursor-pointer transition flex items-center gap-1.5 shadow-sm" title="Toggle Fullscreen Workstation">
+              <i data-lucide="maximize-2" class="w-3.5 h-3.5" id="lab-fullscreen-icon"></i>
+              <span id="lab-fullscreen-label">Fullscreen</span>
+            </button>
           </div>
         </div>
 
-        <!-- Bottom Unity Console Panel -->
-        <div class="unity-header px-4 py-2 flex items-center justify-between border-t border-[#383838] text-[11px] font-mono text-slate-400">
+        <!-- CENTER VIEWPORT STAGE (Holds the Single Active <iframe> OR WebGL Launcher Overlay) -->
+        <div class="flex-1 min-h-0 relative bg-[#0d1117] flex flex-col overflow-hidden">
+
+          <!-- Approach #3 Unity SceneManager Transition Curtain -->
+          <div id="lab-scene-loader" class="hidden absolute inset-0 bg-[#0d1117]/95 backdrop-blur-md z-30 flex flex-col items-center justify-center gap-3 transition-opacity duration-200">
+            <div class="flex items-center gap-2 text-sm font-mono font-bold text-white">
+              <span id="lab-loader-icon" class="text-lg">🐱</span>
+              <span id="lab-loader-title">SceneManager.LoadSceneAsync("<span class="text-sky-400">MeowSweeper_Lab.unity</span>")</span>
+            </div>
+            <div class="w-72 sm:w-80 h-2 rounded-full bg-[#21262d] overflow-hidden border border-[#30363d]">
+              <div id="lab-loader-bar" class="h-full bg-sky-400 rounded-full lab-progress-anim"></div>
+            </div>
+            <div id="lab-loader-sub" class="text-xs font-mono text-slate-400">Unloading previous DOM &bull; Mounting single active instance...</div>
+          </div>
+
+          <!-- Unity WebGL Build Launcher / Fallback View (Shown when user selects 🎮 Unity WebGL mode if WebGL build folder isn't dropped into webgl/<demo>/ yet, or boots the WebGL iframe directly if present) -->
+          <div id="lab-webgl-panel" class="hidden absolute inset-0 bg-[#0a0d14] z-20 flex-col items-center justify-center p-6 text-center">
+            <div class="max-w-lg w-full bg-[#161b22] border border-purple-500/40 rounded-2xl p-6 shadow-2xl space-y-4">
+              <div class="w-14 h-14 mx-auto rounded-2xl bg-purple-500/20 border border-purple-400/50 flex items-center justify-center text-2xl" id="webgl-card-icon">
+                🎮
+              </div>
+              <div class="space-y-1.5">
+                <span class="px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40 text-xs font-mono font-bold" id="webgl-card-badge">
+                  UNITY WEBGL 2.0 WASM SLOT
+                </span>
+                <h3 class="text-lg font-bold text-white" id="webgl-card-title">MeowSweeper — Compiled Unity WebGL Runtime</h3>
+                <p class="text-xs text-slate-300 leading-relaxed" id="webgl-card-desc">
+                  Ready to stream compiled C# / IL2CPP WebAssembly build from <code class="text-purple-300 font-mono" id="webgl-card-path">webgl/meowsweeper/index.html</code>.
+                </p>
+              </div>
+              <div class="bg-[#0d1117] border border-[#30363d] rounded-xl p-3 text-left text-xs font-mono text-slate-400 space-y-1">
+                <div class="text-slate-200 font-bold">Engine Build Target Specs:</div>
+                <div id="webgl-spec-line1">&bull; Target: Unity 2022.3 LTS (IL2CPP / WebGL 2.0)</div>
+                <div id="webgl-spec-line2">&bull; Memory: Single-Iframe Auto GC on Tab Switch</div>
+              </div>
+              <div class="flex flex-wrap items-center justify-center gap-2.5 pt-1">
+                <button type="button" id="webgl-btn-try-boot" class="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold cursor-pointer transition flex items-center gap-1.5 shadow-lg shadow-purple-500/20">
+                  <span>▶</span> <span>Mount WebGL Build in Iframe</span>
+                </button>
+                <button type="button" id="webgl-btn-back-html" class="px-4 py-2 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-sky-300 border border-sky-500/40 text-xs font-bold cursor-pointer transition flex items-center gap-1.5">
+                  <span>⚡</span> <span>Back to Instant HTML Sim (0.2s)</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- THE SINGLE ACTIVE IFRAME (100% CSS/JS/VH Isolated; Only 1 Demo Loaded at Any Time) -->
+          <iframe
+            id="unity-lab-frame"
+            src="labs/meowsweeper.html"
+            title="Unity Lab Interactive Artifact Viewport"
+            class="w-full h-full border-0 flex-1 bg-[#0d1117]"
+            allow="fullscreen; clipboard-read; clipboard-write"
+            loading="eager">
+          </iframe>
+
+        </div>
+
+        <!-- BOTTOM STATUS & TELEMETRY BAR -->
+        <div class="shrink-0 bg-[#161b22] border-t border-[#30363d] px-4 py-2 flex flex-wrap items-center justify-between gap-2 text-xs font-mono text-slate-400">
+          <div class="flex items-center gap-2.5 flex-wrap">
+            <span class="flex items-center gap-1.5 text-emerald-400 font-semibold">
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <span>1 Active Instance in DOM</span>
+            </span>
+            <span class="text-slate-600">&bull;</span>
+            <span id="lab-footer-source" class="text-slate-300">labs/meowsweeper.html</span>
+            <span class="text-slate-600 hidden md:inline">&bull;</span>
+            <span id="lab-footer-desc" class="text-sky-400 hidden md:inline">Meowdoku Hybrid Solver + Deterministic Hint Cascade</span>
+          </div>
+
           <div class="flex items-center gap-2">
-            <span class="font-bold text-white">Console</span>
-            <span class="px-1.5 rounded bg-slate-800 text-sky-400 text-[10px]">Debug.Log</span>
+            <button type="button" id="lab-footer-runtime-switch" class="px-2.5 py-0.5 rounded-md bg-purple-500/15 hover:bg-purple-500/25 text-purple-300 border border-purple-500/30 text-xs font-sans font-semibold cursor-pointer transition flex items-center gap-1.5">
+              <span>🎮</span>
+              <span id="lab-footer-runtime-text">Switch to Unity WebGL Build &rarr;</span>
+            </button>
           </div>
-          <button id="btn-clear-console" class="hover:text-white">Clear</button>
         </div>
-        <div id="unity-console-logs" class="bg-[#181818] h-28 p-3 overflow-y-auto font-mono text-[11px] text-slate-300 space-y-1"></div>
+
       </div>
     </section>
 
@@ -523,15 +515,20 @@
         <div class="lg:col-span-8 bg-[#0a0d14] p-6 flex flex-col justify-between space-y-4">
           
           <!-- Schematic Header -->
-          <div class="flex items-start justify-between pb-3 border-b border-slate-800">
+          <div class="flex flex-wrap items-start justify-between gap-3 pb-3 border-b border-slate-800">
             <div>
               <div id="bp-stage-domain" class="text-xs font-mono text-sky-400 uppercase">INDEPENDENT SYSTEM — PLATFORM SERVICES</div>
               <h3 id="bp-stage-title" class="text-xl sm:text-2xl font-bold text-white mt-1">Native Image Pipeline</h3>
               <p id="bp-stage-desc" class="text-xs text-slate-400 mt-1 max-w-xl">Fetches, resizes, and caches remote images across Android, iOS, and Unity Editor through one shared C# API.</p>
             </div>
-            <button id="btn-zoom-blueprint" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-mono text-xs flex items-center gap-1.5 transition-all">
-              <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i> Expand
-            </button>
+            <div class="flex items-center gap-2">
+              <a id="btn-launch-blueprint-lab" href="#mechanics-lab" class="px-3 py-1.5 rounded-lg bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/40 text-sky-300 font-mono text-xs font-semibold flex items-center gap-1.5 transition-all">
+                <i data-lucide="play" class="w-3.5 h-3.5 fill-current"></i> Launch in Unity Lab
+              </a>
+              <button id="btn-zoom-blueprint" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-mono text-xs flex items-center gap-1.5 transition-all">
+                <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i> Expand
+              </button>
+            </div>
           </div>
 
           <!-- The Diagram Canvas Hero -->
