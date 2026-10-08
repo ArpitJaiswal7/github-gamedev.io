@@ -558,6 +558,9 @@ function switchLabDemo(demoKey, runtimeMode = 'html', forceReload = false) {
   const hideLoader = () => {
     clearTimeout(labLoaderTimer);
     if (loader) loader.classList.add('hidden');
+    try {
+      if (frame.contentWindow) frame.contentWindow.focus();
+    } catch (_) {}
   };
 
   frame.onload = hideLoader;
