@@ -1,0 +1,1132 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Offline Leaderboard — Live-Ops Simulator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * {
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    @keyframes popIn {
+      0% { transform: scale(0.95); opacity: 0.5; }
+      60% { transform: scale(1.015); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    @keyframes rowOvertake {
+      0% { transform: translateY(14px) scale(0.98); opacity: 0.65; }
+      60% { transform: translateY(-3px) scale(1.01); opacity: 1; }
+      100% { transform: translateY(0) scale(1); opacity: 1; }
+    }
+    .animate-overtake {
+      animation: rowOvertake 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+    /* Custom dark scrollbar matching Meowsweeper & Calm Jigsaw */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0d1117;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #30363d;
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="bg-[#0d1117] text-[#e6edf3] antialiased h-screen w-screen overflow-hidden select-none p-3 flex flex-col">
+
+  <div class="w-full max-w-6xl mx-auto h-full flex flex-col gap-2 min-h-0">
+
+    <!-- 1. Dedicated Non-Overlapping Toast Row Above Top Menu (Matches Meowsweeper) -->
+    <div id="toastBar" class="shrink-0 h-9 rounded-xl px-4 border border-[#30363d] bg-[#161b22] flex items-center justify-center gap-2 text-xs font-bold transition-colors duration-200 shadow-sm">
+      <span id="toastEmoji" class="text-sm">🏆</span>
+      <span id="toastText" class="text-[#8b949e]">Sheet 06 Offline Leaderboard • Trigger a finished run or advance clock to test bot convergence &amp; rank overtakes</span>
+    </div>
+
+    <!-- 2. Top Row Menu Bar (Matches Meowsweeper & Calm Jigsaw Solitaire Header) -->
+    <header class="shrink-0 bg-[#161b22] border border-[#30363d] rounded-xl px-4 py-2 shadow-sm flex flex-wrap items-center justify-between gap-2">
+      <!-- Brand + Active Scoring Rule Badge -->
+      <div class="flex items-center gap-2">
+        <div class="flex items-center gap-1.5 font-bold text-sm text-[#e6edf3]">
+          <span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-[#21262d] border border-[#30363d] text-sm" id="ui-league-icon">🏆</span>
+          <span id="ui-season-title">Offline Leaderboard</span>
+        </div>
+        <span id="ui-scoring-badge" class="text-xs font-semibold px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+          Cumulative League
+        </span>
+        <span id="ui-clamp-indicator" class="hidden text-xs font-semibold px-2 py-0.5 rounded bg-rose-500/20 text-rose-400 border border-rose-500/30">
+          🔒 Clock Clamped
+        </span>
+      </div>
+
+      <!-- Game Preset Switcher + Season Countdown + Coins Wallet -->
+      <div class="flex flex-wrap items-center gap-1.5">
+        <button data-preset="unified_league" class="preset-tab px-2.5 py-1 rounded-lg bg-blue-600 text-white border border-blue-500 text-xs font-semibold flex items-center gap-1 cursor-pointer transition">
+          <span>🏆</span>
+          <span>Unified</span>
+        </button>
+        <button data-preset="meowsweeper" class="preset-tab px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#e6edf3] text-xs font-semibold flex items-center gap-1 cursor-pointer transition">
+          <span>🐱</span>
+          <span>Meowsweeper</span>
+        </button>
+        <button data-preset="calm_jigsaw" class="preset-tab px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#e6edf3] text-xs font-semibold flex items-center gap-1 cursor-pointer transition">
+          <span>🧩</span>
+          <span>Calm Jigsaw</span>
+        </button>
+        <button data-preset="jigsaw_solitaire" class="preset-tab px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#e6edf3] text-xs font-semibold flex items-center gap-1 cursor-pointer transition">
+          <span>🃏</span>
+          <span>Solitaire</span>
+        </button>
+
+        <div class="flex items-center gap-1.5 bg-[#0d1117] border border-[#30363d] px-2.5 py-1 rounded-lg text-xs font-mono font-bold text-[#e6edf3]">
+          <span class="text-[#8b949e]">⏱️</span>
+          <span id="ui-season-countdown" class="text-amber-400">06d 23h 59m</span>
+        </div>
+
+        <div class="flex items-center gap-1 bg-amber-500/20 text-amber-400 px-2.5 py-1 rounded-lg text-xs font-bold border border-amber-500/30">
+          <span>🪙</span>
+          <span id="ui-wallet-balance">150</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- 3. Main 12-Column Content Area (Stretches Vertically to Fill 100% of Remaining Height) -->
+    <div class="flex-1 min-h-0 grid grid-cols-12 gap-3">
+
+      <!-- LEFT COLUMN (7 COLS): LEADERBOARD WINDOW & SIMULATED RUN CONTROLS -->
+      <div class="col-span-12 lg:col-span-7 h-full min-h-0 bg-[#161b22] border border-[#30363d] rounded-xl p-3 shadow-sm flex flex-col justify-between gap-2">
+
+        <!-- Top Power-Up Style Bar: Simulate Game Boundary submitScore() Calls -->
+        <div class="shrink-0 w-full grid grid-cols-3 gap-2">
+          <button id="sim-run-casual" class="px-2.5 py-1.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] active:scale-95 border border-[#30363d] text-[#e6edf3] text-xs font-semibold flex items-center justify-between cursor-pointer transition">
+            <span class="flex items-center gap-1.5">
+              <span>🐾</span>
+              <span>Casual Run</span>
+            </span>
+            <span id="sim-casual-desc" class="px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 font-bold font-mono text-xs">+180p</span>
+          </button>
+
+          <button id="sim-run-strong" class="px-2.5 py-1.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] active:scale-95 border border-[#30363d] text-[#e6edf3] text-xs font-semibold flex items-center justify-between cursor-pointer transition">
+            <span class="flex items-center gap-1.5">
+              <span>⚡</span>
+              <span>Strong Run</span>
+            </span>
+            <span id="sim-strong-desc" class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 font-bold font-mono text-xs">+420p</span>
+          </button>
+
+          <button id="sim-run-god" class="px-2.5 py-1.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] active:scale-95 border border-[#30363d] text-[#e6edf3] text-xs font-semibold flex items-center justify-between cursor-pointer transition">
+            <span class="flex items-center gap-1.5">
+              <span>👑</span>
+              <span>Record Run</span>
+            </span>
+            <span id="sim-god-desc" class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold font-mono text-xs">+850p</span>
+          </button>
+        </div>
+
+        <!-- Sub-Header Strip Above Leaderboard (Matches Meowsweeper #0d1117 stats bar) -->
+        <div class="shrink-0 w-full px-3.5 py-1.5 rounded-xl bg-[#0d1117] border border-[#30363d] flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-3">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-semibold text-[#8b949e]">Rank:</span>
+              <span id="stat-player-rank" class="text-xs font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30 font-mono">
+                #30 / 30
+              </span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-semibold text-[#8b949e]" id="stat-score-label">Score:</span>
+              <span id="stat-player-score" class="text-xs font-bold text-[#e6edf3] font-mono">0 pts</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <span class="text-xs font-semibold text-[#8b949e]">Delta:</span>
+              <span id="stat-rank-delta" class="text-xs font-bold font-mono text-[#8b949e]">—</span>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <span id="ui-convergence-phase" class="text-xs font-semibold text-[#8b949e]">Early-Season Spread</span>
+            <span id="stat-reward-tier" class="text-xs font-bold px-2 py-0.5 rounded bg-purple-500/20 text-purple-400 border border-purple-500/30">
+              🎖️ 25🪙
+            </span>
+          </div>
+        </div>
+
+        <!-- Season Expired / Idempotent Claim Banner (Shown when season clock reaches 0) -->
+        <div id="ui-reward-banner" class="hidden shrink-0 w-full px-3.5 py-2 rounded-xl bg-amber-500/15 border border-amber-500/40 flex items-center justify-between gap-2">
+          <div class="text-xs font-semibold text-[#e6edf3]" id="ui-reward-summary">
+            Season Finished! Claim your rank reward.
+          </div>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <button id="btn-claim-reward" class="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-[#0d1117] text-xs font-bold cursor-pointer transition">
+              🎁 Claim Reward
+            </button>
+            <button id="btn-next-season" class="hidden px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white border border-blue-500 text-xs font-bold cursor-pointer transition">
+              🔄 Next Season
+            </button>
+          </div>
+        </div>
+
+        <!-- Pooled Leaderboard Rows Viewport (Scrollable dark well #0d1117) -->
+        <div class="flex-1 min-h-0 w-full bg-[#0d1117] border border-[#30363d] rounded-xl overflow-y-auto divide-y divide-[#21262d]" id="ui-leaderboard-rows">
+          <!-- Populated by fixed 12-row DOM pool -->
+        </div>
+
+        <!-- Bottom Live-Ops Clock & Anti-Tamper Controls Bar -->
+        <div class="shrink-0 w-full flex flex-wrap items-center justify-between gap-1.5 pt-0.5">
+          <div class="flex items-center gap-1.5">
+            <button id="sim-time-4h" class="px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#e6edf3] text-xs font-semibold cursor-pointer transition" title="Advance clock +4 hours">
+              ⏩ +4h
+            </button>
+            <button id="sim-time-24h" class="px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#e6edf3] text-xs font-semibold cursor-pointer transition" title="Advance clock +24 hours">
+              ⏩ +1d
+            </button>
+            <button id="sim-time-rollback" class="px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] border border-rose-500/40 text-rose-400 text-xs font-semibold cursor-pointer transition" title="Spoof device clock -6 hours backward to test anti-rollback clamp">
+              ⏪ -6h Spoof
+            </button>
+            <button id="sim-time-expire" class="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 border border-blue-500 text-white text-xs font-semibold cursor-pointer transition" title="Fast-forward to end of season">
+              🏁 End Season
+            </button>
+          </div>
+
+          <div class="flex items-center gap-1.5">
+            <button id="sim-tamper-save" class="px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#8b949e] hover:text-[#e6edf3] text-xs font-semibold cursor-pointer transition" title="Inject unverified score into localStorage to test checksum rejection">
+              🛠️ Tamper
+            </button>
+            <button id="sim-hard-reset" class="px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#8b949e] hover:text-[#e6edf3] text-xs font-semibold cursor-pointer transition" title="Reset current season save">
+              🔄 Reset
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT COLUMN (5 COLS): LIVE JSON SAVE SNAPSHOT, TELEMETRY & UNITY WEBGL BRIDGE (Matches Meowsweeper Col-5 JSON Panel) -->
+      <div class="col-span-12 lg:col-span-5 h-full min-h-0 bg-[#161b22] border border-[#30363d] rounded-xl p-3 shadow-sm flex flex-col gap-2">
+        <!-- Top Bar inside Col-5 Panel -->
+        <div class="shrink-0 flex items-center justify-between gap-2">
+          <div class="flex items-center gap-1">
+            <button data-insp="json" class="insp-tab px-2.5 py-1 rounded-lg bg-blue-600 text-white border border-blue-500 text-xs font-bold cursor-pointer transition">
+              JSON
+            </button>
+            <button data-insp="logs" class="insp-tab px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#e6edf3] border border-[#30363d] text-xs font-semibold cursor-pointer transition">
+              Telemetry
+            </button>
+            <button data-insp="unity" class="insp-tab px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#e6edf3] border border-[#30363d] text-xs font-semibold cursor-pointer transition">
+              Unity C# / WebGL
+            </button>
+          </div>
+
+          <span id="ui-pool-counter" class="text-xs font-bold px-2 py-0.5 rounded bg-[#21262d] text-[#8b949e] border border-[#30363d] font-mono">
+            10 Pooled Rows
+          </span>
+        </div>
+
+        <!-- Panel 1: Live Local JSON Storage Snapshot (Default Active, matches Meowsweeper JSON box) -->
+        <pre id="insp-panel-json" class="flex-1 min-h-0 bg-[#0d1117] border border-[#30363d] rounded-xl p-3 text-xs font-mono overflow-auto text-[#e6edf3] leading-snug"></pre>
+
+        <!-- Panel 2: Live-Ops Telemetry Log -->
+        <div id="insp-panel-logs" class="hidden flex-1 min-h-0 bg-[#0d1117] border border-[#30363d] rounded-xl p-3 text-xs font-mono overflow-auto space-y-1.5"></div>
+
+        <!-- Panel 3: Unity C# + WebGL .jslib Bridge Contract -->
+        <div id="insp-panel-unity" class="hidden flex-1 min-h-0 bg-[#0d1117] border border-[#30363d] rounded-xl p-3 text-xs font-mono overflow-auto space-y-2 text-[#e6edf3]">
+          <div class="text-amber-400 font-bold">// 1. Unity C# JsonUtility Serializable Contract</div>
+          <div class="text-[#8b949e] font-sans text-xs leading-relaxed">
+            Flat structs (zero nested Dictionaries) so the exact same JSON schema loads in Unity C# (<code class="text-[#e6edf3]">Application.persistentDataPath</code>) and WebGL / HTML5 (<code class="text-[#e6edf3]">localStorage</code>).
+          </div>
+          <pre class="p-2.5 rounded-lg bg-[#161b22] border border-[#30363d] text-[#e6edf3] overflow-x-auto leading-snug">[Serializable]
+public struct RunSubmission {
+    public string gameId;   // "meowsweeper" | "calm_jigsaw" | "jigsaw_solitaire"
+    public int rawScore;    // TimeMs (Best) or Points (Cumulative)
+    public int moves;
+    public int gridSize;
+}
+
+// Single boundary call at end of a finished run:
+LeaderboardController.Instance.SubmitScore(new RunSubmission {
+    gameId = "meowsweeper",
+    rawScore = 38400, // 38.40s
+    moves = 34,
+    gridSize = 6
+});</pre>
+          <div class="text-emerald-400 font-bold pt-1">// 2. Global Web / WebGL .jslib Hook</div>
+          <pre class="p-2.5 rounded-lg bg-[#161b22] border border-[#30363d] text-[#e6edf3] overflow-x-auto leading-snug">// Exposed globally for Calm Jigsaw, Meowsweeper & Solitaire:
+window.OfflineLeaderboard.submitScore("meowsweeper", 38400);</pre>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- OFFLINE LEADERBOARD CORE ENGINE (BOUNDARY MODULES + INTERNAL SUBSYSTEMS) -->
+  <!-- ========================================================================= -->
+  <script>
+    const LEAGUE_PRESETS = {
+      unified_league: {
+        id: 'unified_league',
+        title: 'Unified Arcade League',
+        icon: '🏆',
+        scoringRule: 'cumulative',
+        badgeText: 'Cumulative League',
+        seasonDurationMs: 7 * 24 * 3600 * 1000,
+        botCount: 29,
+        baseBotTargetMin: 900,
+        baseBotTargetMax: 4800,
+        casualLabel: '+180p',
+        strongLabel: '+420p',
+        godLabel: '+850p'
+      },
+      meowsweeper: {
+        id: 'meowsweeper',
+        title: 'Meowsweeper Sprint',
+        icon: '🐱',
+        scoringRule: 'best_time',
+        badgeText: 'Best Time (Fastest)',
+        seasonDurationMs: 3 * 24 * 3600 * 1000,
+        botCount: 29,
+        baseBotTargetMin: 18500,
+        baseBotTargetMax: 145000,
+        casualLabel: '~82s',
+        strongLabel: '~44s',
+        godLabel: '~21s'
+      },
+      calm_jigsaw: {
+        id: 'calm_jigsaw',
+        title: 'Calm Jigsaw Masters',
+        icon: '🧩',
+        scoringRule: 'best_time',
+        badgeText: 'Best Time (Fastest)',
+        seasonDurationMs: 7 * 24 * 3600 * 1000,
+        botCount: 29,
+        baseBotTargetMin: 55000,
+        baseBotTargetMax: 320000,
+        casualLabel: '~210s',
+        strongLabel: '~105s',
+        godLabel: '~62s'
+      },
+      jigsaw_solitaire: {
+        id: 'jigsaw_solitaire',
+        title: 'Jigsaw Solitaire Tourney',
+        icon: '🃏',
+        scoringRule: 'cumulative',
+        badgeText: 'Cumulative Points',
+        seasonDurationMs: 5 * 24 * 3600 * 1000,
+        botCount: 29,
+        baseBotTargetMin: 800,
+        baseBotTargetMax: 4200,
+        casualLabel: '+175p',
+        strongLabel: '+390p',
+        godLabel: '+750p'
+      }
+    };
+
+    const BOT_NAMES = [
+      'Whiskers_99', 'ZenSolver', 'TileMaster', 'PawsAndClaws', 'CalicoQueen',
+      'JigsawNinja', 'MochiCat', 'PixelPuzzler', 'ShadowTail', 'CozyCrafter',
+      'SolverPrime', 'NekoSweeper', 'VelvetPaw', 'GridWalker', 'BiscuitMaker',
+      'PurrfectLine', 'CornerPiece', 'EdgeHunter', 'TabAndBlank', 'CatnapKing',
+      'MineSniffer', 'TuxedoCat', 'AmberEyes', 'SilentPounce', 'LuckyClover',
+      'StarlightCat', 'SnapMaster', 'SolitaireAce', 'GingerSnap'
+    ];
+
+    const BOT_AVATARS = ['🐱', '🦊', '🐼', '🐨', '🐯', '🦁', '🐸', '🦉', '🐙', '🦄'];
+
+    let toastTimer = null;
+    function showToastPopup(emoji, message, type = 'info') {
+      const bar = document.getElementById('toastBar');
+      const emojiEl = document.getElementById('toastEmoji');
+      const textEl = document.getElementById('toastText');
+      if (!bar) return;
+
+      emojiEl.textContent = emoji;
+      textEl.textContent = message;
+
+      if (type === 'win') {
+        bar.className = 'shrink-0 h-9 rounded-xl px-4 border flex items-center justify-center gap-2 text-xs font-bold transition-colors duration-200 shadow-sm bg-emerald-600 text-white border-emerald-400';
+        textEl.className = 'text-white';
+      } else if (type === 'lose') {
+        bar.className = 'shrink-0 h-9 rounded-xl px-4 border flex items-center justify-center gap-2 text-xs font-bold transition-colors duration-200 shadow-sm bg-rose-600 text-white border-rose-400';
+        textEl.className = 'text-white';
+      } else {
+        bar.className = 'shrink-0 h-9 rounded-xl px-4 border border-amber-500/40 bg-amber-500/15 flex items-center justify-center gap-2 text-xs font-bold transition-colors duration-200 shadow-sm';
+        textEl.className = 'text-[#e6edf3]';
+      }
+
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        bar.className = 'shrink-0 h-9 rounded-xl px-4 border border-[#30363d] bg-[#161b22] flex items-center justify-center gap-2 text-xs font-bold transition-colors duration-200 shadow-sm';
+        emojiEl.textContent = '🏆';
+        textEl.textContent = 'Sheet 06 Offline Leaderboard • Trigger a finished run or advance clock to test bot convergence & rank overtakes';
+        textEl.className = 'text-[#8b949e]';
+      }, 2400);
+    }
+
+    // =========================================================================
+    // MODULE 1: LOCAL JSON STORAGE (Replace-on-save, no history, checksum guard)
+    // =========================================================================
+    class LocalJsonStorage {
+      constructor(storageKeyPrefix = 'agy_liveops_lb_v1_') {
+        this.prefix = storageKeyPrefix;
+        this.salt = 'UNITY_WEBGL_LIVEOPS_SALT_2026';
+      }
+
+      computeChecksum(state) {
+        const raw = `${state.schemaVersion}|${state.seasonId}|${state.scoringRule}|${state.playerEntry.score}|${state.playerEntry.runsCompleted}|${state.rewardClaimed}|${state.lastSeenTimestampMs}|${this.salt}`;
+        let hash = 2166136261;
+        for (let i = 0; i < raw.length; i++) {
+          hash ^= raw.charCodeAt(i);
+          hash = Math.imul(hash, 16777619);
+        }
+        return (hash >>> 0).toString(16).padStart(8, '0');
+      }
+
+      validateAndSanitize(data, preset) {
+        if (!data || typeof data !== 'object' || data.schemaVersion !== 1) {
+          return { valid: false, reason: 'Invalid schemaVersion or payload structure' };
+        }
+        const expectedHash = this.computeChecksum(data);
+        if (data.checksum !== expectedHash) {
+          return { valid: false, reason: `Checksum mismatch (expected ${expectedHash}, got ${data.checksum})` };
+        }
+        if (preset.scoringRule === 'cumulative') {
+          data.playerEntry.score = Math.max(0, Math.min(999999, Number(data.playerEntry.score) || 0));
+        } else if (data.playerEntry.score !== 0) {
+          data.playerEntry.score = Math.max(3000, Math.min(3600000, Number(data.playerEntry.score) || 0));
+        }
+        return { valid: true, data };
+      }
+
+      load(presetId) {
+        const preset = LEAGUE_PRESETS[presetId];
+        const key = this.prefix + presetId;
+        try {
+          const raw = localStorage.getItem(key);
+          if (!raw) return null;
+          const parsed = JSON.parse(raw);
+          const check = this.validateAndSanitize(parsed, preset);
+          if (!check.valid) {
+            window.dispatchEvent(new CustomEvent('lb-log', {
+              detail: { msg: `[Save Validation Failed] ${check.reason}. Rebuilding clean season state.`, type: 'error' }
+            }));
+            showToastPopup('🛡️', `Tampered save rejected (${check.reason}) — Restored clean state`, 'lose');
+            return null;
+          }
+          return check.data;
+        } catch (err) {
+          return null;
+        }
+      }
+
+      save(presetId, state) {
+        state.checksum = this.computeChecksum(state);
+        const key = this.prefix + presetId;
+        localStorage.setItem(key, JSON.stringify(state));
+      }
+
+      clear(presetId) {
+        localStorage.removeItem(this.prefix + presetId);
+      }
+    }
+
+    // =========================================================================
+    // MODULE 2: BOT SIMULATOR (Deterministic population + Late-season convergence)
+    // =========================================================================
+    class BotSimulator {
+      static createInitialBots(preset, seasonSeed) {
+        const bots = [];
+        for (let i = 0; i < preset.botCount; i++) {
+          const ratio = i / Math.max(1, preset.botCount - 1);
+          const archetype = ratio < 0.15 ? 'elite' : (ratio < 0.45 ? 'rival' : (ratio < 0.75 ? 'steady' : 'casual'));
+          const hashJitter = ((seasonSeed * (i + 17) * 7919) % 100) / 100;
+
+          if (preset.scoringRule === 'cumulative') {
+            const span = preset.baseBotTargetMax - preset.baseBotTargetMin;
+            const targetEndScore = Math.round(preset.baseBotTargetMax - ratio * span + (hashJitter - 0.5) * 180);
+            const initialScore = Math.round(targetEndScore * (0.04 + hashJitter * 0.08));
+            bots.push({
+              botId: `bot_${i + 1}`,
+              name: BOT_NAMES[i % BOT_NAMES.length],
+              avatar: BOT_AVATARS[i % BOT_AVATARS.length],
+              archetype,
+              score: Math.max(20, initialScore),
+              targetEndScore: Math.max(250, targetEndScore)
+            });
+          } else {
+            const span = preset.baseBotTargetMax - preset.baseBotTargetMin;
+            const targetBestMs = Math.round(preset.baseBotTargetMin + Math.pow(ratio, 1.15) * span + (hashJitter - 0.5) * 4000);
+            const initialMs = Math.round(targetBestMs * (1.15 + hashJitter * 0.15));
+            bots.push({
+              botId: `bot_${i + 1}`,
+              name: BOT_NAMES[i % BOT_NAMES.length],
+              avatar: BOT_AVATARS[i % BOT_AVATARS.length],
+              archetype,
+              score: initialMs,
+              targetEndScore: Math.max(preset.baseBotTargetMin, targetBestMs)
+            });
+          }
+        }
+        return bots;
+      }
+
+      static advance(state, preset, effectiveNowMs) {
+        const dtMs = Math.max(0, effectiveNowMs - state.lastSimulatedAtMs);
+        if (dtMs <= 0) return { advanced: false, phaseLabel: BotSimulator.getPhaseLabel(state, effectiveNowMs) };
+
+        const totalDuration = Math.max(1, state.endTimeMs - state.startTimeMs);
+        const prevProgress = Math.min(1, Math.max(0, (state.lastSimulatedAtMs - state.startTimeMs) / totalDuration));
+        const newProgress = Math.min(1, Math.max(0, (effectiveNowMs - state.startTimeMs) / totalDuration));
+        const deltaProgress = Math.max(0, newProgress - prevProgress);
+
+        if (deltaProgress <= 0) {
+          state.lastSimulatedAtMs = effectiveNowMs;
+          return { advanced: false, phaseLabel: BotSimulator.getPhaseLabel(state, effectiveNowMs) };
+        }
+
+        const isLateSeason = newProgress >= 0.65;
+        const playerScore = state.playerEntry.score;
+
+        state.bots.forEach((bot, idx) => {
+          if (isLateSeason && playerScore > 0 && (bot.archetype === 'rival' || bot.archetype === 'elite')) {
+            if (preset.scoringRule === 'cumulative') {
+              const projectedPlayerEnd = playerScore / Math.max(0.35, newProgress);
+              const diff = projectedPlayerEnd - bot.targetEndScore;
+              if (Math.abs(diff) < 1200) {
+                bot.targetEndScore = Math.round(bot.targetEndScore + diff * 0.18);
+              }
+            } else {
+              const diff = playerScore - bot.targetEndScore;
+              if (Math.abs(diff) < 25000) {
+                bot.targetEndScore = Math.round(bot.targetEndScore + diff * 0.15);
+              }
+            }
+          }
+
+          const remainingProgress = Math.max(0.01, 1 - prevProgress);
+          const stepFraction = Math.min(1, deltaProgress / remainingProgress);
+          const variance = 0.85 + (((idx * 31 + Math.floor(newProgress * 100)) % 30) / 100);
+
+          if (preset.scoringRule === 'cumulative') {
+            const remainingPoints = Math.max(0, bot.targetEndScore - bot.score);
+            const gain = Math.round(remainingPoints * stepFraction * variance);
+            bot.score += gain;
+          } else {
+            const improvementRoom = Math.max(0, bot.score - bot.targetEndScore);
+            const shaveMs = Math.round(improvementRoom * stepFraction * variance * 0.75);
+            bot.score = Math.max(bot.targetEndScore, bot.score - shaveMs);
+          }
+        });
+
+        state.lastSimulatedAtMs = effectiveNowMs;
+        return {
+          advanced: true,
+          dtHours: (dtMs / 3600000).toFixed(1),
+          phaseLabel: BotSimulator.getPhaseLabel(state, effectiveNowMs)
+        };
+      }
+
+      static getPhaseLabel(state, effectiveNowMs) {
+        const total = Math.max(1, state.endTimeMs - state.startTimeMs);
+        const pct = Math.min(1, Math.max(0, (effectiveNowMs - state.startTimeMs) / total));
+        if (pct >= 1) return 'Season Complete';
+        if (pct >= 0.65) return 'Late-Season Convergence';
+        if (pct >= 0.30) return 'Mid-Season Pacing';
+        return 'Early-Season Spread';
+      }
+    }
+
+    // =========================================================================
+    // MODULE 3: RANK CALCULATOR (Sorts + User-Centered Windowing)
+    // =========================================================================
+    class RankCalculator {
+      static calculate(state, preset, windowRadius = 2) {
+        const entries = state.bots.map(b => ({
+          id: b.botId,
+          name: b.name,
+          avatar: b.avatar,
+          archetype: b.archetype,
+          score: b.score,
+          isPlayer: false
+        }));
+
+        entries.push({
+          id: 'player_local',
+          name: state.playerIdentity.displayName,
+          avatar: state.playerIdentity.avatar,
+          archetype: 'YOU',
+          score: state.playerEntry.score,
+          isPlayer: true
+        });
+
+        entries.sort((a, b) => {
+          if (preset.scoringRule === 'cumulative') {
+            if (b.score !== a.score) return b.score - a.score;
+            return a.isPlayer ? -1 : 1;
+          } else {
+            const aValid = a.score > 0 ? a.score : Number.MAX_SAFE_INTEGER;
+            const bValid = b.score > 0 ? b.score : Number.MAX_SAFE_INTEGER;
+            if (aValid !== bValid) return aValid - bValid;
+            return a.isPlayer ? -1 : 1;
+          }
+        });
+
+        let playerRank = entries.length;
+        entries.forEach((entry, i) => {
+          entry.rank = i + 1;
+          if (entry.isPlayer) playerRank = entry.rank;
+        });
+
+        // Pin Top 3 + Player neighborhood window
+        const selectedIndices = new Set([0, 1, 2]);
+        const playerIdx = playerRank - 1;
+        for (let i = Math.max(0, playerIdx - windowRadius); i <= Math.min(entries.length - 1, playerIdx + windowRadius); i++) {
+          selectedIndices.add(i);
+        }
+
+        let padIdx = 3;
+        while (selectedIndices.size < 8 && padIdx < entries.length) {
+          selectedIndices.add(padIdx++);
+        }
+
+        const sortedIndices = Array.from(selectedIndices).sort((a, b) => a - b);
+        const windowedRows = [];
+        let prevIdx = -1;
+
+        sortedIndices.forEach(idx => {
+          if (prevIdx !== -1 && idx - prevIdx > 1) {
+            windowedRows.push({
+              isDivider: true,
+              skippedCount: idx - prevIdx - 1
+            });
+          }
+          windowedRows.push(entries[idx]);
+          prevIdx = idx;
+        });
+
+        return {
+          totalEntries: entries.length,
+          playerRank,
+          windowedRows,
+          rewardTier: RankCalculator.getRewardTier(playerRank)
+        };
+      }
+
+      static getRewardTier(rank) {
+        if (rank === 1) return { name: 'Gold Crown', coins: 500, badge: '🥇' };
+        if (rank <= 3) return { name: 'Silver Chest', coins: 250, badge: '🥈' };
+        if (rank <= 10) return { name: 'Bronze Pack', coins: 100, badge: '🥉' };
+        return { name: 'Participation', coins: 25, badge: '🎖️' };
+      }
+    }
+
+    // =========================================================================
+    // MODULE 4: LEADERBOARD CONTROLLER (Orchestration + Clock Clamp + Claims)
+    // =========================================================================
+    class LeaderboardController {
+      constructor() {
+        this.storage = new LocalJsonStorage();
+        this.activePresetId = 'unified_league';
+        this.simulatedTimeOffsetMs = 0;
+        this.lastClampTriggered = false;
+        this.walletCoins = Number(localStorage.getItem('agy_liveops_wallet_coins') || 150);
+        this.state = null;
+        this.loadOrCreateSeason(this.activePresetId);
+      }
+
+      log(msg, type = 'info') {
+        window.dispatchEvent(new CustomEvent('lb-log', { detail: { msg, type } }));
+      }
+
+      getEffectiveNowMs() {
+        const rawSimulatedClock = Date.now() + this.simulatedTimeOffsetMs;
+        if (!this.state) return rawSimulatedClock;
+
+        if (rawSimulatedClock < this.state.lastSeenTimestampMs) {
+          this.lastClampTriggered = true;
+          return this.state.lastSeenTimestampMs;
+        }
+        this.lastClampTriggered = false;
+        return rawSimulatedClock;
+      }
+
+      loadOrCreateSeason(presetId, forceNewSeasonNumber = null) {
+        this.activePresetId = presetId;
+        const preset = LEAGUE_PRESETS[presetId];
+        let loaded = forceNewSeasonNumber ? null : this.storage.load(presetId);
+
+        if (!loaded) {
+          const now = Date.now() + this.simulatedTimeOffsetMs;
+          const seasonNum = forceNewSeasonNumber || 1;
+          const seasonSeed = seasonNum * 101 + presetId.length * 37;
+          const bots = BotSimulator.createInitialBots(preset, seasonSeed);
+
+          loaded = {
+            schemaVersion: 1,
+            seasonNumber: seasonNum,
+            seasonId: `S0${seasonNum}_${presetId.toUpperCase()}`,
+            gameMode: presetId,
+            scoringRule: preset.scoringRule,
+            startTimeMs: now,
+            endTimeMs: now + preset.seasonDurationMs,
+            lastSimulatedAtMs: now,
+            lastSeenTimestampMs: now,
+            status: 'active',
+            rewardClaimed: false,
+            playerIdentity: {
+              id: 'local_player_01',
+              displayName: 'You (Player)',
+              avatar: '🐱'
+            },
+            playerEntry: {
+              score: 0,
+              runsCompleted: 0,
+              previousRank: preset.botCount + 1,
+              currentRank: preset.botCount + 1
+            },
+            bots,
+            checksum: ''
+          };
+
+          const calc = RankCalculator.calculate(loaded, preset);
+          loaded.playerEntry.previousRank = calc.playerRank;
+          loaded.playerEntry.currentRank = calc.playerRank;
+          this.storage.save(presetId, loaded);
+          this.log(`[Season Init] ${loaded.seasonId} ready (${bots.length} bots, rule: ${preset.scoringRule}).`, 'success');
+        }
+
+        this.state = loaded;
+        this.syncClockAndBots();
+      }
+
+      syncClockAndBots() {
+        const preset = LEAGUE_PRESETS[this.activePresetId];
+        const effectiveNow = this.getEffectiveNowMs();
+        this.state.lastSeenTimestampMs = Math.max(this.state.lastSeenTimestampMs, effectiveNow);
+
+        const simTargetTime = Math.min(effectiveNow, this.state.endTimeMs);
+        const simResult = BotSimulator.advance(this.state, preset, simTargetTime);
+
+        if (effectiveNow >= this.state.endTimeMs && this.state.status === 'active') {
+          this.state.status = 'expired_unclaimed';
+          this.log(`[Season Expired] ${this.state.seasonId} ended. Standings locked!`, 'warn');
+          showToastPopup('🏁', 'Season finished! Claim your rank reward above.', 'info');
+        }
+
+        const calc = RankCalculator.calculate(this.state, preset);
+        this.state.playerEntry.currentRank = calc.playerRank;
+        this.storage.save(this.activePresetId, this.state);
+        return { calc, simResult };
+      }
+
+      submitScore(rawScore) {
+        const preset = LEAGUE_PRESETS[this.activePresetId];
+        const effectiveNow = this.getEffectiveNowMs();
+
+        if (effectiveNow >= this.state.endTimeMs || this.state.status !== 'active') {
+          this.log(`[submitScore Blocked] Season ${this.state.seasonId} is locked. Claim reward first.`, 'warn');
+          showToastPopup('🔒', 'Season has ended! Claim your reward or start the next season.', 'lose');
+          return null;
+        }
+
+        this.syncClockAndBots();
+        const rankBeforeRun = this.state.playerEntry.currentRank;
+        this.state.playerEntry.previousRank = rankBeforeRun;
+        this.state.playerEntry.runsCompleted += 1;
+
+        if (preset.scoringRule === 'cumulative') {
+          this.state.playerEntry.score += rawScore;
+          this.log(`[submitScore] +${rawScore} pts -> Total: ${this.state.playerEntry.score} pts`, 'success');
+        } else {
+          const currentBest = this.state.playerEntry.score;
+          if (currentBest === 0 || rawScore < currentBest) {
+            this.state.playerEntry.score = rawScore;
+            this.log(`[submitScore] New Personal Best: ${(rawScore / 1000).toFixed(2)}s!`, 'success');
+          } else {
+            this.log(`[submitScore] Run ${(rawScore / 1000).toFixed(2)}s (PB stays ${(currentBest / 1000).toFixed(2)}s)`, 'info');
+          }
+        }
+
+        const calc = RankCalculator.calculate(this.state, preset);
+        this.state.playerEntry.currentRank = calc.playerRank;
+        this.storage.save(this.activePresetId, this.state);
+
+        const rankDelta = rankBeforeRun - calc.playerRank;
+        if (rankDelta > 0) {
+          showToastPopup('🚀', `Rank Up! Overtake +${rankDelta} rivals → Now Rank #${calc.playerRank}!`, 'win');
+        } else {
+          showToastPopup('✅', `Run recorded! Current Rank: #${calc.playerRank}`, 'info');
+        }
+
+        return {
+          rankBeforeRun,
+          newRank: calc.playerRank,
+          rankDelta,
+          calc
+        };
+      }
+
+      claimSeasonReward() {
+        if (this.state.status === 'active') return false;
+        if (this.state.rewardClaimed) {
+          this.log(`[Idempotent Guard] Duplicate claim blocked for ${this.state.seasonId}.`, 'warn');
+          showToastPopup('🛡️', 'Idempotent Guard: Reward already claimed for this season!', 'lose');
+          return false;
+        }
+
+        const preset = LEAGUE_PRESETS[this.activePresetId];
+        const calc = RankCalculator.calculate(this.state, preset);
+        const reward = calc.rewardTier;
+
+        this.state.rewardClaimed = true;
+        this.state.status = 'archived';
+        this.storage.save(this.activePresetId, this.state);
+
+        this.walletCoins += reward.coins;
+        localStorage.setItem('agy_liveops_wallet_coins', String(this.walletCoins));
+
+        this.log(`[Reward Claimed] +${reward.coins}🪙 (${reward.name}) for Rank #${calc.playerRank}.`, 'success');
+        showToastPopup('🎁', `Claimed ${reward.badge} ${reward.name}: +${reward.coins} Coins!`, 'win');
+        return true;
+      }
+
+      startNextSeason() {
+        const nextNum = (this.state.seasonNumber || 1) + 1;
+        this.loadOrCreateSeason(this.activePresetId, nextNum);
+        showToastPopup('🌟', `Started new season ${this.state.seasonId}!`, 'win');
+      }
+    }
+
+    // =========================================================================
+    // MODULE 5: LEADERBOARD UI (Row Pooling + Dark Theme Matching)
+    // =========================================================================
+    class LeaderboardUI {
+      constructor(controller) {
+        this.controller = controller;
+        this.rowPool = [];
+        this.maxPoolSize = 12;
+
+        this.initRowPool();
+        this.bindEvents();
+        this.render(false);
+      }
+
+      initRowPool() {
+        const container = document.getElementById('ui-leaderboard-rows');
+        container.innerHTML = '';
+        for (let i = 0; i < this.maxPoolSize; i++) {
+          const rowEl = document.createElement('div');
+          rowEl.className = 'hidden px-3.5 py-2 items-center justify-between transition-all';
+          container.appendChild(rowEl);
+          this.rowPool.push(rowEl);
+        }
+      }
+
+      formatScore(score, preset) {
+        if (preset.scoringRule === 'cumulative') {
+          return `${score.toLocaleString()} pts`;
+        } else {
+          if (!score || score <= 0) return 'Unranked';
+          return `${(score / 1000).toFixed(2)}s`;
+        }
+      }
+
+      formatCountdown(msRemaining) {
+        if (msRemaining <= 0) return '00d 00h 00m';
+        const totalMinutes = Math.floor(msRemaining / 60000);
+        const days = Math.floor(totalMinutes / (60 * 24));
+        const hours = Math.floor((totalMinutes % (60 * 24)) / 60);
+        const mins = totalMinutes % 60;
+        return `${String(days).padStart(2, '0')}d ${String(hours).padStart(2, '0')}h ${String(mins).padStart(2, '0')}m`;
+      }
+
+      render(animatePlayerOvertake = false, rankDelta = 0) {
+        const preset = LEAGUE_PRESETS[this.controller.activePresetId];
+        const state = this.controller.state;
+        const effectiveNow = this.controller.getEffectiveNowMs();
+        const { calc, simResult } = this.controller.syncClockAndBots();
+
+        document.getElementById('ui-league-icon').textContent = preset.icon;
+        document.getElementById('ui-season-title').textContent = preset.title;
+        document.getElementById('ui-scoring-badge').textContent = preset.badgeText;
+        document.getElementById('ui-convergence-phase').textContent = simResult.phaseLabel;
+
+        const msRemaining = Math.max(0, state.endTimeMs - effectiveNow);
+        document.getElementById('ui-season-countdown').textContent = this.formatCountdown(msRemaining);
+        document.getElementById('ui-clamp-indicator').classList.toggle('hidden', !this.controller.lastClampTriggered);
+
+        document.getElementById('sim-casual-desc').textContent = preset.casualLabel;
+        document.getElementById('sim-strong-desc').textContent = preset.strongLabel;
+        document.getElementById('sim-god-desc').textContent = preset.godLabel;
+
+        document.getElementById('stat-player-rank').textContent = `#${calc.playerRank} / ${calc.totalEntries}`;
+        document.getElementById('stat-score-label').textContent = preset.scoringRule === 'cumulative' ? 'Score:' : 'Best:';
+        document.getElementById('stat-player-score').textContent = this.formatScore(state.playerEntry.score, preset);
+
+        const deltaEl = document.getElementById('stat-rank-delta');
+        const netDelta = state.playerEntry.previousRank - calc.playerRank;
+        if (netDelta > 0) {
+          deltaEl.textContent = `▲+${netDelta}`;
+          deltaEl.className = 'text-xs font-bold font-mono text-emerald-400';
+        } else if (netDelta < 0) {
+          deltaEl.textContent = `▼${netDelta}`;
+          deltaEl.className = 'text-xs font-bold font-mono text-rose-400';
+        } else {
+          deltaEl.textContent = '—';
+          deltaEl.className = 'text-xs font-bold font-mono text-[#8b949e]';
+        }
+
+        document.getElementById('stat-reward-tier').textContent = `${calc.rewardTier.badge} ${calc.rewardTier.coins}🪙`;
+        document.getElementById('ui-wallet-balance').textContent = String(this.controller.walletCoins);
+
+        // Reward Banner
+        const rewardBanner = document.getElementById('ui-reward-banner');
+        const btnClaim = document.getElementById('btn-claim-reward');
+        const btnNextSeason = document.getElementById('btn-next-season');
+        const rewardSummary = document.getElementById('ui-reward-summary');
+
+        if (msRemaining <= 0) {
+          rewardBanner.classList.remove('hidden');
+          if (!state.rewardClaimed) {
+            rewardSummary.textContent = `Season Ended! Rank #${calc.playerRank} → ${calc.rewardTier.badge} ${calc.rewardTier.name} (+${calc.rewardTier.coins}🪙)`;
+            btnClaim.textContent = '🎁 Claim Reward';
+            btnClaim.className = 'px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-[#0d1117] text-xs font-bold cursor-pointer transition';
+            btnNextSeason.classList.add('hidden');
+          } else {
+            rewardSummary.textContent = `Reward Claimed! Click Claim again to test idempotency or start next season.`;
+            btnClaim.textContent = '✓ Claimed (Test Lock)';
+            btnClaim.className = 'px-2.5 py-1 rounded-lg bg-[#21262d] text-[#8b949e] border border-[#30363d] text-xs font-semibold cursor-pointer transition';
+            btnNextSeason.classList.remove('hidden');
+          }
+        } else {
+          rewardBanner.classList.add('hidden');
+        }
+
+        // Render Pooled Rows
+        const rows = calc.windowedRows;
+        let activeNodes = 0;
+
+        for (let i = 0; i < this.maxPoolSize; i++) {
+          const poolNode = this.rowPool[i];
+          const item = rows[i];
+
+          if (!item) {
+            poolNode.className = 'hidden';
+            poolNode.innerHTML = '';
+            continue;
+          }
+
+          activeNodes++;
+
+          if (item.isDivider) {
+            poolNode.className = 'flex items-center justify-center py-1 px-3 bg-[#161b22] text-xs font-mono text-[#8b949e]';
+            poolNode.innerHTML = `<span>••• ${item.skippedCount} bots between Top 3 &amp; your window •••</span>`;
+            continue;
+          }
+
+          const isTop3 = item.rank <= 3;
+          const rankBadge = item.rank === 1 ? '🥇 #1' : (item.rank === 2 ? '🥈 #2' : (item.rank === 3 ? '🥉 #3' : `#${item.rank}`));
+
+          let rowStyle = 'flex px-3.5 py-2 items-center justify-between transition-all ';
+          if (item.isPlayer) {
+            rowStyle += 'bg-amber-500/15 border-l-4 border-l-amber-400 ';
+            if (animatePlayerOvertake) rowStyle += 'animate-overtake ';
+          } else if (isTop3) {
+            rowStyle += 'bg-[#161b22]/60 ';
+          }
+
+          poolNode.className = rowStyle;
+
+          const deltaPill = (item.isPlayer && animatePlayerOvertake && rankDelta > 0)
+            ? `<span class="ml-2 px-1.5 py-0.5 text-xs font-mono font-bold rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">▲+${rankDelta}</span>`
+            : '';
+
+          const rewardInfo = RankCalculator.getRewardTier(item.rank);
+
+          poolNode.innerHTML = `
+            <div class="flex items-center gap-2.5">
+              <div class="w-12 font-mono text-xs font-bold ${item.isPlayer ? 'text-amber-400' : (isTop3 ? 'text-[#e6edf3]' : 'text-[#8b949e]')}">
+                ${rankBadge}
+              </div>
+              <div class="w-7 h-7 rounded-lg bg-[#21262d] border border-[#30363d] flex items-center justify-center text-xs">
+                ${item.avatar}
+              </div>
+              <div>
+                <div class="text-xs font-bold text-[#e6edf3] flex items-center">
+                  <span>${item.name}</span>
+                  ${deltaPill}
+                </div>
+                <div class="text-xs font-mono text-[#8b949e]">
+                  ${item.isPlayer ? `Runs: ${state.playerEntry.runsCompleted}` : `Bot • ${item.archetype}`}
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <span class="text-xs font-mono px-1.5 py-0.5 rounded bg-[#21262d] border border-[#30363d] text-[#8b949e]">
+                ${rewardInfo.badge} ${rewardInfo.coins}🪙
+              </span>
+              <div class="w-20 text-right text-xs font-mono font-bold ${item.isPlayer ? 'text-amber-400' : 'text-[#e6edf3]'}">
+                ${this.formatScore(item.score, preset)}
+              </div>
+            </div>
+          `;
+        }
+
+        document.getElementById('ui-pool-counter').textContent = `${activeNodes}/${this.maxPoolSize} Pooled`;
+
+        const jsonEl = document.getElementById('insp-panel-json');
+        if (jsonEl) {
+          jsonEl.textContent = JSON.stringify(this.controller.state, null, 2);
+        }
+      }
+
+      bindEvents() {
+        document.querySelectorAll('.preset-tab').forEach(btn => {
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('.preset-tab').forEach(b => {
+              b.className = 'preset-tab px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#e6edf3] text-xs font-semibold flex items-center gap-1 cursor-pointer transition';
+            });
+            btn.className = 'preset-tab px-2.5 py-1 rounded-lg bg-blue-600 text-white border border-blue-500 text-xs font-semibold flex items-center gap-1 cursor-pointer transition';
+            const presetId = btn.getAttribute('data-preset');
+            this.controller.simulatedTimeOffsetMs = 0;
+            this.controller.loadOrCreateSeason(presetId);
+            this.render(false);
+          });
+        });
+
+        document.getElementById('sim-run-casual').addEventListener('click', () => this.triggerSimulatedRun('casual'));
+        document.getElementById('sim-run-strong').addEventListener('click', () => this.triggerSimulatedRun('strong'));
+        document.getElementById('sim-run-god').addEventListener('click', () => this.triggerSimulatedRun('god'));
+
+        document.getElementById('sim-time-4h').addEventListener('click', () => {
+          this.controller.simulatedTimeOffsetMs += 4 * 3600 * 1000;
+          this.controller.log(`[Clock +4h] Bots advanced along progression curve.`, 'info');
+          showToastPopup('⏩', 'Fast-forwarded +4 Hours • Simulated bot progression', 'info');
+          this.render(false);
+        });
+
+        document.getElementById('sim-time-24h').addEventListener('click', () => {
+          this.controller.simulatedTimeOffsetMs += 24 * 3600 * 1000;
+          this.controller.log(`[Clock +24h] Bots advanced +1 day.`, 'info');
+          showToastPopup('⏩', 'Fast-forwarded +1 Day • Check Late-Season Convergence!', 'info');
+          this.render(false);
+        });
+
+        document.getElementById('sim-time-rollback').addEventListener('click', () => {
+          this.controller.simulatedTimeOffsetMs -= 6 * 3600 * 1000;
+          this.controller.log(`[Anti-Rollback Clamp] Device clock moved -6h backward. Clamped to lastSeenTimestampMs!`, 'error');
+          showToastPopup('🔒', 'Clock Rollback Detected (-6h) • Clamped to High-Water Timestamp!', 'lose');
+          this.render(false);
+        });
+
+        document.getElementById('sim-time-expire').addEventListener('click', () => {
+          const remaining = Math.max(0, this.controller.state.endTimeMs - (Date.now() + this.controller.simulatedTimeOffsetMs));
+          this.controller.simulatedTimeOffsetMs += remaining + 1000;
+          this.render(false);
+        });
+
+        document.getElementById('btn-claim-reward').addEventListener('click', () => {
+          this.controller.claimSeasonReward();
+          this.render(false);
+        });
+
+        document.getElementById('btn-next-season').addEventListener('click', () => {
+          this.controller.simulatedTimeOffsetMs = 0;
+          this.controller.startNextSeason();
+          this.render(false);
+        });
+
+        document.getElementById('sim-tamper-save').addEventListener('click', () => {
+          const key = this.controller.storage.prefix + this.controller.activePresetId;
+          const raw = JSON.parse(localStorage.getItem(key));
+          raw.playerEntry.score = 999999;
+          localStorage.setItem(key, JSON.stringify(raw));
+          this.controller.loadOrCreateSeason(this.controller.activePresetId);
+          this.render(false);
+        });
+
+        document.getElementById('sim-hard-reset').addEventListener('click', () => {
+          this.controller.storage.clear(this.controller.activePresetId);
+          this.controller.simulatedTimeOffsetMs = 0;
+          this.controller.loadOrCreateSeason(this.controller.activePresetId);
+          showToastPopup('🔄', 'Season state reset to fresh seed', 'info');
+          this.render(false);
+        });
+
+        document.querySelectorAll('.insp-tab').forEach(tab => {
+          tab.addEventListener('click', () => {
+            document.querySelectorAll('.insp-tab').forEach(t => {
+              t.className = 'insp-tab px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#e6edf3] border border-[#30363d] text-xs font-semibold cursor-pointer transition';
+            });
+            tab.className = 'insp-tab px-2.5 py-1 rounded-lg bg-blue-600 text-white border border-blue-500 text-xs font-bold cursor-pointer transition';
+
+            const target = tab.getAttribute('data-insp');
+            document.getElementById('insp-panel-json').classList.toggle('hidden', target !== 'json');
+            document.getElementById('insp-panel-logs').classList.toggle('hidden', target !== 'logs');
+            document.getElementById('insp-panel-unity').classList.toggle('hidden', target !== 'unity');
+          });
+        });
+      }
+
+      triggerSimulatedRun(tier) {
+        const preset = LEAGUE_PRESETS[this.controller.activePresetId];
+        let rawScore = 0;
+
+        if (preset.scoringRule === 'cumulative') {
+          if (tier === 'casual') rawScore = 150 + Math.floor(Math.random() * 60);
+          else if (tier === 'strong') rawScore = 380 + Math.floor(Math.random() * 110);
+          else rawScore = 850;
+        } else {
+          if (this.controller.activePresetId === 'meowsweeper') {
+            if (tier === 'casual') rawScore = 76000 + Math.floor(Math.random() * 14000);
+            else if (tier === 'strong') rawScore = 39000 + Math.floor(Math.random() * 9000);
+            else rawScore = 19400 + Math.floor(Math.random() * 4000);
+          } else {
+            if (tier === 'casual') rawScore = 195000 + Math.floor(Math.random() * 30000);
+            else if (tier === 'strong') rawScore = 98000 + Math.floor(Math.random() * 20000);
+            else rawScore = 58500 + Math.floor(Math.random() * 9000);
+          }
+        }
+
+        const result = this.controller.submitScore(rawScore);
+        if (result) {
+          this.render(true, result.rankDelta);
+        } else {
+          this.render(false);
+        }
+      }
+    }
+
+    window.addEventListener('lb-log', (e) => {
+      const logBox = document.getElementById('insp-panel-logs');
+      if (!logBox) return;
+      const { msg, type } = e.detail;
+      const line = document.createElement('div');
+      const color = type === 'error' ? 'text-rose-400' : (type === 'warn' ? 'text-amber-400' : (type === 'success' ? 'text-emerald-400' : 'text-[#8b949e]'));
+      const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false });
+      line.className = `${color} leading-snug`;
+      line.innerHTML = `<span class="text-[#8b949e]">[${timestamp}]</span> ${msg}`;
+      logBox.prepend(line);
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const controller = new LeaderboardController();
+      const ui = new LeaderboardUI(controller);
+
+      window.OfflineLeaderboard = {
+        submitScore: (gameMode, rawScore) => {
+          if (gameMode && LEAGUE_PRESETS[gameMode] && controller.activePresetId !== gameMode) {
+            controller.loadOrCreateSeason(gameMode);
+          }
+          const res = controller.submitScore(rawScore);
+          ui.render(true, res ? res.rankDelta : 0);
+          return res;
+        },
+        getState: () => controller.state
+      };
+    });
+  </script>
+</body>
+</html>
+

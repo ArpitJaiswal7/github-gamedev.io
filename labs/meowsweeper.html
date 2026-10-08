@@ -1,0 +1,1434 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meowsweeper</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .board-grid {
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+    }
+    @keyframes popIn {
+      0% { transform: scale(0.4); opacity: 0; }
+      70% { transform: scale(1.12); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+    .animate-pop {
+      animation: popIn 0.16s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+    .animate-shake {
+      animation: shake 0.26s ease-in-out;
+    }
+    .cell-highlight-hint {
+      box-shadow: inset 0 0 0 2.5px #f59e0b !important;
+    }
+    .cell-wrong-flash {
+      box-shadow: inset 0 0 0 2.5px #ef4444 !important;
+      background-color: #fca5a5 !important;
+    }
+    /* Custom dark scrollbar for JSON box */
+    #jsonPreviewBox::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    #jsonPreviewBox::-webkit-scrollbar-track {
+      background: #0d1117;
+    }
+    #jsonPreviewBox::-webkit-scrollbar-thumb {
+      background: #30363d;
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="bg-[#0d1117] text-[#e6edf3] antialiased h-screen w-screen overflow-hidden select-none p-3 flex flex-col">
+
+  <div class="w-full max-w-6xl mx-auto h-full flex flex-col gap-2 min-h-0">
+
+    <!-- Dedicated Non-Overlapping Toast Row Above Top Menu -->
+    <div id="toastBar" class="shrink-0 h-9 rounded-xl px-4 border border-[#30363d] bg-[#161b22] flex items-center justify-center gap-2 text-xs font-bold transition-colors duration-200 shadow-sm">
+      <span id="toastEmoji" class="text-sm">🐱</span>
+      <span id="toastText" class="text-[#8b949e]">Double-click a cell to place a Cat • Drag across cells to add/remove ✕</span>
+    </div>
+
+    <!-- Top Row Menu Bar (Below Toast Row) -->
+    <div class="shrink-0 bg-[#161b22] border border-[#30363d] rounded-xl px-4 py-2 shadow-sm flex flex-wrap items-center justify-between gap-2">
+      <!-- Brand + Level Mode Badge -->
+      <div class="flex items-center gap-2">
+        <div class="flex items-center gap-1.5 font-bold text-sm text-[#e6edf3]">
+          <span class="text-lg">🐱</span>
+          <span>Meowsweeper</span>
+        </div>
+        <span id="levelModeBadge" class="text-xs font-semibold px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+          Linked Chain
+        </span>
+      </div>
+
+      <!-- Grid Switch, Shuffle, Rank & Coins Buttons -->
+      <div class="flex flex-wrap items-center gap-1.5">
+        <button id="btnGridSwitch" onclick="cycleGridSize()" class="px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#e6edf3] text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition" title="Cycle grid size (5×5 to 10×10)">
+          <span>▦</span>
+          <span>Grid</span>
+          <span id="gridSizeBadge" class="px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 font-bold">6×6</span>
+        </button>
+
+        <button onclick="shuffleRandomLevel()" class="px-2.5 py-1 rounded-lg bg-blue-600 text-white hover:bg-blue-500 border border-blue-500 text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition" title="Randomize level & grid size (5×5 to 10×10)">
+          <span>🔀</span>
+          <span>Shuffle</span>
+        </button>
+
+        <button onclick="switchRightTab('leaderboard')" class="px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#e6edf3] text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition" title="View Live Offline Leaderboard">
+          <span>🏆</span>
+          <span id="topRankBadge" class="text-amber-400 font-bold font-mono">#30</span>
+        </button>
+
+        <div class="flex items-center gap-1 bg-amber-500/20 text-amber-400 px-2.5 py-1 rounded-lg text-xs font-bold border border-amber-500/30">
+          <span>🪙</span>
+          <span id="topWalletCoins">150</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Area: Stretches Vertically to Fill 100% of Remaining Webpage Height -->
+    <div class="flex-1 min-h-0 grid grid-cols-12 gap-3">
+
+      <!-- Puzzle Board Column (Fills full vertical height, keeps 1:1 square aspect ratio) -->
+      <div class="col-span-7 h-full min-h-0 bg-[#161b22] border border-[#30363d] rounded-xl p-3 shadow-sm flex flex-col items-center justify-between gap-2">
+        
+        <!-- Top of Grid Window: Power-Ups (Reveal, Hint, Mouse) Above Cats & Lives -->
+        <div id="boardPowersBar" class="shrink-0 w-full grid grid-cols-3 gap-2">
+          <button id="btnCatReveal" onclick="useCatReveal()" class="px-2.5 py-1.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#e6edf3] text-xs font-semibold flex items-center justify-between cursor-pointer transition">
+            <span class="flex items-center gap-1.5">
+              <span>🐾</span>
+              <span>Reveal</span>
+            </span>
+            <span id="badgeCatReveal" class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">5</span>
+          </button>
+
+          <button id="btnHint" onclick="useSmartHint()" class="px-2.5 py-1.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#e6edf3] text-xs font-semibold flex items-center justify-between cursor-pointer transition">
+            <span class="flex items-center gap-1.5">
+              <span>💡</span>
+              <span>Hint</span>
+            </span>
+            <span id="badgeHint" class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 font-bold">5</span>
+          </button>
+
+          <button id="btnUseMouse" onclick="useMouseHelper()" class="px-2.5 py-1.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#e6edf3] text-xs font-semibold flex items-center justify-between cursor-pointer transition">
+            <span class="flex items-center gap-1.5">
+              <span>🐭</span>
+              <span>Mouse</span>
+            </span>
+            <span id="badgeUseMouse" class="px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-400 font-bold">5</span>
+          </button>
+        </div>
+
+        <!-- Right Above the Board: Found/Total Cats + Live Timer + 5 Lives Indicator -->
+        <div id="boardHeaderBar" class="shrink-0 w-full px-3.5 py-1.5 rounded-xl bg-[#0d1117] border border-[#30363d] flex items-center justify-between gap-2">
+          <!-- Found / Total Cats -->
+          <div class="flex items-center gap-1.5">
+            <span class="text-sm">🐱</span>
+            <span class="text-xs font-semibold text-[#8b949e]">Cats:</span>
+            <span id="catsCounter" class="text-xs font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">
+              1 / 6
+            </span>
+          </div>
+
+          <!-- Live Run Timer -->
+          <div class="flex items-center gap-1">
+            <span class="text-xs text-[#8b949e]">⏱️</span>
+            <span id="runTimerDisplay" class="text-xs font-mono font-bold text-[#e6edf3]">00:00</span>
+          </div>
+
+          <!-- 5 Lives Indicator -->
+          <div class="flex items-center gap-1.5">
+            <span class="text-xs font-semibold text-[#8b949e]">Lives:</span>
+            <span id="livesDisplay" class="text-xs tracking-wider" title="5 Lives - Level shuffles on fail">
+              ❤️❤️❤️❤️❤️
+            </span>
+            <span id="livesText" class="text-xs font-bold text-[#8b949e]">(5/5)</span>
+          </div>
+        </div>
+
+        <!-- Responsive Square Wrapper that maximizes 1:1 board size vertically & horizontally -->
+        <div id="boardViewport" class="flex-1 min-h-0 w-full flex items-center justify-center overflow-hidden">
+          <div id="boardContainer" class="board-grid grid rounded-xl overflow-hidden border border-[#30363d] shadow-md"
+               onmouseleave="endSwipe()"
+               onmouseup="endSwipe()">
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column (Col-Span-5): Real-Time Offline Leaderboard + Level JSON Tabs -->
+      <div class="col-span-5 h-full min-h-0 bg-[#161b22] border border-[#30363d] rounded-xl p-3 shadow-sm flex flex-col gap-2">
+        <!-- Tab Switcher Header -->
+        <div class="shrink-0 flex items-center justify-between gap-1.5">
+          <div class="flex items-center gap-1">
+            <button id="tabBtnLeaderboard" onclick="switchRightTab('leaderboard')" class="px-2.5 py-1 rounded-lg bg-blue-600 text-white border border-blue-500 text-xs font-bold flex items-center gap-1 cursor-pointer transition">
+              <span>🏆</span>
+              <span>Leaderboard</span>
+            </button>
+            <button id="tabBtnJson" onclick="switchRightTab('json')" class="px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#e6edf3] border border-[#30363d] text-xs font-semibold flex items-center gap-1 cursor-pointer transition">
+              <span>{ }</span>
+              <span>Level JSON</span>
+            </button>
+          </div>
+          <span id="jsonGridLabel" class="text-xs font-bold px-2 py-0.5 rounded bg-[#21262d] text-[#e6edf3] border border-[#30363d]">
+            6×6
+          </span>
+        </div>
+
+        <!-- TAB 1: REAL-TIME OFFLINE LEADERBOARD (Sheet 06 Architecture) -->
+        <div id="rightPanelLeaderboard" class="flex-1 min-h-0 flex flex-col gap-2">
+          <!-- Mode Sub-Tabs: Meowsweeper Best Time vs Unified Arcade League -->
+          <div class="shrink-0 flex items-center justify-between gap-1.5 bg-[#0d1117] p-1.5 rounded-xl border border-[#30363d]">
+            <div class="flex items-center gap-1">
+              <button id="lbModeGame" onclick="switchLbMode('meowsweeper')" class="px-2 py-1 rounded-lg bg-blue-600 text-white text-xs font-bold cursor-pointer transition">
+                🐱 Best Time
+              </button>
+              <button id="lbModeUnified" onclick="switchLbMode('unified_league')" class="px-2 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-[#e6edf3] text-xs font-semibold cursor-pointer transition">
+                🏆 Unified League
+              </button>
+            </div>
+            <div class="flex items-center gap-1 text-xs font-mono font-bold text-amber-400 px-1.5">
+              <span>⏱️</span>
+              <span id="lbCountdown">02d 23h</span>
+            </div>
+          </div>
+
+          <!-- Player Rank & Score KPI Strip -->
+          <div class="shrink-0 px-3 py-1.5 rounded-xl bg-[#0d1117] border border-[#30363d] flex items-center justify-between text-xs">
+            <div class="flex items-center gap-2">
+              <span class="text-[#8b949e] font-semibold">Rank:</span>
+              <span id="lbPlayerRank" class="font-mono font-bold text-amber-400">#30/30</span>
+              <span id="lbRankDelta" class="font-mono font-bold text-emerald-400"></span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-[#8b949e] font-semibold" id="lbScoreLabel">Best:</span>
+              <span id="lbPlayerScore" class="font-mono font-bold text-[#e6edf3]">Unranked</span>
+            </div>
+          </div>
+
+          <!-- Season Expired / Idempotent Reward Claim Banner -->
+          <div id="lbRewardBanner" class="hidden shrink-0 px-3 py-2 rounded-xl bg-amber-500/15 border border-amber-500/40 flex items-center justify-between gap-2">
+            <span id="lbRewardText" class="text-xs font-bold text-[#e6edf3]">Season Complete!</span>
+            <div class="flex items-center gap-1 shrink-0">
+              <button id="lbBtnClaim" onclick="lbClaimReward()" class="px-2 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-[#0d1117] text-xs font-bold cursor-pointer transition">
+                🎁 Claim
+              </button>
+              <button id="lbBtnNextSeason" onclick="lbStartNextSeason()" class="hidden px-2 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold cursor-pointer transition">
+                🔄 Next
+              </button>
+            </div>
+          </div>
+
+          <!-- Pooled User-Centered Window Rows -->
+          <div id="lbRowsContainer" class="flex-1 min-h-0 bg-[#0d1117] border border-[#30363d] rounded-xl overflow-y-auto divide-y divide-[#21262d]">
+          </div>
+
+          <!-- Live-Ops Simulation Footer (+4h, -6h Rollback Clamp, End Season) -->
+          <div class="shrink-0 flex items-center justify-between gap-1 pt-0.5">
+            <div class="flex items-center gap-1">
+              <button onclick="lbAdvanceTime(4)" class="px-2 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#e6edf3] text-xs font-semibold cursor-pointer transition" title="Advance clock +4 hours">
+                ⏩ +4h
+              </button>
+              <button onclick="lbAdvanceTime(-6)" class="px-2 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] border border-rose-500/40 text-rose-400 text-xs font-semibold cursor-pointer transition" title="Spoof clock -6h backward to test anti-rollback clamp">
+                ⏪ -6h
+              </button>
+              <button onclick="lbExpireSeason()" class="px-2 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] border border-amber-500/40 text-amber-400 text-xs font-semibold cursor-pointer transition" title="Fast-forward to season end">
+                🏁 End Season
+              </button>
+            </div>
+            <span id="lbPhaseBadge" class="text-xs font-mono text-[#8b949e]">Live Sync</span>
+          </div>
+        </div>
+
+        <!-- TAB 2: LEVEL JSON INSPECTOR -->
+        <pre id="jsonPreviewBox" class="hidden flex-1 min-h-0 bg-[#0d1117] border border-[#30363d] rounded-xl p-3 text-xs font-mono overflow-auto text-[#e6edf3] leading-snug"></pre>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // 10 distinct region colors for up to 10x10 grids
+    const REGION_COLORS = [
+      { bg: '#fde68a' }, // 0 Amber
+      { bg: '#a7f3d0' }, // 1 Emerald
+      { bg: '#bfdbfe' }, // 2 Blue
+      { bg: '#fbcfe8' }, // 3 Pink
+      { bg: '#ddd6fe' }, // 4 Violet
+      { bg: '#fed7aa' }, // 5 Orange
+      { bg: '#99f6e4' }, // 6 Teal
+      { bg: '#fecaca' }, // 7 Rose
+      { bg: '#d9f99d' }, // 8 Lime
+      { bg: '#bae6fd' }  // 9 Sky
+    ];
+
+    const MAX_LIVES = 5;
+    const GRID_SIZES = [5, 6, 7, 8, 9, 10];
+    let currentSizeIdx = 1;
+    let currentLevelObj = null;
+    let defaultCatCoord = null;
+    let boardState = []; // 0 = empty, 1 = cross (✕), 2 = cat (🐱)
+    let cellElements = [];
+    let lives = MAX_LIVES;
+    let powers = { catReveal: 5, hint: 5, useMouse: 5 };
+    let isTransitioningLevel = false;
+
+    // Strictly alternate 50% levels with 1 single-cell color region and 50% all multi-cell regions
+    let levelToggle50Percent = true;
+
+    let isSwiping = false;
+    let swipeAction = null;
+    let lastClickInfo = { r: -1, c: -1, time: 0 };
+    let toastTimer = null;
+
+    // Dynamically size the 1:1 square board to fill 100% of the available vertical height
+    function fitSquareBoardToViewport() {
+      const viewport = document.getElementById('boardViewport');
+      const board = document.getElementById('boardContainer');
+      const headerBar = document.getElementById('boardHeaderBar');
+      const powersBar = document.getElementById('boardPowersBar');
+      if (!viewport || !board) return;
+
+      const size = Math.floor(Math.min(viewport.clientWidth, viewport.clientHeight));
+      if (size > 0) {
+        board.style.width = `${size}px`;
+        board.style.height = `${size}px`;
+        if (headerBar) headerBar.style.width = `${size}px`;
+        if (powersBar) powersBar.style.width = `${size}px`;
+      }
+    }
+
+    window.addEventListener('resize', fitSquareBoardToViewport);
+    const resizeObserver = new ResizeObserver(fitSquareBoardToViewport);
+    window.addEventListener('DOMContentLoaded', () => {
+      const vp = document.getElementById('boardViewport');
+      if (vp) resizeObserver.observe(vp);
+    });
+
+    function showToastPopup(emoji, message, type = 'info') {
+      const bar = document.getElementById('toastBar');
+      const emojiEl = document.getElementById('toastEmoji');
+      const textEl = document.getElementById('toastText');
+
+      emojiEl.textContent = emoji;
+      textEl.textContent = message;
+
+      if (type === 'win') {
+        bar.className = 'shrink-0 h-9 rounded-xl px-4 border flex items-center justify-center gap-2 text-xs font-bold transition-colors duration-200 shadow-sm bg-emerald-600 text-white border-emerald-400';
+        textEl.className = 'text-white';
+      } else if (type === 'lose') {
+        bar.className = 'shrink-0 h-9 rounded-xl px-4 border flex items-center justify-center gap-2 text-xs font-bold transition-colors duration-200 shadow-sm bg-rose-600 text-white border-rose-400';
+        textEl.className = 'text-white';
+      } else {
+        bar.className = 'shrink-0 h-9 rounded-xl px-4 border border-amber-500/40 bg-amber-500/15 flex items-center justify-center gap-2 text-xs font-bold transition-colors duration-200 shadow-sm';
+        textEl.className = 'text-[#e6edf3]';
+      }
+
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        bar.className = 'shrink-0 h-9 rounded-xl px-4 border border-[#30363d] bg-[#161b22] flex items-center justify-center gap-2 text-xs font-bold transition-colors duration-200 shadow-sm';
+        emojiEl.textContent = '🐱';
+        textEl.textContent = 'Double-click a cell to place a Cat • Drag across cells to add/remove ✕';
+        textEl.className = 'text-[#8b949e]';
+      }, 1600);
+    }
+
+    function shuffleArray(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function generateValidCatSolution(N) {
+      const cols = Array(N).fill(-1);
+      const usedCols = Array(N).fill(false);
+
+      function backtrack(r) {
+        if (r === N) return true;
+        const candidates = shuffleArray(Array.from({ length: N }, (_, i) => i));
+        for (const c of candidates) {
+          if (usedCols[c]) continue;
+          if (r > 0 && Math.abs(c - cols[r - 1]) <= 1) continue;
+          cols[r] = c;
+          usedCols[c] = true;
+          if (backtrack(r + 1)) return true;
+          usedCols[c] = false;
+          cols[r] = -1;
+        }
+        return false;
+      }
+
+      backtrack(0);
+      const solution = Array.from({ length: N }, () => Array(N).fill(0));
+      for (let r = 0; r < N; r++) {
+        solution[r][cols[r]] = 1;
+      }
+      return { solution, catCoords: cols.map((c, r) => [r, c]) };
+    }
+
+    function generateChainedLevel(N, useSingleCellColor) {
+      for (let attempt = 0; attempt < 120; attempt++) {
+        const { solution, catCoords } = generateValidCatSolution(N);
+
+        const startRow = Math.floor(Math.random() * N);
+        const chainRows = [startRow];
+        let minR = startRow, maxR = startRow;
+        while (chainRows.length < N) {
+          const canUp = minR > 0;
+          const canDown = maxR < N - 1;
+          if (canUp && (!canDown || Math.random() < 0.5)) {
+            minR--;
+            chainRows.push(minR);
+          } else {
+            maxR++;
+            chainRows.push(maxR);
+          }
+        }
+
+        const orderedCats = chainRows.map(r => catCoords[r]);
+        const regions = Array.from({ length: N }, () => Array(N).fill(-1));
+        const regionSizes = Array(N).fill(0);
+
+        orderedCats.forEach(([r, c], idx) => {
+          regions[r][c] = idx;
+          regionSizes[idx] = 1;
+        });
+
+        const singleCellIdx = useSingleCellColor ? (1 + Math.floor(Math.random() * (N - 1))) : -1;
+
+        const solvedRows = new Set([orderedCats[0][0]]);
+        for (let k = 1; k < N; k++) {
+          const [rk, ck] = orderedCats[k];
+          if (k !== singleCellIdx) {
+            const adjRow = solvedRows.has(rk - 1) ? rk - 1 : rk + 1;
+            if (regions[adjRow][ck] === -1) {
+              regions[adjRow][ck] = k;
+              regionSizes[k]++;
+            }
+          }
+          solvedRows.add(rk);
+        }
+
+        function isEliminatedByEarlier(r, c, k) {
+          for (let j = 0; j < k; j++) {
+            const [rj, cj] = orderedCats[j];
+            if (r === rj || c === cj || (Math.abs(r - rj) <= 1 && Math.abs(c - cj) <= 1)) {
+              return true;
+            }
+          }
+          return false;
+        }
+
+        const dirs = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+
+        const [r0, c0] = orderedCats[0];
+        for (const [dr, dc] of shuffleArray(dirs)) {
+          const nr = r0 + dr, nc = c0 + dc;
+          if (nr >= 0 && nr < N && nc >= 0 && nc < N && regions[nr][nc] === -1) {
+            regions[nr][nc] = 0;
+            regionSizes[0]++;
+            if (regionSizes[0] >= 2) break;
+          }
+        }
+        if (regionSizes[0] < 2) continue;
+
+        let unassigned = 0;
+        for (let r = 0; r < N; r++) {
+          for (let c = 0; c < N; c++) {
+            if (regions[r][c] === -1) unassigned++;
+          }
+        }
+
+        let guard = 0;
+        while (unassigned > 0 && guard < 250) {
+          guard++;
+          let progressed = false;
+          for (let r = 0; r < N; r++) {
+            for (let c = 0; c < N; c++) {
+              if (regions[r][c] !== -1) continue;
+              const validRegs = [];
+              for (const [dr, dc] of dirs) {
+                const nr = r + dr, nc = c + dc;
+                if (nr >= 0 && nr < N && nc >= 0 && nc < N && regions[nr][nc] !== -1) {
+                  const regId = regions[nr][nc];
+                  if (regId === singleCellIdx) continue;
+                  if (regId === 0 || isEliminatedByEarlier(r, c, regId)) {
+                    validRegs.push(regId);
+                  }
+                }
+              }
+              if (validRegs.length > 0) {
+                validRegs.sort((a, b) => a - b);
+                const pick = Math.random() < 0.75 ? validRegs[0] : validRegs[Math.floor(Math.random() * validRegs.length)];
+                regions[r][c] = pick;
+                regionSizes[pick]++;
+                unassigned--;
+                progressed = true;
+              }
+            }
+          }
+          if (!progressed) break;
+        }
+
+        if (unassigned > 0) continue;
+
+        let sizesValid = regionSizes[0] >= 2;
+        for (let k = 1; k < N; k++) {
+          if (k === singleCellIdx && regionSizes[k] !== 1) sizesValid = false;
+          if (k !== singleCellIdx && regionSizes[k] < 2) sizesValid = false;
+        }
+        if (!sizesValid) continue;
+
+        const perm = shuffleArray(Array.from({ length: N }, (_, i) => i));
+        const finalRegions = regions.map(row => row.map(id => perm[id]));
+        return {
+          gridSize: N,
+          hasSingleCellColor: useSingleCellColor,
+          defaultCat: orderedCats[0],
+          regions: finalRegions,
+          solution
+        };
+      }
+    }
+
+    let runStartTimeMs = Date.now();
+    let runTimerInterval = null;
+
+    function updateRunTimerUI() {
+      const el = document.getElementById('runTimerDisplay');
+      if (!el || isTransitioningLevel) return;
+      const elapsedSec = Math.max(0, Math.floor((Date.now() - runStartTimeMs) / 1000));
+      const mins = String(Math.floor(elapsedSec / 60)).padStart(2, '0');
+      const secs = String(elapsedSec % 60).padStart(2, '0');
+      el.textContent = `${mins}:${secs}`;
+    }
+
+    function loadLevel(size) {
+      isTransitioningLevel = false;
+      currentSizeIdx = GRID_SIZES.indexOf(size);
+      if (currentSizeIdx === -1) currentSizeIdx = 0;
+
+      const useSingleCell = levelToggle50Percent;
+      levelToggle50Percent = !levelToggle50Percent;
+
+      const generated = generateChainedLevel(size, useSingleCell);
+      currentLevelObj = generated;
+      defaultCatCoord = generated.defaultCat;
+
+      boardState = Array.from({ length: size }, () => Array(size).fill(0));
+      boardState[defaultCatCoord[0]][defaultCatCoord[1]] = 2;
+
+      lives = MAX_LIVES;
+      powers = { catReveal: 5, hint: 5, useMouse: 5 };
+      runStartTimeMs = Date.now();
+      updateRunTimerUI();
+      if (!runTimerInterval) {
+        runTimerInterval = setInterval(updateRunTimerUI, 500);
+      }
+
+      initBoardDOM();
+      fitSquareBoardToViewport();
+      updateTopUI();
+      updateJsonInspector();
+    }
+
+    function shuffleRandomLevel(showToast = true) {
+      const currentSize = currentLevelObj ? currentLevelObj.gridSize : -1;
+      const otherSizes = GRID_SIZES.filter(s => s !== currentSize);
+      const randomSize = otherSizes[Math.floor(Math.random() * otherSizes.length)];
+      loadLevel(randomSize);
+      if (showToast) {
+        showToastPopup('🔀', `Shuffled new ${randomSize}×${randomSize} level!`, 'info');
+      }
+    }
+
+    function cycleGridSize() {
+      currentSizeIdx = (currentSizeIdx + 1) % GRID_SIZES.length;
+      const nextSize = GRID_SIZES[currentSizeIdx];
+      loadLevel(nextSize);
+      showToastPopup('▦', `Switched to ${nextSize}×${nextSize} grid!`, 'info');
+    }
+
+    function checkWinCondition() {
+      if (isTransitioningLevel) return;
+      const N = currentLevelObj.gridSize;
+      let placedCats = 0;
+      for (let r = 0; r < N; r++) {
+        for (let c = 0; c < N; c++) {
+          if (boardState[r][c] === 2) placedCats++;
+        }
+      }
+      if (placedCats === N) {
+        isTransitioningLevel = true;
+        const elapsedMs = Math.max(3500, Date.now() - runStartTimeMs);
+        const leaguePts = N * 35 + lives * 20;
+
+        // Real-time boundary call to Offline Leaderboard (updates both Meowsweeper Best Time & Unified League)
+        let rankMsg = '';
+        if (window.OfflineLeaderboard) {
+          const resBest = window.OfflineLeaderboard.submitRun('meowsweeper', elapsedMs);
+          const resUni = window.OfflineLeaderboard.submitRun('unified_league', leaguePts);
+          const activeRes = window.OfflineLeaderboard.getActiveMode() === 'meowsweeper' ? resBest : resUni;
+          if (activeRes && activeRes.rankDelta > 0) {
+            rankMsg = ` • 🚀 Rank #${activeRes.newRank} (+${activeRes.rankDelta})!`;
+          } else if (activeRes) {
+            rankMsg = ` • 🏆 Rank #${activeRes.newRank}`;
+          }
+        }
+
+        showToastPopup('🎉', `Cleared ${N}×${N} in ${(elapsedMs / 1000).toFixed(1)}s (+${leaguePts}p)${rankMsg}`, 'win');
+        setTimeout(() => {
+          shuffleRandomLevel(false);
+        }, 1650);
+      }
+    }
+
+    function updateTopUI() {
+      const N = currentLevelObj.gridSize;
+      document.getElementById('gridSizeBadge').textContent = `${N}×${N}`;
+      document.getElementById('jsonGridLabel').textContent = `${N}×${N}`;
+
+      const modeBadge = document.getElementById('levelModeBadge');
+      if (currentLevelObj.hasSingleCellColor) {
+        modeBadge.textContent = '1-Cell Color + Linked Chain';
+        modeBadge.className = 'text-xs font-semibold px-2 py-0.5 rounded bg-purple-500/15 text-purple-500 border border-purple-500/30';
+      } else {
+        modeBadge.textContent = 'Multi-Cell Linked Chain';
+        modeBadge.className = 'text-xs font-semibold px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-500 border border-emerald-500/30';
+      }
+
+      const hearts = '❤️'.repeat(lives) + '🖤'.repeat(Math.max(0, MAX_LIVES - lives));
+      document.getElementById('livesDisplay').textContent = hearts;
+      document.getElementById('livesText').textContent = `(${lives}/${MAX_LIVES})`;
+
+      let placedCats = 0;
+      for (let r = 0; r < N; r++) {
+        for (let c = 0; c < N; c++) {
+          if (boardState[r][c] === 2) placedCats++;
+        }
+      }
+      document.getElementById('catsCounter').textContent = `${placedCats} / ${N}`;
+
+      document.getElementById('badgeCatReveal').textContent = `${powers.catReveal}`;
+      document.getElementById('badgeHint').textContent = `${powers.hint}`;
+      document.getElementById('badgeUseMouse').textContent = `${powers.useMouse}`;
+
+      document.getElementById('btnCatReveal').classList.toggle('opacity-50', powers.catReveal <= 0);
+      document.getElementById('btnHint').classList.toggle('opacity-50', powers.hint <= 0);
+      document.getElementById('btnUseMouse').classList.toggle('opacity-50', powers.useMouse <= 0);
+    }
+
+    function updateJsonInspector() {
+      const N = currentLevelObj.gridSize;
+      const compactJson = {
+        gridSize: N,
+        regions: currentLevelObj.regions.map(row => `[${row.join(', ')}]`),
+        cats: currentLevelObj.solution.map(row => `[${row.join(', ')}]`)
+      };
+      const pre = document.getElementById('jsonPreviewBox');
+      pre.textContent = JSON.stringify(compactJson, null, 2);
+    }
+
+    function initBoardDOM() {
+      const container = document.getElementById('boardContainer');
+      const N = currentLevelObj.gridSize;
+      container.style.gridTemplateColumns = `repeat(${N}, minmax(0, 1fr))`;
+      container.style.gridTemplateRows = `repeat(${N}, minmax(0, 1fr))`;
+      container.innerHTML = '';
+      cellElements = Array.from({ length: N }, () => Array(N).fill(null));
+
+      for (let r = 0; r < N; r++) {
+        for (let c = 0; c < N; c++) {
+          const regId = currentLevelObj.regions[r][c];
+          const colorObj = REGION_COLORS[regId % REGION_COLORS.length];
+
+          const cell = document.createElement('div');
+          cell.style.backgroundColor = colorObj.bg;
+          cell.style.border = '1px solid rgba(28, 25, 23, 0.15)';
+          cell.className = 'relative w-full h-full overflow-hidden cursor-pointer select-none';
+
+          const inner = document.createElement('div');
+          inner.className = 'cell-inner absolute inset-0 flex items-center justify-center pointer-events-none leading-none';
+          cell.appendChild(inner);
+
+          cell.addEventListener('mousedown', (e) => {
+            if (e.button !== 0 || isTransitioningLevel) return;
+            const now = performance.now();
+            if (lastClickInfo.r === r && lastClickInfo.c === c && (now - lastClickInfo.time) < 320) {
+              lastClickInfo = { r: -1, c: -1, time: 0 };
+              endSwipe();
+              handleDoubleClickCat(r, c, false);
+              return;
+            }
+            lastClickInfo = { r, c, time: now };
+            startSwipe(r, c);
+          });
+
+          cell.addEventListener('mouseenter', () => {
+            if (!isTransitioningLevel) continueSwipe(r, c);
+          });
+
+          cellElements[r][c] = cell;
+          container.appendChild(cell);
+          updateCellVisual(r, c);
+        }
+      }
+    }
+
+    function updateCellVisual(r, c, isHintHighlight = false, showMouseBadge = false) {
+      const cell = cellElements[r]?.[c];
+      if (!cell) return;
+      const inner = cell.querySelector('.cell-inner');
+      inner.innerHTML = '';
+      cell.classList.remove('cell-highlight-hint', 'cell-wrong-flash');
+
+      if (isHintHighlight) {
+        cell.classList.add('cell-highlight-hint');
+      }
+
+      const N = currentLevelObj.gridSize;
+      const crossSizeClass = N <= 6 ? 'text-2xl' : N <= 8 ? 'text-lg' : 'text-sm';
+      const catSizeClass = N <= 5 ? 'text-4xl' : N <= 7 ? 'text-3xl' : N === 8 ? 'text-2xl' : 'text-lg';
+
+      const state = boardState[r][c];
+      if (state === 1) {
+        const cross = document.createElement('span');
+        cross.className = `text-stone-700/80 font-bold ${crossSizeClass} animate-pop leading-none`;
+        cross.textContent = '✕';
+        inner.appendChild(cross);
+      } else if (state === 2) {
+        const cat = document.createElement('span');
+        cat.className = `${catSizeClass} animate-pop drop-shadow-sm leading-none`;
+        cat.textContent = '🐱';
+        inner.appendChild(cat);
+      }
+
+      if (showMouseBadge) {
+        const mouseBadge = document.createElement('span');
+        mouseBadge.className = 'absolute top-0.5 right-0.5 text-xs pointer-events-none leading-none';
+        mouseBadge.textContent = '🐭';
+        inner.appendChild(mouseBadge);
+      }
+    }
+
+    function refreshAllCells(highlightCells = [], mouseCells = []) {
+      const N = currentLevelObj.gridSize;
+      const hlSet = new Set(highlightCells.map(([r, c]) => `${r},${c}`));
+      const mouseSet = new Set(mouseCells.map(([r, c]) => `${r},${c}`));
+      for (let r = 0; r < N; r++) {
+        for (let c = 0; c < N; c++) {
+          updateCellVisual(r, c, hlSet.has(`${r},${c}`), mouseSet.has(`${r},${c}`));
+        }
+      }
+    }
+
+    function startSwipe(r, c) {
+      if (boardState[r][c] === 2) return;
+      isSwiping = true;
+      if (boardState[r][c] === 0) {
+        swipeAction = 'addCross';
+        boardState[r][c] = 1;
+      } else if (boardState[r][c] === 1) {
+        swipeAction = 'removeCross';
+        boardState[r][c] = 0;
+      }
+      updateCellVisual(r, c);
+    }
+
+    function continueSwipe(r, c) {
+      if (!isSwiping || !swipeAction || boardState[r][c] === 2) return;
+      if (swipeAction === 'addCross' && boardState[r][c] === 0) {
+        boardState[r][c] = 1;
+        updateCellVisual(r, c);
+      } else if (swipeAction === 'removeCross' && boardState[r][c] === 1) {
+        boardState[r][c] = 0;
+        updateCellVisual(r, c);
+      }
+    }
+
+    function endSwipe() {
+      isSwiping = false;
+      swipeAction = null;
+    }
+
+    function handleDoubleClickCat(r, c, isSafeMouse = false) {
+      if (boardState[r][c] === 2 || isTransitioningLevel) return;
+      const isCatInSolution = currentLevelObj.solution[r][c] === 1;
+
+      if (isCatInSolution) {
+        boardState[r][c] = 2;
+        updateTopUI();
+        updateCellVisual(r, c, true, isSafeMouse);
+        checkWinCondition();
+      } else if (isSafeMouse) {
+        boardState[r][c] = 1;
+        updateCellVisual(r, c, true, true);
+      } else {
+        lives = Math.max(0, lives - 1);
+        boardState[r][c] = 1;
+        updateTopUI();
+        updateCellVisual(r, c);
+
+        const cell = cellElements[r][c];
+        cell.classList.add('cell-wrong-flash');
+        setTimeout(() => cell.classList.remove('cell-wrong-flash'), 450);
+
+        const container = document.getElementById('boardContainer');
+        container.classList.remove('animate-shake');
+        void container.offsetWidth;
+        container.classList.add('animate-shake');
+
+        if (lives === 0) {
+          isTransitioningLevel = true;
+          showToastPopup('💔', 'Game Over! All 5 lives lost — shuffling new level...', 'lose');
+          setTimeout(() => {
+            shuffleRandomLevel(false);
+          }, 1350);
+        }
+      }
+    }
+
+    function useCatReveal() {
+      if (powers.catReveal <= 0 || isTransitioningLevel) return;
+      const N = currentLevelObj.gridSize;
+      const unfoundCats = [];
+      for (let r = 0; r < N; r++) {
+        for (let c = 0; c < N; c++) {
+          if (currentLevelObj.solution[r][c] === 1 && boardState[r][c] !== 2) {
+            unfoundCats.push([r, c]);
+          }
+        }
+      }
+      if (unfoundCats.length === 0) return;
+
+      powers.catReveal--;
+      const [pickR, pickC] = unfoundCats[Math.floor(Math.random() * unfoundCats.length)];
+      boardState[pickR][pickC] = 2;
+      updateTopUI();
+      refreshAllCells([[pickR, pickC]]);
+      checkWinCondition();
+    }
+
+    function useSmartHint() {
+      if (powers.hint <= 0 || isTransitioningLevel) return;
+      const N = currentLevelObj.gridSize;
+
+      // 1. Cross out remaining cells of a colored region that already has a cat
+      for (let r = 0; r < N; r++) {
+        for (let c = 0; c < N; c++) {
+          if (boardState[r][c] === 2) {
+            const regId = currentLevelObj.regions[r][c];
+            const toCross = [];
+            for (let rr = 0; rr < N; rr++) {
+              for (let cc = 0; cc < N; cc++) {
+                if (currentLevelObj.regions[rr][cc] === regId && boardState[rr][cc] === 0) {
+                  toCross.push([rr, cc]);
+                }
+              }
+            }
+            if (toCross.length > 0) {
+              powers.hint--;
+              toCross.forEach(([rr, cc]) => boardState[rr][cc] = 1);
+              updateTopUI();
+              refreshAllCells(toCross);
+              return;
+            }
+          }
+        }
+      }
+
+      // 2. Cross out Row, Col, and 8 surrounding neighbors of a placed cat
+      for (let r = 0; r < N; r++) {
+        for (let c = 0; c < N; c++) {
+          if (boardState[r][c] === 2) {
+            const toCross = [];
+            for (let i = 0; i < N; i++) {
+              if (boardState[r][i] === 0) toCross.push([r, i]);
+              if (boardState[i][c] === 0) toCross.push([i, c]);
+            }
+            for (let dr = -1; dr <= 1; dr++) {
+              for (let dc = -1; dc <= 1; dc++) {
+                const nr = r + dr, nc = c + dc;
+                if (nr >= 0 && nr < N && nc >= 0 && nc < N && boardState[nr][nc] === 0) {
+                  toCross.push([nr, nc]);
+                }
+              }
+            }
+            if (toCross.length > 0) {
+              powers.hint--;
+              toCross.forEach(([rr, cc]) => boardState[rr][cc] = 1);
+              updateTopUI();
+              refreshAllCells(toCross);
+              return;
+            }
+          }
+        }
+      }
+
+      // 3. Otherwise reveal the next linked cat in the chain and cross out its color region
+      const unfoundCats = [];
+      for (let r = 0; r < N; r++) {
+        for (let c = 0; c < N; c++) {
+          if (currentLevelObj.solution[r][c] === 1 && boardState[r][c] !== 2) {
+            unfoundCats.push([r, c]);
+          }
+        }
+      }
+      if (unfoundCats.length > 0) {
+        powers.hint--;
+        const [pickR, pickC] = unfoundCats[0];
+        boardState[pickR][pickC] = 2;
+        const regId = currentLevelObj.regions[pickR][pickC];
+        const affected = [[pickR, pickC]];
+        for (let rr = 0; rr < N; rr++) {
+          for (let cc = 0; cc < N; cc++) {
+            if (currentLevelObj.regions[rr][cc] === regId && boardState[rr][cc] === 0) {
+              boardState[rr][cc] = 1;
+              affected.push([rr, cc]);
+            }
+          }
+        }
+        updateTopUI();
+        refreshAllCells(affected);
+        checkWinCondition();
+      }
+    }
+
+    function useMouseHelper() {
+      if (powers.useMouse <= 0 || isTransitioningLevel) return;
+      const N = currentLevelObj.gridSize;
+      const undecided = [];
+      for (let r = 0; r < N; r++) {
+        for (let c = 0; c < N; c++) {
+          if (boardState[r][c] === 0) undecided.push([r, c]);
+        }
+      }
+      if (undecided.length === 0) return;
+
+      powers.useMouse--;
+      const picks = [];
+      const pool = [...undecided];
+      const count = Math.min(3, pool.length);
+
+      for (let i = 0; i < count; i++) {
+        const idx = Math.floor(Math.random() * pool.length);
+        const [r, c] = pool.splice(idx, 1)[0];
+        picks.push([r, c]);
+        boardState[r][c] = currentLevelObj.solution[r][c] === 1 ? 2 : 1;
+      }
+
+      updateTopUI();
+      refreshAllCells(picks, picks);
+      checkWinCondition();
+    }
+
+    // =========================================================================
+    // SHEET 06: REAL-TIME OFFLINE LEADERBOARD ENGINE (Meowsweeper + Unified)
+    // =========================================================================
+    const LB_PRESETS = {
+      meowsweeper: {
+        id: 'meowsweeper',
+        title: 'Meowsweeper Sprint',
+        scoringRule: 'best_time',
+        seasonDurationMs: 3 * 24 * 3600 * 1000,
+        botCount: 29,
+        baseBotTargetMin: 14000,
+        baseBotTargetMax: 135000
+      },
+      unified_league: {
+        id: 'unified_league',
+        title: 'Unified Arcade League',
+        scoringRule: 'cumulative',
+        seasonDurationMs: 7 * 24 * 3600 * 1000,
+        botCount: 29,
+        baseBotTargetMin: 900,
+        baseBotTargetMax: 4800
+      }
+    };
+
+    const LB_BOT_NAMES = [
+      'Whiskers_99', 'ZenSolver', 'TileMaster', 'PawsAndClaws', 'CalicoQueen',
+      'JigsawNinja', 'MochiCat', 'PixelPuzzler', 'ShadowTail', 'CozyCrafter',
+      'SolverPrime', 'NekoSweeper', 'VelvetPaw', 'GridWalker', 'BiscuitMaker',
+      'PurrfectLine', 'CornerPiece', 'EdgeHunter', 'TabAndBlank', 'CatnapKing',
+      'MineSniffer', 'TuxedoCat', 'AmberEyes', 'SilentPounce', 'LuckyClover',
+      'StarlightCat', 'SnapMaster', 'SolitaireAce', 'GingerSnap'
+    ];
+    const LB_BOT_AVATARS = ['🐱', '🦊', '🐼', '🐨', '🐯', '🦁', '🐸', '🦉', '🐙', '🦄'];
+    const LB_STORAGE_PREFIX = 'agy_liveops_lb_v1_';
+    const LB_SALT = 'UNITY_WEBGL_LIVEOPS_SALT_2026';
+
+    let lbActiveMode = 'meowsweeper';
+    let lbSimOffsetMs = 0;
+    let lbRowPool = [];
+
+    function lbComputeChecksum(st) {
+      const raw = `${st.schemaVersion}|${st.seasonId}|${st.scoringRule}|${st.playerEntry.score}|${st.playerEntry.runsCompleted}|${st.rewardClaimed}|${st.lastSeenTimestampMs}|${LB_SALT}`;
+      let hash = 2166136261;
+      for (let i = 0; i < raw.length; i++) {
+        hash ^= raw.charCodeAt(i);
+        hash = Math.imul(hash, 16777619);
+      }
+      return (hash >>> 0).toString(16).padStart(8, '0');
+    }
+
+    function lbGetWallet() {
+      return Number(localStorage.getItem('agy_liveops_wallet_coins') || 150);
+    }
+
+    function lbSetWallet(coins) {
+      localStorage.setItem('agy_liveops_wallet_coins', String(coins));
+      const el = document.getElementById('topWalletCoins');
+      if (el) el.textContent = String(coins);
+    }
+
+    function lbCreateSeason(modeId, seasonNum = 1) {
+      const preset = LB_PRESETS[modeId];
+      const now = Date.now() + lbSimOffsetMs;
+      const seed = seasonNum * 101 + modeId.length * 37;
+      const bots = [];
+
+      for (let i = 0; i < preset.botCount; i++) {
+        const ratio = i / Math.max(1, preset.botCount - 1);
+        const archetype = ratio < 0.15 ? 'elite' : (ratio < 0.45 ? 'rival' : (ratio < 0.75 ? 'steady' : 'casual'));
+        const jitter = ((seed * (i + 17) * 7919) % 100) / 100;
+        const span = preset.baseBotTargetMax - preset.baseBotTargetMin;
+
+        if (preset.scoringRule === 'cumulative') {
+          const targetEndScore = Math.round(preset.baseBotTargetMax - ratio * span + (jitter - 0.5) * 180);
+          const initialScore = Math.round(targetEndScore * (0.04 + jitter * 0.08));
+          bots.push({
+            botId: `bot_${i + 1}`,
+            name: LB_BOT_NAMES[i % LB_BOT_NAMES.length],
+            avatar: LB_BOT_AVATARS[i % LB_BOT_AVATARS.length],
+            archetype,
+            score: Math.max(20, initialScore),
+            targetEndScore: Math.max(250, targetEndScore)
+          });
+        } else {
+          const targetBestMs = Math.round(preset.baseBotTargetMin + Math.pow(ratio, 1.15) * span + (jitter - 0.5) * 3500);
+          const initialMs = Math.round(targetBestMs * (1.15 + jitter * 0.15));
+          bots.push({
+            botId: `bot_${i + 1}`,
+            name: LB_BOT_NAMES[i % LB_BOT_NAMES.length],
+            avatar: LB_BOT_AVATARS[i % LB_BOT_AVATARS.length],
+            archetype,
+            score: initialMs,
+            targetEndScore: Math.max(preset.baseBotTargetMin, targetBestMs)
+          });
+        }
+      }
+
+      const st = {
+        schemaVersion: 1,
+        seasonNumber: seasonNum,
+        seasonId: `S0${seasonNum}_${modeId.toUpperCase()}`,
+        gameMode: modeId,
+        scoringRule: preset.scoringRule,
+        startTimeMs: now,
+        endTimeMs: now + preset.seasonDurationMs,
+        lastSimulatedAtMs: now,
+        lastSeenTimestampMs: now,
+        status: 'active',
+        rewardClaimed: false,
+        playerIdentity: { id: 'local_player_01', displayName: 'You (Player)', avatar: '🐱' },
+        playerEntry: { score: 0, runsCompleted: 0, previousRank: 30, currentRank: 30 },
+        bots,
+        checksum: ''
+      };
+      lbSaveState(modeId, st);
+      return st;
+    }
+
+    function lbLoadState(modeId) {
+      const preset = LB_PRESETS[modeId];
+      try {
+        const raw = localStorage.getItem(LB_STORAGE_PREFIX + modeId);
+        if (!raw) return lbCreateSeason(modeId, 1);
+        const parsed = JSON.parse(raw);
+        if (!parsed || parsed.schemaVersion !== 1 || parsed.checksum !== lbComputeChecksum(parsed)) {
+          return lbCreateSeason(modeId, 1);
+        }
+        return parsed;
+      } catch (e) {
+        return lbCreateSeason(modeId, 1);
+      }
+    }
+
+    function lbSaveState(modeId, st) {
+      st.checksum = lbComputeChecksum(st);
+      localStorage.setItem(LB_STORAGE_PREFIX + modeId, JSON.stringify(st));
+    }
+
+    function lbAdvanceBotsAndSync(modeId) {
+      const preset = LB_PRESETS[modeId];
+      const st = lbLoadState(modeId);
+      const rawNow = Date.now() + lbSimOffsetMs;
+      const clamped = rawNow < st.lastSeenTimestampMs;
+      const effectiveNow = Math.max(rawNow, st.lastSeenTimestampMs);
+      st.lastSeenTimestampMs = effectiveNow;
+
+      const simTarget = Math.min(effectiveNow, st.endTimeMs);
+      const dtMs = Math.max(0, simTarget - st.lastSimulatedAtMs);
+
+      if (dtMs > 0) {
+        const totalDur = Math.max(1, st.endTimeMs - st.startTimeMs);
+        const prevProg = Math.min(1, Math.max(0, (st.lastSimulatedAtMs - st.startTimeMs) / totalDur));
+        const newProg = Math.min(1, Math.max(0, (simTarget - st.startTimeMs) / totalDur));
+        const deltaProg = Math.max(0, newProg - prevProg);
+
+        if (deltaProg > 0) {
+          const isLate = newProg >= 0.65;
+          const pScore = st.playerEntry.score;
+
+          st.bots.forEach((bot, idx) => {
+            if (isLate && pScore > 0 && (bot.archetype === 'rival' || bot.archetype === 'elite')) {
+              if (preset.scoringRule === 'cumulative') {
+                const proj = pScore / Math.max(0.35, newProg);
+                const diff = proj - bot.targetEndScore;
+                if (Math.abs(diff) < 1200) bot.targetEndScore = Math.round(bot.targetEndScore + diff * 0.18);
+              } else {
+                const diff = pScore - bot.targetEndScore;
+                if (Math.abs(diff) < 25000) bot.targetEndScore = Math.round(bot.targetEndScore + diff * 0.15);
+              }
+            }
+            const remProg = Math.max(0.01, 1 - prevProg);
+            const stepFrac = Math.min(1, deltaProg / remProg);
+            const variance = 0.85 + (((idx * 31 + Math.floor(newProg * 100)) % 30) / 100);
+
+            if (preset.scoringRule === 'cumulative') {
+              const remPts = Math.max(0, bot.targetEndScore - bot.score);
+              bot.score += Math.round(remPts * stepFrac * variance);
+            } else {
+              const remRoom = Math.max(0, bot.score - bot.targetEndScore);
+              bot.score = Math.max(bot.targetEndScore, bot.score - Math.round(remRoom * stepFrac * variance * 0.75));
+            }
+          });
+        }
+        st.lastSimulatedAtMs = simTarget;
+      }
+
+      if (effectiveNow >= st.endTimeMs && st.status === 'active') {
+        st.status = 'expired_unclaimed';
+      }
+
+      const calc = lbCalculateRanks(st, preset);
+      st.playerEntry.currentRank = calc.playerRank;
+      lbSaveState(modeId, st);
+      return { st, calc, clamped, effectiveNow };
+    }
+
+    function lbCalculateRanks(st, preset) {
+      const entries = st.bots.map(b => ({
+        id: b.botId,
+        name: b.name,
+        avatar: b.avatar,
+        archetype: b.archetype,
+        score: b.score,
+        isPlayer: false
+      }));
+      entries.push({
+        id: 'player_local',
+        name: st.playerIdentity.displayName,
+        avatar: st.playerIdentity.avatar,
+        archetype: 'YOU',
+        score: st.playerEntry.score,
+        isPlayer: true
+      });
+
+      entries.sort((a, b) => {
+        if (preset.scoringRule === 'cumulative') {
+          if (b.score !== a.score) return b.score - a.score;
+          return a.isPlayer ? -1 : 1;
+        } else {
+          const aVal = a.score > 0 ? a.score : Number.MAX_SAFE_INTEGER;
+          const bVal = b.score > 0 ? b.score : Number.MAX_SAFE_INTEGER;
+          if (aVal !== bVal) return aVal - bVal;
+          return a.isPlayer ? -1 : 1;
+        }
+      });
+
+      let playerRank = entries.length;
+      entries.forEach((e, idx) => {
+        e.rank = idx + 1;
+        if (e.isPlayer) playerRank = e.rank;
+      });
+
+      const selected = new Set([0, 1, 2]);
+      const pIdx = playerRank - 1;
+      for (let i = Math.max(0, pIdx - 2); i <= Math.min(entries.length - 1, pIdx + 2); i++) {
+        selected.add(i);
+      }
+      let padIdx = 3;
+      while (selected.size < 8 && padIdx < entries.length) selected.add(padIdx++);
+
+      const sortedIdx = Array.from(selected).sort((a, b) => a - b);
+      const windowedRows = [];
+      let prev = -1;
+      sortedIdx.forEach(idx => {
+        if (prev !== -1 && idx - prev > 1) {
+          windowedRows.push({ isDivider: true, skippedCount: idx - prev - 1 });
+        }
+        windowedRows.push(entries[idx]);
+        prev = idx;
+      });
+
+      const rewardTier = playerRank === 1
+        ? { name: 'Gold Crown', coins: 500, badge: '🥇' }
+        : (playerRank <= 3 ? { name: 'Silver Chest', coins: 250, badge: '🥈' }
+        : (playerRank <= 10 ? { name: 'Bronze Pack', coins: 100, badge: '🥉' } : { name: 'Participation', coins: 25, badge: '🎖️' }));
+
+      return { totalEntries: entries.length, playerRank, windowedRows, rewardTier };
+    }
+
+    function lbFormatScore(score, preset) {
+      if (preset.scoringRule === 'cumulative') return `${score.toLocaleString()} pts`;
+      if (!score || score <= 0) return 'Unranked';
+      return `${(score / 1000).toFixed(2)}s`;
+    }
+
+    function lbInitPool() {
+      const container = document.getElementById('lbRowsContainer');
+      if (!container) return;
+      container.innerHTML = '';
+      lbRowPool = [];
+      for (let i = 0; i < 12; i++) {
+        const div = document.createElement('div');
+        div.className = 'hidden px-3 py-1.5 items-center justify-between text-xs';
+        container.appendChild(div);
+        lbRowPool.push(div);
+      }
+    }
+
+    function lbRenderUI(animateOvertake = false, lastDelta = 0) {
+      if (lbRowPool.length === 0) lbInitPool();
+      const preset = LB_PRESETS[lbActiveMode];
+      const { st, calc, clamped, effectiveNow } = lbAdvanceBotsAndSync(lbActiveMode);
+
+      // Update Top Header Rank & Wallet
+      const meowsweeperSync = lbActiveMode === 'meowsweeper' ? calc : lbAdvanceBotsAndSync('meowsweeper').calc;
+      const topRankEl = document.getElementById('topRankBadge');
+      if (topRankEl) topRankEl.textContent = `#${meowsweeperSync.playerRank}`;
+      const walletEl = document.getElementById('topWalletCoins');
+      if (walletEl) walletEl.textContent = String(lbGetWallet());
+
+      // Countdown
+      const remMs = Math.max(0, st.endTimeMs - effectiveNow);
+      const totalMins = Math.floor(remMs / 60000);
+      const d = Math.floor(totalMins / 1440);
+      const h = Math.floor((totalMins % 1440) / 60);
+      const m = totalMins % 60;
+      const cdEl = document.getElementById('lbCountdown');
+      if (cdEl) cdEl.textContent = remMs <= 0 ? 'ENDED' : `${d}d ${String(h).padStart(2, '0')}h ${String(m).padStart(2, '0')}m`;
+
+      const phaseEl = document.getElementById('lbPhaseBadge');
+      if (phaseEl) {
+        if (clamped) {
+          phaseEl.textContent = '🔒 Clamped';
+          phaseEl.className = 'text-xs font-mono text-rose-400 font-bold';
+        } else {
+          const pct = Math.min(1, Math.max(0, (effectiveNow - st.startTimeMs) / Math.max(1, st.endTimeMs - st.startTimeMs)));
+          phaseEl.textContent = pct >= 1 ? 'Locked' : (pct >= 0.65 ? 'Convergence' : 'Live Sync');
+          phaseEl.className = 'text-xs font-mono text-[#8b949e]';
+        }
+      }
+
+      // KPI Strip
+      document.getElementById('lbPlayerRank').textContent = `#${calc.playerRank}/${calc.totalEntries}`;
+      document.getElementById('lbScoreLabel').textContent = preset.scoringRule === 'cumulative' ? 'Score:' : 'Best:';
+      document.getElementById('lbPlayerScore').textContent = lbFormatScore(st.playerEntry.score, preset);
+
+      const deltaEl = document.getElementById('lbRankDelta');
+      const netDelta = st.playerEntry.previousRank - calc.playerRank;
+      if (netDelta > 0) {
+        deltaEl.textContent = `▲+${netDelta}`;
+        deltaEl.className = 'font-mono font-bold text-emerald-400';
+      } else if (netDelta < 0) {
+        deltaEl.textContent = `▼${netDelta}`;
+        deltaEl.className = 'font-mono font-bold text-rose-400';
+      } else {
+        deltaEl.textContent = '';
+      }
+
+      // Reward Banner
+      const banner = document.getElementById('lbRewardBanner');
+      const btnClaim = document.getElementById('lbBtnClaim');
+      const btnNext = document.getElementById('lbBtnNextSeason');
+      const rewardTxt = document.getElementById('lbRewardText');
+      if (remMs <= 0) {
+        banner.classList.remove('hidden');
+        if (!st.rewardClaimed) {
+          rewardTxt.textContent = `Rank #${calc.playerRank}: ${calc.rewardTier.badge} +${calc.rewardTier.coins}🪙`;
+          btnClaim.textContent = '🎁 Claim';
+          btnClaim.className = 'px-2 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-[#0d1117] text-xs font-bold cursor-pointer transition';
+          btnNext.classList.add('hidden');
+        } else {
+          rewardTxt.textContent = `Claimed ${calc.rewardTier.badge} +${calc.rewardTier.coins}🪙!`;
+          btnClaim.textContent = '✓ Claimed';
+          btnClaim.className = 'px-2 py-1 rounded-lg bg-[#21262d] text-[#8b949e] border border-[#30363d] text-xs font-semibold cursor-pointer';
+          btnNext.classList.remove('hidden');
+        }
+      } else {
+        banner.classList.add('hidden');
+      }
+
+      // Render Pooled Rows
+      for (let i = 0; i < lbRowPool.length; i++) {
+        const node = lbRowPool[i];
+        const row = calc.windowedRows[i];
+        if (!row) {
+          node.className = 'hidden';
+          node.innerHTML = '';
+          continue;
+        }
+        if (row.isDivider) {
+          node.className = 'flex items-center justify-center py-1 px-2 bg-[#161b22] text-[11px] font-mono text-[#8b949e]';
+          node.innerHTML = `••• ${row.skippedCount} rivals •••`;
+          continue;
+        }
+        const badge = row.rank === 1 ? '🥇#1' : (row.rank === 2 ? '🥈#2' : (row.rank === 3 ? '🥉#3' : `#${row.rank}`));
+        let cls = 'flex px-2.5 py-1.5 items-center justify-between text-xs transition-all ';
+        if (row.isPlayer) {
+          cls += 'bg-amber-500/15 border-l-4 border-l-amber-400 ';
+          if (animateOvertake) cls += 'animate-pop ';
+        } else if (row.rank <= 3) {
+          cls += 'bg-[#161b22]/50 ';
+        }
+        node.className = cls;
+
+        const rTier = row.rank === 1 ? '500🪙' : (row.rank <= 3 ? '250🪙' : (row.rank <= 10 ? '100🪙' : '25🪙'));
+        node.innerHTML = `
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="w-9 font-mono font-bold ${row.isPlayer ? 'text-amber-400' : 'text-[#8b949e]'}">${badge}</span>
+            <span class="w-6 h-6 rounded bg-[#21262d] border border-[#30363d] flex items-center justify-center text-xs shrink-0">${row.avatar}</span>
+            <span class="font-bold truncate ${row.isPlayer ? 'text-amber-400' : 'text-[#e6edf3]'}">${row.name}</span>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <span class="text-[11px] font-mono text-[#8b949e]">${rTier}</span>
+            <span class="w-16 text-right font-mono font-bold ${row.isPlayer ? 'text-amber-400' : 'text-[#e6edf3]'}">${lbFormatScore(row.score, preset)}</span>
+          </div>
+        `;
+      }
+    }
+
+    function switchRightTab(tab) {
+      const isLb = tab === 'leaderboard';
+      document.getElementById('rightPanelLeaderboard').classList.toggle('hidden', !isLb);
+      document.getElementById('jsonPreviewBox').classList.toggle('hidden', isLb);
+      document.getElementById('tabBtnLeaderboard').className = isLb
+        ? 'px-2.5 py-1 rounded-lg bg-blue-600 text-white border border-blue-500 text-xs font-bold flex items-center gap-1 cursor-pointer transition'
+        : 'px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#e6edf3] border border-[#30363d] text-xs font-semibold flex items-center gap-1 cursor-pointer transition';
+      document.getElementById('tabBtnJson').className = !isLb
+        ? 'px-2.5 py-1 rounded-lg bg-blue-600 text-white border border-blue-500 text-xs font-bold flex items-center gap-1 cursor-pointer transition'
+        : 'px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#e6edf3] border border-[#30363d] text-xs font-semibold flex items-center gap-1 cursor-pointer transition';
+      if (isLb) lbRenderUI(false);
+    }
+
+    function switchLbMode(modeId) {
+      lbActiveMode = modeId;
+      document.getElementById('lbModeGame').className = modeId === 'meowsweeper'
+        ? 'px-2 py-1 rounded-lg bg-blue-600 text-white text-xs font-bold cursor-pointer transition'
+        : 'px-2 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-[#e6edf3] text-xs font-semibold cursor-pointer transition';
+      document.getElementById('lbModeUnified').className = modeId === 'unified_league'
+        ? 'px-2 py-1 rounded-lg bg-blue-600 text-white text-xs font-bold cursor-pointer transition'
+        : 'px-2 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-[#e6edf3] text-xs font-semibold cursor-pointer transition';
+      lbRenderUI(false);
+    }
+
+    function lbAdvanceTime(hours) {
+      lbSimOffsetMs += hours * 3600 * 1000;
+      if (hours < 0) {
+        showToastPopup('🔒', 'Clock Rollback Detected (-6h) • Clamped to High-Water Timestamp!', 'lose');
+      } else {
+        showToastPopup('⏩', `Advanced +${hours}h • Bots simulated in real time!`, 'info');
+      }
+      lbRenderUI(false);
+    }
+
+    function lbExpireSeason() {
+      const st = lbLoadState(lbActiveMode);
+      const rem = Math.max(0, st.endTimeMs - (Date.now() + lbSimOffsetMs));
+      lbSimOffsetMs += rem + 1000;
+      showToastPopup('🏁', 'Season finished! Claim your rank reward in the Leaderboard panel.', 'info');
+      lbRenderUI(false);
+    }
+
+    function lbClaimReward() {
+      const preset = LB_PRESETS[lbActiveMode];
+      const { st, calc } = lbAdvanceBotsAndSync(lbActiveMode);
+      if (st.status === 'active') return;
+      if (st.rewardClaimed) {
+        showToastPopup('🛡️', 'Idempotent Guard: Season reward already claimed!', 'lose');
+        return;
+      }
+      st.rewardClaimed = true;
+      st.status = 'archived';
+      lbSaveState(lbActiveMode, st);
+      lbSetWallet(lbGetWallet() + calc.rewardTier.coins);
+      showToastPopup('🎁', `Claimed ${calc.rewardTier.badge} ${calc.rewardTier.name} (+${calc.rewardTier.coins}🪙)!`, 'win');
+      lbRenderUI(false);
+    }
+
+    function lbStartNextSeason() {
+      const st = lbLoadState(lbActiveMode);
+      lbSimOffsetMs = 0;
+      lbCreateSeason(lbActiveMode, (st.seasonNumber || 1) + 1);
+      showToastPopup('🌟', 'New Season Started!', 'win');
+      lbRenderUI(false);
+    }
+
+    window.OfflineLeaderboard = {
+      getActiveMode: () => lbActiveMode,
+      submitRun: (modeId, rawScore) => {
+        const preset = LB_PRESETS[modeId];
+        if (!preset) return null;
+        const { st, calc, effectiveNow } = lbAdvanceBotsAndSync(modeId);
+        if (effectiveNow >= st.endTimeMs || st.status !== 'active') return null;
+
+        const prevRank = calc.playerRank;
+        st.playerEntry.previousRank = prevRank;
+        st.playerEntry.runsCompleted += 1;
+
+        if (preset.scoringRule === 'cumulative') {
+          st.playerEntry.score += rawScore;
+        } else {
+          if (st.playerEntry.score === 0 || rawScore < st.playerEntry.score) {
+            st.playerEntry.score = rawScore;
+          }
+        }
+        const nextCalc = lbCalculateRanks(st, preset);
+        st.playerEntry.currentRank = nextCalc.playerRank;
+        lbSaveState(modeId, st);
+
+        const rankDelta = prevRank - nextCalc.playerRank;
+        lbRenderUI(true, rankDelta);
+        return { prevRank, newRank: nextCalc.playerRank, rankDelta };
+      }
+    };
+
+    // Real-time cross-tab synchronization + live bot ticker every 4 seconds
+    window.addEventListener('storage', (e) => {
+      if (e.key && (e.key.startsWith(LB_STORAGE_PREFIX) || e.key === 'agy_liveops_wallet_coins')) {
+        lbRenderUI(false);
+      }
+    });
+    setInterval(() => lbRenderUI(false), 4000);
+
+    shuffleRandomLevel(false);
+    lbRenderUI(false);
+  </script>
+</body>
+</html>
+

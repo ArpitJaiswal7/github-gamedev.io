@@ -1,0 +1,1123 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calm Jigsaw & Solitaire — Native Image Pipeline Preview</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .board-grid {
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+    }
+    @keyframes popIn {
+      0% { transform: scale(0.82); opacity: 0.4; }
+      70% { transform: scale(1.04); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .animate-pop {
+      animation: popIn 0.18s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+    .tile-selected {
+      box-shadow: inset 0 0 0 3px #f59e0b, 0 0 12px rgba(245, 158, 11, 0.45) !important;
+      z-index: 10;
+    }
+    .tile-locked {
+      box-shadow: inset 0 0 0 1.5px rgba(16, 185, 129, 0.55);
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #0d1117;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #30363d;
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="bg-[#0d1117] text-[#e6edf3] antialiased h-screen w-screen overflow-hidden select-none p-3 flex flex-col">
+
+  <div class="w-full max-w-6xl mx-auto h-full flex flex-col gap-2 min-h-0">
+
+    <!-- Dedicated Non-Overlapping Toast Row Above Top Menu -->
+    <div id="toastBar" class="shrink-0 h-9 rounded-xl px-4 border border-[#30363d] bg-[#161b22] flex items-center justify-center gap-2 text-xs font-bold transition-colors duration-200 shadow-sm">
+      <span id="toastEmoji" class="text-sm">🧩</span>
+      <span id="toastText" class="text-[#8b949e]">Click two puzzle tiles to swap • Scroll the 100+ Gallery on the right to boost Viewport Priority!</span>
+    </div>
+
+    <!-- Top Row Menu Bar (Below Toast Row) -->
+    <div class="shrink-0 bg-[#161b22] border border-[#30363d] rounded-xl px-4 py-2 shadow-sm flex flex-wrap items-center justify-between gap-2">
+      <!-- Brand + Game Mode Switcher + Connectivity Badge -->
+      <div class="flex items-center gap-2">
+        <div class="flex items-center gap-1.5 font-bold text-sm text-[#e6edf3]">
+          <span class="text-lg">🖼️</span>
+          <span id="gameTitleLabel">Calm Jigsaw</span>
+        </div>
+        <button id="btnGameMode" onclick="toggleGameMode()" class="text-xs font-semibold px-2.5 py-0.5 rounded bg-purple-500/15 text-purple-400 border border-purple-500/30 hover:bg-purple-500/25 cursor-pointer transition" title="Switch between Calm Jigsaw & Jigsaw Solitaire">
+          Mode: Calm Jigsaw ⇄
+        </button>
+        <button id="connBadgeBtn" onclick="toggleConnectivity()" class="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 cursor-pointer transition" title="Click to simulate internet disconnect / auto-resume">
+          <span id="connDot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="connLabel">ONLINE (Auto-Queue)</span>
+        </button>
+      </div>
+
+      <!-- Grid Size, Resolution Tier Switcher, & Disk Savings KPI -->
+      <div class="flex flex-wrap items-center gap-1.5">
+        <button onclick="cycleGridSize()" class="px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#e6edf3] text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition" title="Cycle Jigsaw Grid Size (3×3 to 6×6)">
+          <span>▦</span>
+          <span>Cut</span>
+          <span id="gridSizeBadge" class="px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 font-bold">4×4</span>
+        </button>
+
+        <button onclick="shuffleActivePuzzle()" class="px-2.5 py-1 rounded-lg bg-blue-600 text-white hover:bg-blue-500 border border-blue-500 text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition" title="Pick random puzzle from the 100+ manifest">
+          <span>🔀</span>
+          <span>Next Puzzle</span>
+        </button>
+
+        <div class="flex items-center gap-1 bg-emerald-500/15 text-emerald-400 px-2.5 py-1 rounded-lg text-xs font-bold border border-emerald-500/30" title="Disk space saved by PNG (5MB) -> JPG (256px + 1080px) conversion">
+          <span>💾</span>
+          <span id="topSavedBadge">89% Saved</span>
+        </div>
+
+        <div class="flex items-center gap-1 bg-amber-500/20 text-amber-400 px-2.5 py-1 rounded-lg text-xs font-bold border border-amber-500/30" title="Unity Sprite RAM Pool Count (Ref-Counted RGB24)">
+          <span>🎨</span>
+          <span id="topVramBadge">RAM: 12/64</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Area: Stretches Vertically to Fill 100% of Remaining Webpage Height -->
+    <div class="flex-1 min-h-0 grid grid-cols-12 gap-3">
+
+      <!-- Left Column (Col-Span-7): Playable 1:1 Puzzle Board + Resolution Helper Controls -->
+      <div class="col-span-7 h-full min-h-0 bg-[#161b22] border border-[#30363d] rounded-xl p-3 shadow-sm flex flex-col items-center justify-between gap-2">
+
+        <!-- Top Action Bar: Single Resolution Switcher (256/512/1080/2048) + Reveal Cache Location + ROM Toggle -->
+        <div id="boardPowersBar" class="shrink-0 w-full grid grid-cols-3 gap-2">
+          <button id="btnCycleRes" onclick="cycleBoardResolution()" class="px-2.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white border border-blue-400 text-xs font-semibold flex items-center justify-between cursor-pointer transition" title="Click to cycle active Sprite resolution: 256px -> 512px -> 1080px -> 2048px">
+            <span class="flex items-center gap-1.5">
+              <span>📐</span>
+              <span id="cycleResLabel">Size: 1080px</span>
+            </span>
+            <span id="cycleResBadge" class="px-1.5 py-0.5 rounded bg-white/20 text-white font-mono font-bold">640 KB ↻</span>
+          </button>
+
+          <button id="btnRevealCache" onclick="openCacheInspectorModal()" class="px-2.5 py-1.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#e6edf3] text-xs font-semibold flex items-center justify-between cursor-pointer transition" title="Reveal exact Cache/ROM file path, origin API URL, & native bridge details">
+            <span class="flex items-center gap-1.5">
+              <span>📂</span>
+              <span>Reveal Cache Path</span>
+            </span>
+            <span id="badgeSourceOrigin" class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-mono font-bold">NIP</span>
+          </button>
+
+          <button id="btnToggleRom" onclick="toggleActivePuzzleRom()" class="px-2.5 py-1.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#e6edf3] text-xs font-semibold flex items-center justify-between cursor-pointer transition" title="Save active puzzle to Permanent ROM and delete from Volatile Cache">
+            <span class="flex items-center gap-1.5">
+              <span>💿</span>
+              <span>Storage</span>
+            </span>
+            <span id="badgeRomState" class="px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-400 font-bold">Cache</span>
+          </button>
+        </div>
+
+        <!-- Board Status Bar: Active Request String Key + Pieces Placed + Auto-Solve / Hint -->
+        <div id="boardHeaderBar" class="shrink-0 w-full px-3 py-1.5 rounded-xl bg-[#0d1117] border border-[#30363d] flex items-center justify-between gap-2">
+          <div class="flex items-center gap-1.5 min-w-0">
+            <span class="text-xs font-semibold text-[#8b949e]">Key:</span>
+            <span id="activeKeyLabel" class="text-xs font-mono font-bold text-amber-400 truncate">puzzle_0001_8f92a1c4</span>
+            <span id="activeStorageBadge" class="text-xs font-bold px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">CACHE</span>
+          </div>
+
+          <div class="flex items-center gap-2 shrink-0">
+            <span class="text-xs text-[#8b949e]">Pieces:</span>
+            <span id="piecesCounter" class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+              0 / 16
+            </span>
+            <button onclick="useSmartSwapHint()" class="px-2 py-0.5 rounded bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 text-xs font-bold cursor-pointer transition" title="Place one correct jigsaw tile">
+              💡 Hint
+            </button>
+            <button onclick="instantSolvePuzzle()" class="px-2 py-0.5 rounded bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 text-xs font-bold cursor-pointer transition" title="Complete puzzle to test post-completion ROM -> Cache demotion">
+              ⚡ Solve
+            </button>
+          </div>
+        </div>
+
+        <!-- Responsive 1:1 Square Puzzle Board Viewport -->
+        <div id="boardViewport" class="flex-1 min-h-0 w-full flex items-center justify-center overflow-hidden relative">
+          <div id="boardContainer" class="board-grid grid rounded-xl overflow-hidden border border-[#30363d] shadow-md bg-[#0d1117] relative">
+          </div>
+
+          <!-- Cache & ROM File Origin / Location Inspector Modal -->
+          <div id="cacheInspectorModal" class="hidden absolute inset-0 bg-black/80 backdrop-blur-xs z-40 flex items-center justify-center p-4">
+            <div class="w-full max-w-md bg-[#161b22] border border-[#30363d] rounded-2xl p-4 shadow-2xl space-y-2.5 text-xs">
+              <div class="flex items-center justify-between border-b border-[#30363d] pb-2">
+                <div class="flex items-center gap-2">
+                  <span class="text-base">📂</span>
+                  <span class="font-bold text-sm text-[#e6edf3]">Native Bridge Cache & ROM File Location</span>
+                </div>
+                <button onclick="closeCacheInspectorModal()" class="px-2 py-0.5 rounded bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#8b949e] hover:text-white font-bold cursor-pointer">✕</button>
+              </div>
+              <div class="space-y-1.5 font-mono text-[11px] bg-[#0d1117] p-3 rounded-xl border border-[#30363d]">
+                <div class="flex justify-between"><span class="text-[#8b949e]">Request String Key:</span><span id="modalReqKey" class="text-amber-400 font-bold"></span></div>
+                <div class="flex justify-between"><span class="text-[#8b949e]">Active Tier File:</span><span id="modalFileName" class="text-emerald-400 font-bold"></span></div>
+                <div class="flex justify-between"><span class="text-[#8b949e]">Storage Tier:</span><span id="modalStorageTier" class="text-purple-400 font-bold"></span></div>
+                <div class="flex justify-between"><span class="text-[#8b949e]">JPEG Disk Size:</span><span id="modalDiskSize" class="text-[#e6edf3]"></span></div>
+                <div class="pt-1 border-t border-[#21262d]">
+                  <div class="text-[#8b949e] mb-0.5">Origin Remote API URL:</div>
+                  <div id="modalOriginUrl" class="text-sky-400 break-all"></div>
+                </div>
+                <div class="pt-1 border-t border-[#21262d]">
+                  <div class="text-[#8b949e] mb-0.5">Android Path (NativeImageBridge.java):</div>
+                  <div id="modalAndroidPath" class="text-[#e6edf3] break-all"></div>
+                </div>
+                <div class="pt-1 border-t border-[#21262d]">
+                  <div class="text-[#8b949e] mb-0.5">iOS Path (NativeImageBridge.mm):</div>
+                  <div id="modalIosPath" class="text-[#e6edf3] break-all"></div>
+                </div>
+                <div class="pt-1 border-t border-[#21262d]">
+                  <div class="text-[#8b949e] mb-0.5">WebGL IndexedDB (NativeImageBridge.jslib):</div>
+                  <div id="modalWebglPath" class="text-emerald-400 break-all"></div>
+                </div>
+              </div>
+              <div class="flex justify-end gap-2 pt-1">
+                <button onclick="copyActiveCachePath()" class="px-3 py-1.5 rounded-lg bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#e6edf3] font-semibold cursor-pointer">📋 Copy Path</button>
+                <button onclick="closeCacheInspectorModal()" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-semibold cursor-pointer">Done</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column (Col-Span-5): 3 Tabs (100+ Gallery ScrollView, Queue Telemetry, Manifest JSON) -->
+      <div class="col-span-5 h-full min-h-0 bg-[#161b22] border border-[#30363d] rounded-xl p-3 shadow-sm flex flex-col gap-2">
+
+        <!-- Tab Switcher Header -->
+        <div class="shrink-0 flex items-center justify-between gap-1.5">
+          <div class="flex items-center gap-1">
+            <button id="tabBtnGallery" onclick="switchRightTab('gallery')" class="px-2.5 py-1 rounded-lg bg-blue-600 text-white border border-blue-500 text-xs font-bold flex items-center gap-1 cursor-pointer transition">
+              <span>🖼️</span>
+              <span>Gallery (108)</span>
+            </button>
+            <button id="tabBtnQueue" onclick="switchRightTab('queue')" class="px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#e6edf3] border border-[#30363d] text-xs font-semibold flex items-center gap-1 cursor-pointer transition">
+              <span>⚡</span>
+              <span>Native Queue</span>
+            </button>
+            <button id="tabBtnJson" onclick="switchRightTab('json')" class="px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#e6edf3] border border-[#30363d] text-xs font-semibold flex items-center gap-1 cursor-pointer transition">
+              <span>{ }</span>
+              <span>Manifest</span>
+            </button>
+          </div>
+          <span id="queueProgressBadge" class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-[#21262d] text-emerald-400 border border-[#30363d]">
+            0/108 Ready
+          </span>
+        </div>
+
+        <!-- TAB 1: SCROLLABLE 100+ PUZZLE GALLERY (WITH AUTOMATIC VIEWPORT PRIORITY BOOSTING) -->
+        <div id="rightPanelGallery" class="flex-1 min-h-0 flex flex-col gap-2">
+          <!-- Sub-bar: Category Filter + Viewport Priority Indicator -->
+          <div class="shrink-0 flex items-center justify-between gap-1.5 bg-[#0d1117] p-1.5 rounded-xl border border-[#30363d] text-xs">
+            <div class="flex items-center gap-1">
+              <button onclick="setGalleryFilter('ALL')" id="fltAll" class="px-2 py-0.5 rounded bg-blue-600 text-white font-bold cursor-pointer">All</button>
+              <button onclick="setGalleryFilter('ROM')" id="fltRom" class="px-2 py-0.5 rounded bg-[#21262d] text-[#8b949e] hover:text-white font-semibold cursor-pointer">💿 ROM</button>
+              <button onclick="setGalleryFilter('QUEUED')" id="fltQueued" class="px-2 py-0.5 rounded bg-[#21262d] text-[#8b949e] hover:text-white font-semibold cursor-pointer">⏳ Queued</button>
+            </div>
+            <span id="viewportBoostLabel" class="font-mono text-amber-400 px-1.5">Viewport: #1–#12 (HIGH)</span>
+          </div>
+
+          <!-- Scrollable 3-Column Thumbnail Grid (Simulates PuzzleViewportScrollTracker.cs) -->
+          <div id="galleryScrollContainer" onscroll="onGalleryScroll()" class="custom-scroll flex-1 min-h-0 bg-[#0d1117] border border-[#30363d] rounded-xl p-2 overflow-y-auto grid grid-cols-3 gap-2 content-start">
+          </div>
+
+          <!-- Gallery Footer Controls -->
+          <div class="shrink-0 flex items-center justify-between gap-1 pt-0.5">
+            <div class="flex items-center gap-1">
+              <button onclick="purgeFaultyRequests()" class="px-2 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] border border-rose-500/40 text-rose-400 text-xs font-semibold cursor-pointer transition" title="Remove HTTP 404 / corrupt request strings from queue">
+                🧹 Purge Faulty (<span id="faultyCountLabel">0</span>)
+              </button>
+              <button onclick="clearVolatileCache()" class="px-2 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#e6edf3] text-xs font-semibold cursor-pointer transition" title="Delete Volatile Cache files while keeping Permanent ROM intact">
+                🗑️ Clear Cache
+              </button>
+            </div>
+            <span id="diskUsageFooter" class="text-xs font-mono text-[#8b949e]">Cache: 0MB | ROM: 0MB</span>
+          </div>
+        </div>
+
+        <!-- TAB 2: NATIVE PRIORITY QUEUE & STRING TELEMETRY TABLE -->
+        <div id="rightPanelQueue" class="hidden flex-1 min-h-0 flex flex-col gap-2">
+          <div class="shrink-0 grid grid-cols-4 gap-1.5 bg-[#0d1117] p-2 rounded-xl border border-[#30363d] text-xs">
+            <div>
+              <div class="text-[#8b949e]">256px Icons</div>
+              <div id="kpiIconsTotal" class="font-mono font-bold text-sky-400">0 KB</div>
+            </div>
+            <div>
+              <div class="text-[#8b949e]">1080px Full</div>
+              <div id="kpiFullTotal" class="font-mono font-bold text-emerald-400">0 MB</div>
+            </div>
+            <div>
+              <div class="text-[#8b949e]">2048px Ultra</div>
+              <div id="kpiUltraTotal" class="font-mono font-bold text-purple-400">0 MB</div>
+            </div>
+            <div>
+              <div class="text-[#8b949e]">PNG -> JPG</div>
+              <div id="kpiSavedTotal" class="font-mono font-bold text-amber-400">0 MB</div>
+            </div>
+          </div>
+
+          <div id="queueRowsContainer" class="custom-scroll flex-1 min-h-0 bg-[#0d1117] border border-[#30363d] rounded-xl overflow-y-auto divide-y divide-[#21262d]">
+          </div>
+        </div>
+
+        <!-- TAB 3: API MANIFEST & REQUEST TRACKER JSON -->
+        <pre id="jsonPreviewBox" class="custom-scroll hidden flex-1 min-h-0 bg-[#0d1117] border border-[#30363d] rounded-xl p-3 text-xs font-mono overflow-auto text-[#e6edf3] leading-snug"></pre>
+
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // 1. Native Image Pipeline Data & Procedural Artwork Generator
+    // =========================================================================
+    const TOTAL_PUZZLES = 108;
+    const GRID_SIZES = [3, 4, 5, 6];
+    let gridSizeIdx = 1; // 4x4 default
+    let gameMode = 'calm_jigsaw'; // 'calm_jigsaw' or 'jigsaw_solitaire'
+    let isOnline = true;
+    let activeRightTab = 'gallery';
+    let galleryFilter = 'ALL';
+
+    const THEMES = [
+      { name: 'Alpine Lake', sky: ['#0f172a', '#1e40af', '#60a5fa'], sun: '#fde047', mtn1: '#1e293b', mtn2: '#334155', fg: '#065f46' },
+      { name: 'Sakura Valley', sky: ['#4c1d95', '#be185d', '#fbcfe8'], sun: '#fef08a', mtn1: '#311042', mtn2: '#581c87', fg: '#831843' },
+      { name: 'Golden Canyon', sky: ['#451a03', '#c2410c', '#fdba74'], sun: '#fef9c3', mtn1: '#7c2d12', mtn2: '#9a3412', fg: '#431407' },
+      { name: 'Nordic Aurora', sky: ['#022c22', '#0d9488', '#5eead4'], sun: '#a7f3d0', mtn1: '#0f172a', mtn2: '#1e293b', fg: '#064e3b' },
+      { name: 'Tuscan Hills', sky: ['#1e3a8a', '#3b82f6', '#bae6fd'], sun: '#facc15', mtn1: '#14532d', mtn2: '#15803d', fg: '#166534' },
+      { name: 'Crimson Dusk', sky: ['#3b0764', '#9d174d', '#fda4af'], sun: '#fed7aa', mtn1: '#2e1065', mtn2: '#4c1d95', fg: '#500724' }
+    ];
+
+    let puzzleRegistry = [];
+    let spriteRamPool = new Map(); // key_size -> dataURL (simulates SpriteMemoryCache.cs)
+    const MAX_RAM_POOL = 64;
+
+    let activePuzzleKey = null;
+    let activeBoardRes = 1080; // 256, 512, or 1080
+    let boardTiles = []; // Array of original tile indices [0..N*N-1]
+    let selectedTileSlot = -1;
+    let toastTimer = null;
+
+    function fnvHash(str) {
+      let h = 2166136261 >>> 0;
+      for (let i = 0; i < str.length; i++) {
+        h ^= str.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+      }
+      return (h >>> 0).toString(16).padStart(8, '0');
+    }
+
+    function initPipelineManifest() {
+      puzzleRegistry = [];
+      for (let i = 1; i <= TOTAL_PUZZLES; i++) {
+        const idNum = String(i).padStart(4, '0');
+        const url = `https://cdn.studio-games.io/puzzles/pack_${((i - 1) % 6) + 1}/puzzle_${idNum}_2080px.png`;
+        const requestKey = `puzzle_${idNum}_${fnvHash(url)}`;
+        const isFaulty = (i === 23 || i === 64 || i === 91);
+        const origPngBytes = 4600000 + ((i * 83177) % 1300000); // ~4.6MB - 5.9MB PNG
+
+        puzzleRegistry.push({
+          index: i,
+          requestKey,
+          url,
+          theme: THEMES[(i - 1) % THEMES.length],
+          seed: i * 137,
+          state: 'QUEUED', // QUEUED, DOWNLOADING, CACHED, ROM, FAILED
+          priority: i <= 12 ? 2 : 0, // First 12 visible in viewport get High(2)
+          storageTier: i === 1 ? 'ROM' : 'CACHE',
+          origPngBytes,
+          iconBytes: 0,
+          fullBytes: 0,
+          custom512Bytes: 0,
+          custom2048Bytes: 0,
+          durationMs: 0,
+          isFaulty,
+          errorMessage: '',
+          thumbDataUrl: null
+        });
+      }
+
+      // Immediately complete Puzzle #1 so the playable board starts ready
+      completeDownloadInstantly(puzzleRegistry[0]);
+      activePuzzleKey = puzzleRegistry[0].requestKey;
+      setupPlayableBoard();
+      renderGalleryGrid();
+      renderQueueTable();
+      updateManifestJsonTab();
+      updateTelemetryHeader();
+    }
+
+    // =========================================================================
+    // 2. Procedural High-Res / Low-Res JPEG Renderer (Simulates PNG->JPG Resizer)
+    // =========================================================================
+    function renderPuzzleArtworkToDataUrl(record, resolutionPx) {
+      const cacheKey = `${record.requestKey}_${resolutionPx}`;
+      if (spriteRamPool.has(cacheKey)) {
+        return spriteRamPool.get(cacheKey);
+      }
+
+      // Simulate genuine resolution differences (256px soft -> 512px medium -> 1080px crisp -> 2048px ultra crisp)
+      const canvasSize = resolutionPx === 256 ? 128 : (resolutionPx === 512 ? 256 : (resolutionPx === 1080 ? 512 : 1024));
+      const canvas = document.createElement('canvas');
+      canvas.width = canvasSize;
+      canvas.height = canvasSize;
+      const ctx = canvas.getContext('2d', { alpha: false });
+
+      const t = record.theme;
+      const s = record.seed;
+
+      // Sky gradient
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, canvasSize * 0.75);
+      skyGrad.addColorStop(0, t.sky[0]);
+      skyGrad.addColorStop(0.55, t.sky[1]);
+      skyGrad.addColorStop(1, t.sky[2]);
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, canvasSize, canvasSize);
+
+      // Sun / Moon
+      const sunX = canvasSize * (0.25 + ((s % 50) / 100));
+      const sunY = canvasSize * (0.22 + ((s % 20) / 100));
+      const sunR = canvasSize * 0.13;
+      ctx.fillStyle = t.sun;
+      ctx.beginPath();
+      ctx.arc(sunX, sunY, sunR, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Far Mountains
+      ctx.fillStyle = t.mtn1;
+      ctx.beginPath();
+      ctx.moveTo(0, canvasSize);
+      ctx.lineTo(0, canvasSize * 0.58);
+      ctx.lineTo(canvasSize * 0.28, canvasSize * (0.34 + (s % 12) * 0.01));
+      ctx.lineTo(canvasSize * 0.55, canvasSize * 0.56);
+      ctx.lineTo(canvasSize * 0.82, canvasSize * (0.31 + (s % 15) * 0.01));
+      ctx.lineTo(canvasSize, canvasSize * 0.52);
+      ctx.lineTo(canvasSize, canvasSize);
+      ctx.closePath();
+      ctx.fill();
+
+      // Near Mountains / Hills
+      ctx.fillStyle = t.mtn2;
+      ctx.beginPath();
+      ctx.moveTo(0, canvasSize);
+      ctx.lineTo(0, canvasSize * 0.70);
+      ctx.lineTo(canvasSize * 0.42, canvasSize * 0.49);
+      ctx.lineTo(canvasSize * 0.74, canvasSize * 0.67);
+      ctx.lineTo(canvasSize, canvasSize * 0.54);
+      ctx.lineTo(canvasSize, canvasSize);
+      ctx.closePath();
+      ctx.fill();
+
+      // Foreground Pine Trees / Lake Reflection
+      ctx.fillStyle = t.fg;
+      ctx.fillRect(0, canvasSize * 0.78, canvasSize, canvasSize * 0.22);
+
+      const treeCount = 7;
+      for (let k = 0; k < treeCount; k++) {
+        const tx = (canvasSize / treeCount) * (k + 0.5);
+        const th = canvasSize * (0.14 + ((k * s) % 9) * 0.01);
+        const ty = canvasSize * 0.80;
+        ctx.beginPath();
+        ctx.moveTo(tx, ty - th);
+        ctx.lineTo(tx - th * 0.42, ty);
+        ctx.lineTo(tx + th * 0.42, ty);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      // Water Shimmer Lines
+      ctx.strokeStyle = 'rgba(255,255,255,0.22)';
+      ctx.lineWidth = Math.max(1, canvasSize / 160);
+      for (let w = 0; w < 4; w++) {
+        const wy = canvasSize * (0.83 + w * 0.038);
+        ctx.beginPath();
+        ctx.moveTo(sunX - sunR * (1.2 - w * 0.2), wy);
+        ctx.lineTo(sunX + sunR * (1.2 - w * 0.2), wy);
+        ctx.stroke();
+      }
+
+      const jpegQuality = resolutionPx === 256 ? 0.76 : 0.88;
+      const dataUrl = canvas.toDataURL('image/jpeg', jpegQuality);
+
+      // Maintain bounded SpriteMemoryCache capacity
+      if (spriteRamPool.size >= MAX_RAM_POOL) {
+        const oldestKey = spriteRamPool.keys().next().value;
+        spriteRamPool.delete(oldestKey);
+      }
+      spriteRamPool.set(cacheKey, dataUrl);
+      return dataUrl;
+    }
+
+    // =========================================================================
+    // 3. Native Background Priority Queue Worker Loop
+    // =========================================================================
+    function completeDownloadInstantly(rec) {
+      if (rec.isFaulty) {
+        rec.state = 'FAILED';
+        rec.durationMs = 78;
+        rec.errorMessage = 'HTTP 404 (Corrupt/Missing Stream)';
+        return;
+      }
+      rec.iconBytes = 38000 + ((rec.index * 521) % 44000); // 38KB - 82KB
+      rec.fullBytes = 490000 + ((rec.index * 9311) % 360000); // 490KB - 850KB
+      rec.durationMs = 95 + ((rec.index * 43) % 130);
+      rec.state = rec.storageTier === 'ROM' ? 'ROM' : 'CACHED';
+      rec.thumbDataUrl = renderPuzzleArtworkToDataUrl(rec, 256);
+    }
+
+    setInterval(() => {
+      if (!isOnline) return;
+
+      const inFlight = puzzleRegistry.filter(r => r.state === 'DOWNLOADING');
+      if (inFlight.length < 2) {
+        // Pick highest priority QUEUED item (Critical=3 > Viewport High=2 > Normal=1 > Low=0)
+        const candidates = puzzleRegistry
+          .filter(r => r.state === 'QUEUED')
+          .sort((a, b) => (b.priority - a.priority) || (a.index - b.index));
+
+        if (candidates.length > 0) {
+          const next = candidates[0];
+          next.state = 'DOWNLOADING';
+          updateSingleGalleryCard(next);
+
+          setTimeout(() => {
+            if (!isOnline) {
+              next.state = 'QUEUED';
+              updateSingleGalleryCard(next);
+              return;
+            }
+            completeDownloadInstantly(next);
+            updateSingleGalleryCard(next);
+            updateTelemetryHeader();
+            if (activeRightTab === 'queue') renderQueueTable();
+            if (activeRightTab === 'json') updateManifestJsonTab();
+            if (next.requestKey === activePuzzleKey) renderPlayableBoard();
+          }, 260);
+        }
+      }
+    }, 220);
+
+    // =========================================================================
+    // 4. Viewport Scroll Tracker (Simulates PuzzleViewportScrollTracker.cs)
+    // =========================================================================
+    function onGalleryScroll() {
+      const container = document.getElementById('galleryScrollContainer');
+      if (!container) return;
+
+      const scrollTop = container.scrollTop;
+      const rowHeight = 104; // Approximate height of each 3-column row
+      const firstRow = Math.max(0, Math.floor(scrollTop / rowHeight));
+      const startIndex = firstRow * 3 + 1;
+      const endIndex = Math.min(TOTAL_PUZZLES, startIndex + 11);
+
+      document.getElementById('viewportBoostLabel').textContent =
+        `Viewport: #${startIndex}–#${endIndex} (HIGH)`;
+
+      puzzleRegistry.forEach(r => {
+        if (r.state === 'QUEUED') {
+          if (r.requestKey === activePuzzleKey) {
+            r.priority = 3; // Critical
+          } else if (r.index >= startIndex && r.index <= endIndex) {
+            r.priority = 2; // High (In-Viewport)
+          } else {
+            r.priority = 0; // Low (Off-screen)
+          }
+        }
+      });
+    }
+
+    // =========================================================================
+    // 5. Playable 1:1 Jigsaw / Solitaire Board (Left Column)
+    // =========================================================================
+    function fitSquareBoardToViewport() {
+      const viewport = document.getElementById('boardViewport');
+      const board = document.getElementById('boardContainer');
+      const headerBar = document.getElementById('boardHeaderBar');
+      const powersBar = document.getElementById('boardPowersBar');
+      if (!viewport || !board) return;
+
+      const size = Math.floor(Math.min(viewport.clientWidth, viewport.clientHeight));
+      if (size > 0) {
+        board.style.width = `${size}px`;
+        board.style.height = `${size}px`;
+        if (headerBar) headerBar.style.width = `${size}px`;
+        if (powersBar) powersBar.style.width = `${size}px`;
+      }
+    }
+
+    window.addEventListener('resize', fitSquareBoardToViewport);
+    const resizeObserver = new ResizeObserver(fitSquareBoardToViewport);
+    window.addEventListener('DOMContentLoaded', () => {
+      const vp = document.getElementById('boardViewport');
+      if (vp) resizeObserver.observe(vp);
+      initPipelineManifest();
+      fitSquareBoardToViewport();
+    });
+
+    function setupPlayableBoard() {
+      const N = GRID_SIZES[gridSizeIdx];
+      const total = N * N;
+      boardTiles = Array.from({ length: total }, (_, i) => i);
+
+      // Scramble tiles (ensure not already solved)
+      for (let i = total - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [boardTiles[i], boardTiles[j]] = [boardTiles[j], boardTiles[i]];
+      }
+      selectedTileSlot = -1;
+      document.getElementById('gridSizeBadge').textContent = `${N}×${N}`;
+      renderPlayableBoard();
+    }
+
+    function renderPlayableBoard() {
+      const rec = puzzleRegistry.find(r => r.requestKey === activePuzzleKey);
+      if (!rec) return;
+
+      const N = GRID_SIZES[gridSizeIdx];
+      const total = N * N;
+      const board = document.getElementById('boardContainer');
+      board.style.gridTemplateColumns = `repeat(${N}, minmax(0, 1fr))`;
+      board.style.gridTemplateRows = `repeat(${N}, minmax(0, 1fr))`;
+
+      // Update top labels
+      document.getElementById('activeKeyLabel').textContent = rec.requestKey;
+      const isRom = rec.storageTier === 'ROM';
+      const storageBadge = document.getElementById('activeStorageBadge');
+      storageBadge.textContent = isRom ? 'PERMANENT ROM' : 'VOLATILE CACHE';
+      storageBadge.className = isRom
+        ? 'text-xs font-bold px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-400 border border-purple-500/30'
+        : 'text-xs font-bold px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30';
+
+      document.getElementById('badgeRomState').textContent = isRom ? 'In ROM' : 'Cache';
+      document.getElementById('badgeSourceOrigin').textContent = isRom ? 'ROM' : 'CACHE';
+
+      // Update Single Resolution Switcher Button (256 -> 512 -> 1080 -> 2048)
+      const tierBytes =
+        activeBoardRes === 256 ? rec.iconBytes :
+        activeBoardRes === 512 ? (rec.custom512Bytes || Math.round(rec.iconBytes * 2.65)) :
+        activeBoardRes === 2048 ? (rec.custom2048Bytes || Math.round(rec.fullBytes * 2.35)) :
+        rec.fullBytes;
+
+      const sizeText = tierBytes >= 1024 * 1024
+        ? `${(tierBytes / (1024 * 1024)).toFixed(2)} MB`
+        : `${Math.round(tierBytes / 1024)} KB`;
+
+      document.getElementById('cycleResLabel').textContent = `Size: ${activeBoardRes}px`;
+      document.getElementById('cycleResBadge').textContent = `${sizeText} ↻`;
+
+      if (rec.state !== 'CACHED' && rec.state !== 'ROM') {
+        rec.priority = 3; // Boost to Critical
+        board.innerHTML = `
+          <div class="col-span-full row-span-full flex flex-col items-center justify-center p-6 text-center gap-2">
+            <div class="text-2xl animate-spin">⏳</div>
+            <div class="text-sm font-bold text-[#e6edf3]">Downloading & Transcoding ${rec.requestKey}...</div>
+            <div class="text-xs text-[#8b949e]">Priority bumped to CRITICAL (3) in Native Queue</div>
+          </div>
+        `;
+        return;
+      }
+
+      const spriteUrl = renderPuzzleArtworkToDataUrl(rec, activeBoardRes);
+      let correctCount = 0;
+      board.innerHTML = '';
+
+      for (let slotIdx = 0; slotIdx < total; slotIdx++) {
+        const pieceIdx = boardTiles[slotIdx];
+        const isCorrect = (pieceIdx === slotIdx);
+        if (isCorrect) correctCount++;
+
+        const origRow = Math.floor(pieceIdx / N);
+        const origCol = pieceIdx % N;
+        const bgPosX = N > 1 ? (origCol / (N - 1)) * 100 : 0;
+        const bgPosY = N > 1 ? (origRow / (N - 1)) * 100 : 0;
+
+        const tile = document.createElement('div');
+        const isSelected = (slotIdx === selectedTileSlot);
+        const modeMargin = gameMode === 'jigsaw_solitaire' ? 'm-0.5 rounded-lg' : '';
+
+        tile.className = `relative cursor-pointer transition-transform duration-150 border border-black/30 overflow-hidden ${modeMargin} ${isSelected ? 'tile-selected scale-95' : ''} ${isCorrect ? 'tile-locked' : ''}`;
+        tile.style.backgroundImage = `url('${spriteUrl}')`;
+        tile.style.backgroundSize = `${N * 100}% ${N * 100}%`;
+        tile.style.backgroundPosition = `${bgPosX}% ${bgPosY}%`;
+
+        // Solitaire card corner badge or Jigsaw piece indicator
+        const badge = document.createElement('span');
+        badge.className = `absolute top-1 left-1 px-1 py-0.2 rounded text-[11px] font-mono font-bold ${isCorrect ? 'bg-emerald-500/80 text-white' : 'bg-black/60 text-white/90'}`;
+        badge.textContent = gameMode === 'jigsaw_solitaire' ? `♠${pieceIdx + 1}` : `${pieceIdx + 1}`;
+        tile.appendChild(badge);
+
+        tile.onclick = () => onTileClicked(slotIdx);
+        board.appendChild(tile);
+      }
+
+      document.getElementById('piecesCounter').textContent = `${correctCount} / ${total}`;
+      if (correctCount === total) {
+        showToast('🎉', `Puzzle Completed! Demoting ${rec.requestKey} from ROM -> Volatile Cache to free storage.`, 'win');
+      }
+    }
+
+    function onTileClicked(slotIdx) {
+      if (selectedTileSlot === -1) {
+        selectedTileSlot = slotIdx;
+        renderPlayableBoard();
+      } else if (selectedTileSlot === slotIdx) {
+        selectedTileSlot = -1;
+        renderPlayableBoard();
+      } else {
+        const temp = boardTiles[selectedTileSlot];
+        boardTiles[selectedTileSlot] = boardTiles[slotIdx];
+        boardTiles[slotIdx] = temp;
+        selectedTileSlot = -1;
+        renderPlayableBoard();
+      }
+    }
+
+    const RES_TIERS = [256, 512, 1080, 2048];
+    function cycleBoardResolution() {
+      const idx = RES_TIERS.indexOf(activeBoardRes);
+      const nextRes = RES_TIERS[(idx + 1) % RES_TIERS.length];
+      switchBoardResolution(nextRes);
+    }
+
+    function switchBoardResolution(sizePx) {
+      const rec = puzzleRegistry.find(r => r.requestKey === activePuzzleKey);
+      if (!rec) return;
+
+      if (sizePx === 512 && rec.custom512Bytes === 0 && (rec.state === 'CACHED' || rec.state === 'ROM')) {
+        rec.custom512Bytes = Math.round(rec.iconBytes * 2.65);
+        showToast('⚡', `Generated custom 512px JPEG (${Math.round(rec.custom512Bytes / 1024)} KB) directly from local 1080px cache!`, 'info');
+      } else if (sizePx === 2048 && rec.custom2048Bytes === 0 && (rec.state === 'CACHED' || rec.state === 'ROM')) {
+        rec.custom2048Bytes = Math.round(rec.fullBytes * 2.35); // ~1.2MB - 1.9MB 2K JPEG
+        showToast('💎', `Downloaded & transcoded Ultra2048 (2048px 2K JPEG, ${(rec.custom2048Bytes / (1024 * 1024)).toFixed(2)} MB) for high-DPI/Zoom!`, 'win');
+      } else {
+        showToast('📐', `Cycled Sprite resolution to ${sizePx}px tier (TextureFormat.RGB24)`, 'info');
+      }
+
+      activeBoardRes = sizePx;
+      renderPlayableBoard();
+      updateTelemetryHeader();
+      if (activeRightTab === 'json') updateManifestJsonTab();
+    }
+
+    function openCacheInspectorModal() {
+      const rec = puzzleRegistry.find(r => r.requestKey === activePuzzleKey);
+      if (!rec) return;
+
+      const fileName = `${rec.requestKey}_${activeBoardRes}.jpg`;
+      const isRom = rec.storageTier === 'ROM';
+      const tierBytes =
+        activeBoardRes === 256 ? rec.iconBytes :
+        activeBoardRes === 512 ? (rec.custom512Bytes || Math.round(rec.iconBytes * 2.65)) :
+        activeBoardRes === 2048 ? (rec.custom2048Bytes || Math.round(rec.fullBytes * 2.35)) :
+        rec.fullBytes;
+
+      document.getElementById('modalReqKey').textContent = rec.requestKey;
+      document.getElementById('modalFileName').textContent = fileName;
+      document.getElementById('modalStorageTier').textContent = isRom
+        ? 'Permanent ROM (Hard Drive / Backup-Excluded)'
+        : 'Volatile Cache (OS Cache / LRU Managed)';
+      document.getElementById('modalDiskSize').textContent =
+        `${(tierBytes / 1024).toFixed(1)} KB (Transcoded from ${(rec.origPngBytes / (1024 * 1024)).toFixed(2)} MB PNG)`;
+      document.getElementById('modalOriginUrl').textContent = rec.url;
+
+      document.getElementById('modalAndroidPath').textContent = isRom
+        ? `/data/user/0/com.studio.jigsaw/files/NativeImagePipeline_ROM/${fileName}`
+        : `/data/user/0/com.studio.jigsaw/cache/NativeImagePipeline_Cache/${fileName}`;
+
+      document.getElementById('modalIosPath').textContent = isRom
+        ? `/var/mobile/Containers/Data/Application/.../Library/Application Support/NativeImagePipeline_ROM/${fileName}`
+        : `/var/mobile/Containers/Data/Application/.../Library/Caches/NativeImagePipeline_Cache/${fileName}`;
+
+      document.getElementById('modalWebglPath').textContent = isRom
+        ? `indexeddb://Studio_NativeImagePipeline_DB/permanent_rom/${fileName}`
+        : `indexeddb://Studio_NativeImagePipeline_DB/volatile_cache/${fileName}`;
+
+      document.getElementById('cacheInspectorModal').classList.remove('hidden');
+    }
+
+    function closeCacheInspectorModal() {
+      document.getElementById('cacheInspectorModal').classList.add('hidden');
+    }
+
+    function copyActiveCachePath() {
+      const pathText = document.getElementById('modalAndroidPath').textContent;
+      if (navigator.clipboard) navigator.clipboard.writeText(pathText);
+      showToast('📋', `Copied cache location: ${pathText}`, 'win');
+    }
+
+    function toggleActivePuzzleRom() {
+      const rec = puzzleRegistry.find(r => r.requestKey === activePuzzleKey);
+      if (!rec) return;
+
+      if (rec.storageTier === 'ROM') {
+        rec.storageTier = 'CACHE';
+        if (rec.state === 'ROM') rec.state = 'CACHED';
+        showToast('📦', `Moved ${rec.requestKey} from Permanent ROM back to Volatile Cache.`, 'info');
+      } else {
+        rec.storageTier = 'ROM';
+        if (rec.state === 'CACHED') rec.state = 'ROM';
+        showToast('💿', `Saved ${rec.requestKey} to Permanent ROM & deleted Volatile Cache copy!`, 'win');
+      }
+
+      updateSingleGalleryCard(rec);
+      renderPlayableBoard();
+      updateTelemetryHeader();
+    }
+
+    function useSmartSwapHint() {
+      const N = GRID_SIZES[gridSizeIdx];
+      const total = N * N;
+      for (let i = 0; i < total; i++) {
+        if (boardTiles[i] !== i) {
+          const correctSlot = boardTiles.indexOf(i);
+          [boardTiles[i], boardTiles[correctSlot]] = [boardTiles[correctSlot], boardTiles[i]];
+          selectedTileSlot = -1;
+          renderPlayableBoard();
+          return;
+        }
+      }
+    }
+
+    function instantSolvePuzzle() {
+      const N = GRID_SIZES[gridSizeIdx];
+      boardTiles = Array.from({ length: N * N }, (_, i) => i);
+      selectedTileSlot = -1;
+      renderPlayableBoard();
+    }
+
+    function cycleGridSize() {
+      gridSizeIdx = (gridSizeIdx + 1) % GRID_SIZES.length;
+      setupPlayableBoard();
+    }
+
+    function shuffleActivePuzzle() {
+      const readyList = puzzleRegistry.filter(r => r.state === 'CACHED' || r.state === 'ROM');
+      const pool = readyList.length > 1 ? readyList : puzzleRegistry;
+      const pick = pool[Math.floor(Math.random() * pool.length)];
+      selectPuzzleFromGallery(pick.requestKey);
+    }
+
+    function toggleGameMode() {
+      gameMode = gameMode === 'calm_jigsaw' ? 'jigsaw_solitaire' : 'calm_jigsaw';
+      document.getElementById('gameTitleLabel').textContent =
+        gameMode === 'calm_jigsaw' ? 'Calm Jigsaw' : 'Jigsaw Solitaire';
+      document.getElementById('btnGameMode').textContent =
+        gameMode === 'calm_jigsaw' ? 'Mode: Calm Jigsaw ⇄' : 'Mode: Jigsaw Solitaire ⇄';
+      showToast('🃏', `Switched game layout to ${gameMode === 'calm_jigsaw' ? 'Calm Jigsaw' : 'Jigsaw Solitaire'} (Shared UPM Package)`, 'info');
+      renderPlayableBoard();
+    }
+
+    // =========================================================================
+    // 6. Right Column Tabs: 100+ Gallery, Priority Queue, & Manifest JSON
+    // =========================================================================
+    function renderGalleryGrid() {
+      const container = document.getElementById('galleryScrollContainer');
+      if (!container) return;
+
+      const filtered = puzzleRegistry.filter(r => {
+        if (galleryFilter === 'ROM') return r.storageTier === 'ROM';
+        if (galleryFilter === 'QUEUED') return r.state === 'QUEUED' || r.state === 'DOWNLOADING';
+        return true;
+      });
+
+      container.innerHTML = filtered.map(r => buildGalleryCardHtml(r)).join('');
+    }
+
+    function buildGalleryCardHtml(r) {
+      const isSelected = r.requestKey === activePuzzleKey;
+      const isReady = r.state === 'CACHED' || r.state === 'ROM';
+      const badgeText =
+        r.state === 'ROM' ? '💿 ROM' :
+        r.state === 'CACHED' ? `${Math.round(r.iconBytes / 1024)}KB` :
+        r.state === 'DOWNLOADING' ? '⏬ DL' :
+        r.state === 'FAILED' ? '❌ 404' :
+        r.priority >= 2 ? '🔥 HIGH' : '⏳ LOW';
+
+      const badgeClass =
+        r.state === 'ROM' ? 'bg-purple-600/90 text-white' :
+        r.state === 'CACHED' ? 'bg-emerald-600/90 text-white' :
+        r.state === 'DOWNLOADING' ? 'bg-amber-500 text-black' :
+        r.state === 'FAILED' ? 'bg-rose-600 text-white' :
+        'bg-black/75 text-[#8b949e]';
+
+      const bgStyle = isReady && r.thumbDataUrl
+        ? `background-image: url('${r.thumbDataUrl}'); background-size: cover;`
+        : `background: linear-gradient(135deg, ${r.theme.sky[0]}, ${r.theme.sky[1]});`;
+
+      return `
+        <div id="gal_card_${r.requestKey}" onclick="selectPuzzleFromGallery('${r.requestKey}')"
+             class="h-24 rounded-xl border ${isSelected ? 'border-amber-400 ring-2 ring-amber-400/40' : 'border-[#30363d]'} relative overflow-hidden cursor-pointer group transition transform hover:scale-[1.02]"
+             style="${bgStyle}">
+          <div class="absolute inset-x-0 top-0 p-1.5 flex items-center justify-between bg-gradient-to-b from-black/70 to-transparent">
+            <span class="text-[11px] font-mono font-bold text-white">#${r.index}</span>
+            <span class="px-1.5 py-0.2 rounded text-[11px] font-bold ${badgeClass}">${badgeText}</span>
+          </div>
+          <div class="absolute inset-x-0 bottom-0 px-1.5 py-1 bg-black/75 flex items-center justify-between text-[11px] font-mono text-[#e6edf3]">
+            <span class="truncate">${r.theme.name}</span>
+          </div>
+        </div>
+      `;
+    }
+
+    function updateSingleGalleryCard(r) {
+      const el = document.getElementById(`gal_card_${r.requestKey}`);
+      if (!el) return;
+      el.outerHTML = buildGalleryCardHtml(r);
+    }
+
+    function selectPuzzleFromGallery(requestKey) {
+      const rec = puzzleRegistry.find(r => r.requestKey === requestKey);
+      if (!rec) return;
+
+      if (rec.isFaulty && rec.state === 'FAILED') {
+        showToast('⚠️', `Request ${rec.requestKey} failed (${rec.errorMessage}). Click 'Purge Faulty' to clean queue.`, 'lose');
+        return;
+      }
+
+      if (rec.state === 'QUEUED') {
+        completeDownloadInstantly(rec);
+        updateSingleGalleryCard(rec);
+      }
+
+      activePuzzleKey = requestKey;
+      setupPlayableBoard();
+      renderGalleryGrid();
+      updateTelemetryHeader();
+    }
+
+    function setGalleryFilter(flt) {
+      galleryFilter = flt;
+      ['ALL', 'ROM', 'QUEUED'].forEach(k => {
+        const btn = document.getElementById('flt' + k.charAt(0) + k.slice(1).toLowerCase());
+        if (btn) {
+          btn.className = (k === flt)
+            ? 'px-2 py-0.5 rounded bg-blue-600 text-white font-bold cursor-pointer'
+            : 'px-2 py-0.5 rounded bg-[#21262d] text-[#8b949e] hover:text-white font-semibold cursor-pointer';
+        }
+      });
+      renderGalleryGrid();
+    }
+
+    function renderQueueTable() {
+      const container = document.getElementById('queueRowsContainer');
+      if (!container) return;
+
+      container.innerHTML = puzzleRegistry.map(r => {
+        const stateColor =
+          r.state === 'ROM' ? 'text-purple-400' :
+          r.state === 'CACHED' ? 'text-emerald-400' :
+          r.state === 'FAILED' ? 'text-rose-400' :
+          'text-amber-400';
+
+        const ultraStr = r.custom2048Bytes ? ` | 2K:${(r.custom2048Bytes / (1024 * 1024)).toFixed(1)}M` : '';
+
+        return `
+          <div onclick="selectPuzzleFromGallery('${r.requestKey}')" class="px-2.5 py-1.5 flex items-center justify-between text-xs hover:bg-[#161b22] cursor-pointer">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="font-mono font-bold ${stateColor} w-14">${r.state}</span>
+              <span class="font-mono truncate text-[#e6edf3]">${r.requestKey}</span>
+            </div>
+            <div class="flex items-center gap-2 shrink-0 font-mono text-[#8b949e]">
+              <span>256:${r.iconBytes ? Math.round(r.iconBytes / 1024) + 'K' : '--'}</span>
+              <span>1080:${r.fullBytes ? Math.round(r.fullBytes / 1024) + 'K' : '--'}${ultraStr}</span>
+              <span class="w-12 text-right">${r.durationMs ? r.durationMs + 'ms' : '--'}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function updateManifestJsonTab() {
+      const box = document.getElementById('jsonPreviewBox');
+      if (!box) return;
+
+      const activeRec = puzzleRegistry.find(r => r.requestKey === activePuzzleKey);
+      const previewPayload = {
+        upmPackage: 'com.studio.nativeimagepipeline',
+        activeGameMode: gameMode,
+        supportedTiersPx: [256, 512, 1080, 2048],
+        connectivityMonitor: {
+          isOnline,
+          autoQueueResume: true,
+          intervalSeconds: 5
+        },
+        selectedRequestRecord: activeRec ? {
+          requestKey: activeRec.requestKey,
+          sourceUrl: activeRec.url,
+          state: activeRec.state,
+          storageTier: activeRec.storageTier,
+          originalPngSizeBytes: activeRec.origPngBytes,
+          convertedIcon256Bytes: activeRec.iconBytes,
+          convertedFull1080Bytes: activeRec.fullBytes,
+          custom512TileBytes: activeRec.custom512Bytes,
+          ultra2048Bytes: activeRec.custom2048Bytes,
+          durationMs: activeRec.durationMs
+        } : null,
+        manifestSampleUrls: puzzleRegistry.slice(0, 6).map(r => ({
+          id: r.requestKey,
+          url: r.url,
+          state: r.state
+        }))
+      };
+
+      box.textContent = JSON.stringify(previewPayload, null, 2);
+    }
+
+    function switchRightTab(tab) {
+      activeRightTab = tab;
+      document.getElementById('rightPanelGallery').classList.toggle('hidden', tab !== 'gallery');
+      document.getElementById('rightPanelQueue').classList.toggle('hidden', tab !== 'queue');
+      document.getElementById('jsonPreviewBox').classList.toggle('hidden', tab !== 'json');
+
+      const tabs = [
+        { id: 'tabBtnGallery', key: 'gallery' },
+        { id: 'tabBtnQueue', key: 'queue' },
+        { id: 'tabBtnJson', key: 'json' }
+      ];
+      tabs.forEach(t => {
+        const el = document.getElementById(t.id);
+        el.className = (t.key === tab)
+          ? 'px-2.5 py-1 rounded-lg bg-blue-600 text-white border border-blue-500 text-xs font-bold flex items-center gap-1 cursor-pointer transition'
+          : 'px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#e6edf3] border border-[#30363d] text-xs font-semibold flex items-center gap-1 cursor-pointer transition';
+      });
+
+      if (tab === 'queue') renderQueueTable();
+      if (tab === 'json') updateManifestJsonTab();
+    }
+
+    // =========================================================================
+    // 7. Connectivity, Faulty Purge, Cache Eviction & Telemetry KPIs
+    // =========================================================================
+    function toggleConnectivity() {
+      isOnline = !isOnline;
+      const btn = document.getElementById('connBadgeBtn');
+      const dot = document.getElementById('connDot');
+      const lbl = document.getElementById('connLabel');
+
+      if (isOnline) {
+        btn.className = 'flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 cursor-pointer transition';
+        dot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse';
+        lbl.textContent = 'ONLINE (Auto-Queue)';
+        showToast('🌐', 'Internet reconnected! Native priority queue automatically resumed background downloads.', 'win');
+      } else {
+        btn.className = 'flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-500/15 text-rose-400 border border-rose-500/30 cursor-pointer transition';
+        dot.className = 'w-2 h-2 rounded-full bg-rose-400';
+        lbl.textContent = 'OFFLINE (Paused)';
+        showToast('📴', 'Offline detected! Background downloads paused; serving cached & ROM Sprites offline.', 'lose');
+      }
+      if (activeRightTab === 'json') updateManifestJsonTab();
+    }
+
+    function purgeFaultyRequests() {
+      const before = puzzleRegistry.length;
+      puzzleRegistry = puzzleRegistry.filter(r => r.state !== 'FAILED');
+      const removed = before - puzzleRegistry.length;
+      showToast('🧹', `Purged ${removed} faulty/404 request string(s) from the native priority queue.`, 'info');
+      renderGalleryGrid();
+      renderQueueTable();
+      updateTelemetryHeader();
+    }
+
+    function clearVolatileCache() {
+      let cleared = 0;
+      puzzleRegistry.forEach(r => {
+        if (r.state === 'CACHED' && r.storageTier === 'CACHE' && r.requestKey !== activePuzzleKey) {
+          r.state = 'QUEUED';
+          r.iconBytes = 0;
+          r.fullBytes = 0;
+          r.custom512Bytes = 0;
+          r.custom2048Bytes = 0;
+          r.thumbDataUrl = null;
+          cleared++;
+        }
+      });
+      showToast('🗑️', `Cleared ${cleared} Volatile Cache puzzle(s). Permanent ROM puzzles remained untouched!`, 'info');
+      renderGalleryGrid();
+      renderQueueTable();
+      updateTelemetryHeader();
+    }
+
+    function updateTelemetryHeader() {
+      let readyCount = 0, faultyCount = 0;
+      let iconBytesSum = 0, fullBytesSum = 0, ultraBytesSum = 0, pngOrigSum = 0;
+      let cacheBytes = 0, romBytes = 0;
+
+      puzzleRegistry.forEach(r => {
+        if (r.state === 'CACHED' || r.state === 'ROM') {
+          readyCount++;
+          iconBytesSum += r.iconBytes;
+          fullBytesSum += r.fullBytes;
+          ultraBytesSum += r.custom2048Bytes;
+          pngOrigSum += r.origPngBytes;
+          const totalItem = r.iconBytes + r.fullBytes + r.custom512Bytes + r.custom2048Bytes;
+          if (r.storageTier === 'ROM') romBytes += totalItem;
+          else cacheBytes += totalItem;
+        } else if (r.state === 'FAILED') {
+          faultyCount++;
+        }
+      });
+
+      document.getElementById('queueProgressBadge').textContent = `${readyCount}/${puzzleRegistry.length} Ready`;
+      document.getElementById('faultyCountLabel').textContent = faultyCount;
+      document.getElementById('topVramBadge').textContent = `RAM: ${spriteRamPool.size}/${MAX_RAM_POOL}`;
+
+      const savedBytes = Math.max(0, pngOrigSum - (iconBytesSum + fullBytesSum));
+      const savedPct = pngOrigSum > 0 ? Math.round((savedBytes / pngOrigSum) * 100) : 89;
+      document.getElementById('topSavedBadge').textContent = `${savedPct}% Saved`;
+
+      document.getElementById('diskUsageFooter').textContent =
+        `Cache: ${(cacheBytes / (1024 * 1024)).toFixed(1)}MB | ROM: ${(romBytes / (1024 * 1024)).toFixed(1)}MB`;
+
+      const kpiIcons = document.getElementById('kpiIconsTotal');
+      if (kpiIcons) {
+        kpiIcons.textContent = `${(iconBytesSum / 1024).toFixed(0)} KB`;
+        document.getElementById('kpiFullTotal').textContent = `${(fullBytesSum / (1024 * 1024)).toFixed(2)} MB`;
+        const kpiUltra = document.getElementById('kpiUltraTotal');
+        if (kpiUltra) kpiUltra.textContent = `${(ultraBytesSum / (1024 * 1024)).toFixed(2)} MB`;
+        document.getElementById('kpiSavedTotal').textContent = `${(savedBytes / (1024 * 1024)).toFixed(1)} MB`;
+      }
+    }
+
+    function showToast(emoji, message, type = 'info') {
+      const bar = document.getElementById('toastBar');
+      const emojiEl = document.getElementById('toastEmoji');
+      const textEl = document.getElementById('toastText');
+
+      emojiEl.textContent = emoji;
+      textEl.textContent = message;
+
+      if (type === 'win') {
+        bar.className = 'shrink-0 h-9 rounded-xl px-4 border flex items-center justify-center gap-2 text-xs font-bold transition-colors duration-200 shadow-sm bg-emerald-600 text-white border-emerald-400';
+        textEl.className = 'text-white';
+      } else if (type === 'lose') {
+        bar.className = 'shrink-0 h-9 rounded-xl px-4 border flex items-center justify-center gap-2 text-xs font-bold transition-colors duration-200 shadow-sm bg-rose-600 text-white border-rose-400';
+        textEl.className = 'text-white';
+      } else {
+        bar.className = 'shrink-0 h-9 rounded-xl px-4 border border-amber-500/40 bg-amber-500/15 flex items-center justify-center gap-2 text-xs font-bold transition-colors duration-200 shadow-sm';
+        textEl.className = 'text-[#e6edf3]';
+      }
+
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        bar.className = 'shrink-0 h-9 rounded-xl px-4 border border-[#30363d] bg-[#161b22] flex items-center justify-center gap-2 text-xs font-bold transition-colors duration-200 shadow-sm';
+        emojiEl.textContent = '🧩';
+        textEl.textContent = 'Click two puzzle tiles to swap • Scroll the 100+ Gallery on the right to boost Viewport Priority!';
+        textEl.className = 'text-[#8b949e]';
+      }, 2400);
+    }
+  </script>
+</body>
+</html>
+

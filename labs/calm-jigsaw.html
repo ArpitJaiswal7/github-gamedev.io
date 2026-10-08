@@ -1,0 +1,2131 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calm Jigsaw — Full Viewport Board & Right Drawer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --background: #0d1117;
+      --foreground: #e6edf3;
+      --card: #161b22;
+      --card-foreground: #e6edf3;
+      --secondary: #21262d;
+      --secondary-foreground: #e6edf3;
+      --muted: #161b22;
+      --muted-foreground: #8b949e;
+      --border: #30363d;
+      --primary: #2563eb;
+      --primary-foreground: #ffffff;
+    }
+    * {
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+    }
+    .tray-scroll-y {
+      touch-action: pan-y;
+      scrollbar-width: thin;
+      scrollbar-color: #30363d #0d1117;
+    }
+    .tray-scroll-y::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .tray-scroll-y::-webkit-scrollbar-track {
+      background: #0d1117;
+    }
+    .tray-scroll-y::-webkit-scrollbar-thumb {
+      background: #30363d;
+      border-radius: 9999px;
+    }
+    @keyframes snapPulse {
+      0% { transform: scale(1.07); filter: brightness(1.3) drop-shadow(0 0 12px rgba(250, 204, 21, 0.75)); }
+      60% { transform: scale(0.99); filter: brightness(1.08); }
+      100% { transform: scale(1); filter: brightness(1); }
+    }
+    .snap-anim {
+      animation: snapPulse 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    @keyframes groupJoinPulse {
+      0% { transform: scale(1); filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.42)); }
+      35% { transform: scale(1.05); filter: brightness(1.28) drop-shadow(0 0 16px rgba(56, 189, 248, 0.92)); }
+      100% { transform: scale(1); filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.42)); }
+    }
+    .group-join-anim {
+      animation: groupJoinPulse 0.48s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    @keyframes ringExpand {
+      0% { transform: translate(-50%, -50%) scale(0.35); opacity: 0.95; }
+      100% { transform: translate(-50%, -50%) scale(1.55); opacity: 0; }
+    }
+    .effect-ring {
+      position: absolute;
+      border-radius: 9999px;
+      pointer-events: none;
+      animation: ringExpand 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .piece-shadow-floating {
+      filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.55));
+    }
+    .piece-shadow-dragging {
+      filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.72));
+    }
+  </style>
+</head>
+<body class="bg-[#0d1117] text-[#e6edf3] antialiased h-screen w-screen overflow-hidden flex flex-col items-center justify-center p-2 sm:p-3 select-none">
+
+  <!-- Hidden File Input for "Select from Explorer" -->
+  <input id="fileInput" type="file" accept="image/*" class="hidden" />
+
+  <!-- Main App Shell (Matches Meowsweeper #161b22 card + #30363d border theme) -->
+  <div id="appShell" class="w-full max-w-[926px] h-full flex flex-col bg-[#161b22] border border-[#30363d] rounded-2xl shadow-lg overflow-hidden relative transition-[max-width] duration-200">
+
+    <!-- 1. COMPACT TOP HEADER: Row 1 (Title + Inline Placed Indicator + Controls) & Row 2 (Single Line Powerups) -->
+    <header class="border-b border-[#30363d] bg-[#161b22] px-3.5 py-2 flex flex-col gap-1.5 shrink-0 z-10">
+      <!-- Top Row: Title + Inline "1/36 Placed" + Photo Dropdown + Grid Dropdown + Shuffle + Coins -->
+      <div class="flex items-center justify-between gap-2 flex-nowrap overflow-x-auto">
+        <!-- Left: Game Title + Inline Placed Badge -->
+        <div class="flex items-center gap-2 shrink-0">
+          <span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-[#21262d] border border-[#30363d] text-[#e6edf3] font-bold text-xs">
+            🧩
+          </span>
+          <h1 class="font-bold text-sm sm:text-base text-[#e6edf3] whitespace-nowrap">Calm Jigsaw</h1>
+          <span id="progressText" class="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-xs font-semibold whitespace-nowrap">
+            0/16 Placed
+          </span>
+        </div>
+
+        <!-- Right: Inline Controls (Photo Select, Grid Select, Shuffle, Coins) -->
+        <div class="flex items-center gap-1.5 shrink-0">
+          <select id="sceneSelect" class="bg-[#21262d] hover:bg-[#30363d] text-[#e6edf3] border border-[#30363d] rounded-lg px-2 py-1 text-xs font-semibold cursor-pointer focus:outline-none transition">
+            <option value="sunset">🌅 Alpine Sunset</option>
+            <option value="forest">🌲 Misty Pines</option>
+            <option value="coast">🌊 Calm Cove</option>
+            <option value="custom" id="customPhotoOption" hidden>🖼️ Custom Photo</option>
+            <option value="explorer">📁 Select from Explorer...</option>
+          </select>
+
+          <select id="gridSelect" class="bg-[#21262d] hover:bg-[#30363d] text-[#e6edf3] border border-[#30363d] rounded-lg px-2 py-1 text-xs font-semibold cursor-pointer focus:outline-none transition">
+            <option value="4" selected>4 × 4 (16)</option>
+            <option value="5">5 × 5 (25)</option>
+            <option value="6">6 × 6 (36)</option>
+            <option value="7">7 × 7 (49)</option>
+            <option value="8">8 × 8 (64)</option>
+            <option value="9">9 × 9 (81)</option>
+            <option value="10">10 × 10 (100)</option>
+          </select>
+
+          <button id="btnShuffle" title="Shuffle Tray Pieces" class="inline-flex items-center justify-center gap-1 bg-blue-600 text-white hover:bg-blue-500 active:scale-95 transition border border-blue-500 rounded-lg px-2.5 py-1 text-xs font-semibold cursor-pointer whitespace-nowrap">
+            <span>🔀</span>
+            <span>Shuffle</span>
+          </button>
+
+          <div class="flex items-center gap-1 bg-[#0d1117] border border-[#30363d] px-2 py-1 rounded-lg text-xs font-mono font-bold text-[#e6edf3] whitespace-nowrap">
+            <span class="text-[#8b949e]">⏱️</span>
+            <span id="runTimerDisplay">00:00</span>
+          </div>
+
+          <button id="btnOpenLeaderboard" title="Open Live Offline Leaderboard" class="inline-flex items-center justify-center gap-1 bg-[#21262d] hover:bg-[#30363d] active:scale-95 transition border border-[#30363d] rounded-lg px-2.5 py-1 text-xs font-semibold cursor-pointer whitespace-nowrap">
+            <span>🏆</span>
+            <span id="topRankBadge" class="text-amber-400 font-bold font-mono">#30</span>
+          </button>
+
+          <div class="flex items-center gap-1 bg-amber-500/20 text-amber-400 px-2.5 py-1 rounded-lg text-xs font-bold border border-amber-500/30 whitespace-nowrap">
+            <span>🪙</span>
+            <span id="coinCount">150</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Second Row: Strictly 1 Line for Powerups -->
+      <div class="flex items-center gap-1.5 overflow-x-auto">
+        <button id="btnHint" class="flex-1 flex items-center justify-center gap-1.5 py-1 px-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] active:scale-95 transition text-[#e6edf3] border border-[#30363d] text-xs font-semibold cursor-pointer whitespace-nowrap">
+          <span>💡</span>
+          <span>Hint</span>
+          <span id="hintBadge" class="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-400 text-xs font-bold">3</span>
+        </button>
+
+        <button id="btnMagnet" title="Take 3 neighboring pieces from board or drawer and group them" class="flex-1 flex items-center justify-center gap-1.5 py-1 px-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] active:scale-95 transition text-[#e6edf3] border border-[#30363d] text-xs font-semibold cursor-pointer whitespace-nowrap">
+          <span>🧲</span>
+          <span>Magnet</span>
+          <span id="magnetBadge" class="px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-400 text-xs font-bold">3</span>
+        </button>
+
+        <button id="btnPreview" class="flex-1 flex items-center justify-center gap-1.5 py-1 px-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] active:scale-95 transition text-[#e6edf3] border border-[#30363d] text-xs font-semibold cursor-pointer whitespace-nowrap">
+          <span>👁️</span>
+          <span>Preview</span>
+        </button>
+
+        <button id="btnEdges" class="flex-1 flex items-center justify-center gap-1.5 py-1 px-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] active:scale-95 transition text-[#e6edf3] border border-[#30363d] text-xs font-semibold cursor-pointer whitespace-nowrap">
+          <span>🔲</span>
+          <span>Edges</span>
+        </button>
+
+        <button id="btnReset" class="flex-1 flex items-center justify-center gap-1.5 py-1 px-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] active:scale-95 transition text-[#e6edf3] border border-[#30363d] text-xs font-semibold cursor-pointer whitespace-nowrap">
+          <span>🔄</span>
+          <span>Reset</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- 2. MAIN CONTENT AREA: Left/Center Stretched Square Jigsaw Board + Right Vertical Drawer -->
+    <div class="flex-1 flex flex-row min-h-0 overflow-hidden bg-[#0d1117]">
+
+      <!-- Left/Center: Stretched Square Jigsaw Board Workspace -->
+      <main id="boardWorkspace" class="flex-1 relative flex items-center justify-center pt-3 pb-12 px-3 sm:px-5 overflow-hidden min-w-0 min-h-0 bg-[#0d1117]">
+        <!-- Target Puzzle Board Frame -->
+        <div id="puzzleBoard" class="relative rounded-xl border-2 border-[#30363d] bg-[#161b22] shadow-md overflow-visible">
+          <!-- Full-Board Reference Ghost Image -->
+          <img id="ghostImage" alt="Full Puzzle Reference" class="w-full h-full rounded-xl opacity-0 transition-opacity duration-200 pointer-events-none absolute inset-0" />
+
+          <!-- Board Slot ShapeSprites Layer -->
+          <div id="boardSlotsLayer" class="absolute inset-0 pointer-events-none"></div>
+
+          <!-- Placed & Floating Board Pieces Layer -->
+          <div id="boardPiecesLayer" class="absolute inset-0"></div>
+
+          <!-- Particle & Shimmer Effects Layer -->
+          <div id="effectsLayer" class="absolute inset-0 pointer-events-none z-30 overflow-visible"></div>
+
+          <!-- Notification / Validation Toast Banner at Bottom of Jigsaw Board with Y+ Offset (+12px) -->
+          <div id="toastBanner" class="hidden absolute left-1/2 -translate-x-1/2 top-[calc(100%+12px)] z-40 w-[96%] max-w-md px-3.5 py-2 rounded-xl border border-[#30363d] bg-[#161b22] text-[#e6edf3] shadow-xl text-xs font-semibold flex items-center justify-between gap-2">
+            <span id="toastMessage"></span>
+            <button id="toastClose" class="text-xs font-bold px-1.5 py-0.5 rounded bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-[#e6edf3] border border-[#30363d] cursor-pointer">✕</button>
+          </div>
+        </div>
+
+        <!-- Completion Banner Overlay -->
+        <div id="winOverlay" class="hidden absolute inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-30 p-4">
+          <div class="bg-[#161b22] border border-[#30363d] rounded-2xl p-6 text-center shadow-xl max-w-xs w-full flex flex-col items-center gap-3">
+            <div class="text-4xl">🎉</div>
+            <h2 class="text-lg font-bold text-[#e6edf3]">Puzzle Complete!</h2>
+            <p id="winSummaryText" class="text-xs text-[#8b949e]">Every interlocking piece placed! +25 Coins earned.</p>
+            <div id="winRankBadge" class="px-3 py-1 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-400 text-xs font-mono font-bold">
+              🏆 League Rank Updated!
+            </div>
+            <div class="w-full flex gap-2">
+              <button id="btnViewLbFromWin" class="flex-1 py-2 px-3 rounded-xl bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#e6edf3] font-semibold text-xs active:scale-95 transition cursor-pointer">
+                🏆 Leaderboard
+              </button>
+              <button id="btnPlayAgain" class="flex-1 py-2 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 border border-blue-500 text-white font-semibold text-xs active:scale-95 transition cursor-pointer">
+                Play Again
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- 3. RIGHT SIDE PANEL: TABS FOR PIECE DRAWER (2+ Cols Expanded) & REAL-TIME OFFLINE LEADERBOARD -->
+      <aside id="drawerAside" class="w-[310px] border-l border-[#30363d] bg-[#161b22] p-2 flex flex-col shrink-0 z-10 min-h-0 transition-[width] duration-200 gap-2">
+        <!-- Tab Switcher Header (Drawer vs Leaderboard + Expand Arrow) -->
+        <div class="flex items-center justify-between gap-1 shrink-0">
+          <div class="flex items-center gap-1 min-w-0">
+            <button id="tabBtnDrawer" class="px-2 py-1 rounded-lg bg-blue-600 text-white border border-blue-500 text-xs font-bold flex items-center gap-1 cursor-pointer transition">
+              <span>🧩</span>
+              <span id="trayLabel">Drawer</span>
+              <span id="trayCount" class="text-[11px] opacity-85">(16)</span>
+            </button>
+            <button id="tabBtnLeaderboard" class="px-2 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#e6edf3] border border-[#30363d] text-xs font-semibold flex items-center gap-1 cursor-pointer transition" title="Toggle Live Offline Leaderboard">
+              <span>🏆</span>
+              <span id="sideLbLabel">Leaderboard</span>
+            </button>
+          </div>
+          <button id="btnToggleDrawerWidth" title="Collapse panel width" class="inline-flex items-center justify-center w-6 h-6 rounded-md bg-[#21262d] hover:bg-[#30363d] active:scale-95 transition text-[#e6edf3] border border-[#30363d] text-xs font-bold cursor-pointer shrink-0">
+            <span id="drawerArrowIcon">◀</span>
+          </button>
+        </div>
+
+        <!-- TAB 1: JIGSAW PIECE TRAY -->
+        <div id="pieceTray" class="tray-scroll-y flex-1 grid justify-center items-center content-start gap-x-1 gap-y-1.5 overflow-y-auto py-2 px-1 rounded-xl bg-[#0d1117] border border-[#30363d] min-h-0">
+          <!-- Unplaced ShapeSprite-masked pieces injected here (dynamic columns by gridSize) -->
+        </div>
+
+        <!-- TAB 2: REAL-TIME OFFLINE LEADERBOARD PANEL (Matches Meowsweeper Right Column) -->
+        <div id="rightPanelLeaderboard" class="hidden flex-1 min-h-0 flex flex-col gap-2">
+          <!-- Mode Sub-Tabs -->
+          <div class="shrink-0 flex items-center justify-between gap-1 bg-[#0d1117] p-1.5 rounded-xl border border-[#30363d]">
+            <div class="flex items-center gap-1">
+              <button id="lbModeGame" class="px-2 py-1 rounded-lg bg-blue-600 text-white text-xs font-bold cursor-pointer transition">
+                🧩 Best Time
+              </button>
+              <button id="lbModeUnified" class="px-2 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-[#e6edf3] text-xs font-semibold cursor-pointer transition">
+                🏆 Unified
+              </button>
+            </div>
+            <div class="flex items-center gap-1 text-xs font-mono font-bold text-amber-400 px-1">
+              <span>⏱️</span>
+              <span id="lbCountdown">06d 23h</span>
+            </div>
+          </div>
+
+          <!-- Player Rank & Score KPI Strip -->
+          <div class="shrink-0 px-2.5 py-1.5 rounded-xl bg-[#0d1117] border border-[#30363d] flex items-center justify-between text-xs">
+            <div class="flex items-center gap-1.5">
+              <span class="text-[#8b949e] font-semibold">Rank:</span>
+              <span id="lbPlayerRank" class="font-mono font-bold text-amber-400">#30/30</span>
+              <span id="lbRankDelta" class="font-mono font-bold text-emerald-400"></span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-[#8b949e] font-semibold" id="lbScoreLabel">Best:</span>
+              <span id="lbPlayerScore" class="font-mono font-bold text-[#e6edf3]">Unranked</span>
+            </div>
+          </div>
+
+          <!-- Season Expired / Idempotent Reward Claim Banner -->
+          <div id="lbRewardBanner" class="hidden shrink-0 px-2.5 py-1.5 rounded-xl bg-amber-500/15 border border-amber-500/40 flex items-center justify-between gap-1.5">
+            <span id="lbRewardText" class="text-xs font-bold text-[#e6edf3] truncate">Season Complete!</span>
+            <div class="flex items-center gap-1 shrink-0">
+              <button id="lbBtnClaim" class="px-2 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-[#0d1117] text-xs font-bold cursor-pointer transition">
+                🎁 Claim
+              </button>
+              <button id="lbBtnNextSeason" class="hidden px-2 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold cursor-pointer transition">
+                🔄 Next
+              </button>
+            </div>
+          </div>
+
+          <!-- Pooled User-Centered Window Rows -->
+          <div id="lbRowsContainer" class="tray-scroll-y flex-1 min-h-0 bg-[#0d1117] border border-[#30363d] rounded-xl overflow-y-auto divide-y divide-[#21262d]">
+          </div>
+
+          <!-- Live-Ops Simulation Footer (+4h, -6h Rollback Clamp, End Season) -->
+          <div class="shrink-0 flex items-center justify-between gap-1 pt-0.5">
+            <div class="flex items-center gap-1">
+              <button id="lbBtnPlus4h" class="px-2 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#e6edf3] text-xs font-semibold cursor-pointer transition">
+                ⏩ +4h
+              </button>
+              <button id="lbBtnMinus6h" class="px-2 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] border border-rose-500/40 text-rose-400 text-xs font-semibold cursor-pointer transition">
+                ⏪ -6h
+              </button>
+              <button id="lbBtnExpire" class="px-2 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] border border-amber-500/40 text-amber-400 text-xs font-semibold cursor-pointer transition">
+                🏁 End
+              </button>
+            </div>
+            <span id="lbPhaseBadge" class="text-xs font-mono text-[#8b949e]">Live Sync</span>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+
+    <!-- Floating Drag Layer -->
+    <div id="dragLayer" class="pointer-events-none fixed inset-0 z-50"></div>
+  </div>
+
+  <script>
+    const MIN_PHOTO_SIZE = 400; // Minimum 400x400 px for custom square photo
+
+    const state = {
+      gridSize: 4,
+      scene: 'sunset',
+      lastValidScene: 'sunset',
+      customImageElement: null,
+      boardSize: 480,
+      snapThreshold: 28,
+      showPreview: false,
+      edgesOnly: false,
+      drawerExpanded: true,
+      animatingPowerup: false,
+      hintsLeft: 3,
+      magnetsLeft: 3,
+      coins: 150,
+      fullBoardImageUrl: '',
+      edgeMatrix: [],
+      pieces: [],
+      dragging: null,
+      nextGroupId: 1
+    };
+
+    const appShell = document.getElementById('appShell');
+    const drawerAside = document.getElementById('drawerAside');
+    const drawerArrowIcon = document.getElementById('drawerArrowIcon');
+    const btnToggleDrawerWidth = document.getElementById('btnToggleDrawerWidth');
+    const boardWorkspace = document.getElementById('boardWorkspace');
+    const puzzleBoard = document.getElementById('puzzleBoard');
+    const ghostImage = document.getElementById('ghostImage');
+    const boardSlotsLayer = document.getElementById('boardSlotsLayer');
+    const boardPiecesLayer = document.getElementById('boardPiecesLayer');
+    const effectsLayer = document.getElementById('effectsLayer');
+    const pieceTray = document.getElementById('pieceTray');
+    const dragLayer = document.getElementById('dragLayer');
+    const progressText = document.getElementById('progressText');
+    const trayCount = document.getElementById('trayCount');
+    const trayLabel = document.getElementById('trayLabel');
+    const coinCount = document.getElementById('coinCount');
+    const hintBadge = document.getElementById('hintBadge');
+    const magnetBadge = document.getElementById('magnetBadge');
+    const winOverlay = document.getElementById('winOverlay');
+    const sceneSelect = document.getElementById('sceneSelect');
+    const customPhotoOption = document.getElementById('customPhotoOption');
+    const fileInput = document.getElementById('fileInput');
+    const toastBanner = document.getElementById('toastBanner');
+    const toastMessage = document.getElementById('toastMessage');
+
+    let toastTimer = null;
+    function showToast(msg, isError = false) {
+      toastMessage.textContent = msg;
+      toastBanner.classList.remove('hidden');
+      toastBanner.style.borderColor = isError ? '#ef4444' : '#30363d';
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toastBanner.classList.add('hidden');
+      }, 4000);
+    }
+    document.getElementById('toastClose').addEventListener('click', () => {
+      toastBanner.classList.add('hidden');
+    });
+
+    // --- VISUAL & CALM AUDIO EFFECTS ENGINE ---
+    let audioCtx = null;
+    function playCalmChime(type = 'place') {
+      try {
+        if (!audioCtx) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (!AudioContextClass) return;
+          audioCtx = new AudioContextClass();
+        }
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+
+        const now = audioCtx.currentTime;
+        const pentatonic = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33, 659.25, 783.99];
+
+        if (type === 'place') {
+          const placedCount = state.pieces.filter(p => p.status === 'locked').length;
+          const freq = pentatonic[placedCount % pentatonic.length];
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now);
+          osc.frequency.exponentialRampToValueAtTime(freq * 1.01, now + 0.25);
+          gain.gain.setValueAtTime(0.14, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now);
+          osc.stop(now + 0.34);
+        } else if (type === 'join') {
+          [440.0, 659.25].forEach((freq, idx) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, now + idx * 0.055);
+            gain.gain.setValueAtTime(0.12, now + idx * 0.055);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.055 + 0.35);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now + idx * 0.055);
+            osc.stop(now + idx * 0.055 + 0.37);
+          });
+        } else if (type === 'win') {
+          [523.25, 659.25, 783.99, 1046.5].forEach((freq, idx) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now + idx * 0.09);
+            gain.gain.setValueAtTime(0.14, now + idx * 0.09);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.09 + 0.5);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now + idx * 0.09);
+            osc.stop(now + idx * 0.09 + 0.52);
+          });
+        }
+      } catch (_) {}
+    }
+
+    function spawnRippleRing(cx, cy, diameter, color) {
+      const ring = document.createElement('div');
+      ring.className = 'effect-ring';
+      ring.style.left = `${cx}px`;
+      ring.style.top = `${cy}px`;
+      ring.style.width = `${diameter}px`;
+      ring.style.height = `${diameter}px`;
+      ring.style.border = `2.5px solid ${color}`;
+      ring.style.boxShadow = `0 0 12px ${color}`;
+      effectsLayer.appendChild(ring);
+      setTimeout(() => ring.remove(), 600);
+    }
+
+    function spawnSparkleBurst(cx, cy, colors, count = 12, spread = 42) {
+      for (let i = 0; i < count; i++) {
+        const dot = document.createElement('div');
+        const size = 4 + Math.random() * 5;
+        const color = colors[i % colors.length];
+        dot.style.position = 'absolute';
+        dot.style.left = `${cx}px`;
+        dot.style.top = `${cy}px`;
+        dot.style.width = `${size}px`;
+        dot.style.height = `${size}px`;
+        dot.style.borderRadius = i % 3 === 0 ? '2px' : '9999px';
+        dot.style.background = color;
+        dot.style.boxShadow = `0 0 8px ${color}`;
+        dot.style.transform = 'translate(-50%, -50%) scale(1)';
+        dot.style.opacity = '1';
+        dot.style.transition =
+          'transform 520ms cubic-bezier(0.16, 1, 0.3, 1), opacity 520ms ease-out';
+
+        effectsLayer.appendChild(dot);
+
+        const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.35;
+        const dist = spread * (0.55 + Math.random() * 0.65);
+        const dx = Math.cos(angle) * dist;
+        const dy = Math.sin(angle) * dist;
+
+        requestAnimationFrame(() => {
+          dot.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(0.15) rotate(${Math.round(Math.random() * 180)}deg)`;
+          dot.style.opacity = '0';
+        });
+
+        setTimeout(() => dot.remove(), 550);
+      }
+    }
+
+    /**
+     * Plays golden ripple & sparkle burst when 1 or more pieces lock into their final board slots.
+     */
+    function triggerPlacementEffect(placedPieces) {
+      const goldPalette = ['#fde047', '#facc15', '#fb923c', '#ffffff'];
+      placedPieces.forEach(piece => {
+        const cx = piece.x + piece.tileSize / 2;
+        const cy = piece.y + piece.tileSize / 2;
+        spawnRippleRing(cx, cy, piece.tileSize * 0.95, 'rgba(250, 204, 21, 0.85)');
+        spawnSparkleBurst(cx, cy, goldPalette, 10, piece.tileSize * 0.62);
+      });
+
+      const allLocked = state.pieces.every(p => p.status === 'locked');
+      playCalmChime(allLocked ? 'win' : 'place');
+    }
+
+    /**
+     * Plays cyan/emerald seam sparkles & unified group pulse when neighboring pieces join into a group.
+     */
+    function triggerGroupJoinEffect(groupId, seamPoints = []) {
+      const joinPalette = ['#38bdf8', '#34d399', '#a78bfa', '#ffffff'];
+      const members = state.pieces.filter(p => p.status === 'board' && p.groupId === groupId);
+      members.forEach(p => {
+        p.justJoinedGroup = true;
+      });
+
+      if (seamPoints.length > 0) {
+        seamPoints.forEach(({ x, y, tileSize }) => {
+          spawnRippleRing(x, y, tileSize * 0.75, 'rgba(56, 189, 248, 0.9)');
+          spawnSparkleBurst(x, y, joinPalette, 12, tileSize * 0.55);
+        });
+      } else {
+        members.forEach(p => {
+          const cx = p.x + p.tileSize / 2;
+          const cy = p.y + p.tileSize / 2;
+          spawnRippleRing(cx, cy, p.tileSize * 0.8, 'rgba(56, 189, 248, 0.85)');
+          spawnSparkleBurst(cx, cy, joinPalette, 8, p.tileSize * 0.5);
+        });
+      }
+
+      playCalmChime('join');
+    }
+
+    // Compute largest square board size that fits comfortably inside `boardWorkspace` (leaving Y+ room at bottom for toast)
+    function computeViewportBoardSize() {
+      const rect = boardWorkspace.getBoundingClientRect();
+      const availW = Math.max(220, rect.width - 36);
+      const availH = Math.max(220, rect.height - 60);
+      const rawSize = Math.floor(Math.min(availW, availH));
+      puzzleBoard.style.width = `${rawSize}px`;
+      puzzleBoard.style.height = `${rawSize}px`;
+      return rawSize;
+    }
+
+    // --- 1. GENERATE FULL-BOARD PUZZLE IMAGE ---
+    function generateFullBoardImage(size, scene) {
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+
+      if (scene === 'custom' && state.customImageElement) {
+        ctx.drawImage(state.customImageElement, 0, 0, size, size);
+        return canvas.toDataURL();
+      }
+
+      if (scene === 'sunset') {
+        const sky = ctx.createLinearGradient(0, 0, 0, size * 0.65);
+        sky.addColorStop(0, '#3b1d5e');
+        sky.addColorStop(0.45, '#b84a62');
+        sky.addColorStop(1, '#f7b267');
+        ctx.fillStyle = sky;
+        ctx.fillRect(0, 0, size, size);
+
+        ctx.fillStyle = '#ffe599';
+        ctx.beginPath();
+        ctx.arc(size * 0.62, size * 0.36, size * 0.13, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#6d3b6e';
+        ctx.beginPath();
+        ctx.moveTo(0, size * 0.62);
+        ctx.lineTo(size * 0.25, size * 0.38);
+        ctx.lineTo(size * 0.52, size * 0.55);
+        ctx.lineTo(size * 0.8, size * 0.34);
+        ctx.lineTo(size, size * 0.52);
+        ctx.lineTo(size, size * 0.65);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = '#43234f';
+        ctx.beginPath();
+        ctx.moveTo(0, size * 0.66);
+        ctx.lineTo(size * 0.15, size * 0.52);
+        ctx.lineTo(size * 0.44, size * 0.42);
+        ctx.lineTo(size * 0.72, size * 0.58);
+        ctx.lineTo(size * 0.92, size * 0.45);
+        ctx.lineTo(size, size * 0.55);
+        ctx.lineTo(size, size * 0.66);
+        ctx.closePath();
+        ctx.fill();
+
+        const lake = ctx.createLinearGradient(0, size * 0.65, 0, size);
+        lake.addColorStop(0, '#e07a5f');
+        lake.addColorStop(0.5, '#813b65');
+        lake.addColorStop(1, '#26143b');
+        ctx.fillStyle = lake;
+        ctx.fillRect(0, size * 0.65, size, size * 0.35);
+
+        ctx.fillStyle = 'rgba(255, 229, 153, 0.45)';
+        for (let i = 0; i < 6; i++) {
+          const y = size * 0.69 + i * (size * 0.045);
+          const w = size * (0.22 - i * 0.025);
+          ctx.fillRect(size * 0.62 - w / 2, y, w, 3);
+        }
+      } else if (scene === 'forest') {
+        const sky = ctx.createLinearGradient(0, 0, 0, size);
+        sky.addColorStop(0, '#a8dadc');
+        sky.addColorStop(0.55, '#f1faee');
+        sky.addColorStop(1, '#457b9d');
+        ctx.fillStyle = sky;
+        ctx.fillRect(0, 0, size, size);
+
+        ctx.fillStyle = '#fff3b0';
+        ctx.beginPath();
+        ctx.arc(size * 0.3, size * 0.25, size * 0.1, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#74a892';
+        ctx.beginPath();
+        ctx.arc(size * 0.25, size * 0.75, size * 0.45, Math.PI, 0);
+        ctx.arc(size * 0.8, size * 0.75, size * 0.4, Math.PI, 0);
+        ctx.fill();
+
+        const drawPine = (x, baseY, h, color) => {
+          ctx.fillStyle = color;
+          for (let layer = 0; layer < 3; layer++) {
+            ctx.beginPath();
+            const topY = baseY - h + layer * (h * 0.22);
+            const botY = baseY - layer * (h * 0.2);
+            const spread = (h * 0.36) * (1 - layer * 0.22);
+            ctx.moveTo(x, topY);
+            ctx.lineTo(x - spread, botY);
+            ctx.lineTo(x + spread, botY);
+            ctx.closePath();
+            ctx.fill();
+          }
+        };
+        drawPine(size * 0.18, size * 0.82, size * 0.32, '#2d6a4f');
+        drawPine(size * 0.32, size * 0.86, size * 0.26, '#1b4332');
+        drawPine(size * 0.76, size * 0.84, size * 0.35, '#1b4332');
+        drawPine(size * 0.88, size * 0.88, size * 0.24, '#2d6a4f');
+
+        ctx.fillStyle = '#1d3557';
+        ctx.fillRect(0, size * 0.82, size, size * 0.18);
+      } else {
+        const sky = ctx.createLinearGradient(0, 0, 0, size * 0.55);
+        sky.addColorStop(0, '#48cae4');
+        sky.addColorStop(1, '#caf0f8');
+        ctx.fillStyle = sky;
+        ctx.fillRect(0, 0, size, size * 0.55);
+
+        const sea = ctx.createLinearGradient(0, size * 0.55, 0, size);
+        sea.addColorStop(0, '#0077b6');
+        sea.addColorStop(0.65, '#00b4d8');
+        sea.addColorStop(1, '#f4e285');
+        ctx.fillStyle = sea;
+        ctx.fillRect(0, size * 0.55, size, size * 0.45);
+
+        ctx.fillStyle = '#52b788';
+        ctx.beginPath();
+        ctx.arc(size * 0.22, size * 0.56, size * 0.18, Math.PI, 0);
+        ctx.fill();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.moveTo(size * 0.68, size * 0.42);
+        ctx.lineTo(size * 0.68, size * 0.58);
+        ctx.lineTo(size * 0.78, size * 0.58);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = '#bc4749';
+        ctx.beginPath();
+        ctx.moveTo(size * 0.62, size * 0.59);
+        ctx.lineTo(size * 0.81, size * 0.59);
+        ctx.lineTo(size * 0.77, size * 0.64);
+        ctx.lineTo(size * 0.65, size * 0.64);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      return canvas.toDataURL();
+    }
+
+    // --- 2. SHAPESPRITE MASK & OUTLINE GENERATOR ---
+    function drawSpriteSide(ctx, x1, y1, x2, y2, sign) {
+      if (sign === 0) {
+        ctx.lineTo(x2, y2);
+        return;
+      }
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+      const len = Math.hypot(dx, dy);
+      const nx = (dy / len) * sign;
+      const ny = (-dx / len) * sign;
+
+      const pt = (along, out) => [
+        x1 + dx * along + nx * (len * out),
+        y1 + dy * along + ny * (len * out)
+      ];
+
+      const tabOut = 0.24;
+      ctx.lineTo(...pt(0.36, 0));
+      ctx.bezierCurveTo(
+        ...pt(0.41, -0.02),
+        ...pt(0.34, tabOut * 0.55),
+        ...pt(0.38, tabOut * 0.85)
+      );
+      ctx.bezierCurveTo(
+        ...pt(0.42, tabOut * 1.15),
+        ...pt(0.58, tabOut * 1.15),
+        ...pt(0.62, tabOut * 0.85)
+      );
+      ctx.bezierCurveTo(
+        ...pt(0.66, tabOut * 0.55),
+        ...pt(0.59, -0.02),
+        ...pt(0.64, 0)
+      );
+      ctx.lineTo(x2, y2);
+    }
+
+    function createShapeSprites(edges, tileSize, pad) {
+      const spriteSize = tileSize + pad * 2;
+
+      const traceShape = ctx => {
+        ctx.beginPath();
+        ctx.moveTo(pad, pad);
+        drawSpriteSide(ctx, pad, pad, pad + tileSize, pad, edges.top);
+        drawSpriteSide(ctx, pad + tileSize, pad, pad + tileSize, pad + tileSize, edges.right);
+        drawSpriteSide(ctx, pad + tileSize, pad + tileSize, pad, pad + tileSize, edges.bottom);
+        drawSpriteSide(ctx, pad, pad + tileSize, pad, pad, edges.left);
+        ctx.closePath();
+      };
+
+      const maskCanvas = document.createElement('canvas');
+      maskCanvas.width = spriteSize;
+      maskCanvas.height = spriteSize;
+      const mCtx = maskCanvas.getContext('2d');
+      traceShape(mCtx);
+      mCtx.fillStyle = '#ffffff';
+      mCtx.fill();
+
+      const borderCanvas = document.createElement('canvas');
+      borderCanvas.width = spriteSize;
+      borderCanvas.height = spriteSize;
+      const bCtx = borderCanvas.getContext('2d');
+      bCtx.save();
+      traceShape(bCtx);
+      bCtx.clip();
+      bCtx.lineWidth = 3;
+      bCtx.strokeStyle = 'rgba(255, 255, 255, 0.42)';
+      bCtx.stroke();
+      bCtx.lineWidth = 1.25;
+      bCtx.strokeStyle = 'rgba(15, 23, 42, 0.65)';
+      bCtx.stroke();
+      bCtx.restore();
+
+      return {
+        shapeSpriteUrl: maskCanvas.toDataURL(),
+        outlineSpriteUrl: borderCanvas.toDataURL()
+      };
+    }
+
+    function createMaskedPieceElement(piece, scale = 1) {
+      const wrapper = document.createElement('div');
+      wrapper.style.width = `${piece.spriteSize * scale}px`;
+      wrapper.style.height = `${piece.spriteSize * scale}px`;
+      wrapper.className = 'relative select-none';
+
+      const maskedContainer = document.createElement('div');
+      maskedContainer.style.width = `${piece.spriteSize}px`;
+      maskedContainer.style.height = `${piece.spriteSize}px`;
+      maskedContainer.style.transform = `scale(${scale})`;
+      maskedContainer.style.transformOrigin = 'top left';
+      maskedContainer.style.position = 'relative';
+      maskedContainer.style.overflow = 'hidden';
+
+      maskedContainer.style.webkitMaskImage = `url(${piece.shapeSpriteUrl})`;
+      maskedContainer.style.maskImage = `url(${piece.shapeSpriteUrl})`;
+      maskedContainer.style.webkitMaskSize = '100% 100%';
+      maskedContainer.style.maskSize = '100% 100%';
+      maskedContainer.style.webkitMaskRepeat = 'no-repeat';
+      maskedContainer.style.maskRepeat = 'no-repeat';
+
+      const fullBoardImg = document.createElement('div');
+      fullBoardImg.style.width = `${state.boardSize}px`;
+      fullBoardImg.style.height = `${state.boardSize}px`;
+      fullBoardImg.style.position = 'absolute';
+      fullBoardImg.style.left = `${piece.pad - piece.col * piece.tileSize}px`;
+      fullBoardImg.style.top = `${piece.pad - piece.row * piece.tileSize}px`;
+      fullBoardImg.style.backgroundImage = `url(${state.fullBoardImageUrl})`;
+      fullBoardImg.style.backgroundSize = `${state.boardSize}px ${state.boardSize}px`;
+      maskedContainer.appendChild(fullBoardImg);
+
+      const outlineOverlay = document.createElement('div');
+      outlineOverlay.className = 'absolute inset-0 pointer-events-none';
+      outlineOverlay.style.backgroundImage = `url(${piece.outlineSpriteUrl})`;
+      outlineOverlay.style.backgroundSize = '100% 100%';
+      maskedContainer.appendChild(outlineOverlay);
+
+      wrapper.appendChild(maskedContainer);
+      return wrapper;
+    }
+
+    // --- 3. INITIALIZE OR RESIZE PUZZLE ---
+    function initPuzzle(preserveState = false) {
+      const oldBoardSize = state.boardSize || 1;
+      state.boardSize = computeViewportBoardSize();
+      const scaleRatio = state.boardSize / oldBoardSize;
+
+      state.fullBoardImageUrl = generateFullBoardImage(state.boardSize, state.scene);
+      ghostImage.src = state.fullBoardImageUrl;
+
+      const N = state.gridSize;
+      const tileSize = state.boardSize / N;
+      const pad = Math.round(tileSize * 0.28);
+      const spriteSize = tileSize + pad * 2;
+      state.snapThreshold = Math.max(16, Math.min(34, tileSize * 0.35));
+
+      if (!preserveState || state.edgeMatrix.length !== N) {
+        state.edgeMatrix = Array.from({ length: N }, () =>
+          Array.from({ length: N }, () => ({ top: 0, right: 0, bottom: 0, left: 0 }))
+        );
+        for (let r = 0; r < N; r++) {
+          for (let c = 0; c < N; c++) {
+            state.edgeMatrix[r][c].top = r === 0 ? 0 : -state.edgeMatrix[r - 1][c].bottom;
+            state.edgeMatrix[r][c].right = c === N - 1 ? 0 : (Math.random() < 0.5 ? 1 : -1);
+            state.edgeMatrix[r][c].bottom = r === N - 1 ? 0 : (Math.random() < 0.5 ? 1 : -1);
+            state.edgeMatrix[r][c].left = c === 0 ? 0 : -state.edgeMatrix[r][c - 1].right;
+          }
+        }
+      }
+
+      boardSlotsLayer.innerHTML = '';
+
+      if (preserveState && state.pieces.length === N * N) {
+        // Recompute sprites & scale positions without losing progress
+        state.pieces.forEach(piece => {
+          const { shapeSpriteUrl, outlineSpriteUrl } = createShapeSprites(piece.edges, tileSize, pad);
+          piece.tileSize = tileSize;
+          piece.pad = pad;
+          piece.spriteSize = spriteSize;
+          piece.shapeSpriteUrl = shapeSpriteUrl;
+          piece.outlineSpriteUrl = outlineSpriteUrl;
+
+          if (piece.status === 'locked') {
+            piece.x = piece.col * tileSize;
+            piece.y = piece.row * tileSize;
+          } else if (piece.status === 'board') {
+            piece.x = piece.x * scaleRatio;
+            piece.y = piece.y * scaleRatio;
+          }
+
+          const slotEl = document.createElement('div');
+          slotEl.className = 'absolute opacity-35 flex items-center justify-center';
+          slotEl.style.width = `${spriteSize}px`;
+          slotEl.style.height = `${spriteSize}px`;
+          slotEl.style.left = `${piece.col * tileSize - pad}px`;
+          slotEl.style.top = `${piece.row * tileSize - pad}px`;
+          slotEl.style.backgroundImage = `url(${outlineSpriteUrl})`;
+          slotEl.style.backgroundSize = '100% 100%';
+          boardSlotsLayer.appendChild(slotEl);
+        });
+      } else {
+        state.pieces = [];
+        state.nextGroupId = 1;
+
+        for (let r = 0; r < N; r++) {
+          for (let c = 0; c < N; c++) {
+            const edges = state.edgeMatrix[r][c];
+            const { shapeSpriteUrl, outlineSpriteUrl } = createShapeSprites(edges, tileSize, pad);
+
+            const slotEl = document.createElement('div');
+            slotEl.className = 'absolute opacity-35 flex items-center justify-center';
+            slotEl.style.width = `${spriteSize}px`;
+            slotEl.style.height = `${spriteSize}px`;
+            slotEl.style.left = `${c * tileSize - pad}px`;
+            slotEl.style.top = `${r * tileSize - pad}px`;
+            slotEl.style.backgroundImage = `url(${outlineSpriteUrl})`;
+            slotEl.style.backgroundSize = '100% 100%';
+            boardSlotsLayer.appendChild(slotEl);
+
+            const isEdge = r === 0 || r === N - 1 || c === 0 || c === N - 1;
+            state.pieces.push({
+              id: `piece-${r}-${c}`,
+              row: r,
+              col: c,
+              edges,
+              isEdge,
+              status: 'tray',
+              x: 0,
+              y: 0,
+              groupId: state.nextGroupId++,
+              recentMagnet: false,
+              tileSize,
+              pad,
+              spriteSize,
+              shapeSpriteUrl,
+              outlineSpriteUrl
+            });
+          }
+        }
+        state.pieces.sort(() => Math.random() - 0.5);
+        state.runSubmitted = false;
+        state.runStartTimeMs = Date.now();
+        winOverlay.classList.add('hidden');
+      }
+
+      renderAll();
+    }
+
+    // --- 4. RENDER BOARD & RIGHT DRAWER ---
+    function renderAll() {
+      const N = state.gridSize;
+      const placedCount = state.pieces.filter(p => p.status === 'locked').length;
+      const totalCount = N * N;
+
+      // Inline "X/Y Placed" indicator next to title
+      progressText.textContent = `${placedCount}/${totalCount} Placed`;
+      coinCount.textContent = state.coins;
+      hintBadge.textContent = state.hintsLeft;
+      magnetBadge.textContent = state.magnetsLeft;
+
+      const draggingIds = new Set(
+        state.dragging ? state.dragging.groupPieces.map(gp => gp.piece.id) : []
+      );
+
+      boardPiecesLayer.innerHTML = '';
+      state.pieces.forEach(piece => {
+        if (piece.status === 'tray') return;
+        if (draggingIds.has(piece.id)) return;
+
+        const el = createMaskedPieceElement(piece, 1);
+        el.dataset.pieceId = piece.id;
+        el.style.position = 'absolute';
+        el.style.left = `${piece.x - piece.pad}px`;
+        el.style.top = `${piece.y - piece.pad}px`;
+
+        if (piece.status === 'locked') {
+          el.classList.add('pointer-events-none', 'z-10');
+          if (!piece.movedByPowerup) {
+            el.classList.add('snap-anim');
+          }
+        } else {
+          el.classList.add('cursor-grab', 'z-20', 'piece-shadow-floating');
+          if (piece.justJoinedGroup) {
+            el.classList.add('group-join-anim');
+            piece.justJoinedGroup = false;
+          }
+          el.addEventListener('pointerdown', e => startDrag(e, piece));
+        }
+
+        boardPiecesLayer.appendChild(el);
+      });
+
+      pieceTray.innerHTML = '';
+      const trayPieces = state.pieces.filter(p => {
+        if (p.status !== 'tray') return false;
+        if (draggingIds.has(p.id)) return false;
+        if (state.edgesOnly && !p.isEdge) return false;
+        return true;
+      });
+
+      // Dynamic column count & tight thumbnail size based on gridSize (4x4..10x10) and drawer expansion
+      let cols = 1;
+      let targetThumbSize = 82;
+      if (!state.drawerExpanded) {
+        if (N <= 5) {
+          cols = 1;
+          targetThumbSize = 86;
+        } else if (N === 6) {
+          cols = 1;
+          targetThumbSize = 74;
+        } else {
+          // 7x7 to 10x10 fit 2 tight columns even when collapsed
+          cols = 2;
+          targetThumbSize = 54;
+        }
+      } else {
+        // Expanded drawer (doubled width: 288px) varies columns by gridSize: 2, 3, or 4 tight columns
+        if (N <= 5) {
+          cols = 2;
+          targetThumbSize = N === 4 ? 98 : 88;
+        } else if (N <= 7) {
+          cols = 3;
+          targetThumbSize = 74;
+        } else {
+          cols = 4;
+          targetThumbSize = 58;
+        }
+      }
+
+      pieceTray.style.gridTemplateColumns = `repeat(${cols}, max-content)`;
+
+      const allUnplaced = state.pieces.filter(p => p.status === 'tray').length;
+      trayCount.textContent = `(${allUnplaced})`;
+      trayLabel.textContent = state.edgesOnly ? `Edges` : `Drawer`;
+
+      if (trayPieces.length === 0) {
+        const emptyMsg = document.createElement('div');
+        emptyMsg.className = 'col-span-full w-full text-center text-xs text-[var(--muted-foreground)] py-6 px-1';
+        emptyMsg.textContent = allUnplaced === 0
+          ? 'All pieces on board!'
+          : 'No edge pieces left.';
+        pieceTray.appendChild(emptyMsg);
+      } else {
+        trayPieces.forEach(piece => {
+          const scale = targetThumbSize / piece.spriteSize;
+          const thumb = createMaskedPieceElement(piece, scale);
+          thumb.dataset.pieceId = piece.id;
+          thumb.classList.add('shrink-0', 'cursor-grab', 'hover:scale-105', 'transition-transform', 'piece-shadow-floating');
+          thumb.addEventListener('pointerdown', e => startDrag(e, piece));
+          pieceTray.appendChild(thumb);
+        });
+      }
+
+      if (placedCount === totalCount) {
+        if (!state.runSubmitted) {
+          state.runSubmitted = true;
+          const elapsedMs = Math.max(4000, Date.now() - (state.runStartTimeMs || Date.now()));
+          const leaguePts = totalCount * 15 + state.hintsLeft * 25;
+          if (window.OfflineLeaderboard) {
+            window.OfflineLeaderboard.setWallet(state.coins);
+            const resBest = window.OfflineLeaderboard.submitRun('calm_jigsaw', elapsedMs);
+            const resUni = window.OfflineLeaderboard.submitRun('unified_league', leaguePts);
+            const sumEl = document.getElementById('winSummaryText');
+            const badgeEl = document.getElementById('winRankBadge');
+            if (sumEl) {
+              sumEl.textContent = `Solved ${N}×${N} (${totalCount}pc) in ${(elapsedMs / 1000).toFixed(1)}s! +25🪙 & +${leaguePts} League Pts.`;
+            }
+            if (badgeEl && resBest) {
+              badgeEl.textContent = resBest.rankDelta > 0
+                ? `🚀 Rank #${resBest.newRank} (▲+${resBest.rankDelta} Overtake!)`
+                : `🏆 Calm Jigsaw Rank #${resBest.newRank} • Unified #${resUni ? resUni.newRank : '-'}`;
+            }
+          }
+        }
+        setTimeout(() => {
+          winOverlay.classList.remove('hidden');
+        }, 250);
+      }
+    }
+
+    // --- 5. GROUP DRAG & DROP + AUTO-PLACE ON DRAG + NEIGHBOR GROUP MERGING ---
+    function startDrag(e, leadPiece) {
+      if (leadPiece.status === 'locked' || state.animatingPowerup) return;
+      e.preventDefault();
+
+      const groupMembers = leadPiece.status === 'board'
+        ? state.pieces.filter(p => p.status === 'board' && p.groupId === leadPiece.groupId)
+        : [leadPiece];
+
+      dragLayer.innerHTML = '';
+      const groupPieces = groupMembers.map(member => {
+        const relX = (member.col - leadPiece.col) * leadPiece.tileSize;
+        const relY = (member.row - leadPiece.row) * leadPiece.tileSize;
+
+        const dragEl = createMaskedPieceElement(member, 1);
+        dragEl.style.position = 'fixed';
+        dragEl.classList.add('pointer-events-none', 'piece-shadow-dragging');
+        dragEl.style.left = `${e.clientX - member.spriteSize / 2 + relX}px`;
+        dragEl.style.top = `${e.clientY - member.spriteSize / 2 + relY}px`;
+        dragLayer.appendChild(dragEl);
+
+        return { piece: member, relX, relY, dragEl };
+      });
+
+      state.dragging = {
+        leadPiece,
+        groupPieces
+      };
+
+      renderAll();
+    }
+
+    window.addEventListener('pointermove', e => {
+      if (!state.dragging) return;
+      const { leadPiece, groupPieces } = state.dragging;
+
+      groupPieces.forEach(({ piece, relX, relY, dragEl }) => {
+        dragEl.style.left = `${e.clientX - piece.spriteSize / 2 + relX}px`;
+        dragEl.style.top = `${e.clientY - piece.spriteSize / 2 + relY}px`;
+      });
+
+      // Auto-place while holding/dragging if the piece enters its target grid slot threshold
+      const boardRect = puzzleBoard.getBoundingClientRect();
+      const leadDropX = e.clientX - boardRect.left - leadPiece.tileSize / 2;
+      const leadDropY = e.clientY - boardRect.top - leadPiece.tileSize / 2;
+
+      const leadTargetX = leadPiece.col * leadPiece.tileSize;
+      const leadTargetY = leadPiece.row * leadPiece.tileSize;
+      const distToBoardSlot = Math.hypot(leadDropX - leadTargetX, leadDropY - leadTargetY);
+
+      if (distToBoardSlot <= state.snapThreshold) {
+        state.dragging = null;
+        dragLayer.innerHTML = '';
+
+        const lockedList = [];
+        groupPieces.forEach(({ piece }) => {
+          piece.x = piece.col * piece.tileSize;
+          piece.y = piece.row * piece.tileSize;
+          piece.movedByPowerup = false;
+          piece.status = 'locked';
+          lockedList.push(piece);
+        });
+
+        if (state.pieces.every(p => p.status === 'locked')) {
+          state.coins += 25;
+        }
+
+        triggerPlacementEffect(lockedList);
+        renderAll();
+      }
+    });
+
+    function checkAndMergeBoardNeighbors(droppedGroupId) {
+      let merged = true;
+      const seamPoints = [];
+
+      while (merged) {
+        merged = false;
+        const groupMembers = state.pieces.filter(
+          p => p.status === 'board' && p.groupId === droppedGroupId
+        );
+        const otherBoardPieces = state.pieces.filter(
+          p => p.status === 'board' && p.groupId !== droppedGroupId
+        );
+
+        for (const member of groupMembers) {
+          for (const other of otherBoardPieces) {
+            const dr = Math.abs(member.row - other.row);
+            const dc = Math.abs(member.col - other.col);
+            if (dr + dc === 1) {
+              const expectedDx = (member.col - other.col) * member.tileSize;
+              const expectedDy = (member.row - other.row) * member.tileSize;
+              const actualDx = member.x - other.x;
+              const actualDy = member.y - other.y;
+              const dist = Math.hypot(actualDx - expectedDx, actualDy - expectedDy);
+
+              if (dist <= state.snapThreshold) {
+                const targetMemberX = other.x + expectedDx;
+                const targetMemberY = other.y + expectedDy;
+                const shiftX = targetMemberX - member.x;
+                const shiftY = targetMemberY - member.y;
+
+                const oldOtherGroupId = other.groupId;
+                groupMembers.forEach(gm => {
+                  gm.x += shiftX;
+                  gm.y += shiftY;
+                });
+                state.pieces
+                  .filter(p => p.status === 'board' && p.groupId === oldOtherGroupId)
+                  .forEach(p => {
+                    p.groupId = droppedGroupId;
+                  });
+
+                // Record the shared seam midpoint between `member` and `other`
+                const seamX = (member.x + other.x) / 2 + member.tileSize / 2;
+                const seamY = (member.y + other.y) / 2 + member.tileSize / 2;
+                seamPoints.push({ x: seamX, y: seamY, tileSize: member.tileSize });
+
+                merged = true;
+                break;
+              }
+            }
+          }
+          if (merged) break;
+        }
+      }
+
+      if (seamPoints.length > 0) {
+        triggerGroupJoinEffect(droppedGroupId, seamPoints);
+      }
+    }
+
+    window.addEventListener('pointerup', e => {
+      if (!state.dragging) return;
+      const { leadPiece, groupPieces } = state.dragging;
+      state.dragging = null;
+      dragLayer.innerHTML = '';
+
+      const boardRect = puzzleBoard.getBoundingClientRect();
+      const leadDropX = e.clientX - boardRect.left - leadPiece.tileSize / 2;
+      const leadDropY = e.clientY - boardRect.top - leadPiece.tileSize / 2;
+
+      const leadTargetX = leadPiece.col * leadPiece.tileSize;
+      const leadTargetY = leadPiece.row * leadPiece.tileSize;
+      const distToBoardSlot = Math.hypot(leadDropX - leadTargetX, leadDropY - leadTargetY);
+
+      if (distToBoardSlot <= state.snapThreshold) {
+        const lockedList = [];
+        groupPieces.forEach(({ piece }) => {
+          piece.x = piece.col * piece.tileSize;
+          piece.y = piece.row * piece.tileSize;
+          piece.movedByPowerup = false;
+          piece.status = 'locked';
+          lockedList.push(piece);
+        });
+        if (state.pieces.every(p => p.status === 'locked')) {
+          state.coins += 25;
+        }
+        triggerPlacementEffect(lockedList);
+      } else {
+        const onBoardX = e.clientX >= boardRect.left && e.clientX <= boardRect.right;
+        const onBoardY = e.clientY >= boardRect.top && e.clientY <= boardRect.bottom;
+
+        if (onBoardX && onBoardY) {
+          groupPieces.forEach(({ piece, relX, relY }) => {
+            piece.x = leadDropX + relX;
+            piece.y = leadDropY + relY;
+            piece.status = 'board';
+          });
+          checkAndMergeBoardNeighbors(leadPiece.groupId);
+        } else {
+          if (groupPieces.length === 1) {
+            leadPiece.status = 'tray';
+          } else {
+            const minCol = Math.min(...groupPieces.map(g => g.piece.col));
+            const maxCol = Math.max(...groupPieces.map(g => g.piece.col));
+            const minRow = Math.min(...groupPieces.map(g => g.piece.row));
+            const maxRow = Math.max(...groupPieces.map(g => g.piece.row));
+            const groupW = (maxCol - minCol + 1) * leadPiece.tileSize;
+            const groupH = (maxRow - minRow + 1) * leadPiece.tileSize;
+
+            const clampedBaseX = Math.max(0, Math.min(state.boardSize - groupW, leadDropX - (leadPiece.col - minCol) * leadPiece.tileSize));
+            const clampedBaseY = Math.max(0, Math.min(state.boardSize - groupH, leadDropY - (leadPiece.row - minRow) * leadPiece.tileSize));
+
+            groupPieces.forEach(({ piece }) => {
+              piece.x = clampedBaseX + (piece.col - minCol) * leadPiece.tileSize;
+              piece.y = clampedBaseY + (piece.row - minRow) * leadPiece.tileSize;
+              piece.status = 'board';
+            });
+          }
+        }
+      }
+
+      renderAll();
+    });
+
+    // --- 6. SMOOTH PIECE MOVEMENT ANIMATOR FOR HINT & MAGNET ---
+    /**
+     * Smoothly moves jigsaw pieces from their current position (in drawer or on board)
+     * across the screen to their destination coordinates on the board.
+     * moves: Array of { piece, targetX, targetY }
+     */
+    function animatePiecesMovement(moves, onComplete) {
+      if (state.animatingPowerup || moves.length === 0) return;
+      state.animatingPowerup = true;
+
+      const boardRect = puzzleBoard.getBoundingClientRect();
+      const trayRect = pieceTray.getBoundingClientRect();
+      dragLayer.innerHTML = '';
+
+      const flightNodes = moves.map(({ piece, targetX, targetY }) => {
+        const sourceEl = document.querySelector(`[data-piece-id="${piece.id}"]`);
+        let startLeft, startTop, startScale;
+
+        if (sourceEl) {
+          const r = sourceEl.getBoundingClientRect();
+          // Check if the piece is inside the visible viewport area
+          const inView = r.bottom > trayRect.top && r.top < trayRect.bottom;
+          if (piece.status !== 'tray' || inView) {
+            startLeft = r.left;
+            startTop = r.top;
+            startScale = r.width / piece.spriteSize;
+          } else {
+            startLeft = trayRect.left + trayRect.width / 2 - (piece.spriteSize * 0.6) / 2;
+            startTop = trayRect.top + trayRect.height / 2 - (piece.spriteSize * 0.6) / 2;
+            startScale = 0.6;
+          }
+          sourceEl.style.visibility = 'hidden';
+        } else {
+          startLeft = trayRect.left + trayRect.width / 2 - (piece.spriteSize * 0.6) / 2;
+          startTop = trayRect.top + trayRect.height / 2 - (piece.spriteSize * 0.6) / 2;
+          startScale = 0.6;
+        }
+
+        const endLeft = boardRect.left + targetX - piece.pad;
+        const endTop = boardRect.top + targetY - piece.pad;
+
+        const flyEl = createMaskedPieceElement(piece, 1);
+        flyEl.style.position = 'fixed';
+        flyEl.style.left = `${startLeft}px`;
+        flyEl.style.top = `${startTop}px`;
+        flyEl.style.transformOrigin = 'top left';
+        flyEl.style.transform = `scale(${startScale})`;
+        flyEl.style.transition =
+          'left 580ms cubic-bezier(0.22, 1, 0.36, 1), top 580ms cubic-bezier(0.22, 1, 0.36, 1), transform 580ms cubic-bezier(0.22, 1, 0.36, 1)';
+        flyEl.classList.add('pointer-events-none', 'piece-shadow-dragging');
+        dragLayer.appendChild(flyEl);
+
+        return { flyEl, endLeft, endTop };
+      });
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          flightNodes.forEach(({ flyEl, endLeft, endTop }) => {
+            flyEl.style.left = `${endLeft}px`;
+            flyEl.style.top = `${endTop}px`;
+            flyEl.style.transform = 'scale(1)';
+          });
+        });
+      });
+
+      setTimeout(() => {
+        dragLayer.innerHTML = '';
+        state.animatingPowerup = false;
+        onComplete();
+        renderAll();
+      }, 600);
+    }
+
+    // --- 7. MAGNET POWERUP (SMOOTHLY MOVES 3 NEIGHBORS FROM BOARD/DRAWER TO GROUP ON BOARD) ---
+    function triggerMagnetPowerup() {
+      if (state.animatingPowerup) return;
+      if (state.magnetsLeft <= 0) {
+        showToast('No Magnet powerups remaining!', true);
+        return;
+      }
+
+      const unplaced = state.pieces.filter(p => p.status !== 'locked');
+      if (unplaced.length < 2) {
+        showToast('Not enough unplaced pieces left to group!');
+        return;
+      }
+
+      const unplacedMap = new Map(unplaced.map(p => [`${p.row},${p.col}`, p]));
+      const getOrthogonalNeighbors = p => {
+        const dirs = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+        const res = [];
+        for (const [dr, dc] of dirs) {
+          const nb = unplacedMap.get(`${p.row + dr},${p.col + dc}`);
+          if (nb) res.push(nb);
+        }
+        return res;
+      };
+
+      const shuffledSeeds = [...unplaced].sort(() => Math.random() - 0.5);
+      let chosenTrio = null;
+
+      for (const seed of shuffledSeeds) {
+        const nbs1 = getOrthogonalNeighbors(seed).sort(() => Math.random() - 0.5);
+        for (const second of nbs1) {
+          const candidates = new Set([
+            ...getOrthogonalNeighbors(seed),
+            ...getOrthogonalNeighbors(second)
+          ]);
+          candidates.delete(seed);
+          candidates.delete(second);
+
+          for (const third of candidates) {
+            const allSameGroup =
+              seed.status === 'board' &&
+              second.status === 'board' &&
+              third.status === 'board' &&
+              seed.groupId === second.groupId &&
+              second.groupId === third.groupId;
+
+            if (!allSameGroup) {
+              chosenTrio = [seed, second, third];
+              break;
+            }
+          }
+          if (chosenTrio) break;
+        }
+        if (chosenTrio) break;
+      }
+
+      if (!chosenTrio) {
+        for (const seed of shuffledSeeds) {
+          for (const second of getOrthogonalNeighbors(seed)) {
+            if (!(seed.status === 'board' && second.status === 'board' && seed.groupId === second.groupId)) {
+              chosenTrio = [seed, second];
+              break;
+            }
+          }
+          if (chosenTrio) break;
+        }
+      }
+
+      if (!chosenTrio) {
+        showToast('No ungrouped neighboring pieces left to magnetize!');
+        return;
+      }
+
+      state.magnetsLeft--;
+      magnetBadge.textContent = state.magnetsLeft;
+      const newGroupId = state.nextGroupId++;
+
+      const existingBoardGroupIds = new Set(
+        chosenTrio.filter(p => p.status === 'board').map(p => p.groupId)
+      );
+      const fullCluster = new Set(chosenTrio);
+      state.pieces.forEach(p => {
+        if (p.status === 'board' && existingBoardGroupIds.has(p.groupId)) {
+          fullCluster.add(p);
+        }
+      });
+
+      const clusterArr = Array.from(fullCluster);
+      const tileSize = clusterArr[0].tileSize;
+      const minCol = Math.min(...clusterArr.map(p => p.col));
+      const maxCol = Math.max(...clusterArr.map(p => p.col));
+      const minRow = Math.min(...clusterArr.map(p => p.row));
+      const maxRow = Math.max(...clusterArr.map(p => p.row));
+
+      const clusterW = (maxCol - minCol + 1) * tileSize;
+      const clusterH = (maxRow - minRow + 1) * tileSize;
+
+      const maxOffsetX = Math.max(0, state.boardSize - clusterW);
+      const maxOffsetY = Math.max(0, state.boardSize - clusterH);
+      const baseX = Math.round(maxOffsetX * (0.25 + Math.random() * 0.5));
+      const baseY = Math.round(maxOffsetY * (0.25 + Math.random() * 0.5));
+
+      const moves = clusterArr.map(p => ({
+        piece: p,
+        targetX: baseX + (p.col - minCol) * tileSize,
+        targetY: baseY + (p.row - minRow) * tileSize
+      }));
+
+      showToast(`🧲 Moving ${chosenTrio.length} neighboring pieces together onto the board...`);
+
+      animatePiecesMovement(moves, () => {
+        moves.forEach(({ piece, targetX, targetY }) => {
+          piece.groupId = newGroupId;
+          piece.status = 'board';
+          piece.x = targetX;
+          piece.y = targetY;
+          piece.movedByPowerup = true;
+        });
+        triggerGroupJoinEffect(newGroupId);
+      });
+    }
+
+    // --- 8. CUSTOM PHOTO SELECT FROM EXPLORER ---
+    sceneSelect.addEventListener('change', e => {
+      if (e.target.value === 'explorer') {
+        fileInput.value = '';
+        fileInput.click();
+        sceneSelect.value = state.lastValidScene;
+      } else {
+        state.scene = e.target.value;
+        state.lastValidScene = e.target.value;
+        initPuzzle(false);
+      }
+    });
+
+    fileInput.addEventListener('change', e => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const img = new Image();
+        img.onload = () => {
+          const w = img.naturalWidth;
+          const h = img.naturalHeight;
+
+          if (w !== h) {
+            showToast(`Photo must be square (1:1)! Selected image is ${w}×${h}px.`, true);
+            return;
+          }
+          if (w < MIN_PHOTO_SIZE || h < MIN_PHOTO_SIZE) {
+            showToast(`Photo must be at least ${MIN_PHOTO_SIZE}×${MIN_PHOTO_SIZE}px! Selected image is ${w}×${h}px.`, true);
+            return;
+          }
+
+          state.customImageElement = img;
+          state.scene = 'custom';
+          state.lastValidScene = 'custom';
+          customPhotoOption.hidden = false;
+          customPhotoOption.textContent = `🖼️ ${file.name.slice(0, 14)}`;
+          sceneSelect.value = 'custom';
+          showToast(`Loaded custom square photo (${w}×${h}px)!`);
+          initPuzzle(false);
+        };
+        img.onerror = () => {
+          showToast('Could not read the selected image file.', true);
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // --- 9. HEADER, DRAWER EXPAND & RIGHT-SIDE TAB CONTROLS ---
+    function setDrawerExpanded(expand) {
+      state.drawerExpanded = expand;
+      const sideLbLabel = document.getElementById('sideLbLabel');
+      if (state.drawerExpanded) {
+        drawerAside.classList.remove('w-[144px]');
+        drawerAside.classList.add('w-[310px]');
+        appShell.classList.remove('max-w-[760px]');
+        appShell.classList.add('max-w-[926px]');
+        drawerArrowIcon.textContent = '◀';
+        btnToggleDrawerWidth.title = 'Collapse panel width';
+        if (sideLbLabel) sideLbLabel.classList.remove('hidden');
+      } else {
+        drawerAside.classList.remove('w-[310px]');
+        drawerAside.classList.add('w-[144px]');
+        appShell.classList.remove('max-w-[926px]');
+        appShell.classList.add('max-w-[760px]');
+        drawerArrowIcon.textContent = '▶';
+        btnToggleDrawerWidth.title = 'Expand panel width';
+        if (sideLbLabel) sideLbLabel.classList.add('hidden');
+      }
+      renderAll();
+    }
+
+    function switchRightTab(tab) {
+      state.rightTab = tab;
+      const isLb = tab === 'leaderboard';
+      const panelLb = document.getElementById('rightPanelLeaderboard');
+      const btnDrawer = document.getElementById('tabBtnDrawer');
+      const btnLb = document.getElementById('tabBtnLeaderboard');
+      const topBtnLb = document.getElementById('btnOpenLeaderboard');
+
+      if (isLb && !state.drawerExpanded) {
+        setDrawerExpanded(true);
+      }
+
+      pieceTray.classList.toggle('hidden', isLb);
+      if (panelLb) panelLb.classList.toggle('hidden', !isLb);
+
+      if (btnDrawer) {
+        btnDrawer.className = !isLb
+          ? 'px-2 py-1 rounded-lg bg-blue-600 text-white border border-blue-500 text-xs font-bold flex items-center gap-1 cursor-pointer transition'
+          : 'px-2 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#e6edf3] border border-[#30363d] text-xs font-semibold flex items-center gap-1 cursor-pointer transition';
+      }
+      if (btnLb) {
+        btnLb.className = isLb
+          ? 'px-2 py-1 rounded-lg bg-blue-600 text-white border border-blue-500 text-xs font-bold flex items-center gap-1 cursor-pointer transition'
+          : 'px-2 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#e6edf3] border border-[#30363d] text-xs font-semibold flex items-center gap-1 cursor-pointer transition';
+      }
+      if (topBtnLb) {
+        topBtnLb.className = isLb
+          ? 'inline-flex items-center justify-center gap-1 bg-blue-600 text-white active:scale-95 transition border border-blue-500 rounded-lg px-2.5 py-1 text-xs font-semibold cursor-pointer whitespace-nowrap'
+          : 'inline-flex items-center justify-center gap-1 bg-[var(--secondary)] hover:bg-[var(--muted)] active:scale-95 transition border border-[var(--border)] rounded-lg px-2.5 py-1 text-xs font-semibold cursor-pointer whitespace-nowrap';
+      }
+
+      if (isLb) lbRenderUI(false);
+    }
+
+    btnToggleDrawerWidth.addEventListener('click', () => {
+      setDrawerExpanded(!state.drawerExpanded);
+    });
+
+    document.getElementById('btnShuffle').addEventListener('click', () => {
+      if (state.animatingPowerup) return;
+      state.pieces.sort(() => Math.random() - 0.5);
+      renderAll();
+      showToast('🔀 Shuffled pieces in the drawer!');
+    });
+
+    document.getElementById('btnMagnet').addEventListener('click', triggerMagnetPowerup);
+
+    document.getElementById('btnPreview').addEventListener('click', e => {
+      state.showPreview = !state.showPreview;
+      ghostImage.style.opacity = state.showPreview ? '0.32' : '0';
+      e.currentTarget.classList.toggle('ring-2', state.showPreview);
+      e.currentTarget.classList.toggle('ring-[var(--primary)]', state.showPreview);
+    });
+
+    document.getElementById('btnEdges').addEventListener('click', e => {
+      state.edgesOnly = !state.edgesOnly;
+      e.currentTarget.classList.toggle('ring-2', state.edgesOnly);
+      e.currentTarget.classList.toggle('ring-[var(--primary)]', state.edgesOnly);
+      renderAll();
+    });
+
+    document.getElementById('btnHint').addEventListener('click', () => {
+      if (state.animatingPowerup) return;
+      if (state.hintsLeft <= 0) {
+        showToast('No Hints remaining!', true);
+        return;
+      }
+      const unplaced = state.pieces.filter(p => p.status !== 'locked');
+      if (unplaced.length === 0) return;
+
+      const targetPiece = unplaced[Math.floor(Math.random() * unplaced.length)];
+      state.hintsLeft--;
+      hintBadge.textContent = state.hintsLeft;
+
+      const targetX = targetPiece.col * targetPiece.tileSize;
+      const targetY = targetPiece.row * targetPiece.tileSize;
+
+      showToast('💡 Moving piece to its board position...');
+
+      animatePiecesMovement([{ piece: targetPiece, targetX, targetY }], () => {
+        targetPiece.x = targetX;
+        targetPiece.y = targetY;
+        targetPiece.movedByPowerup = true;
+        targetPiece.status = 'locked';
+
+        if (state.pieces.every(p => p.status === 'locked')) {
+          state.coins += 25;
+        }
+        triggerPlacementEffect([targetPiece]);
+      });
+    });
+
+    document.getElementById('btnReset').addEventListener('click', () => {
+      if (state.animatingPowerup) return;
+      state.hintsLeft = 3;
+      state.magnetsLeft = 3;
+      initPuzzle(false);
+    });
+
+    document.getElementById('btnPlayAgain').addEventListener('click', () => {
+      state.hintsLeft = 3;
+      state.magnetsLeft = 3;
+      initPuzzle(false);
+    });
+
+    document.getElementById('gridSelect').addEventListener('change', e => {
+      state.gridSize = parseInt(e.target.value, 10);
+      state.hintsLeft = 3;
+      state.magnetsLeft = 3;
+      initPuzzle(false);
+    });
+
+    window.addEventListener('resize', () => {
+      initPuzzle(true);
+    });
+
+    // =========================================================================
+    // SHEET 06: REAL-TIME OFFLINE LEADERBOARD ENGINE (Calm Jigsaw + Unified)
+    // =========================================================================
+    const LB_PRESETS = {
+      calm_jigsaw: {
+        id: 'calm_jigsaw',
+        title: 'Calm Jigsaw Masters',
+        scoringRule: 'best_time',
+        seasonDurationMs: 7 * 24 * 3600 * 1000,
+        botCount: 29,
+        baseBotTargetMin: 35000,
+        baseBotTargetMax: 290000
+      },
+      unified_league: {
+        id: 'unified_league',
+        title: 'Unified Arcade League',
+        scoringRule: 'cumulative',
+        seasonDurationMs: 7 * 24 * 3600 * 1000,
+        botCount: 29,
+        baseBotTargetMin: 900,
+        baseBotTargetMax: 4800
+      }
+    };
+
+    const LB_BOT_NAMES = [
+      'Whiskers_99', 'ZenSolver', 'TileMaster', 'PawsAndClaws', 'CalicoQueen',
+      'JigsawNinja', 'MochiCat', 'PixelPuzzler', 'ShadowTail', 'CozyCrafter',
+      'SolverPrime', 'NekoSweeper', 'VelvetPaw', 'GridWalker', 'BiscuitMaker',
+      'PurrfectLine', 'CornerPiece', 'EdgeHunter', 'TabAndBlank', 'CatnapKing',
+      'MineSniffer', 'TuxedoCat', 'AmberEyes', 'SilentPounce', 'LuckyClover',
+      'StarlightCat', 'SnapMaster', 'SolitaireAce', 'GingerSnap'
+    ];
+    const LB_BOT_AVATARS = ['🐱', '🦊', '🐼', '🐨', '🐯', '🦁', '🐸', '🦉', '🐙', '🦄'];
+    const LB_STORAGE_PREFIX = 'agy_liveops_lb_v1_';
+    const LB_SALT = 'UNITY_WEBGL_LIVEOPS_SALT_2026';
+
+    let lbActiveMode = 'calm_jigsaw';
+    let lbSimOffsetMs = 0;
+    let lbRowPool = [];
+
+    function lbComputeChecksum(st) {
+      const raw = `${st.schemaVersion}|${st.seasonId}|${st.scoringRule}|${st.playerEntry.score}|${st.playerEntry.runsCompleted}|${st.rewardClaimed}|${st.lastSeenTimestampMs}|${LB_SALT}`;
+      let hash = 2166136261;
+      for (let i = 0; i < raw.length; i++) {
+        hash ^= raw.charCodeAt(i);
+        hash = Math.imul(hash, 16777619);
+      }
+      return (hash >>> 0).toString(16).padStart(8, '0');
+    }
+
+    function lbGetWallet() {
+      return Number(localStorage.getItem('agy_liveops_wallet_coins') || state.coins || 150);
+    }
+
+    function lbSetWallet(coins) {
+      state.coins = coins;
+      localStorage.setItem('agy_liveops_wallet_coins', String(coins));
+      if (coinCount) coinCount.textContent = String(coins);
+    }
+
+    function lbCreateSeason(modeId, seasonNum = 1) {
+      const preset = LB_PRESETS[modeId];
+      const now = Date.now() + lbSimOffsetMs;
+      const seed = seasonNum * 101 + modeId.length * 37;
+      const bots = [];
+
+      for (let i = 0; i < preset.botCount; i++) {
+        const ratio = i / Math.max(1, preset.botCount - 1);
+        const archetype = ratio < 0.15 ? 'elite' : (ratio < 0.45 ? 'rival' : (ratio < 0.75 ? 'steady' : 'casual'));
+        const jitter = ((seed * (i + 17) * 7919) % 100) / 100;
+        const span = preset.baseBotTargetMax - preset.baseBotTargetMin;
+
+        if (preset.scoringRule === 'cumulative') {
+          const targetEndScore = Math.round(preset.baseBotTargetMax - ratio * span + (jitter - 0.5) * 180);
+          const initialScore = Math.round(targetEndScore * (0.04 + jitter * 0.08));
+          bots.push({
+            botId: `bot_${i + 1}`,
+            name: LB_BOT_NAMES[i % LB_BOT_NAMES.length],
+            avatar: LB_BOT_AVATARS[i % LB_BOT_AVATARS.length],
+            archetype,
+            score: Math.max(20, initialScore),
+            targetEndScore: Math.max(250, targetEndScore)
+          });
+        } else {
+          const targetBestMs = Math.round(preset.baseBotTargetMin + Math.pow(ratio, 1.15) * span + (jitter - 0.5) * 4000);
+          const initialMs = Math.round(targetBestMs * (1.15 + jitter * 0.15));
+          bots.push({
+            botId: `bot_${i + 1}`,
+            name: LB_BOT_NAMES[i % LB_BOT_NAMES.length],
+            avatar: LB_BOT_AVATARS[i % LB_BOT_AVATARS.length],
+            archetype,
+            score: initialMs,
+            targetEndScore: Math.max(preset.baseBotTargetMin, targetBestMs)
+          });
+        }
+      }
+
+      const st = {
+        schemaVersion: 1,
+        seasonNumber: seasonNum,
+        seasonId: `S0${seasonNum}_${modeId.toUpperCase()}`,
+        gameMode: modeId,
+        scoringRule: preset.scoringRule,
+        startTimeMs: now,
+        endTimeMs: now + preset.seasonDurationMs,
+        lastSimulatedAtMs: now,
+        lastSeenTimestampMs: now,
+        status: 'active',
+        rewardClaimed: false,
+        playerIdentity: { id: 'local_player_01', displayName: 'You (Player)', avatar: '🧩' },
+        playerEntry: { score: 0, runsCompleted: 0, previousRank: 30, currentRank: 30 },
+        bots,
+        checksum: ''
+      };
+      lbSaveState(modeId, st);
+      return st;
+    }
+
+    function lbLoadState(modeId) {
+      try {
+        const raw = localStorage.getItem(LB_STORAGE_PREFIX + modeId);
+        if (!raw) return lbCreateSeason(modeId, 1);
+        const parsed = JSON.parse(raw);
+        if (!parsed || parsed.schemaVersion !== 1 || parsed.checksum !== lbComputeChecksum(parsed)) {
+          return lbCreateSeason(modeId, 1);
+        }
+        return parsed;
+      } catch (e) {
+        return lbCreateSeason(modeId, 1);
+      }
+    }
+
+    function lbSaveState(modeId, st) {
+      st.checksum = lbComputeChecksum(st);
+      localStorage.setItem(LB_STORAGE_PREFIX + modeId, JSON.stringify(st));
+    }
+
+    function lbAdvanceBotsAndSync(modeId) {
+      const preset = LB_PRESETS[modeId];
+      const st = lbLoadState(modeId);
+      const rawNow = Date.now() + lbSimOffsetMs;
+      const clamped = rawNow < st.lastSeenTimestampMs;
+      const effectiveNow = Math.max(rawNow, st.lastSeenTimestampMs);
+      st.lastSeenTimestampMs = effectiveNow;
+
+      const simTarget = Math.min(effectiveNow, st.endTimeMs);
+      const dtMs = Math.max(0, simTarget - st.lastSimulatedAtMs);
+
+      if (dtMs > 0) {
+        const totalDur = Math.max(1, st.endTimeMs - st.startTimeMs);
+        const prevProg = Math.min(1, Math.max(0, (st.lastSimulatedAtMs - st.startTimeMs) / totalDur));
+        const newProg = Math.min(1, Math.max(0, (simTarget - st.startTimeMs) / totalDur));
+        const deltaProg = Math.max(0, newProg - prevProg);
+
+        if (deltaProg > 0) {
+          const isLate = newProg >= 0.65;
+          const pScore = st.playerEntry.score;
+
+          st.bots.forEach((bot, idx) => {
+            if (isLate && pScore > 0 && (bot.archetype === 'rival' || bot.archetype === 'elite')) {
+              if (preset.scoringRule === 'cumulative') {
+                const proj = pScore / Math.max(0.35, newProg);
+                const diff = proj - bot.targetEndScore;
+                if (Math.abs(diff) < 1200) bot.targetEndScore = Math.round(bot.targetEndScore + diff * 0.18);
+              } else {
+                const diff = pScore - bot.targetEndScore;
+                if (Math.abs(diff) < 25000) bot.targetEndScore = Math.round(bot.targetEndScore + diff * 0.15);
+              }
+            }
+            const remProg = Math.max(0.01, 1 - prevProg);
+            const stepFrac = Math.min(1, deltaProg / remProg);
+            const variance = 0.85 + (((idx * 31 + Math.floor(newProg * 100)) % 30) / 100);
+
+            if (preset.scoringRule === 'cumulative') {
+              const remPts = Math.max(0, bot.targetEndScore - bot.score);
+              bot.score += Math.round(remPts * stepFrac * variance);
+            } else {
+              const remRoom = Math.max(0, bot.score - bot.targetEndScore);
+              bot.score = Math.max(bot.targetEndScore, bot.score - Math.round(remRoom * stepFrac * variance * 0.75));
+            }
+          });
+        }
+        st.lastSimulatedAtMs = simTarget;
+      }
+
+      if (effectiveNow >= st.endTimeMs && st.status === 'active') {
+        st.status = 'expired_unclaimed';
+      }
+
+      const calc = lbCalculateRanks(st, preset);
+      st.playerEntry.currentRank = calc.playerRank;
+      lbSaveState(modeId, st);
+      return { st, calc, clamped, effectiveNow };
+    }
+
+    function lbCalculateRanks(st, preset) {
+      const entries = st.bots.map(b => ({
+        id: b.botId,
+        name: b.name,
+        avatar: b.avatar,
+        archetype: b.archetype,
+        score: b.score,
+        isPlayer: false
+      }));
+      entries.push({
+        id: 'player_local',
+        name: st.playerIdentity.displayName,
+        avatar: st.playerIdentity.avatar,
+        archetype: 'YOU',
+        score: st.playerEntry.score,
+        isPlayer: true
+      });
+
+      entries.sort((a, b) => {
+        if (preset.scoringRule === 'cumulative') {
+          if (b.score !== a.score) return b.score - a.score;
+          return a.isPlayer ? -1 : 1;
+        } else {
+          const aVal = a.score > 0 ? a.score : Number.MAX_SAFE_INTEGER;
+          const bVal = b.score > 0 ? b.score : Number.MAX_SAFE_INTEGER;
+          if (aVal !== bVal) return aVal - bVal;
+          return a.isPlayer ? -1 : 1;
+        }
+      });
+
+      let playerRank = entries.length;
+      entries.forEach((e, idx) => {
+        e.rank = idx + 1;
+        if (e.isPlayer) playerRank = e.rank;
+      });
+
+      const selected = new Set([0, 1, 2]);
+      const pIdx = playerRank - 1;
+      for (let i = Math.max(0, pIdx - 2); i <= Math.min(entries.length - 1, pIdx + 2); i++) {
+        selected.add(i);
+      }
+      let padIdx = 3;
+      while (selected.size < 8 && padIdx < entries.length) selected.add(padIdx++);
+
+      const sortedIdx = Array.from(selected).sort((a, b) => a - b);
+      const windowedRows = [];
+      let prev = -1;
+      sortedIdx.forEach(idx => {
+        if (prev !== -1 && idx - prev > 1) {
+          windowedRows.push({ isDivider: true, skippedCount: idx - prev - 1 });
+        }
+        windowedRows.push(entries[idx]);
+        prev = idx;
+      });
+
+      const rewardTier = playerRank === 1
+        ? { name: 'Gold Crown', coins: 500, badge: '🥇' }
+        : (playerRank <= 3 ? { name: 'Silver Chest', coins: 250, badge: '🥈' }
+        : (playerRank <= 10 ? { name: 'Bronze Pack', coins: 100, badge: '🥉' } : { name: 'Participation', coins: 25, badge: '🎖️' }));
+
+      return { totalEntries: entries.length, playerRank, windowedRows, rewardTier };
+    }
+
+    function lbFormatScore(score, preset) {
+      if (preset.scoringRule === 'cumulative') return `${score.toLocaleString()} pts`;
+      if (!score || score <= 0) return 'Unranked';
+      return `${(score / 1000).toFixed(2)}s`;
+    }
+
+    function lbInitPool() {
+      const container = document.getElementById('lbRowsContainer');
+      if (!container) return;
+      container.innerHTML = '';
+      lbRowPool = [];
+      for (let i = 0; i < 12; i++) {
+        const div = document.createElement('div');
+        div.className = 'hidden px-3 py-1.5 items-center justify-between text-xs';
+        container.appendChild(div);
+        lbRowPool.push(div);
+      }
+    }
+
+    function lbRenderUI(animateOvertake = false) {
+      if (lbRowPool.length === 0) lbInitPool();
+      const preset = LB_PRESETS[lbActiveMode];
+      const { st, calc, clamped, effectiveNow } = lbAdvanceBotsAndSync(lbActiveMode);
+
+      const jigsawSync = lbActiveMode === 'calm_jigsaw' ? calc : lbAdvanceBotsAndSync('calm_jigsaw').calc;
+      const topRankEl = document.getElementById('topRankBadge');
+      if (topRankEl) topRankEl.textContent = `#${jigsawSync.playerRank}`;
+
+      state.coins = lbGetWallet();
+      if (coinCount) coinCount.textContent = String(state.coins);
+
+      const remMs = Math.max(0, st.endTimeMs - effectiveNow);
+      const totalMins = Math.floor(remMs / 60000);
+      const d = Math.floor(totalMins / 1440);
+      const h = Math.floor((totalMins % 1440) / 60);
+      const m = totalMins % 60;
+      const cdEl = document.getElementById('lbCountdown');
+      if (cdEl) cdEl.textContent = remMs <= 0 ? 'ENDED' : `${d}d ${String(h).padStart(2, '0')}h ${String(m).padStart(2, '0')}m`;
+
+      const phaseEl = document.getElementById('lbPhaseBadge');
+      if (phaseEl) {
+        if (clamped) {
+          phaseEl.textContent = '🔒 Clamped';
+          phaseEl.className = 'text-xs font-mono text-rose-400 font-bold';
+        } else {
+          const pct = Math.min(1, Math.max(0, (effectiveNow - st.startTimeMs) / Math.max(1, st.endTimeMs - st.startTimeMs)));
+          phaseEl.textContent = pct >= 1 ? 'Locked' : (pct >= 0.65 ? 'Convergence' : 'Live Sync');
+          phaseEl.className = 'text-xs font-mono text-[#8b949e]';
+        }
+      }
+
+      document.getElementById('lbPlayerRank').textContent = `#${calc.playerRank}/${calc.totalEntries}`;
+      document.getElementById('lbScoreLabel').textContent = preset.scoringRule === 'cumulative' ? 'Score:' : 'Best:';
+      document.getElementById('lbPlayerScore').textContent = lbFormatScore(st.playerEntry.score, preset);
+
+      const deltaEl = document.getElementById('lbRankDelta');
+      const netDelta = st.playerEntry.previousRank - calc.playerRank;
+      if (netDelta > 0) {
+        deltaEl.textContent = `▲+${netDelta}`;
+        deltaEl.className = 'font-mono font-bold text-emerald-400';
+      } else if (netDelta < 0) {
+        deltaEl.textContent = `▼${netDelta}`;
+        deltaEl.className = 'font-mono font-bold text-rose-400';
+      } else {
+        deltaEl.textContent = '';
+      }
+
+      const banner = document.getElementById('lbRewardBanner');
+      const btnClaim = document.getElementById('lbBtnClaim');
+      const btnNext = document.getElementById('lbBtnNextSeason');
+      const rewardTxt = document.getElementById('lbRewardText');
+      if (remMs <= 0) {
+        banner.classList.remove('hidden');
+        if (!st.rewardClaimed) {
+          rewardTxt.textContent = `Rank #${calc.playerRank}: ${calc.rewardTier.badge} +${calc.rewardTier.coins}🪙`;
+          btnClaim.textContent = '🎁 Claim';
+          btnClaim.className = 'px-2 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-[#0d1117] text-xs font-bold cursor-pointer transition';
+          btnNext.classList.add('hidden');
+        } else {
+          rewardTxt.textContent = `Claimed ${calc.rewardTier.badge} +${calc.rewardTier.coins}🪙!`;
+          btnClaim.textContent = '✓ Claimed';
+          btnClaim.className = 'px-2 py-1 rounded-lg bg-[#21262d] text-[#8b949e] border border-[#30363d] text-xs font-semibold cursor-pointer';
+          btnNext.classList.remove('hidden');
+        }
+      } else {
+        banner.classList.add('hidden');
+      }
+
+      for (let i = 0; i < lbRowPool.length; i++) {
+        const node = lbRowPool[i];
+        const row = calc.windowedRows[i];
+        if (!row) {
+          node.className = 'hidden';
+          node.innerHTML = '';
+          continue;
+        }
+        if (row.isDivider) {
+          node.className = 'flex items-center justify-center py-1 px-2 bg-[#161b22] text-[11px] font-mono text-[#8b949e]';
+          node.innerHTML = `••• ${row.skippedCount} rivals •••`;
+          continue;
+        }
+        const badge = row.rank === 1 ? '🥇#1' : (row.rank === 2 ? '🥈#2' : (row.rank === 3 ? '🥉#3' : `#${row.rank}`));
+        let cls = 'flex px-2.5 py-1.5 items-center justify-between text-xs transition-all ';
+        if (row.isPlayer) {
+          cls += 'bg-amber-500/15 border-l-4 border-l-amber-400 ';
+          if (animateOvertake) cls += 'snap-anim ';
+        } else if (row.rank <= 3) {
+          cls += 'bg-[#161b22]/50 ';
+        }
+        node.className = cls;
+
+        const rTier = row.rank === 1 ? '500🪙' : (row.rank <= 3 ? '250🪙' : (row.rank <= 10 ? '100🪙' : '25🪙'));
+        node.innerHTML = `
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="w-9 font-mono font-bold ${row.isPlayer ? 'text-amber-400' : 'text-[#8b949e]'}">${badge}</span>
+            <span class="w-6 h-6 rounded bg-[#21262d] border border-[#30363d] flex items-center justify-center text-xs shrink-0">${row.avatar}</span>
+            <span class="font-bold truncate ${row.isPlayer ? 'text-amber-400' : 'text-[#e6edf3]'}">${row.name}</span>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <span class="text-[11px] font-mono text-[#8b949e]">${rTier}</span>
+            <span class="w-16 text-right font-mono font-bold ${row.isPlayer ? 'text-amber-400' : 'text-[#e6edf3]'}">${lbFormatScore(row.score, preset)}</span>
+          </div>
+        `;
+      }
+    }
+
+    // Right-Side Panel Tab Controls (Drawer vs Leaderboard)
+    document.getElementById('tabBtnDrawer').addEventListener('click', () => {
+      switchRightTab('drawer');
+    });
+    document.getElementById('tabBtnLeaderboard').addEventListener('click', () => {
+      switchRightTab('leaderboard');
+    });
+    document.getElementById('btnOpenLeaderboard').addEventListener('click', () => {
+      if (state.rightTab === 'leaderboard') {
+        switchRightTab('drawer');
+      } else {
+        switchRightTab('leaderboard');
+      }
+    });
+    document.getElementById('btnViewLbFromWin').addEventListener('click', () => {
+      winOverlay.classList.add('hidden');
+      switchRightTab('leaderboard');
+      lbRenderUI(true);
+    });
+
+    document.getElementById('lbModeGame').addEventListener('click', () => {
+      lbActiveMode = 'calm_jigsaw';
+      document.getElementById('lbModeGame').className = 'px-2.5 py-1 rounded-lg bg-blue-600 text-white text-xs font-bold cursor-pointer transition';
+      document.getElementById('lbModeUnified').className = 'px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-[#e6edf3] text-xs font-semibold cursor-pointer transition';
+      lbRenderUI(false);
+    });
+    document.getElementById('lbModeUnified').addEventListener('click', () => {
+      lbActiveMode = 'unified_league';
+      document.getElementById('lbModeUnified').className = 'px-2.5 py-1 rounded-lg bg-blue-600 text-white text-xs font-bold cursor-pointer transition';
+      document.getElementById('lbModeGame').className = 'px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-[#e6edf3] text-xs font-semibold cursor-pointer transition';
+      lbRenderUI(false);
+    });
+
+    document.getElementById('lbBtnPlus4h').addEventListener('click', () => {
+      lbSimOffsetMs += 4 * 3600 * 1000;
+      showToast('⏩ Advanced +4h • Simulated bot progression!');
+      lbRenderUI(false);
+    });
+    document.getElementById('lbBtnMinus6h').addEventListener('click', () => {
+      lbSimOffsetMs -= 6 * 3600 * 1000;
+      showToast('🔒 Clock Rollback Detected (-6h) • Clamped to High-Water Timestamp!', true);
+      lbRenderUI(false);
+    });
+    document.getElementById('lbBtnExpire').addEventListener('click', () => {
+      const st = lbLoadState(lbActiveMode);
+      const rem = Math.max(0, st.endTimeMs - (Date.now() + lbSimOffsetMs));
+      lbSimOffsetMs += rem + 1000;
+      showToast('🏁 Season Finished! Claim your rank reward.');
+      lbRenderUI(false);
+    });
+
+    document.getElementById('lbBtnClaim').addEventListener('click', () => {
+      const { st, calc } = lbAdvanceBotsAndSync(lbActiveMode);
+      if (st.status === 'active') return;
+      if (st.rewardClaimed) {
+        showToast('🛡️ Idempotent Guard: Season reward already claimed!', true);
+        return;
+      }
+      st.rewardClaimed = true;
+      st.status = 'archived';
+      lbSaveState(lbActiveMode, st);
+      lbSetWallet(lbGetWallet() + calc.rewardTier.coins);
+      showToast(`🎁 Claimed ${calc.rewardTier.badge} ${calc.rewardTier.name} (+${calc.rewardTier.coins}🪙)!`);
+      lbRenderUI(false);
+    });
+
+    document.getElementById('lbBtnNextSeason').addEventListener('click', () => {
+      const st = lbLoadState(lbActiveMode);
+      lbSimOffsetMs = 0;
+      lbCreateSeason(lbActiveMode, (st.seasonNumber || 1) + 1);
+      showToast('🌟 New Season Started!');
+      lbRenderUI(false);
+    });
+
+    window.OfflineLeaderboard = {
+      setWallet: lbSetWallet,
+      submitRun: (modeId, rawScore) => {
+        const preset = LB_PRESETS[modeId];
+        if (!preset) return null;
+        const { st, calc, effectiveNow } = lbAdvanceBotsAndSync(modeId);
+        if (effectiveNow >= st.endTimeMs || st.status !== 'active') return null;
+
+        const prevRank = calc.playerRank;
+        st.playerEntry.previousRank = prevRank;
+        st.playerEntry.runsCompleted += 1;
+
+        if (preset.scoringRule === 'cumulative') {
+          st.playerEntry.score += rawScore;
+        } else {
+          if (st.playerEntry.score === 0 || rawScore < st.playerEntry.score) {
+            st.playerEntry.score = rawScore;
+          }
+        }
+        const nextCalc = lbCalculateRanks(st, preset);
+        st.playerEntry.currentRank = nextCalc.playerRank;
+        lbSaveState(modeId, st);
+
+        const rankDelta = prevRank - nextCalc.playerRank;
+        lbRenderUI(true);
+        return { prevRank, newRank: nextCalc.playerRank, rankDelta };
+      }
+    };
+
+    // Live Run Timer + Real-Time Cross-Tab Sync
+    setInterval(() => {
+      const timerEl = document.getElementById('runTimerDisplay');
+      if (timerEl && !state.runSubmitted && state.runStartTimeMs) {
+        const sec = Math.max(0, Math.floor((Date.now() - state.runStartTimeMs) / 1000));
+        timerEl.textContent = `${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`;
+      }
+    }, 500);
+
+    window.addEventListener('storage', (e) => {
+      if (e.key && (e.key.startsWith(LB_STORAGE_PREFIX) || e.key === 'agy_liveops_wallet_coins')) {
+        lbRenderUI(false);
+      }
+    });
+    setInterval(() => lbRenderUI(false), 4000);
+
+    window.addEventListener('DOMContentLoaded', () => {
+      state.coins = lbGetWallet();
+      initPuzzle(false);
+      lbRenderUI(false);
+    });
+  </script>
+</body>
+</html>
+
