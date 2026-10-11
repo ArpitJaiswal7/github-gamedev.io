@@ -1,0 +1,87 @@
+{
+  "levelId": "lvl_12",
+  "levelDisplayName": "level_lvl_12",
+  "order": 12,
+  "gridSize": 5,
+  "tier": "Easy",
+  "maxHearts": 3,
+  "hintsAllowed": 3,
+  "solveTimeSec": 135,
+  "stepScore": 99,
+  "requireGuided": true,
+  "requireLineLock": false,
+  "regions": [
+    [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      2,
+      0,
+      0,
+      1,
+      1
+    ],
+    [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    [
+      2,
+      3,
+      3,
+      2,
+      2
+    ],
+    [
+      2,
+      2,
+      2,
+      2,
+      4
+    ]
+  ],
+  "solution": [
+    [
+      0,
+      1,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      1,
+      0
+    ],
+    [
+      1,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      1,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      1
+    ]
+  ]
+}

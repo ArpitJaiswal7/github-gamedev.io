@@ -1,0 +1,65 @@
+{
+  "levelId": "lvl_4",
+  "levelDisplayName": "level_lvl_4",
+  "order": 4,
+  "gridSize": 4,
+  "tier": "Tutorial",
+  "maxHearts": 0,
+  "hintsAllowed": 3,
+  "solveTimeSec": 120,
+  "stepScore": 77,
+  "requireGuided": true,
+  "requireLineLock": false,
+  "regions": [
+    [
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      1
+    ],
+    [
+      2,
+      2,
+      2,
+      2
+    ],
+    [
+      2,
+      2,
+      3,
+      2
+    ]
+  ],
+  "solution": [
+    [
+      0,
+      1,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      1
+    ],
+    [
+      1,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      1,
+      0
+    ]
+  ]
+}

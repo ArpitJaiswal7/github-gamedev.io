@@ -1,0 +1,87 @@
+{
+  "levelId": "lvl_8",
+  "levelDisplayName": "level_lvl_8",
+  "order": 8,
+  "gridSize": 5,
+  "tier": "Easy",
+  "maxHearts": 3,
+  "hintsAllowed": 3,
+  "solveTimeSec": 135,
+  "stepScore": 93,
+  "requireGuided": true,
+  "requireLineLock": false,
+  "regions": [
+    [
+      2,
+      1,
+      1,
+      1,
+      0
+    ],
+    [
+      2,
+      1,
+      1,
+      1,
+      1
+    ],
+    [
+      2,
+      1,
+      1,
+      1,
+      1
+    ],
+    [
+      2,
+      4,
+      3,
+      3,
+      1
+    ],
+    [
+      4,
+      4,
+      3,
+      3,
+      1
+    ]
+  ],
+  "solution": [
+    [
+      0,
+      0,
+      0,
+      0,
+      1
+    ],
+    [
+      0,
+      0,
+      1,
+      0,
+      0
+    ],
+    [
+      1,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      1,
+      0
+    ],
+    [
+      0,
+      1,
+      0,
+      0,
+      0
+    ]
+  ]
+}

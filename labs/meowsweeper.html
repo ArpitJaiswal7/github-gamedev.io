@@ -84,6 +84,12 @@
           <span>Shuffle</span>
         </button>
 
+        <!-- Campaign Synced Level Mode -->
+        <button id="btnPlayCampaign" onclick="LevelSyncManager.playNextCampaignLevel()" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition shadow-sm" title="Play next synced level from campaign">
+          <span>📦</span>
+          <span id="campaignBtnText">Campaign: #1</span>
+        </button>
+
         <button onclick="switchRightTab('leaderboard')" class="px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#e6edf3] text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition" title="View Live Offline Leaderboard">
           <span>🏆</span>
           <span id="topRankBadge" class="text-amber-400 font-bold font-mono">#30</span>
@@ -1502,6 +1508,257 @@
           } catch(e) {}
         }
       }
+    });
+
+    // =========================================================================
+    // LEVEL SYNC SYSTEM (Manifest-Diff, Local Cache Override & Offline Fallback)
+    // =========================================================================
+    const LevelSyncManager = (() => {
+      const DB_NAME = 'MeowsweeperContentDB';
+      const DB_VERSION = 1;
+      const STORE_LEVELS = 'levels';
+      const SERVER_URL = 'http://localhost:3000';
+
+      let dbPromise = null;
+      let cachedLevelsList = [];
+      let currentCampaignIndex = -1;
+
+      function openDB() {
+        if (dbPromise) return dbPromise;
+        dbPromise = new Promise((resolve, reject) => {
+          const req = indexedDB.open(DB_NAME, DB_VERSION);
+          req.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains(STORE_LEVELS)) {
+              db.createObjectStore(STORE_LEVELS, { keyPath: 'levelId' });
+            }
+          };
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => reject(req.error);
+        });
+        return dbPromise;
+      }
+
+      async function getLevel(levelId) {
+        const db = await openDB();
+        return new Promise((resolve) => {
+          const tx = db.transaction(STORE_LEVELS, 'readonly');
+          const store = tx.objectStore(STORE_LEVELS);
+          const req = store.get(levelId);
+          req.onsuccess = () => resolve(req.result ? req.result.data : null);
+          req.onerror = () => resolve(null);
+        });
+      }
+
+      async function saveLevel(levelId, hash, data) {
+        const db = await openDB();
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(STORE_LEVELS, 'readwrite');
+          const store = tx.objectStore(STORE_LEVELS);
+          const req = store.put({ levelId, hash, data, updatedAt: Date.now() });
+          req.onsuccess = () => resolve();
+          req.onerror = () => reject(req.error);
+        });
+      }
+
+      async function deleteLevel(levelId) {
+        const db = await openDB();
+        return new Promise((resolve) => {
+          const tx = db.transaction(STORE_LEVELS, 'readwrite');
+          const store = tx.objectStore(STORE_LEVELS);
+          const req = store.delete(levelId);
+          req.onsuccess = () => resolve();
+          req.onerror = () => resolve();
+        });
+      }
+
+      async function getAllCachedLevels() {
+        const db = await openDB();
+        return new Promise((resolve) => {
+          const tx = db.transaction(STORE_LEVELS, 'readonly');
+          const store = tx.objectStore(STORE_LEVELS);
+          const req = store.getAll();
+          req.onsuccess = () => resolve(req.result || []);
+          req.onerror = () => resolve([]);
+        });
+      }
+
+      function updateStatusUI(status, count, isError = false) {
+        const dot = document.getElementById('syncStatusDot');
+        const badge = document.getElementById('syncLevelCount');
+        if (!dot || !badge) return;
+
+        if (status === 'syncing') {
+          dot.className = 'w-2 h-2 rounded-full bg-amber-400 animate-ping';
+          badge.className = 'font-mono text-amber-400 font-bold';
+          badge.textContent = 'Syncing...';
+        } else if (isError) {
+          dot.className = 'w-2 h-2 rounded-full bg-stone-500';
+          badge.className = 'font-mono text-[#8b949e] font-bold';
+          badge.textContent = count > 0 ? `${count} cached` : 'Offline';
+        } else {
+          dot.className = 'w-2 h-2 rounded-full bg-emerald-400';
+          badge.className = 'font-mono text-emerald-400 font-bold';
+          badge.textContent = `${count} lvls`;
+        }
+      }
+
+      // Sync service: manifest-diffing, non-blocking, silent failover
+      async function syncFromManifest(showToastNotification = false) {
+        updateStatusUI('syncing');
+        try {
+          let manifest = null;
+          let baseUrl = '';
+
+          // 1. Try local server first (for instant live-ops during local dev)
+          try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 1500);
+            const localRes = await fetch(`${SERVER_URL}/manifest.json`, { signal: controller.signal });
+            clearTimeout(timeoutId);
+            if (localRes.ok) {
+              manifest = await localRes.json();
+              baseUrl = SERVER_URL;
+            }
+          } catch (e) {
+            // Local server offline, will fallback to static portfolio content
+          }
+
+          // 2. Fall back to static portfolio repository content (e.g. GitHub Pages)
+          if (!manifest) {
+            try {
+              const staticRes = await fetch('../content/manifest.json');
+              if (staticRes.ok) {
+                manifest = await staticRes.json();
+                baseUrl = '../content';
+              }
+            } catch (e) {}
+          }
+
+          if (!manifest) {
+            throw new Error('No manifest reachable on server or portfolio directory');
+          }
+
+          const remoteLevels = manifest.levels || {};
+          const remoteKeySet = new Set(Object.keys(remoteLevels));
+
+          const cached = await getAllCachedLevels();
+          const cachedMap = new Map(cached.map(c => [c.levelId, c]));
+
+          let downloadedCount = 0;
+
+          // 1. Per-item content-hash diffing
+          for (const [id, meta] of Object.entries(remoteLevels)) {
+            const localItem = cachedMap.get(id);
+            if (!localItem || localItem.hash !== meta.hash) {
+              try {
+                const targetUrl = baseUrl.startsWith('http')
+                  ? `${baseUrl}${meta.url || `/levels/${id}.json`}`
+                  : `${baseUrl}/levels/${id}.json`;
+                const levelRes = await fetch(targetUrl);
+                if (levelRes.ok) {
+                  const levelData = await levelRes.json();
+                  await saveLevel(id, meta.hash, levelData);
+                  downloadedCount++;
+                }
+              } catch (e) {
+                console.warn(`[LevelSync] Could not download item ${id}:`, e);
+              }
+            }
+          }
+
+          // 2. Stale-file cleanup (remove levels no longer on server)
+          for (const localItem of cached) {
+            if (!remoteKeySet.has(localItem.levelId)) {
+              await deleteLevel(localItem.levelId);
+            }
+          }
+
+          // 3. Update in-memory ordered list
+          const freshCached = await getAllCachedLevels();
+          cachedLevelsList = freshCached.sort((a, b) => (a.data?.order || 0) - (b.data?.order || 0));
+          updateStatusUI('synced', cachedLevelsList.length);
+
+          if (downloadedCount > 0 && showToastNotification) {
+            showToastPopup('📦', `Level Sync: Downloaded ${downloadedCount} updated levels!`, 'win');
+          } else if (showToastNotification) {
+            showToastPopup('✅', `Level Sync: All ${cachedLevelsList.length} levels up to date.`, 'info');
+          }
+        } catch (err) {
+          // Fails silently, keeps last-good
+          console.log('[LevelSync] Backend server offline or unreachable. Using last-good local cache.');
+          const fallbackCached = await getAllCachedLevels();
+          cachedLevelsList = fallbackCached.sort((a, b) => (a.data?.order || 0) - (b.data?.order || 0));
+          updateStatusUI('offline', cachedLevelsList.length, true);
+
+          if (showToastNotification) {
+            showToastPopup('🔌', `Offline Mode: Playing from ${cachedLevelsList.length} cached levels`, 'info');
+          }
+        }
+      }
+
+      async function playCampaignLevel(index) {
+        if (cachedLevelsList.length === 0) {
+          const all = await getAllCachedLevels();
+          cachedLevelsList = all.sort((a, b) => (a.data?.order || 0) - (b.data?.order || 0));
+        }
+
+        if (cachedLevelsList.length === 0) {
+          showToastPopup('⚠️', 'No synced levels in cache yet. Connect local server or wait for sync.', 'lose');
+          return;
+        }
+
+        currentCampaignIndex = (index + cachedLevelsList.length) % cachedLevelsList.length;
+        const target = cachedLevelsList[currentCampaignIndex];
+        if (target && target.data) {
+          loadCustomLevel(target.data);
+
+          const label = document.getElementById('campaignBtnText');
+          if (label) label.textContent = `Campaign: #${currentCampaignIndex + 1}`;
+
+          const modeBadge = document.getElementById('levelModeBadge');
+          if (modeBadge) {
+            modeBadge.textContent = `Campaign #${currentCampaignIndex + 1} (${target.data.tier || 'Standard'})`;
+            modeBadge.className = 'text-xs font-semibold px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30';
+          }
+          showToastPopup('🎮', `Loaded Campaign Level #${currentCampaignIndex + 1} (${target.data.gridSize}×${target.data.gridSize} ${target.data.tier || ''})`, 'info');
+        }
+      }
+
+      function playNextCampaignLevel() {
+        playCampaignLevel(currentCampaignIndex + 1);
+      }
+
+      function triggerSync(manual = false) {
+        syncFromManifest(manual);
+      }
+
+      // Initialize on load: immediate cache read + background sync
+      async function init() {
+        try {
+          const cached = await getAllCachedLevels();
+          cachedLevelsList = cached.sort((a, b) => (a.data?.order || 0) - (b.data?.order || 0));
+          updateStatusUI('synced', cachedLevelsList.length);
+        } catch (e) {}
+
+        // Non-blocking background sync (never blocks startup)
+        setTimeout(() => {
+          syncFromManifest(false);
+        }, 500);
+      }
+
+      return {
+        init,
+        getLevel,
+        triggerSync,
+        playCampaignLevel,
+        playNextCampaignLevel
+      };
+    })();
+
+    // Initialize LevelSyncManager after game DOM is ready
+    window.addEventListener('DOMContentLoaded', () => {
+      LevelSyncManager.init();
     });
   </script>
 </body>

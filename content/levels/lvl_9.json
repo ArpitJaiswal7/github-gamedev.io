@@ -1,0 +1,87 @@
+{
+  "levelId": "lvl_9",
+  "levelDisplayName": "level_lvl_9",
+  "order": 9,
+  "gridSize": 5,
+  "tier": "Easy",
+  "maxHearts": 3,
+  "hintsAllowed": 3,
+  "solveTimeSec": 135,
+  "stepScore": 103,
+  "requireGuided": true,
+  "requireLineLock": false,
+  "regions": [
+    [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      2,
+      1,
+      1
+    ],
+    [
+      0,
+      2,
+      2,
+      2,
+      2
+    ],
+    [
+      3,
+      3,
+      2,
+      2,
+      2
+    ],
+    [
+      3,
+      3,
+      3,
+      4,
+      4
+    ]
+  ],
+  "solution": [
+    [
+      0,
+      1,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      1
+    ],
+    [
+      0,
+      0,
+      1,
+      0,
+      0
+    ],
+    [
+      1,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      1,
+      0
+    ]
+  ]
+}

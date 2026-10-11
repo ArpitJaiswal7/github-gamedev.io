@@ -1,0 +1,87 @@
+{
+  "levelId": "lvl_10",
+  "levelDisplayName": "level_lvl_10",
+  "order": 10,
+  "gridSize": 5,
+  "tier": "Easy",
+  "maxHearts": 3,
+  "hintsAllowed": 3,
+  "solveTimeSec": 135,
+  "stepScore": 103,
+  "requireGuided": true,
+  "requireLineLock": false,
+  "regions": [
+    [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      1,
+      1,
+      2
+    ],
+    [
+      0,
+      0,
+      0,
+      2,
+      2
+    ],
+    [
+      3,
+      3,
+      3,
+      2,
+      2
+    ],
+    [
+      3,
+      3,
+      3,
+      4,
+      2
+    ]
+  ],
+  "solution": [
+    [
+      1,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      1,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      1
+    ],
+    [
+      0,
+      1,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      1,
+      0
+    ]
+  ]
+}

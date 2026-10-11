@@ -1,0 +1,668 @@
+{
+  "schemaVersion": "2.0",
+  "game": "Meowsweeper",
+  "updatedAt": "2026-10-11T07:20:16.260Z",
+  "totalLevels": 66,
+  "levels": {
+    "lvl_1": {
+      "levelId": "lvl_1",
+      "levelDisplayName": "level_lvl_1",
+      "order": 1,
+      "gridSize": 4,
+      "tier": "Tutorial",
+      "hash": "1f8f09ba2ccd081308a858a9a3717e2f36b65f5c11e9c099107c77b532675af4",
+      "fileSize": 671,
+      "url": "/levels/lvl_1.json"
+    },
+    "lvl_10": {
+      "levelId": "lvl_10",
+      "levelDisplayName": "level_lvl_10",
+      "order": 10,
+      "gridSize": 5,
+      "tier": "Easy",
+      "hash": "575c847c9d06e6cf3127d7bbcc4fbffb4de09a5ca540929a80339843b2439c96",
+      "fileSize": 857,
+      "url": "/levels/lvl_10.json"
+    },
+    "lvl_11": {
+      "levelId": "lvl_11",
+      "levelDisplayName": "level_lvl_11",
+      "order": 11,
+      "gridSize": 5,
+      "tier": "Easy",
+      "hash": "ad5f98ffecd067221fdfa233a6d9fe868760458c26894f9e71b4a469b99bca1c",
+      "fileSize": 857,
+      "url": "/levels/lvl_11.json"
+    },
+    "lvl_12": {
+      "levelId": "lvl_12",
+      "levelDisplayName": "level_lvl_12",
+      "order": 12,
+      "gridSize": 5,
+      "tier": "Easy",
+      "hash": "5636dbd2617de9119b4227eadc6dc77b759112f1af77e4edb44cba6dd176d1ae",
+      "fileSize": 856,
+      "url": "/levels/lvl_12.json"
+    },
+    "lvl_13": {
+      "levelId": "lvl_13",
+      "levelDisplayName": "level_lvl_13",
+      "order": 13,
+      "gridSize": 6,
+      "tier": "Easy",
+      "hash": "f47dbddd2005bf73ba3fc9dae670d2c78a6336b42a6159d648276827f8c6182a",
+      "fileSize": 1079,
+      "url": "/levels/lvl_13.json"
+    },
+    "lvl_14": {
+      "levelId": "lvl_14",
+      "levelDisplayName": "level_lvl_14",
+      "order": 14,
+      "gridSize": 6,
+      "tier": "Easy",
+      "hash": "b0366d83ed5ae90de302b563ff63b6188d8d8a9480aa374b9160c9c0ca667d44",
+      "fileSize": 1079,
+      "url": "/levels/lvl_14.json"
+    },
+    "lvl_15": {
+      "levelId": "lvl_15",
+      "levelDisplayName": "level_lvl_15",
+      "order": 15,
+      "gridSize": 6,
+      "tier": "Easy",
+      "hash": "7da3e861e04b1795583b591da6413451fd5fe0063936bca56c8e87d613c90172",
+      "fileSize": 1079,
+      "url": "/levels/lvl_15.json"
+    },
+    "lvl_16": {
+      "levelId": "lvl_16",
+      "levelDisplayName": "level_lvl_16",
+      "order": 16,
+      "gridSize": 6,
+      "tier": "Easy",
+      "hash": "70a7fca9d8f2b3192bd4e08828892277ba4eda3c6b1c5087a4fad5fc6f169976",
+      "fileSize": 1079,
+      "url": "/levels/lvl_16.json"
+    },
+    "lvl_17": {
+      "levelId": "lvl_17",
+      "levelDisplayName": "level_lvl_17",
+      "order": 17,
+      "gridSize": 6,
+      "tier": "Easy",
+      "hash": "884f6e1bb16a73eb3debfd3f174f1f69826bf4aa6b20711f4028b3d2194fc2f2",
+      "fileSize": 1079,
+      "url": "/levels/lvl_17.json"
+    },
+    "lvl_18": {
+      "levelId": "lvl_18",
+      "levelDisplayName": "level_lvl_18",
+      "order": 18,
+      "gridSize": 6,
+      "tier": "Easy",
+      "hash": "1d4530af543a69f33737642e85c787d294a093d2e83d3a489644b7de4e8179ae",
+      "fileSize": 1079,
+      "url": "/levels/lvl_18.json"
+    },
+    "lvl_19": {
+      "levelId": "lvl_19",
+      "levelDisplayName": "level_lvl_19",
+      "order": 19,
+      "gridSize": 6,
+      "tier": "Easy",
+      "hash": "1ca136282a6508169f3a1b40a373761f8492079ac31a804058a71bc0c4feda83",
+      "fileSize": 1079,
+      "url": "/levels/lvl_19.json"
+    },
+    "lvl_2": {
+      "levelId": "lvl_2",
+      "levelDisplayName": "level_lvl_2",
+      "order": 2,
+      "gridSize": 4,
+      "tier": "Tutorial",
+      "hash": "9a30f0324e828bddf119b31c609eab72e05a6c483b21e9e84c3cab3e11a2b011",
+      "fileSize": 671,
+      "url": "/levels/lvl_2.json"
+    },
+    "lvl_20": {
+      "levelId": "lvl_20",
+      "levelDisplayName": "level_lvl_20",
+      "order": 20,
+      "gridSize": 6,
+      "tier": "Easy",
+      "hash": "170272a5c8cd0443d5b53ecbe1a701bdf857257e16c3b59a04838cb29709649b",
+      "fileSize": 1079,
+      "url": "/levels/lvl_20.json"
+    },
+    "lvl_21": {
+      "levelId": "lvl_21",
+      "levelDisplayName": "level_lvl_21",
+      "order": 21,
+      "gridSize": 6,
+      "tier": "Medium",
+      "hash": "62907f6bffa38eae7edd61e0ac003c9c80fc3033a038f4b752883f216f79e8f4",
+      "fileSize": 1082,
+      "url": "/levels/lvl_21.json"
+    },
+    "lvl_22": {
+      "levelId": "lvl_22",
+      "levelDisplayName": "level_lvl_22",
+      "order": 22,
+      "gridSize": 6,
+      "tier": "Medium",
+      "hash": "85136be0251912ee3d5fda2a4c98c5b49029a2df049917f94c9366fec7fd84a0",
+      "fileSize": 1082,
+      "url": "/levels/lvl_22.json"
+    },
+    "lvl_23": {
+      "levelId": "lvl_23",
+      "levelDisplayName": "level_lvl_23",
+      "order": 23,
+      "gridSize": 6,
+      "tier": "Medium",
+      "hash": "5bdc97139640317808a6b4362898259e7410fab27c4bd7789bba50c8b69ed550",
+      "fileSize": 1082,
+      "url": "/levels/lvl_23.json"
+    },
+    "lvl_24": {
+      "levelId": "lvl_24",
+      "levelDisplayName": "level_lvl_24",
+      "order": 24,
+      "gridSize": 6,
+      "tier": "Medium",
+      "hash": "66bd7b1b0500f54939e73bbda4a99a0525934ab1d3321079218c2fffbb959b45",
+      "fileSize": 1082,
+      "url": "/levels/lvl_24.json"
+    },
+    "lvl_25": {
+      "levelId": "lvl_25",
+      "levelDisplayName": "level_lvl_25",
+      "order": 25,
+      "gridSize": 6,
+      "tier": "Medium",
+      "hash": "7859825f769a11d3261ea5e47ca47006c5498eb44823c747fdf7a293e94de733",
+      "fileSize": 1082,
+      "url": "/levels/lvl_25.json"
+    },
+    "lvl_26": {
+      "levelId": "lvl_26",
+      "levelDisplayName": "level_lvl_26",
+      "order": 26,
+      "gridSize": 6,
+      "tier": "Medium",
+      "hash": "eec4d4a4ecb3d1cb1f6b4062eda05efc0a03f48f8f8ab35cbf409ef220f24540",
+      "fileSize": 1082,
+      "url": "/levels/lvl_26.json"
+    },
+    "lvl_27": {
+      "levelId": "lvl_27",
+      "levelDisplayName": "level_lvl_27",
+      "order": 27,
+      "gridSize": 6,
+      "tier": "Medium",
+      "hash": "2a1c6866ee8569e34b888aa97ee002871fabd9ef2022727a5b89757c0808117b",
+      "fileSize": 1082,
+      "url": "/levels/lvl_27.json"
+    },
+    "lvl_28": {
+      "levelId": "lvl_28",
+      "levelDisplayName": "level_lvl_28",
+      "order": 28,
+      "gridSize": 6,
+      "tier": "Medium",
+      "hash": "2a2631ae60bf39edc40cb7b88713bef26558c2eb31dc5f7461c0f377a1ebea97",
+      "fileSize": 1082,
+      "url": "/levels/lvl_28.json"
+    },
+    "lvl_29": {
+      "levelId": "lvl_29",
+      "levelDisplayName": "level_lvl_29",
+      "order": 29,
+      "gridSize": 6,
+      "tier": "Medium",
+      "hash": "461c9dc7e0e775ac5c034b1e8726b8619446c5e607562a1d27a9146538ef897b",
+      "fileSize": 1082,
+      "url": "/levels/lvl_29.json"
+    },
+    "lvl_3": {
+      "levelId": "lvl_3",
+      "levelDisplayName": "level_lvl_3",
+      "order": 3,
+      "gridSize": 4,
+      "tier": "Tutorial",
+      "hash": "05896cfb121f9cf7d53aac4707af569764a46bdfc4dc02a10f65976298326566",
+      "fileSize": 671,
+      "url": "/levels/lvl_3.json"
+    },
+    "lvl_30": {
+      "levelId": "lvl_30",
+      "levelDisplayName": "level_lvl_30",
+      "order": 30,
+      "gridSize": 6,
+      "tier": "Medium",
+      "hash": "f0c5547295e1c3a1a024cf506aa7f90418b8a8419e5177db21a52c3e40356300",
+      "fileSize": 1082,
+      "url": "/levels/lvl_30.json"
+    },
+    "lvl_31": {
+      "levelId": "lvl_31",
+      "levelDisplayName": "level_lvl_31",
+      "order": 31,
+      "gridSize": 7,
+      "tier": "Medium",
+      "hash": "7edfe9a8e2494f82c43627ac3513bf05b1bbdec2874e1982fd7624a19113dd70",
+      "fileSize": 1340,
+      "url": "/levels/lvl_31.json"
+    },
+    "lvl_32": {
+      "levelId": "lvl_32",
+      "levelDisplayName": "level_lvl_32",
+      "order": 32,
+      "gridSize": 7,
+      "tier": "Medium",
+      "hash": "d1ce869d40ee09cca170f2ecc0a3d40eb93d0e7a2c9acb5603b25ce8b9ae9b6e",
+      "fileSize": 1340,
+      "url": "/levels/lvl_32.json"
+    },
+    "lvl_33": {
+      "levelId": "lvl_33",
+      "levelDisplayName": "level_lvl_33",
+      "order": 33,
+      "gridSize": 7,
+      "tier": "Medium",
+      "hash": "8ae31b644e27cd030a2dfe285e1a4ae73695bbc29bb4d99fda76a2d48e825224",
+      "fileSize": 1340,
+      "url": "/levels/lvl_33.json"
+    },
+    "lvl_34": {
+      "levelId": "lvl_34",
+      "levelDisplayName": "level_lvl_34",
+      "order": 34,
+      "gridSize": 7,
+      "tier": "Medium",
+      "hash": "486baac8f916ec0299c7479a46a27589b3e726a1c41148714fcdce9b30546a42",
+      "fileSize": 1340,
+      "url": "/levels/lvl_34.json"
+    },
+    "lvl_35": {
+      "levelId": "lvl_35",
+      "levelDisplayName": "level_lvl_35",
+      "order": 35,
+      "gridSize": 7,
+      "tier": "Medium",
+      "hash": "db76358fd71b4befd76321211df7a946c3d0039de6cac8c597d4c0bb492017a6",
+      "fileSize": 1340,
+      "url": "/levels/lvl_35.json"
+    },
+    "lvl_36": {
+      "levelId": "lvl_36",
+      "levelDisplayName": "level_lvl_36",
+      "order": 36,
+      "gridSize": 7,
+      "tier": "Medium",
+      "hash": "3c96edcac61332ecc8581cd13e8d4efac750a31dea3e6943c67ca9e268641ff2",
+      "fileSize": 1340,
+      "url": "/levels/lvl_36.json"
+    },
+    "lvl_37": {
+      "levelId": "lvl_37",
+      "levelDisplayName": "level_lvl_37",
+      "order": 37,
+      "gridSize": 7,
+      "tier": "Medium",
+      "hash": "a7624c64261c057848098ed212e1267fe15e9b85d400533c4310f47460087d26",
+      "fileSize": 1340,
+      "url": "/levels/lvl_37.json"
+    },
+    "lvl_38": {
+      "levelId": "lvl_38",
+      "levelDisplayName": "level_lvl_38",
+      "order": 38,
+      "gridSize": 7,
+      "tier": "Medium",
+      "hash": "dd2820b92cdf95642ea00f15f090510bd533b1395799505ae614f0e2cd8f4b78",
+      "fileSize": 1340,
+      "url": "/levels/lvl_38.json"
+    },
+    "lvl_39": {
+      "levelId": "lvl_39",
+      "levelDisplayName": "level_lvl_39",
+      "order": 39,
+      "gridSize": 7,
+      "tier": "Medium",
+      "hash": "00f5804d585f5987c4b2c6ae4c66404659b833e5827ec2a9cf61338a1a543eed",
+      "fileSize": 1340,
+      "url": "/levels/lvl_39.json"
+    },
+    "lvl_4": {
+      "levelId": "lvl_4",
+      "levelDisplayName": "level_lvl_4",
+      "order": 4,
+      "gridSize": 4,
+      "tier": "Tutorial",
+      "hash": "ea919ed477a298c2d6f55ad6e2d75fe1fc6660e591adb57432dbb6d4d91947e4",
+      "fileSize": 671,
+      "url": "/levels/lvl_4.json"
+    },
+    "lvl_40": {
+      "levelId": "lvl_40",
+      "levelDisplayName": "level_lvl_40",
+      "order": 40,
+      "gridSize": 7,
+      "tier": "Medium",
+      "hash": "9b3ecd9a1c53ee9654ec4a4d79daf89747d9d4e51f4d0ba0c4530d9d3a34736a",
+      "fileSize": 1340,
+      "url": "/levels/lvl_40.json"
+    },
+    "lvl_41": {
+      "levelId": "lvl_41",
+      "levelDisplayName": "level_lvl_41",
+      "order": 41,
+      "gridSize": 7,
+      "tier": "Hard",
+      "hash": "f2b39a2672c6823b2a793d27be976866da67eab02f9adfd29fa760d826e348e4",
+      "fileSize": 1337,
+      "url": "/levels/lvl_41.json"
+    },
+    "lvl_42": {
+      "levelId": "lvl_42",
+      "levelDisplayName": "level_lvl_42",
+      "order": 42,
+      "gridSize": 7,
+      "tier": "Hard",
+      "hash": "aab77a226ee8f0347badf02ad0e512a33c4b642ebc6186ce65b66057fdd04d33",
+      "fileSize": 1337,
+      "url": "/levels/lvl_42.json"
+    },
+    "lvl_43": {
+      "levelId": "lvl_43",
+      "levelDisplayName": "level_lvl_43",
+      "order": 43,
+      "gridSize": 7,
+      "tier": "Hard",
+      "hash": "20382dbe49fd957a2ae98f9de321bdb71020c3031adf617b54565e13bdbd8665",
+      "fileSize": 1337,
+      "url": "/levels/lvl_43.json"
+    },
+    "lvl_44": {
+      "levelId": "lvl_44",
+      "levelDisplayName": "level_lvl_44",
+      "order": 44,
+      "gridSize": 7,
+      "tier": "Hard",
+      "hash": "10b5dee48e4c9c41237a513e1d448cff9a165b9436750ea144bb55920a002de3",
+      "fileSize": 1337,
+      "url": "/levels/lvl_44.json"
+    },
+    "lvl_45": {
+      "levelId": "lvl_45",
+      "levelDisplayName": "level_lvl_45",
+      "order": 45,
+      "gridSize": 7,
+      "tier": "Hard",
+      "hash": "571c43f6b4236cee08aa19b1747965337cd3631c2a5251388663d8a3bab8ed54",
+      "fileSize": 1337,
+      "url": "/levels/lvl_45.json"
+    },
+    "lvl_46": {
+      "levelId": "lvl_46",
+      "levelDisplayName": "level_lvl_46",
+      "order": 46,
+      "gridSize": 7,
+      "tier": "Hard",
+      "hash": "a17513b87049a9067e024ef090b7ec001c324f42758cc164b3ab6496d6abcac6",
+      "fileSize": 1337,
+      "url": "/levels/lvl_46.json"
+    },
+    "lvl_47": {
+      "levelId": "lvl_47",
+      "levelDisplayName": "level_lvl_47",
+      "order": 47,
+      "gridSize": 7,
+      "tier": "Hard",
+      "hash": "f2e8d6a04a3fc0d7ac899ec4d6dc3926c418a5006e8cef6fa1ee486aae9b7b9b",
+      "fileSize": 1337,
+      "url": "/levels/lvl_47.json"
+    },
+    "lvl_48": {
+      "levelId": "lvl_48",
+      "levelDisplayName": "level_lvl_48",
+      "order": 48,
+      "gridSize": 8,
+      "tier": "Hard",
+      "hash": "f81f6164fe80e6aa76fb567e7584c3bc78096e4548b23c31638889c30a77b4c9",
+      "fileSize": 1631,
+      "url": "/levels/lvl_48.json"
+    },
+    "lvl_49": {
+      "levelId": "lvl_49",
+      "levelDisplayName": "level_lvl_49",
+      "order": 49,
+      "gridSize": 8,
+      "tier": "Hard",
+      "hash": "72788e54e277f11abec69b1fc2332be1f17ab96471f0ee8c75fcaa1058c83e78",
+      "fileSize": 1631,
+      "url": "/levels/lvl_49.json"
+    },
+    "lvl_5": {
+      "levelId": "lvl_5",
+      "levelDisplayName": "level_lvl_5",
+      "order": 5,
+      "gridSize": 4,
+      "tier": "Tutorial",
+      "hash": "dc20c27ab603d6147e1021c7a145d6fba3ed9d8c241773cca649d8d875007843",
+      "fileSize": 671,
+      "url": "/levels/lvl_5.json"
+    },
+    "lvl_50": {
+      "levelId": "lvl_50",
+      "levelDisplayName": "level_lvl_50",
+      "order": 50,
+      "gridSize": 8,
+      "tier": "Hard",
+      "hash": "f70d3d9d0af54d76df30ca80f2e3cb6ff8cb2e21b8a6a8298a733aed0a9c31be",
+      "fileSize": 1631,
+      "url": "/levels/lvl_50.json"
+    },
+    "lvl_51": {
+      "levelId": "lvl_51",
+      "levelDisplayName": "level_lvl_51",
+      "order": 51,
+      "gridSize": 8,
+      "tier": "Hard",
+      "hash": "df6cf4d3039cf0cf4c9042fb08e2078b9f4d63bb3a3591625cc72e8173aa47b2",
+      "fileSize": 1631,
+      "url": "/levels/lvl_51.json"
+    },
+    "lvl_52": {
+      "levelId": "lvl_52",
+      "levelDisplayName": "level_lvl_52",
+      "order": 52,
+      "gridSize": 8,
+      "tier": "Hard",
+      "hash": "9998917eb440a83ac835c83761c389bbeaf4d09f6d8f8392f436461c2e687162",
+      "fileSize": 1631,
+      "url": "/levels/lvl_52.json"
+    },
+    "lvl_53": {
+      "levelId": "lvl_53",
+      "levelDisplayName": "level_lvl_53",
+      "order": 53,
+      "gridSize": 8,
+      "tier": "Hard",
+      "hash": "f3805d4814b8e792cc518d7320764208a33a6151b38b1fdc402df21fe285ccbe",
+      "fileSize": 1631,
+      "url": "/levels/lvl_53.json"
+    },
+    "lvl_54": {
+      "levelId": "lvl_54",
+      "levelDisplayName": "level_lvl_54",
+      "order": 54,
+      "gridSize": 8,
+      "tier": "Hard",
+      "hash": "9870a0b52491ec2804f93fe03f679f24cd4b06ffd35dc4544bf4668663778ebd",
+      "fileSize": 1631,
+      "url": "/levels/lvl_54.json"
+    },
+    "lvl_55": {
+      "levelId": "lvl_55",
+      "levelDisplayName": "level_lvl_55",
+      "order": 55,
+      "gridSize": 8,
+      "tier": "Hard",
+      "hash": "845fa2d536a4a3cbbff55e7cc25813a200f7ee7841025dd843cdbf74e43c7531",
+      "fileSize": 1631,
+      "url": "/levels/lvl_55.json"
+    },
+    "lvl_56": {
+      "levelId": "lvl_56",
+      "levelDisplayName": "level_lvl_56",
+      "order": 56,
+      "gridSize": 9,
+      "tier": "Expert",
+      "hash": "ab7f628375c830281d79c96cd9cff211a39d8b9ddb0d174146eedf84e8a4dcb5",
+      "fileSize": 1963,
+      "url": "/levels/lvl_56.json"
+    },
+    "lvl_57": {
+      "levelId": "lvl_57",
+      "levelDisplayName": "level_lvl_57",
+      "order": 57,
+      "gridSize": 9,
+      "tier": "Expert",
+      "hash": "5b96a7b09e51a7159ea6e1484962873146b7acb30463cf2d6e08eb9467e847ca",
+      "fileSize": 1963,
+      "url": "/levels/lvl_57.json"
+    },
+    "lvl_58": {
+      "levelId": "lvl_58",
+      "levelDisplayName": "level_lvl_58",
+      "order": 58,
+      "gridSize": 9,
+      "tier": "Expert",
+      "hash": "627c5a1cb33b8087a54746f8a9d194a4b12d025fac5be9590edd9903667af8c3",
+      "fileSize": 1963,
+      "url": "/levels/lvl_58.json"
+    },
+    "lvl_59": {
+      "levelId": "lvl_59",
+      "levelDisplayName": "level_lvl_59",
+      "order": 59,
+      "gridSize": 9,
+      "tier": "Expert",
+      "hash": "0b400d1dde60f92d9a7e5c0d180719f2d00fb4e58cc1dd05411a0cc83b4a4365",
+      "fileSize": 1963,
+      "url": "/levels/lvl_59.json"
+    },
+    "lvl_6": {
+      "levelId": "lvl_6",
+      "levelDisplayName": "level_lvl_6",
+      "order": 6,
+      "gridSize": 5,
+      "tier": "Easy",
+      "hash": "da75a08bba3086488d0b64e62c7b077eaaaf7eb5df1ef77c3a501399d803f1e0",
+      "fileSize": 853,
+      "url": "/levels/lvl_6.json"
+    },
+    "lvl_60": {
+      "levelId": "lvl_60",
+      "levelDisplayName": "level_lvl_60",
+      "order": 60,
+      "gridSize": 9,
+      "tier": "Expert",
+      "hash": "29007ce42ccd9d9ca884e99039aa9ca9aa5e396b9c3279fc0822b39d9562a6da",
+      "fileSize": 1963,
+      "url": "/levels/lvl_60.json"
+    },
+    "lvl_61": {
+      "levelId": "lvl_61",
+      "levelDisplayName": "level_lvl_61",
+      "order": 61,
+      "gridSize": 10,
+      "tier": "Expert",
+      "hash": "c6435255b42e76b4dcc54671f7c3badbafc46bc4c3bac8f53d06622c8a31d92e",
+      "fileSize": 2330,
+      "url": "/levels/lvl_61.json"
+    },
+    "lvl_62": {
+      "levelId": "lvl_62",
+      "levelDisplayName": "level_lvl_62",
+      "order": 62,
+      "gridSize": 10,
+      "tier": "Expert",
+      "hash": "97d77d6ff78a563eb2031b36b17c233f24a6748c1e6dc50feac6fc07851c3aef",
+      "fileSize": 2330,
+      "url": "/levels/lvl_62.json"
+    },
+    "lvl_63": {
+      "levelId": "lvl_63",
+      "levelDisplayName": "level_lvl_63",
+      "order": 63,
+      "gridSize": 10,
+      "tier": "Expert",
+      "hash": "ae6728fb81bae48562bc6bbc136ef7d684f8d17a6c8e27c980ed24e1ea72917a",
+      "fileSize": 2330,
+      "url": "/levels/lvl_63.json"
+    },
+    "lvl_64": {
+      "levelId": "lvl_64",
+      "levelDisplayName": "level_lvl_64",
+      "order": 64,
+      "gridSize": 10,
+      "tier": "Expert",
+      "hash": "72165169745c7088b8b700d9f25afc2e21d5926d42915abb81587f7d62f30f44",
+      "fileSize": 2330,
+      "url": "/levels/lvl_64.json"
+    },
+    "lvl_65": {
+      "levelId": "lvl_65",
+      "levelDisplayName": "level_lvl_65",
+      "order": 65,
+      "gridSize": 10,
+      "tier": "Expert",
+      "hash": "23a9ea4a2ab315efbcc6cb0fa751e05cc681d5b6cbb01b64b32368e1dc83a56a",
+      "fileSize": 2330,
+      "url": "/levels/lvl_65.json"
+    },
+    "lvl_7": {
+      "levelId": "lvl_7",
+      "levelDisplayName": "level_lvl_7",
+      "order": 7,
+      "gridSize": 5,
+      "tier": "Easy",
+      "hash": "61e06f36e8fa546e3a5c908b303d1fd56313c1d68b23899e47a321bf938183ab",
+      "fileSize": 853,
+      "url": "/levels/lvl_7.json"
+    },
+    "lvl_8": {
+      "levelId": "lvl_8",
+      "levelDisplayName": "level_lvl_8",
+      "order": 8,
+      "gridSize": 5,
+      "tier": "Easy",
+      "hash": "f9c07080471cebdc483d46616bcd0f6f4b0f05fdd2fec0bb20dbb807425227b4",
+      "fileSize": 853,
+      "url": "/levels/lvl_8.json"
+    },
+    "lvl_9": {
+      "levelId": "lvl_9",
+      "levelDisplayName": "level_lvl_9",
+      "order": 9,
+      "gridSize": 5,
+      "tier": "Easy",
+      "hash": "f1923eafa8db3911913e183ca73a6c7670978e639b610028e29f9ac031669948",
+      "fileSize": 854,
+      "url": "/levels/lvl_9.json"
+    },
+    "lvl_test_99": {
+      "levelId": "lvl_test_99",
+      "levelDisplayName": "Test Level 99",
+      "order": 0,
+      "gridSize": 5,
+      "tier": "Easy",
+      "hash": "9c1cdd4bbdcf2d10e6b48a4887b6b3d1635a9ef5cbacd939706db55d0e69600e",
+      "fileSize": 104,
+      "url": "/levels/lvl_test_99.json"
+    }
+  }
+}
