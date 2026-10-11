@@ -514,7 +514,12 @@ function switchLabDemo(demoKey, runtimeMode = 'html', forceReload = false) {
   clearTimeout(labLoaderTimer);
 
   if (runtimeMode === 'webgl') {
-    // Populate WebGL Runtime Launcher Card
+    if (item.hasWebgl && item.webglUrl) {
+      bootWebglInIframe(demoKey, forceReload);
+      return;
+    }
+
+    // Fallback card only if demo is an Editor-only tool without a WebGL build
     const cardIcon = document.getElementById('webgl-card-icon');
     const cardBadge = document.getElementById('webgl-card-badge');
     const cardTitle = document.getElementById('webgl-card-title');
@@ -524,22 +529,12 @@ function switchLabDemo(demoKey, runtimeMode = 'html', forceReload = false) {
 
     if (cardIcon) cardIcon.textContent = item.icon;
     if (spec1) spec1.textContent = `• Target: ${item.unitySpecs}`;
-
-    if (!item.hasWebgl) {
-      if (cardBadge) cardBadge.textContent = 'UNITY EDITORWINDOW TOOL';
-      if (cardTitle) cardTitle.textContent = `${item.title} — Unity Editor API Simulator`;
-      if (cardDesc) {
-        cardDesc.innerHTML = `Because <strong class="text-white">${item.title}</strong> is a Unity Editor extension (<code class="text-sky-300 font-mono">UnityEditor.AssetDatabase</code>), its full interactive experience runs in the <strong class="text-sky-300">⚡ Instant Lab Sim</strong> tab (which also includes the downloadable <code class="text-emerald-300 font-mono">.unitypackage</code>!).`;
-      }
-      if (btnTryBoot) btnTryBoot.classList.add('hidden');
-    } else {
-      if (cardBadge) cardBadge.textContent = 'UNITY WEBGL 2.0 WASM BUILD';
-      if (cardTitle) cardTitle.textContent = `${item.title} — Compiled Unity WebGL Runtime`;
-      if (cardDesc) {
-        cardDesc.innerHTML = `Ready to mount compiled C# / IL2CPP WebAssembly build from <code class="text-purple-300 font-mono">${item.webglUrl}</code> inside this single isolated viewport.`;
-      }
-      if (btnTryBoot) btnTryBoot.classList.remove('hidden');
+    if (cardBadge) cardBadge.textContent = 'UNITY EDITORWINDOW TOOL';
+    if (cardTitle) cardTitle.textContent = `${item.title} — Unity Editor API Simulator`;
+    if (cardDesc) {
+      cardDesc.innerHTML = `Because <strong class="text-white">${item.title}</strong> is a Unity Editor extension (<code class="text-sky-300 font-mono">UnityEditor.AssetDatabase</code>), its full interactive experience runs in the <strong class="text-sky-300">⚡ Instant Lab Sim</strong> tab (which also includes the downloadable <code class="text-emerald-300 font-mono">.unitypackage</code>!).`;
     }
+    if (btnTryBoot) btnTryBoot.classList.add('hidden');
 
     if (webglPanel) {
       webglPanel.classList.remove('hidden');
@@ -584,7 +579,7 @@ function switchLabDemo(demoKey, runtimeMode = 'html', forceReload = false) {
     : item.htmlUrl;
 }
 
-function bootWebglInIframe(demoKey) {
+function bootWebglInIframe(demoKey, forceReload = false) {
   const item = UNITY_LAB_MANIFEST[demoKey];
   if (!item || !item.webglUrl) return;
 
@@ -612,13 +607,16 @@ function bootWebglInIframe(demoKey) {
   }
 
   if (frame) {
-    frame.onload = () => {
+    const hideWebglLoader = () => {
       if (loader) loader.classList.add('hidden');
+      try {
+        if (frame.contentWindow) frame.contentWindow.focus();
+      } catch (_) {}
     };
-    setTimeout(() => {
-      if (loader) loader.classList.add('hidden');
-    }, 450);
-    frame.src = item.webglUrl;
+    frame.onload = hideWebglLoader;
+    setTimeout(hideWebglLoader, 450);
+    const sep = item.webglUrl.includes('?') ? '&' : '?';
+    frame.src = forceReload ? `${item.webglUrl}${sep}t=${Date.now()}` : item.webglUrl;
   }
 }
 
