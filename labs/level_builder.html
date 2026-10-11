@@ -538,10 +538,15 @@
                   <span id="svDetailTier" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/30">Tutorial</span>
                   <span id="svDetailGridBadge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-[#21262d] text-[#8b949e] border border-[#30363d]">4x4</span>
                 </div>
-                <div class="text-[11px] text-[#8b949e] flex items-center gap-2">
+                <div class="text-[11px] text-[#8b949e] flex flex-wrap items-center gap-2">
                   <span id="svDetailFileName" class="font-mono text-[#8b949e]">lvl_1.json</span>
                   <span>•</span>
                   <span id="svDetailHash" class="font-mono text-[10px] text-[#8b949e]/70">hash: -</span>
+                  <span>•</span>
+                  <span id="svSolverStatusPill" class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span>
+                    <span id="svSolverStatusText">Unique (0.10ms)</span>
+                  </span>
                 </div>
               </div>
             </div>
@@ -563,20 +568,8 @@
             </div>
           </div>
 
-          <!-- Solver Status & Deductive Validation Banner -->
-          <div id="svSolverFeedbackBox" class="p-3 bg-[#0d1117] border border-[#30363d] rounded-xl text-xs flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <span id="svSolverStatusDot" class="w-2 h-2 rounded-full bg-emerald-400"></span>
-              <span id="svSolverStatusMsg" class="text-[#e6edf3] font-semibold">Unique Solution Verified!</span>
-            </div>
-            <div class="flex items-center gap-3 font-mono text-[11px]">
-              <span class="text-[#8b949e]">Solve Time: <span id="svSolverTime" class="text-amber-400 font-bold">0.12ms</span></span>
-              <span class="text-[#8b949e]">Score: <span id="svSolverScore" class="text-pink-400 font-bold">87</span></span>
-            </div>
-          </div>
-
           <!-- Full Width Visual Meowsweeper Solver Board -->
-          <div class="flex-1 bg-[#0d1117] border border-[#30363d] rounded-2xl p-5 flex flex-col items-center justify-between min-h-[460px] shadow-inner">
+          <div class="flex-1 bg-[#0d1117] border border-[#30363d] rounded-2xl p-5 flex flex-col items-center justify-between min-h-0 shadow-inner">
             <div class="text-xs font-bold text-[#8b949e] mb-3 self-start flex items-center justify-between w-full border-b border-[#30363d]/50 pb-2">
               <span class="flex items-center gap-2 text-[#e6edf3]">
                 <span class="text-base">🐾</span>
@@ -2236,26 +2229,19 @@
     }
 
     function updateSvSolverUI(res, level) {
-      const dot = document.getElementById('svSolverStatusDot');
-      const msg = document.getElementById('svSolverStatusMsg');
-      const timeEl = document.getElementById('svSolverTime');
-      const scoreEl = document.getElementById('svSolverScore');
-
-      timeEl.textContent = `${res.elapsedMs}ms`;
-      scoreEl.textContent = `${level.stepScore ?? res.stepScore ?? 50}`;
+      const pill = document.getElementById('svSolverStatusPill');
+      const text = document.getElementById('svSolverStatusText');
+      if (!pill || !text) return;
 
       if (res.solutionCount === 1) {
-        dot.className = 'w-2 h-2 rounded-full bg-emerald-400';
-        msg.textContent = 'Unique Solution Verified! (1 Solvable Path)';
-        msg.className = 'text-emerald-400 font-semibold';
+        pill.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1';
+        pill.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span><span>Unique (${res.elapsedMs}ms, ${level.stepScore ?? res.stepScore ?? 50} pts)</span>`;
       } else if (res.solutionCount > 1) {
-        dot.className = 'w-2 h-2 rounded-full bg-amber-400';
-        msg.textContent = `Multiple Solutions (${res.solutionCount}) - Ambiguous`;
-        msg.className = 'text-amber-400 font-semibold';
+        pill.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 flex items-center gap-1';
+        pill.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block"></span><span>Ambiguous (${res.solutionCount} solutions)</span>`;
       } else {
-        dot.className = 'w-2 h-2 rounded-full bg-rose-400';
-        msg.textContent = 'Unsolvable Region Configuration';
-        msg.className = 'text-rose-400 font-semibold';
+        pill.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/30 flex items-center gap-1';
+        pill.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-rose-400 inline-block"></span><span>Unsolvable</span>`;
       }
     }
 
@@ -2266,9 +2252,9 @@
       canvas.innerHTML = '';
       canvas.style.gridTemplateColumns = `repeat(${N}, minmax(0, 1fr))`;
 
-      // Enlarged cell size for full-width viewer modal (target ~460px width)
-      const maxContainerSize = 460;
-      const cellSize = Math.min(Math.floor(maxContainerSize / N), 78);
+      // Enlarged cell size for full-width viewer modal (dynamically responsive up to 400px)
+      const maxGridDimension = Math.min(400, window.innerHeight * 0.45);
+      const cellSize = Math.min(Math.floor(maxGridDimension / N), 60);
 
       let placedCats = 0;
       const solution = level.solution || [];
