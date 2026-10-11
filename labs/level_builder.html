@@ -575,35 +575,29 @@
             </div>
           </div>
 
-          <!-- Split: Visual Meowsweeper Board (Left) & Raw JSON Viewer (Right) -->
-          <div class="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-3 min-h-0">
-            
-            <!-- Visual Meowsweeper Solver Board -->
-            <div class="bg-[#0d1117] border border-[#30363d] rounded-xl p-3 flex flex-col items-center justify-center min-h-[300px]">
-              <div class="text-[11px] font-bold text-[#8b949e] mb-2 self-start flex items-center justify-between w-full">
-                <span>Meowsweeper Solver Grid</span>
-                <span id="svCatCountBadge" class="font-mono text-emerald-400">4 / 4 Cats Placed</span>
-              </div>
-              <div class="flex-1 flex items-center justify-center w-full">
-                <div id="svGridCanvas" class="grid gap-[2px] p-1.5 bg-stone-900/60 rounded-xl shadow-inner max-w-full">
-                  <!-- Dynamically generated cells -->
-                </div>
-              </div>
-              <div class="text-[11px] text-[#8b949e] mt-2 flex items-center gap-3">
-                <span class="flex items-center gap-1"><span>🐱</span> Cat (1/row, 1/col, 1/reg, no 8-adj)</span>
-                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-stone-700 inline-block"></span> Region #</span>
+          <!-- Full Width Visual Meowsweeper Solver Board -->
+          <div class="flex-1 bg-[#0d1117] border border-[#30363d] rounded-2xl p-5 flex flex-col items-center justify-between min-h-[460px] shadow-inner">
+            <div class="text-xs font-bold text-[#8b949e] mb-3 self-start flex items-center justify-between w-full border-b border-[#30363d]/50 pb-2">
+              <span class="flex items-center gap-2 text-[#e6edf3]">
+                <span class="text-base">🐾</span>
+                <span>Meowsweeper Solver Grid (Enlarged)</span>
+              </span>
+              <span id="svCatCountBadge" class="font-mono text-emerald-400 font-bold px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">4 / 4 Cats Placed</span>
+            </div>
+
+            <div class="flex-1 flex items-center justify-center w-full my-auto py-2">
+              <div id="svGridCanvas" class="grid gap-[2px] p-2 bg-stone-900/80 rounded-2xl shadow-2xl max-w-full">
+                <!-- Dynamically generated cells -->
               </div>
             </div>
 
-            <!-- Full Raw JSON Viewer -->
-            <div class="bg-[#0d1117] border border-[#30363d] rounded-xl p-3 flex flex-col min-h-[300px] overflow-hidden">
-              <div class="text-[11px] font-bold text-[#8b949e] mb-2 flex items-center justify-between">
-                <span>Server Raw JSON (View Only)</span>
-                <span id="svFileSizeLabel" class="font-mono text-[10px] text-[#8b949e]">671 bytes</span>
+            <div class="text-xs text-[#8b949e] mt-3 pt-2 border-t border-[#30363d]/50 w-full flex flex-wrap items-center justify-between gap-3">
+              <div class="flex items-center gap-4">
+                <span class="flex items-center gap-1.5"><span class="text-base">🐱</span> <span>Cat Position (1/row, 1/col, 1/region, no 8-adj)</span></span>
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-stone-700 inline-block border border-stone-600"></span> <span>Region Identifier</span></span>
               </div>
-              <pre id="svRawJsonText" class="flex-1 bg-[#161b22] border border-[#30363d] rounded-lg p-3 text-xs font-mono text-emerald-300 overflow-auto leading-relaxed select-text"></pre>
+              <span class="font-mono text-[11px] text-[#8b949e]" id="svFileSizeLabel">File size: -</span>
             </div>
-
           </div>
 
         </div>
@@ -2226,10 +2220,12 @@
       document.getElementById('svDetailGridBadge').textContent = `${N}x${N}`;
       document.getElementById('svDetailHash').textContent = `hash: ${meta.hash ? meta.hash.slice(0, 10) + '...' : 'live'}`;
 
-      // Set Raw JSON display
+      // Set File size display
       const jsonFormatted = JSON.stringify(level, null, 2);
-      document.getElementById('svRawJsonText').textContent = jsonFormatted;
-      document.getElementById('svFileSizeLabel').textContent = `${new Blob([jsonFormatted]).size} bytes`;
+      const rawTextEl = document.getElementById('svRawJsonText');
+      if (rawTextEl) rawTextEl.textContent = jsonFormatted;
+      const sizeEl = document.getElementById('svFileSizeLabel');
+      if (sizeEl) sizeEl.textContent = `File size: ${new Blob([jsonFormatted]).size} bytes`;
 
       // Solve & Verify with Meowsweeper Solver Algorithm
       const solveResult = solveGrid(level.regions, N, 2);
@@ -2270,9 +2266,9 @@
       canvas.innerHTML = '';
       canvas.style.gridTemplateColumns = `repeat(${N}, minmax(0, 1fr))`;
 
-      // Adaptive cell size for viewer modal
-      const availableWidth = 320;
-      const cellSize = Math.min(Math.floor(availableWidth / N), 52);
+      // Enlarged cell size for full-width viewer modal (target ~460px width)
+      const maxContainerSize = 460;
+      const cellSize = Math.min(Math.floor(maxContainerSize / N), 78);
 
       let placedCats = 0;
       const solution = level.solution || [];
@@ -2287,19 +2283,20 @@
           cell.style.height = `${cellSize}px`;
           cell.style.backgroundColor = color.bg;
           cell.style.borderColor = color.border;
-          cell.className = 'relative flex items-center justify-center font-bold text-stone-900 border border-stone-800/25 rounded-[3px] shadow-none transition';
+          cell.className = 'relative flex items-center justify-center font-bold text-stone-900 border border-stone-800/30 rounded-[4px] shadow-sm transition hover:scale-[1.02]';
 
           const hasCat = solution[r] && solution[r][c] === 1;
           if (hasCat) placedCats++;
 
           if (svShowingSolution && hasCat) {
             const cat = document.createElement('span');
-            cat.className = 'text-base drop-shadow select-none';
+            // Scale cat emoji with cell size
+            cat.className = `${cellSize >= 60 ? 'text-2xl' : cellSize >= 45 ? 'text-xl' : 'text-base'} drop-shadow select-none pointer-events-none`;
             cat.textContent = '🐱';
             cell.appendChild(cat);
           } else {
             const num = document.createElement('span');
-            num.className = 'text-[9px] font-mono text-stone-700/60 select-none';
+            num.className = `${cellSize >= 60 ? 'text-xs font-bold' : 'text-[10px]'} font-mono text-stone-800/60 select-none pointer-events-none`;
             num.textContent = regId;
             cell.appendChild(num);
           }
@@ -2427,7 +2424,8 @@
           svCurrentLevel = null;
           document.getElementById('svDetailId').textContent = 'None';
           document.getElementById('svDetailFileName').textContent = 'No file';
-          document.getElementById('svRawJsonText').textContent = '// No levels remain in manifest';
+          const rawTextEl = document.getElementById('svRawJsonText');
+          if (rawTextEl) rawTextEl.textContent = '// No levels remain in manifest';
           const canvas = document.getElementById('svGridCanvas');
           if (canvas) canvas.innerHTML = '';
         }
