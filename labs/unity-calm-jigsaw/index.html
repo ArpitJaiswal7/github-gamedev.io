@@ -225,16 +225,17 @@
       }
 
       var buildUrl = "Build";
-      var loaderUrl = buildUrl + "/unity-calm-jigsaw.loader.js";
+      var cacheBust = "?v=20261011_bridge2";
+      var loaderUrl = buildUrl + "/unity-calm-jigsaw.loader.js" + cacheBust;
       var config = {
         arguments: [],
-        dataUrl: buildUrl + "/unity-calm-jigsaw.data",
-        frameworkUrl: buildUrl + "/unity-calm-jigsaw.framework.js",
-        codeUrl: buildUrl + "/unity-calm-jigsaw.wasm",
+        dataUrl: buildUrl + "/unity-calm-jigsaw.data" + cacheBust,
+        frameworkUrl: buildUrl + "/unity-calm-jigsaw.framework.js" + cacheBust,
+        codeUrl: buildUrl + "/unity-calm-jigsaw.wasm" + cacheBust,
         streamingAssetsUrl: "StreamingAssets",
         companyName: "ArpitJaiswal",
         productName: "Calm Jigsaw",
-        productVersion: "1.0.0",
+        productVersion: "1.1.0",
         showBanner: unityShowBanner,
       };
 

@@ -97,15 +97,28 @@
           </span>
         </div>
 
-        <!-- Right: Inline Controls (Photo Select, Grid Select, Shuffle, Coins) -->
+        <!-- Right: Inline Controls (Photo Select, Server Sync, Bridge Cache, Grid Select, Shuffle, Coins) -->
         <div class="flex items-center gap-1.5 shrink-0">
-          <select id="sceneSelect" class="bg-[#21262d] hover:bg-[#30363d] text-[#e6edf3] border border-[#30363d] rounded-lg px-2 py-1 text-xs font-semibold cursor-pointer focus:outline-none transition">
-            <option value="sunset">🌅 Alpine Sunset</option>
-            <option value="forest">🌲 Misty Pines</option>
-            <option value="coast">🌊 Calm Cove</option>
-            <option value="custom" id="customPhotoOption" hidden>🖼️ Custom Photo</option>
-            <option value="explorer">📁 Select from Explorer...</option>
+          <select id="sceneSelect" class="bg-[#21262d] hover:bg-[#30363d] text-[#e6edf3] border border-[#30363d] rounded-lg px-2 py-1 text-xs font-semibold cursor-pointer focus:outline-none transition max-w-[185px] truncate">
+            <optgroup id="serverPuzzlesGroup" label="🌐 Server Puzzles (localhost:4200)">
+            </optgroup>
+            <optgroup label="🎨 Built-in Demo Scenes">
+              <option value="sunset">🌅 Alpine Sunset</option>
+              <option value="forest">🌲 Misty Pines</option>
+              <option value="coast">🌊 Calm Cove</option>
+              <option value="custom" id="customPhotoOption" hidden>🖼️ Custom Photo</option>
+              <option value="explorer">📁 Select from Explorer...</option>
+            </optgroup>
           </select>
+
+          <button id="btnSyncServer" title="Fetch Published Puzzle URLs from Server (http://localhost:4200/api/puzzles/urls)" class="inline-flex items-center justify-center gap-1 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 active:scale-95 transition border border-emerald-500/30 rounded-lg px-2 py-1 text-xs font-semibold cursor-pointer whitespace-nowrap">
+            <span>🌐</span>
+            <span id="serverSyncBadge">Sync</span>
+          </button>
+
+          <button id="btnInspectBridge" title="Open Native Image Bridge IndexedDB Cache & ROM Explorer" class="inline-flex items-center justify-center gap-1 bg-[#21262d] hover:bg-[#30363d] text-[#58a6ff] active:scale-95 transition border border-[#30363d] rounded-lg px-2 py-1 text-xs font-semibold cursor-pointer whitespace-nowrap">
+            <span>📂</span>
+          </button>
 
           <select id="gridSelect" class="bg-[#21262d] hover:bg-[#30363d] text-[#e6edf3] border border-[#30363d] rounded-lg px-2 py-1 text-xs font-semibold cursor-pointer focus:outline-none transition">
             <option value="4" selected>4 × 4 (16)</option>
@@ -542,6 +555,17 @@
       canvas.width = size;
       canvas.height = size;
       const ctx = canvas.getContext('2d');
+
+      if (scene && scene.startsWith('server:') && state.serverImagesMap && state.serverImagesMap[scene]) {
+        const imgEl = state.serverImagesMap[scene];
+        const sw = imgEl.naturalWidth || imgEl.width || size;
+        const sh = imgEl.naturalHeight || imgEl.height || size;
+        const minSide = Math.min(sw, sh);
+        const sx = Math.floor((sw - minSide) / 2);
+        const sy = Math.floor((sh - minSide) / 2);
+        ctx.drawImage(imgEl, sx, sy, minSide, minSide, 0, 0, size, size);
+        return canvas.toDataURL();
+      }
 
       if (scene === 'custom' && state.customImageElement) {
         ctx.drawImage(state.customImageElement, 0, 0, size, size);
@@ -1427,15 +1451,25 @@
       });
     }
 
-    // --- 8. CUSTOM PHOTO SELECT FROM EXPLORER ---
-    sceneSelect.addEventListener('change', e => {
-      if (e.target.value === 'explorer') {
+    // --- 8. SERVER PUZZLE & CUSTOM PHOTO SELECT ---
+    state.serverPuzzles = [];
+    state.serverImagesMap = {};
+
+    sceneSelect.addEventListener('change', async e => {
+      const val = e.target.value;
+      if (val === 'explorer') {
         fileInput.value = '';
         fileInput.click();
         sceneSelect.value = state.lastValidScene;
+      } else if (val && val.startsWith('server:')) {
+        const puzzleId = val.slice('server:'.length);
+        const entry = state.serverPuzzles.find(p => p.id === puzzleId);
+        if (entry) {
+          await selectAndLoadServerPuzzle(entry);
+        }
       } else {
-        state.scene = e.target.value;
-        state.lastValidScene = e.target.value;
+        state.scene = val;
+        state.lastValidScene = val;
         initPuzzle(false);
       }
     });
@@ -2120,10 +2154,431 @@
     });
     setInterval(() => lbRenderUI(false), 4000);
 
+    // =========================================================================
+    // SHEET 07: PUZZLE SERVER API HELPERS & NATIVE IMAGE BRIDGE (Web + IndexedDB)
+    // =========================================================================
+    const PUZZLE_SERVER_URL = 'http://localhost:4200';
+    const GH_PAGES_MIRROR_URL = 'https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles';
+    const LOCAL_CATALOG_KEY = 'calm_jigsaw_server_catalog_v1';
+
+    function getLocalMirrorPublished() {
+      try {
+        const raw = localStorage.getItem(LOCAL_CATALOG_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) return parsed.filter(p => p.published);
+        }
+      } catch (_) {}
+      return [];
+    }
+
+    const PuzzleServerAPI = {
+      serverBaseUrl: PUZZLE_SERVER_URL,
+
+      async getPublishedImageUrls(baseUrl = this.serverBaseUrl) {
+        const clean = String(baseUrl).replace(/\/+$/, '');
+        const isHttps = typeof window !== 'undefined' && window.location && window.location.protocol === 'https:';
+        const candidates = isHttps
+          ? ['../assets/puzzles/urls.json', `${GH_PAGES_MIRROR_URL}/urls.json`, `${clean}/api/puzzles/urls`]
+          : [`${clean}/api/puzzles/urls`, '../assets/puzzles/urls.json', `${GH_PAGES_MIRROR_URL}/urls.json`];
+
+        for (const url of candidates) {
+          try {
+            const resp = await fetch(url, { mode: 'cors', credentials: 'omit' });
+            if (resp.ok) {
+              const data = await resp.json();
+              if (Array.isArray(data.urls) && data.urls.length > 0) return data.urls;
+            }
+          } catch (_) {}
+        }
+        return getLocalMirrorPublished().map(p => p.url);
+      },
+
+      async getPublishedPuzzles(baseUrl = this.serverBaseUrl) {
+        const clean = String(baseUrl).replace(/\/+$/, '');
+        const isHttps = typeof window !== 'undefined' && window.location && window.location.protocol === 'https:';
+        const candidates = isHttps
+          ? ['../assets/puzzles/published.json', `${GH_PAGES_MIRROR_URL}/published.json`, `${clean}/api/puzzles/published`]
+          : [`${clean}/api/puzzles/published`, '../assets/puzzles/published.json', `${GH_PAGES_MIRROR_URL}/published.json`];
+
+        for (const url of candidates) {
+          try {
+            const resp = await fetch(url, { mode: 'cors', credentials: 'omit' });
+            if (resp.ok) {
+              const data = await resp.json();
+              if (data && Array.isArray(data.puzzles) && data.puzzles.length > 0) return data;
+            }
+          } catch (_) {}
+        }
+        const pub = getLocalMirrorPublished();
+        return {
+          version: '1.0',
+          totalPublished: pub.length,
+          urls: pub.map(p => p.url),
+          puzzles: pub
+        };
+      }
+    };
+    window.PuzzleServerAPI = PuzzleServerAPI;
+
+    const NativeImageBridgeWeb = {
+      dbName: 'Studio_NativeImagePipeline_DB',
+      dbVersion: 1,
+      storeCache: 'volatile_cache',
+      storeRom: 'permanent_rom',
+      db: null,
+
+      openDatabase(callback) {
+        if (this.db) {
+          callback(this.db);
+          return;
+        }
+        const self = this;
+        const req = indexedDB.open(this.dbName, this.dbVersion);
+        req.onupgradeneeded = e => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(self.storeCache)) db.createObjectStore(self.storeCache);
+          if (!db.objectStoreNames.contains(self.storeRom)) db.createObjectStore(self.storeRom);
+        };
+        req.onsuccess = e => {
+          self.db = e.target.result;
+          callback(self.db);
+        };
+        req.onerror = () => callback(null);
+      },
+
+      getBlobBytes(fileKey, callback) {
+        const self = this;
+        this.openDatabase(db => {
+          if (!db) { callback(null, -1); return; }
+          const txRom = db.transaction([self.storeRom], 'readonly');
+          const reqRom = txRom.objectStore(self.storeRom).get(fileKey);
+          reqRom.onsuccess = () => {
+            if (reqRom.result && reqRom.result.byteLength > 0) {
+              callback(reqRom.result, 1);
+            } else {
+              const txCache = db.transaction([self.storeCache], 'readonly');
+              const reqCache = txCache.objectStore(self.storeCache).get(fileKey);
+              reqCache.onsuccess = () => {
+                if (reqCache.result && reqCache.result.byteLength > 0) {
+                  callback(reqCache.result, 0);
+                } else {
+                  callback(null, -1);
+                }
+              };
+              reqCache.onerror = () => callback(null, -1);
+            }
+          };
+          reqRom.onerror = () => callback(null, -1);
+        });
+      },
+
+      putDualBlobBytes(storeName, key1, bytes1, key2, bytes2, callback) {
+        this.openDatabase(db => {
+          if (!db) { if (callback) callback(false); return; }
+          try {
+            const tx = db.transaction([storeName], 'readwrite');
+            const store = tx.objectStore(storeName);
+            store.put(bytes1, key1);
+            store.put(bytes2, key2);
+            tx.oncomplete = () => { if (callback) callback(true); };
+            tx.onerror = () => { if (callback) callback(false); };
+          } catch (_) {
+            if (callback) callback(false);
+          }
+        });
+      },
+
+      async transcodeSquareJpeg(sourceBlob, dimPx, quality = 0.88) {
+        const bitmap = await createImageBitmap(sourceBlob);
+        const minSide = Math.min(bitmap.width, bitmap.height);
+        const sx = Math.floor((bitmap.width - minSide) / 2);
+        const sy = Math.floor((bitmap.height - minSide) / 2);
+
+        let outBlob = null;
+        if (typeof OffscreenCanvas !== 'undefined') {
+          const off = new OffscreenCanvas(dimPx, dimPx);
+          const ctx = off.getContext('2d', { alpha: false });
+          ctx.fillStyle = '#0d1117';
+          ctx.fillRect(0, 0, dimPx, dimPx);
+          ctx.drawImage(bitmap, sx, sy, minSide, minSide, 0, 0, dimPx, dimPx);
+          bitmap.close();
+          outBlob = await off.convertToBlob({ type: 'image/jpeg', quality });
+        } else {
+          const c = document.createElement('canvas');
+          c.width = dimPx;
+          c.height = dimPx;
+          const ctx = c.getContext('2d', { alpha: false });
+          ctx.fillStyle = '#0d1117';
+          ctx.fillRect(0, 0, dimPx, dimPx);
+          ctx.drawImage(bitmap, sx, sy, minSide, minSide, 0, 0, dimPx, dimPx);
+          bitmap.close();
+          outBlob = await new Promise(r => c.toBlob(r, 'image/jpeg', quality));
+        }
+        const ab = await outBlob.arrayBuffer();
+        return new Uint8Array(ab);
+      },
+
+      async loadServerPuzzleImage(puzzleEntry) {
+        const startMs = performance.now();
+        const key = puzzleEntry.id;
+        const fullKey = `${key}_1080.jpg`;
+        const iconKey = `${key}_256.jpg`;
+
+        const cached = await new Promise(resolve => {
+          this.getBlobBytes(fullKey, (bytes, tier) => {
+            if (bytes && bytes.byteLength > 0) resolve({ bytes, tier });
+            else resolve(null);
+          });
+        });
+
+        let finalBytes = null;
+        let tier = puzzleEntry.saveToRomOnDownload ? 1 : 0;
+        let fromCache = false;
+
+        if (cached) {
+          finalBytes = cached.bytes;
+          tier = cached.tier;
+          fromCache = true;
+        } else {
+          const srcUrl = puzzleEntry.dataUrl || puzzleEntry.url;
+          const tryUrls = [srcUrl];
+          const fname = puzzleEntry.filename || (srcUrl && srcUrl.includes('/uploads/') ? srcUrl.split('/uploads/').pop() : '');
+          if (fname) {
+            const ghImgUrl = `${GH_PAGES_MIRROR_URL}/uploads/${fname}`;
+            const relImgUrl = `../assets/puzzles/uploads/${fname}`;
+            const localImgUrl = `${PUZZLE_SERVER_URL}/uploads/${fname}`;
+            if (typeof window !== 'undefined' && window.location && window.location.protocol === 'https:') {
+              tryUrls.unshift(relImgUrl, ghImgUrl);
+            } else {
+              tryUrls.push(relImgUrl, ghImgUrl, localImgUrl);
+            }
+          }
+
+          let rawBlob = null;
+          let lastErr = null;
+          for (const u of tryUrls) {
+            if (!u) continue;
+            try {
+              const resp = await fetch(u, { mode: 'cors', credentials: 'omit' });
+              if (resp.ok) {
+                rawBlob = await resp.blob();
+                break;
+              }
+              lastErr = new Error(`HTTP ${resp.status} fetching ${u}`);
+            } catch (e) {
+              lastErr = e;
+            }
+          }
+          if (!rawBlob) throw (lastErr || new Error(`Failed to fetch ${puzzleEntry.url}`));
+
+          finalBytes = await this.transcodeSquareJpeg(rawBlob, 1080, 0.88);
+          const iconBytes = await this.transcodeSquareJpeg(rawBlob, 256, 0.85);
+          const storeName = tier === 1 ? this.storeRom : this.storeCache;
+          await new Promise(r => this.putDualBlobBytes(storeName, fullKey, finalBytes, iconKey, iconBytes, r));
+        }
+
+        const blob = new Blob([finalBytes], { type: 'image/jpeg' });
+        const objUrl = URL.createObjectURL(blob);
+        const img = await new Promise((resolve, reject) => {
+          const el = new Image();
+          el.onload = () => resolve(el);
+          el.onerror = reject;
+          el.src = objUrl;
+        });
+
+        const elapsedMs = Math.max(0, Math.round(performance.now() - startMs));
+        return { img, fromCache, tier, sizeKb: (finalBytes.byteLength / 1024).toFixed(1), elapsedMs };
+      },
+
+      openFolderInspectorModal(activePuzzleId) {
+        const self = this;
+        const existing = document.getElementById('nip-webgl-folder-modal');
+        if (existing) existing.remove();
+
+        const overlay = document.createElement('div');
+        overlay.id = 'nip-webgl-folder-modal';
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:999999;display:flex;align-items:center;justify-content:center;font-family:monospace;color:#e6edf3;padding:20px;';
+
+        const card = document.createElement('div');
+        card.style.cssText = 'background:#161b22;border:1px solid #30363d;border-radius:14px;max-width:740px;width:100%;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,0.8);overflow:hidden;';
+
+        const header = document.createElement('div');
+        header.style.cssText = 'padding:14px 18px;border-bottom:1px solid #30363d;display:flex;justify-content:space-between;align-items:center;background:#0d1117;';
+        header.innerHTML = `<div><strong style="font-size:14px;color:#58a6ff;">📂 Native Image Bridge — IndexedDB Cache & ROM Explorer</strong><div style="font-size:11px;color:#8b949e;margin-top:3px;">indexeddb://${this.dbName}/ (Shared between Web & Unity WebGL)</div></div>`;
+
+        const closeBtn = document.createElement('button');
+        closeBtn.textContent = '✕ Close';
+        closeBtn.style.cssText = 'background:#21262d;color:#e6edf3;border:1px solid #30363d;border-radius:8px;padding:6px 12px;cursor:pointer;font-weight:bold;font-family:monospace;';
+        closeBtn.onclick = () => overlay.remove();
+        header.appendChild(closeBtn);
+        card.appendChild(header);
+
+        const body = document.createElement('div');
+        body.style.cssText = 'padding:16px 18px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;font-size:12px;';
+        body.innerHTML = '<div style="color:#8b949e;">Scanning IndexedDB stores (permanent_rom & volatile_cache)...</div>';
+        card.appendChild(body);
+        overlay.appendChild(card);
+        document.body.appendChild(overlay);
+
+        this.openDatabase(db => {
+          if (!db) {
+            body.innerHTML = '<div style="color:#f87171;">IndexedDB unavailable.</div>';
+            return;
+          }
+          const items = [];
+          const stores = [
+            { name: self.storeRom, tier: 1 },
+            { name: self.storeCache, tier: 0 }
+          ];
+          let doneStores = 0;
+
+          stores.forEach(stObj => {
+            const tx = db.transaction([stObj.name], 'readonly');
+            const store = tx.objectStore(stObj.name);
+            const reqKeys = store.getAllKeys();
+            const reqVals = store.getAll();
+            tx.oncomplete = () => {
+              const keys = reqKeys.result || [];
+              const vals = reqVals.result || [];
+              keys.forEach((k, idx) => {
+                if (vals[idx] && vals[idx].byteLength > 0) {
+                  items.push({ fileKey: k, bytes: vals[idx], tier: stObj.tier, storeName: stObj.name });
+                }
+              });
+              doneStores++;
+              if (doneStores === stores.length) {
+                body.innerHTML = '';
+                if (items.length === 0) {
+                  body.innerHTML = '<div style="color:#f87171;">No cached server images in IndexedDB yet. Select a Server Puzzle from the dropdown to fetch & transcode via the Native Image Bridge.</div>';
+                  return;
+                }
+                items.forEach(item => {
+                  const isMatch = activePuzzleId && item.fileKey.startsWith(activePuzzleId);
+                  const blob = new Blob([item.bytes], { type: 'image/jpeg' });
+                  const blobUrl = URL.createObjectURL(blob);
+                  const row = document.createElement('div');
+                  row.style.cssText = `display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border-radius:10px;background:${isMatch ? '#1f2937' : '#0d1117'};border:1px solid ${isMatch ? '#3b82f6' : '#30363d'};`;
+                  row.innerHTML = `
+                    <div style="display:flex;align-items:center;gap:12px;">
+                      <img src="${blobUrl}" style="width:52px;height:52px;object-fit:cover;border-radius:6px;border:1px solid #30363d;" />
+                      <div>
+                        <div style="font-weight:bold;color:#e6edf3;">${item.fileKey} ${isMatch ? '<span style="color:#60a5fa;">[ACTIVE]</span>' : ''}</div>
+                        <div style="color:#8b949e;font-size:11px;margin-top:2px;">Store: <span style="color:#34d399;">indexeddb://${self.dbName}/${item.storeName}/${item.fileKey}</span></div>
+                        <div style="color:#9ca3af;font-size:11px;margin-top:2px;">Size: ${(item.bytes.byteLength / 1024).toFixed(1)} KB</div>
+                      </div>
+                    </div>
+                    <div style="display:flex;gap:8px;shrink:0;">
+                      <a href="${blobUrl}" target="_blank" style="background:#2563eb;color:#fff;text-decoration:none;padding:6px 10px;border-radius:6px;font-weight:bold;font-size:11px;">↗ Open</a>
+                      <a href="${blobUrl}" download="${item.fileKey}" style="background:#21262d;color:#e6edf3;border:1px solid #30363d;text-decoration:none;padding:6px 10px;border-radius:6px;font-weight:bold;font-size:11px;">⬇ Save</a>
+                    </div>
+                  `;
+                  body.appendChild(row);
+                });
+              }
+            };
+          });
+        });
+      }
+    };
+    window.NativeImageBridgeWeb = NativeImageBridgeWeb;
+
+    async function selectAndLoadServerPuzzle(entry, quietToast = false) {
+      try {
+        const sceneKey = `server:${entry.id}`;
+        const res = await NativeImageBridgeWeb.loadServerPuzzleImage(entry);
+        state.serverImagesMap[sceneKey] = res.img;
+        state.scene = sceneKey;
+        state.lastValidScene = sceneKey;
+        sceneSelect.value = sceneKey;
+        initPuzzle(false);
+        if (!quietToast) {
+          const srcLabel = res.fromCache
+            ? `IndexedDB ${res.tier === 1 ? 'ROM' : 'Cache'} (0ms network)`
+            : `Native Bridge Transcode (${res.elapsedMs}ms, ${res.sizeKb} KB)`;
+          showToast(`🌐 Loaded "${entry.title || entry.id}" via ${srcLabel}`);
+        }
+      } catch (err) {
+        showToast(`⚠️ Failed to load server puzzle "${entry.id}": ${err.message}`, true);
+      }
+    }
+
+    async function syncServerPuzzles(autoSelectFirst = false) {
+      const groupEl = document.getElementById('serverPuzzlesGroup');
+      const badgeEl = document.getElementById('serverSyncBadge');
+      if (!groupEl) return;
+
+      try {
+        if (badgeEl) badgeEl.textContent = '...';
+        // Call both API helper methods so URL list & full manifest are verified
+        const [urls, manifest] = await Promise.all([
+          PuzzleServerAPI.getPublishedImageUrls(PUZZLE_SERVER_URL),
+          PuzzleServerAPI.getPublishedPuzzles(PUZZLE_SERVER_URL)
+        ]);
+        const puzzles = Array.isArray(manifest.puzzles) ? manifest.puzzles : [];
+        state.serverPuzzles = puzzles;
+
+        groupEl.innerHTML = '';
+        if (puzzles.length === 0) {
+          const opt = document.createElement('option');
+          opt.value = 'sunset';
+          opt.disabled = true;
+          opt.textContent = '(No published server images)';
+          groupEl.appendChild(opt);
+          if (badgeEl) badgeEl.textContent = '0 Live';
+          return;
+        }
+
+        puzzles.forEach(p => {
+          const opt = document.createElement('option');
+          opt.value = `server:${p.id}`;
+          opt.textContent = `🌐 ${p.title || p.id}`;
+          groupEl.appendChild(opt);
+        });
+
+        if (badgeEl) badgeEl.textContent = `${urls.length} Live`;
+
+        if (autoSelectFirst && puzzles.length > 0) {
+          await selectAndLoadServerPuzzle(puzzles[0], false);
+        } else if (state.scene && state.scene.startsWith('server:')) {
+          const currentId = state.scene.slice('server:'.length);
+          const found = puzzles.find(p => p.id === currentId);
+          if (found) {
+            sceneSelect.value = `server:${found.id}`;
+          }
+        } else {
+          showToast(`🌐 Synced ${puzzles.length} published puzzle(s) from ${PUZZLE_SERVER_URL}!`);
+        }
+      } catch (err) {
+        if (badgeEl) badgeEl.textContent = 'Offline';
+        groupEl.innerHTML = '';
+        const opt = document.createElement('option');
+        opt.value = 'sunset';
+        opt.disabled = true;
+        opt.textContent = '⚠️ Server Offline (localhost:4200)';
+        groupEl.appendChild(opt);
+        if (!autoSelectFirst) {
+          showToast(`⚠️ Puzzle Server unreachable at ${PUZZLE_SERVER_URL}. Run 'node server.js'`, true);
+        }
+      }
+    }
+
+    document.getElementById('btnSyncServer').addEventListener('click', () => {
+      syncServerPuzzles(false);
+    });
+
+    document.getElementById('btnInspectBridge').addEventListener('click', () => {
+      const activeId = state.scene && state.scene.startsWith('server:')
+        ? state.scene.slice('server:'.length)
+        : '';
+      NativeImageBridgeWeb.openFolderInspectorModal(activeId);
+    });
+
     window.addEventListener('DOMContentLoaded', () => {
       state.coins = lbGetWallet();
       initPuzzle(false);
       lbRenderUI(false);
+      syncServerPuzzles(true);
     });
   </script>
 </body>
