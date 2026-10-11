@@ -109,7 +109,7 @@
       <div class="col-span-7 h-full min-h-0 bg-[#161b22] border border-[#30363d] rounded-xl p-3 shadow-sm flex flex-col items-center justify-between gap-2">
         
         <!-- Top of Grid Window: Power-Ups (Reveal, Hint, Mouse) Above Cats & Lives -->
-        <div id="boardPowersBar" class="shrink-0 w-full grid grid-cols-3 gap-2">
+        <div id="boardPowersBar" class="shrink-0 min-w-[340px] max-w-full grid grid-cols-3 gap-2">
           <button id="btnCatReveal" onclick="useCatReveal()" class="px-2.5 py-1.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#e6edf3] text-xs font-semibold flex items-center justify-between cursor-pointer transition">
             <span class="flex items-center gap-1.5">
               <span>🐾</span>
@@ -136,29 +136,29 @@
         </div>
 
         <!-- Right Above the Board: Found/Total Cats + Live Timer + 5 Lives Indicator -->
-        <div id="boardHeaderBar" class="shrink-0 w-full px-3.5 py-1.5 rounded-xl bg-[#0d1117] border border-[#30363d] flex items-center justify-between gap-2">
+        <div id="boardHeaderBar" class="shrink-0 min-w-[340px] max-w-full px-3.5 py-1.5 rounded-xl bg-[#0d1117] border border-[#30363d] flex items-center justify-between gap-2 whitespace-nowrap">
           <!-- Found / Total Cats -->
           <div class="flex items-center gap-1.5">
             <span class="text-sm">🐱</span>
             <span class="text-xs font-semibold text-[#8b949e]">Cats:</span>
-            <span id="catsCounter" class="text-xs font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">
+            <span id="catsCounter" class="text-xs font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30 whitespace-nowrap shrink-0">
               1 / 6
             </span>
           </div>
 
           <!-- Live Run Timer -->
-          <div class="flex items-center gap-1">
+          <div class="flex items-center gap-1 shrink-0 whitespace-nowrap">
             <span class="text-xs text-[#8b949e]">⏱️</span>
             <span id="runTimerDisplay" class="text-xs font-mono font-bold text-[#e6edf3]">00:00</span>
           </div>
 
           <!-- 5 Lives Indicator -->
-          <div class="flex items-center gap-1.5">
+          <div class="flex items-center gap-1.5 shrink-0 whitespace-nowrap">
             <span class="text-xs font-semibold text-[#8b949e]">Lives:</span>
-            <span id="livesDisplay" class="text-xs tracking-wider" title="5 Lives - Level shuffles on fail">
+            <span id="livesDisplay" class="text-xs tracking-normal whitespace-nowrap inline-flex items-center leading-none shrink-0" title="5 Lives - Level shuffles on fail">
               ❤️❤️❤️❤️❤️
             </span>
-            <span id="livesText" class="text-xs font-bold text-[#8b949e]">(5/5)</span>
+            <span id="livesText" class="text-xs font-bold text-[#8b949e] whitespace-nowrap shrink-0">(5/5)</span>
           </div>
         </div>
 
@@ -308,8 +308,9 @@
       if (size > 0) {
         board.style.width = `${size}px`;
         board.style.height = `${size}px`;
-        if (headerBar) headerBar.style.width = `${size}px`;
-        if (powersBar) powersBar.style.width = `${size}px`;
+        const barWidth = Math.min(viewport.clientWidth, Math.max(size, 360));
+        if (headerBar) headerBar.style.width = `${barWidth}px`;
+        if (powersBar) powersBar.style.width = `${barWidth}px`;
       }
     }
 
