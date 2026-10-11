@@ -95,7 +95,7 @@
         </div>
 
         <!-- Level Builder / Studio Button -->
-        <a id="btnOpenLevelBuilder" href="level_builder.html" target="_blank" rel="noopener" class="px-3 py-1 rounded-lg bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold text-xs shadow-md flex items-center gap-1.5 cursor-pointer transition animate-pulse" title="Open Level Studio in a new tab">
+        <a id="btnOpenLevelBuilder" href="level_builder.html" target="meowsweeper_studio" onclick="window.name='meowsweeper_game';" class="px-3 py-1 rounded-lg bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold text-xs shadow-md flex items-center gap-1.5 cursor-pointer transition animate-pulse" title="Open Level Studio in studio tab">
           <span>🛠️</span>
           <span>Level Studio</span>
         </a>
@@ -1482,6 +1482,13 @@
       updateJsonInspector();
       showToastPopup('🎨', 'Custom Level Loaded!', 'win');
     }
+
+        // Listen to messages from level builder tab
+    window.addEventListener('message', (e) => {
+      if (e.data && e.data.type === 'LOAD_CUSTOM_LEVEL' && e.data.level) {
+        loadCustomLevel(e.data.level);
+      }
+    });
 
     // Check for custom level on load
     window.addEventListener('DOMContentLoaded', () => {

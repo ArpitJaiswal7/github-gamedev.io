@@ -56,10 +56,10 @@
 
       <!-- Action & Back to Game -->
       <div class="flex items-center gap-2.5">
-        <a href="meowsweeper.html" class="px-3.5 py-1.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#e6edf3] text-xs font-semibold flex items-center gap-2 cursor-pointer transition shadow-sm">
+                <button onclick="returnToGame()" class="px-3.5 py-1.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#e6edf3] text-xs font-semibold flex items-center gap-2 cursor-pointer transition shadow-sm" title="Switch back to game tab">
           <span>🎮</span>
           <span>Return to Game</span>
-        </a>
+        </button>
         <button onclick="quickTestInGame()" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white text-xs font-bold flex items-center gap-2 cursor-pointer transition shadow-md">
           <span>▶️</span>
           <span>Play Test Current</span>
@@ -1367,17 +1367,44 @@
       URL.revokeObjectURL(a.href);
     }
 
-    function quickTestInGame() {
-      exportCurrentToEditor();
-      const lvlJson = document.getElementById('jsonEditorBox').value;
+        function returnToGame() {
       try {
-        const obj = JSON.parse(lvlJson);
-        if (window.parent && window.parent !== window) {
-          window.parent.postMessage({ type: 'LOAD_CUSTOM_LEVEL', level: obj }, '*');
+        if (window.opener && !window.opener.closed) {
+          window.opener.focus();
+          window.close();
           return;
         }
       } catch (e) {}
+
+      // Try closing current tab
+      window.close();
+
+      // If close was blocked (e.g. standalone navigation), switch to meowsweeper_game window
+      try {
+        const gameWin = window.open('meowsweeper.html', 'meowsweeper_game');
+        if (gameWin) {
+          gameWin.focus();
+          return;
+        }
+      } catch (e) {}
+
+      window.location.href = 'meowsweeper.html';
+    }
+
+    function quickTestInGame() {
+      exportCurrentToEditor();
+      const lvlJson = document.getElementById('jsonEditorBox').value;
       localStorage.setItem('meowsweeper_custom_level_test', lvlJson);
+      try {
+        const obj = JSON.parse(lvlJson);
+        if (window.opener && !window.opener.closed) {
+          window.opener.postMessage({ type: 'LOAD_CUSTOM_LEVEL', level: obj }, '*');
+          window.opener.focus();
+          showToast('Custom level sent to game tab! Switching back...', 'success');
+          setTimeout(() => window.close(), 600);
+          return;
+        }
+      } catch (e) {}
       window.location.href = 'meowsweeper.html?mode=custom';
     }
 
