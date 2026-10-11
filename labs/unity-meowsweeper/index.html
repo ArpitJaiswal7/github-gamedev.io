@@ -200,20 +200,12 @@
 
       function fitCanvas() {
         if (!stage || !canvas) return;
-        var sw = stage.clientWidth - 16;
-        var sh = stage.clientHeight - 16;
+        var sw = stage.clientWidth;
+        var sh = stage.clientHeight;
         if (sw <= 0 || sh <= 0) return;
 
-        var aspect = 1280 / 800; // 1.6
-        var nw = sw;
-        var nh = sw / aspect;
-        if (nh > sh) {
-          nh = sh;
-          nw = sh * aspect;
-        }
-
-        canvas.style.width = Math.floor(nw) + "px";
-        canvas.style.height = Math.floor(nh) + "px";
+        canvas.style.width = sw + "px";
+        canvas.style.height = sh + "px";
       }
 
       window.addEventListener("resize", fitCanvas);
