@@ -2160,20 +2160,24 @@
         activeRow.className = 'group w-full p-2 rounded-xl border flex items-center justify-between gap-2 text-xs transition select-none bg-blue-600/20 border-blue-500/60 text-[#e6edf3]';
       }
 
-      // Fetch level JSON from server
-      const targetUrl = svBaseUrl.startsWith('http')
+      // Fetch level JSON from server with multi-path fallback
+      const primaryUrl = svBaseUrl.startsWith('http')
         ? `${svBaseUrl}${meta.url || `/levels/${levelId}.json`}`
-        : `${svBaseUrl}/levels/${levelId}.json`;
+        : `../content/levels/${levelId}.json`;
 
       try {
-        const res = await fetch(targetUrl);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        let res = await fetch(primaryUrl);
+        if (!res.ok && svBaseUrl.startsWith('http')) {
+          // If local server returned 404, fallback to static portfolio content
+          res = await fetch(`../content/levels/${levelId}.json`);
+        }
+        if (!res.ok) throw new Error(`HTTP ${res.status} (${primaryUrl})`);
         const levelData = await res.json();
         svCurrentLevel = levelData;
         renderServerLevelDetail(levelData, meta);
       } catch (err) {
-        console.error('Failed to fetch level JSON:', err);
-        showToast(`Failed to load ${levelId}.json from server`, 'error');
+        console.error('Failed to fetch level JSON:', err, primaryUrl);
+        showToast(`Failed to load ${levelId}.json: ${err.message}`, 'error');
       }
     }
 

@@ -1,8 +1,8 @@
 {
   "schemaVersion": "2.0",
   "game": "Meowsweeper",
-  "updatedAt": "2026-10-11T07:20:16.260Z",
-  "totalLevels": 66,
+  "updatedAt": "2026-10-11T08:18:08.778Z",
+  "totalLevels": 65,
   "levels": {
     "lvl_1": {
       "levelId": "lvl_1",
@@ -653,16 +653,6 @@
       "hash": "f1923eafa8db3911913e183ca73a6c7670978e639b610028e29f9ac031669948",
       "fileSize": 854,
       "url": "/levels/lvl_9.json"
-    },
-    "lvl_test_99": {
-      "levelId": "lvl_test_99",
-      "levelDisplayName": "Test Level 99",
-      "order": 0,
-      "gridSize": 5,
-      "tier": "Easy",
-      "hash": "9c1cdd4bbdcf2d10e6b48a4887b6b3d1635a9ef5cbacd939706db55d0e69600e",
-      "fileSize": 104,
-      "url": "/levels/lvl_test_99.json"
     }
   }
 }
