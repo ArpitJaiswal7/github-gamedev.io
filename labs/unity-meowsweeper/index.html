@@ -329,16 +329,17 @@
 
         var dx = cell.mx - jsStartPos.x;
         var dy = cell.my - jsStartPos.y;
-        if (!jsIsSwiping && (dx * dx + dy * dy) > 40) {
+        var movedCell = (cell.row !== jsStartRow || cell.col !== jsStartCol);
+        if (!jsIsSwiping && (movedCell || (dx * dx + dy * dy) > 40)) {
           jsIsSwiping = true;
-          activeUnityInstance.SendMessage("MeowsweeperGameSystem", "OnWebInput", jsStartRow + "," + jsStartCol + ",swipe_add");
+          activeUnityInstance.SendMessage("MeowsweeperGameSystem", "OnWebInput", jsStartRow + "," + jsStartCol + ",swipe_start");
         }
 
         if (jsIsSwiping) {
           if (cell.row !== jsLastRow || cell.col !== jsLastCol) {
             jsLastRow = cell.row;
             jsLastCol = cell.col;
-            activeUnityInstance.SendMessage("MeowsweeperGameSystem", "OnWebInput", cell.row + "," + cell.col + ",swipe_add");
+            activeUnityInstance.SendMessage("MeowsweeperGameSystem", "OnWebInput", cell.row + "," + cell.col + ",swipe_move");
           }
         }
       });
