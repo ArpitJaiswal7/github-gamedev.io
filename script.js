@@ -273,12 +273,12 @@ const UNITY_LAB_MANIFEST = {
   'jigsaw-solitaire': {
     icon: '🃏',
     title: 'Calm Jigsaw Solitaire',
-    scene: 'CalmJigsawSolitaire.unity',
+    scene: 'JigsawSolitaireMain.unity',
     htmlUrl: 'labs/jigsaw-solitaire.html',
-    webglUrl: 'webgl/jigsaw-solitaire/index.html',
+    webglUrl: 'labs/unity-jigsaw-solitaire/index.html',
     hasWebgl: true,
-    unitySpecs: 'Unity 2022.3 LTS (Spatial Group Merging + Ring Expand Shader)',
-    desc: 'Solitaire Column Queues + Spatial Cluster Merging & Powerups'
+    unitySpecs: 'Unity 6000.3.14f1 (C# / WebGL 2.0 WASM) • Rectangular Card Seam Merging & Backend Bridge',
+    desc: 'Rectangular Card Grid, 0px Seam Merging, Displacement Swapping, Offline Leaderboard & Backend Server'
   },
   'offline-leaderboard': {
     icon: '🏆',
