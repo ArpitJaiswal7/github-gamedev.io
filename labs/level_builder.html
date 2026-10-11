@@ -585,7 +585,7 @@
                 <span id="svCatCountBadge" class="font-mono text-emerald-400">4 / 4 Cats Placed</span>
               </div>
               <div class="flex-1 flex items-center justify-center w-full">
-                <div id="svGridCanvas" class="grid gap-1.5 p-2 bg-stone-900/60 rounded-xl shadow-inner max-w-full">
+                <div id="svGridCanvas" class="grid gap-[2px] p-1.5 bg-stone-900/60 rounded-xl shadow-inner max-w-full">
                   <!-- Dynamically generated cells -->
                 </div>
               </div>
@@ -2139,9 +2139,9 @@
       container.innerHTML = '';
       items.forEach((meta) => {
         const isSelected = svCurrentLevel && svCurrentLevel.levelId === meta.levelId;
-        const btn = document.createElement('button');
-        btn.id = `sv_item_${meta.levelId}`;
-        btn.className = `w-full text-left p-2.5 rounded-xl border flex items-center justify-between gap-2 text-xs transition cursor-pointer select-none ${
+        const row = document.createElement('div');
+        row.id = `sv_item_${meta.levelId}`;
+        row.className = `group w-full p-2 rounded-xl border flex items-center justify-between gap-2 text-xs transition select-none ${
           isSelected 
             ? 'bg-blue-600/20 border-blue-500/60 text-[#e6edf3]' 
             : 'bg-[#161b22] hover:bg-[#21262d] border-[#30363d] text-[#8b949e] hover:text-[#e6edf3]'
@@ -2150,8 +2150,8 @@
         const tierBadgeClass = getTierBadgeColorClass(meta.tier);
         const sizeBadge = `${meta.gridSize || 6}x${meta.gridSize || 6}`;
 
-        btn.innerHTML = `
-          <div class="flex items-center gap-2 min-w-0">
+        row.innerHTML = `
+          <div onclick="selectServerLevel('${meta.levelId}')" class="flex-1 flex items-center gap-2 min-w-0 cursor-pointer">
             <span class="text-xs">📄</span>
             <div class="truncate">
               <div class="font-mono font-bold text-[#e6edf3] text-xs truncate">${meta.levelId}.json</div>
@@ -2159,13 +2159,15 @@
             </div>
           </div>
           <div class="flex items-center gap-1.5 shrink-0">
-            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#0d1117] text-[#8b949e] border border-[#30363d]">${sizeBadge}</span>
-            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full border ${tierBadgeClass}">${meta.tier || 'Easy'}</span>
+            <span onclick="selectServerLevel('${meta.levelId}')" class="cursor-pointer text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#0d1117] text-[#8b949e] border border-[#30363d]">${sizeBadge}</span>
+            <span onclick="selectServerLevel('${meta.levelId}')" class="cursor-pointer text-[10px] font-bold px-2 py-0.5 rounded-full border ${tierBadgeClass}">${meta.tier || 'Easy'}</span>
+            <button onclick="removeLevelDirectlyFromServer(event, '${meta.levelId}')" class="w-6 h-6 rounded-lg bg-transparent hover:bg-rose-950/80 border border-transparent hover:border-rose-500/60 text-[#8b949e] hover:text-rose-300 flex items-center justify-center text-xs font-bold transition cursor-pointer" title="Delete ${meta.levelId}.json directly from server">
+              ✕
+            </button>
           </div>
         `;
 
-        btn.onclick = () => selectServerLevel(meta.levelId);
-        container.appendChild(btn);
+        container.appendChild(row);
       });
     }
 
@@ -2186,13 +2188,13 @@
       if (!meta) return;
 
       // Update active highlight in left list
-      const allButtons = document.querySelectorAll('#serverLevelsList button');
-      allButtons.forEach(b => {
-        b.className = 'w-full text-left p-2.5 rounded-xl border flex items-center justify-between gap-2 text-xs transition cursor-pointer select-none bg-[#161b22] hover:bg-[#21262d] border-[#30363d] text-[#8b949e] hover:text-[#e6edf3]';
+      const allRows = document.querySelectorAll('#serverLevelsList > div');
+      allRows.forEach(r => {
+        r.className = 'group w-full p-2 rounded-xl border flex items-center justify-between gap-2 text-xs transition select-none bg-[#161b22] hover:bg-[#21262d] border-[#30363d] text-[#8b949e] hover:text-[#e6edf3]';
       });
-      const activeBtn = document.getElementById(`sv_item_${levelId}`);
-      if (activeBtn) {
-        activeBtn.className = 'w-full text-left p-2.5 rounded-xl border flex items-center justify-between gap-2 text-xs transition cursor-pointer select-none bg-blue-600/20 border-blue-500/60 text-[#e6edf3]';
+      const activeRow = document.getElementById(`sv_item_${levelId}`);
+      if (activeRow) {
+        activeRow.className = 'group w-full p-2 rounded-xl border flex items-center justify-between gap-2 text-xs transition select-none bg-blue-600/20 border-blue-500/60 text-[#e6edf3]';
       }
 
       // Fetch level JSON from server
@@ -2285,19 +2287,19 @@
           cell.style.height = `${cellSize}px`;
           cell.style.backgroundColor = color.bg;
           cell.style.borderColor = color.border;
-          cell.className = 'relative flex items-center justify-center font-bold text-stone-900 border border-stone-800/40 rounded-lg shadow-sm transition';
+          cell.className = 'relative flex items-center justify-center font-bold text-stone-900 border border-stone-800/25 rounded-[3px] shadow-none transition';
 
           const hasCat = solution[r] && solution[r][c] === 1;
           if (hasCat) placedCats++;
 
           if (svShowingSolution && hasCat) {
             const cat = document.createElement('span');
-            cat.className = 'text-lg drop-shadow select-none';
+            cat.className = 'text-base drop-shadow select-none';
             cat.textContent = '🐱';
             cell.appendChild(cat);
           } else {
             const num = document.createElement('span');
-            num.className = 'text-[10px] font-mono text-stone-700/60 select-none';
+            num.className = 'text-[9px] font-mono text-stone-700/60 select-none';
             num.textContent = regId;
             cell.appendChild(num);
           }
@@ -2369,6 +2371,69 @@
         console.error('Failed to load into studio:', err);
         showToast('Failed to import level into studio: ' + err.message, 'error');
       }
+    }
+
+    async function removeLevelDirectlyFromServer(event, levelId) {
+      if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+      }
+
+      if (!confirm(`Are you sure you want to permanently delete ${levelId}.json from the server?`)) {
+        return;
+      }
+
+      const row = document.getElementById(`sv_item_${levelId}`);
+      if (row) {
+        row.style.opacity = '0.4';
+      }
+
+      let deletedOnServer = false;
+
+      // 1. Try deleting from local server API (port 3000)
+      try {
+        const res = await fetch(`${LOCAL_SERVER_URL}/api/delete-level`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ levelId })
+        });
+        if (res.ok) {
+          deletedOnServer = true;
+        }
+      } catch (e) {
+        // Local server might be offline, fallback to client-side state update
+      }
+
+      // 2. Update in-memory manifest and UI
+      if (svManifestData && svManifestData.levels) {
+        delete svManifestData.levels[levelId];
+        svManifestData.totalLevels = Object.keys(svManifestData.levels).length;
+      }
+      svLevelsList = svLevelsList.filter(l => l.levelId !== levelId);
+
+      const totalBadge = document.getElementById('serverTotalBadge');
+      if (totalBadge) {
+        totalBadge.textContent = `${svLevelsList.length} Levels Published`;
+      }
+
+      // Refresh left column list
+      handleServerViewerFilter();
+
+      // If the deleted level was currently inspected, switch to another level or clear
+      if (svCurrentLevel && svCurrentLevel.levelId === levelId) {
+        if (svLevelsList.length > 0) {
+          selectServerLevel(svLevelsList[0].levelId);
+        } else {
+          svCurrentLevel = null;
+          document.getElementById('svDetailId').textContent = 'None';
+          document.getElementById('svDetailFileName').textContent = 'No file';
+          document.getElementById('svRawJsonText').textContent = '// No levels remain in manifest';
+          const canvas = document.getElementById('svGridCanvas');
+          if (canvas) canvas.innerHTML = '';
+        }
+      }
+
+      showToast(`Removed ${levelId}.json from server manifest!`, 'success');
     }
   </script>
 </body>

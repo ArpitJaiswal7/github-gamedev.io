@@ -269,6 +269,57 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // 6. DELETE /api/delete-level or DELETE /levels/:filename (Direct removal without publish)
+  if ((req.method === 'DELETE' || req.method === 'POST') && (pathname === '/api/delete-level' || pathname.startsWith('/levels/'))) {
+    const handleDeletion = (levelId) => {
+      if (!levelId) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: 'levelId is required' }));
+      }
+
+      const cleanId = levelId.replace(/\.json$/i, '');
+      const targetFile = path.join(LEVELS_DIR, `${cleanId}.json`);
+      const portfolioFile = path.join(PORTFOLIO_LEVELS_DIR, `${cleanId}.json`);
+
+      let deleted = false;
+      if (fs.existsSync(targetFile)) {
+        fs.unlinkSync(targetFile);
+        deleted = true;
+      }
+      if (fs.existsSync(portfolioFile)) {
+        try {
+          fs.unlinkSync(portfolioFile);
+          deleted = true;
+        } catch (e) {}
+      }
+
+      const updatedManifest = rebuildManifest();
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        success: true,
+        deletedLevelId: cleanId,
+        foundAndRemoved: deleted,
+        totalLevels: updatedManifest.totalLevels,
+        updatedAt: updatedManifest.updatedAt
+      }));
+    };
+
+    if (pathname.startsWith('/levels/')) {
+      const filename = path.basename(pathname);
+      handleDeletion(filename);
+      return;
+    }
+
+    readJsonBody((err, payload) => {
+      if (err) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: 'Invalid JSON body' }));
+      }
+      handleDeletion(payload.levelId);
+    });
+    return;
+  }
+
   // 404 for other routes
   res.writeHead(404, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify({ error: 'Not Found' }));
