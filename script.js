@@ -255,10 +255,10 @@ const UNITY_LAB_MANIFEST = {
     title: 'MeowSweeper',
     scene: 'MeowSweeper_Lab.unity',
     htmlUrl: 'labs/meowsweeper.html',
-    webglUrl: 'webgl/meowsweeper/index.html',
+    webglUrl: 'labs/unity-meowsweeper/index.html',
     hasWebgl: true,
-    unitySpecs: 'Unity 2022.3 LTS (IL2CPP / WebGL 2.0) • Discrete Multi-Touch + Hint Cascade',
-    desc: 'Meowdoku Hybrid Solver + Deterministic Hint Cascade'
+    unitySpecs: 'Unity 6000.3.14f1 (C# / WebGL 2.0 WASM) • Connected to Live Level Server',
+    desc: 'MeowSweeper Core & Offline Leaderboard (Headless Unity WebGL WASM wired to Live CDN)'
   },
   'calm-jigsaw': {
     icon: '🧩',
