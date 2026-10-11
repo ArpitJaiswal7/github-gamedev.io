@@ -2183,17 +2183,25 @@
 
     function renderServerLevelDetail(level, meta) {
       const N = level.gridSize || 6;
-      document.getElementById('svDetailId').textContent = level.levelId || meta.levelId;
-      document.getElementById('svDetailFileName').textContent = `${level.levelId || meta.levelId}.json`;
+      const idEl = document.getElementById('svDetailId');
+      if (idEl) idEl.textContent = level.levelId || meta.levelId;
+
+      const fileEl = document.getElementById('svDetailFileName');
+      if (fileEl) fileEl.textContent = `${level.levelId || meta.levelId}.json`;
       
       const tierEl = document.getElementById('svDetailTier');
-      tierEl.textContent = level.tier || meta.tier || 'Easy';
-      tierEl.className = `text-[10px] font-bold px-2 py-0.5 rounded-full border ${getTierBadgeColorClass(level.tier || meta.tier)}`;
+      if (tierEl) {
+        tierEl.textContent = level.tier || meta.tier || 'Easy';
+        tierEl.className = `text-[10px] font-bold px-2 py-0.5 rounded-full border ${getTierBadgeColorClass(level.tier || meta.tier)}`;
+      }
       
-      document.getElementById('svDetailGridBadge').textContent = `${N}x${N}`;
-      document.getElementById('svDetailHash').textContent = `hash: ${meta.hash ? meta.hash.slice(0, 10) + '...' : 'live'}`;
+      const gridBadgeEl = document.getElementById('svDetailGridBadge');
+      if (gridBadgeEl) gridBadgeEl.textContent = `${N}x${N}`;
 
-      // Set File size display
+      const hashEl = document.getElementById('svDetailHash');
+      if (hashEl) hashEl.textContent = `hash: ${meta.hash ? meta.hash.slice(0, 10) + '...' : 'live'}`;
+
+      // Set File size display if element exists
       const jsonFormatted = JSON.stringify(level, null, 2);
       const rawTextEl = document.getElementById('svRawJsonText');
       if (rawTextEl) rawTextEl.textContent = jsonFormatted;
@@ -2211,17 +2219,19 @@
     function updateSvSolverUI(res, level) {
       const pill = document.getElementById('svSolverStatusPill');
       const text = document.getElementById('svSolverStatusText');
-      if (!pill || !text) return;
-
-      if (res.solutionCount === 1) {
-        pill.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1';
-        pill.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span><span>Unique (${res.elapsedMs}ms, ${level.stepScore ?? res.stepScore ?? 50} pts)</span>`;
-      } else if (res.solutionCount > 1) {
-        pill.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 flex items-center gap-1';
-        pill.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block"></span><span>Ambiguous (${res.solutionCount} solutions)</span>`;
-      } else {
-        pill.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/30 flex items-center gap-1';
-        pill.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-rose-400 inline-block"></span><span>Unsolvable</span>`;
+      if (pill) {
+        if (res.solutionCount === 1) {
+          pill.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1';
+          pill.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span><span>Unique (${res.elapsedMs}ms, ${level.stepScore ?? res.stepScore ?? 50} pts)</span>`;
+        } else if (res.solutionCount > 1) {
+          pill.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 flex items-center gap-1';
+          pill.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block"></span><span>Ambiguous (${res.solutionCount} solutions)</span>`;
+        } else {
+          pill.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/30 flex items-center gap-1';
+          pill.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-rose-400 inline-block"></span><span>Unsolvable</span>`;
+        }
+      } else if (text) {
+        text.textContent = res.solutionCount === 1 ? `Unique (${res.elapsedMs}ms)` : 'Unsolved';
       }
     }
 
