@@ -76,10 +76,13 @@
 
     <!-- Live KPI Counters & Game Launchers -->
     <div class="flex items-center gap-2 shrink-0">
-      <a href="http://localhost:4200/labs/calm-jigsaw.html" target="_blank" class="px-2.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition flex items-center gap-1 shadow">
+      <button onclick="pushCatalogToLiveGit()" class="px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition flex items-center gap-1 shadow cursor-pointer" title="Sync & Push Published Images to Live GitHub Pages">
+        🚀 Push to Live Git
+      </button>
+      <a id="linkWebJigsaw" href="calm-jigsaw.html" target="_blank" class="px-2.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition flex items-center gap-1 shadow">
         ▶ Web Jigsaw
       </a>
-      <a href="http://localhost:4200/labs/unity-calm-jigsaw/index.html" target="_blank" class="px-2.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition flex items-center gap-1 shadow">
+      <a id="linkUnityJigsaw" href="unity-calm-jigsaw/index.html" target="_blank" class="px-2.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition flex items-center gap-1 shadow">
         ▶ Unity WebGL
       </a>
       <div class="px-2.5 py-1 rounded-xl bg-[#0d1117] border border-[#30363d] text-xs">
@@ -666,10 +669,13 @@ const imgData = await PuzzleServerAPI.fetchPuzzleImageData(
             if (ghRes.ok) {
               const ghData = await ghRes.json();
               if (ghData && Array.isArray(ghData.puzzles) && ghData.puzzles.length > 0) {
-                state.puzzles = ghData.puzzles;
+                const localItems = loadLocalMirrorCatalog();
+                const ghIds = new Set(ghData.puzzles.map(p => p.id));
+                const extraLocal = localItems.filter(p => !ghIds.has(p.id));
+                state.puzzles = [...extraLocal, ...ghData.puzzles];
                 state.usingLocalMirror = true;
                 loadedFromGhMirror = true;
-                if (modeText) modeText.textContent = 'GitHub Pages Mirror • 71 Live';
+                if (modeText) modeText.textContent = `Live GitHub Cloud • ${state.puzzles.length} Ready`;
                 break;
               }
             }
@@ -688,9 +694,33 @@ const imgData = await PuzzleServerAPI.fetchPuzzleImageData(
         }
       }
 
+      const isLocalServerRoot = window.location.port === '4200' && window.location.pathname === '/';
+      const linkWeb = document.getElementById('linkWebJigsaw');
+      const linkUnity = document.getElementById('linkUnityJigsaw');
+      if (linkWeb) linkWeb.href = isLocalServerRoot ? '/labs/calm-jigsaw.html' : 'calm-jigsaw.html';
+      if (linkUnity) linkUnity.href = isLocalServerRoot ? '/labs/unity-calm-jigsaw/index.html' : 'unity-calm-jigsaw/index.html';
+
       updateKpiCounters();
       renderCatalogGrid();
       populatePreviewSelect();
+    }
+
+    async function pushCatalogToLiveGit() {
+      showToast('🚀 Syncing & pushing published catalog to live GitHub Pages...');
+      try {
+        const res = await fetch(`${API_BASE}/api/puzzles/push-live`, { method: 'POST', mode: 'cors' });
+        const data = await res.json();
+        if (!res.ok || !data.pushed) throw new Error(data.error || 'Push failed');
+        showToast(`✅ ${data.message} (${data.publishedCount} live on GitHub Pages)`);
+      } catch (err) {
+        saveLocalMirrorCatalog(state.puzzles);
+        for (const p of state.puzzles) {
+          if (p.published && p.dataUrl) {
+            await BridgeDB.putDataUrlInStore(p.id, p.dataUrl, p.saveToRomOnDownload !== false);
+          }
+        }
+        showToast('✅ Synced published images to Live Browser IndexedDB & Shared Catalog!');
+      }
     }
 
     function setFilter(f) {

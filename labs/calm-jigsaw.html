@@ -2176,22 +2176,8 @@
       serverBaseUrl: PUZZLE_SERVER_URL,
 
       async getPublishedImageUrls(baseUrl = this.serverBaseUrl) {
-        const clean = String(baseUrl).replace(/\/+$/, '');
-        const isHttps = typeof window !== 'undefined' && window.location && window.location.protocol === 'https:';
-        const candidates = isHttps
-          ? ['../assets/puzzles/urls.json', `${GH_PAGES_MIRROR_URL}/urls.json`, `${clean}/api/puzzles/urls`]
-          : [`${clean}/api/puzzles/urls`, '../assets/puzzles/urls.json', `${GH_PAGES_MIRROR_URL}/urls.json`];
-
-        for (const url of candidates) {
-          try {
-            const resp = await fetch(url, { mode: 'cors', credentials: 'omit' });
-            if (resp.ok) {
-              const data = await resp.json();
-              if (Array.isArray(data.urls) && data.urls.length > 0) return data.urls;
-            }
-          } catch (_) {}
-        }
-        return getLocalMirrorPublished().map(p => p.url);
+        const manifest = await this.getPublishedPuzzles(baseUrl);
+        return Array.isArray(manifest.urls) ? manifest.urls : [];
       },
 
       async getPublishedPuzzles(baseUrl = this.serverBaseUrl) {
@@ -2201,21 +2187,33 @@
           ? ['../assets/puzzles/published.json', `${GH_PAGES_MIRROR_URL}/published.json`, `${clean}/api/puzzles/published`]
           : [`${clean}/api/puzzles/published`, '../assets/puzzles/published.json', `${GH_PAGES_MIRROR_URL}/published.json`];
 
+        const localPub = getLocalMirrorPublished();
+
         for (const url of candidates) {
           try {
             const resp = await fetch(url, { mode: 'cors', credentials: 'omit' });
             if (resp.ok) {
               const data = await resp.json();
-              if (data && Array.isArray(data.puzzles) && data.puzzles.length > 0) return data;
+              if (data && Array.isArray(data.puzzles) && data.puzzles.length > 0) {
+                const remoteIds = new Set(data.puzzles.map(p => p.id));
+                const extraLocal = localPub.filter(p => !remoteIds.has(p.id));
+                const merged = [...extraLocal, ...data.puzzles];
+                return {
+                  ...data,
+                  count: merged.length,
+                  totalPublished: merged.length,
+                  urls: merged.map(p => p.url),
+                  puzzles: merged
+                };
+              }
             }
           } catch (_) {}
         }
-        const pub = getLocalMirrorPublished();
         return {
           version: '1.0',
-          totalPublished: pub.length,
-          urls: pub.map(p => p.url),
-          puzzles: pub
+          totalPublished: localPub.length,
+          urls: localPub.map(p => p.url),
+          puzzles: localPub
         };
       }
     };

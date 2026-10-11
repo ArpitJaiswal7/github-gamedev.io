@@ -1,0 +1,1389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calm Jigsaw — Puzzle Image Server & Native Bridge Studio</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --background: #0d1117;
+      --foreground: #e6edf3;
+      --card: #161b22;
+      --secondary: #21262d;
+      --muted: #8b949e;
+      --border: #30363d;
+      --primary: #2563eb;
+    }
+    body {
+      background-color: #0d1117;
+      color: #e6edf3;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #0d1117;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #30363d;
+      border-radius: 9999px;
+    }
+    .drop-active {
+      border-color: #3b82f6 !important;
+      background-color: rgba(37, 99, 235, 0.12) !important;
+    }
+  </style>
+</head>
+<body class="h-screen w-screen overflow-hidden flex flex-col select-none">
+
+  <!-- Hidden File & Folder Inputs -->
+  <input id="fileInput" type="file" accept="image/*" multiple class="hidden" />
+  <input id="folderInput" type="file" webkitdirectory directory multiple class="hidden" />
+
+  <!-- TOP NAVIGATION BAR -->
+  <header class="shrink-0 bg-[#161b22] border-b border-[#30363d] px-5 py-3 flex items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-lg">
+        🧩
+      </div>
+      <div>
+        <div class="flex items-center gap-2.5">
+          <h1 class="font-bold text-base text-[#e6edf3]">Calm Jigsaw — Puzzle Image Server</h1>
+          <span id="serverModeBadge" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span id="serverModeText">CORS Active • Port 4200</span>
+          </span>
+        </div>
+        <p class="text-xs text-[#8b949e]">Drop or load puzzle images from folders • Publish URLs to <code class="text-blue-400">/api/puzzles/urls</code> &amp; <code class="text-blue-400">NativeImageBridge</code></p>
+      </div>
+    </div>
+
+    <!-- Navigation Screen Tabs -->
+    <div class="flex items-center gap-1.5 bg-[#0d1117] p-1 rounded-xl border border-[#30363d]">
+      <button id="navTabStudio" onclick="switchScreen('studio')" class="px-3.5 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-bold transition cursor-pointer">
+        🖼️ 1. Image Studio &amp; Folder Loader
+      </button>
+      <button id="navTabApi" onclick="switchScreen('api')" class="px-3.5 py-1.5 rounded-lg bg-transparent hover:bg-[#21262d] text-[#8b949e] hover:text-[#e6edf3] text-xs font-semibold transition cursor-pointer">
+        🔌 2. API Helpers &amp; Bridge Console
+      </button>
+      <button id="navTabPreview" onclick="switchScreen('preview')" class="px-3.5 py-1.5 rounded-lg bg-transparent hover:bg-[#21262d] text-[#8b949e] hover:text-[#e6edf3] text-xs font-semibold transition cursor-pointer">
+        ✂️ 3. Jigsaw Bézier Cut Preview
+      </button>
+    </div>
+
+    <!-- Live KPI Counters & Game Launchers -->
+    <div class="flex items-center gap-2 shrink-0">
+      <button onclick="pushCatalogToLiveGit()" class="px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition flex items-center gap-1 shadow cursor-pointer" title="Sync & Push Published Images to Live GitHub Pages">
+        🚀 Push to Live Git
+      </button>
+      <a id="linkWebJigsaw" href="calm-jigsaw.html" target="_blank" class="px-2.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition flex items-center gap-1 shadow">
+        ▶ Web Jigsaw
+      </a>
+      <a id="linkUnityJigsaw" href="unity-calm-jigsaw/index.html" target="_blank" class="px-2.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition flex items-center gap-1 shadow">
+        ▶ Unity WebGL
+      </a>
+      <div class="px-2.5 py-1 rounded-xl bg-[#0d1117] border border-[#30363d] text-xs">
+        <span class="text-[#8b949e]">Total:</span>
+        <span id="kpiTotal" class="font-mono font-bold text-[#e6edf3] ml-1">0</span>
+      </div>
+      <div class="px-2.5 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs">
+        <span class="text-emerald-400">Published:</span>
+        <span id="kpiPublished" class="font-mono font-bold text-emerald-400 ml-1">0</span>
+      </div>
+      <div class="px-2.5 py-1 rounded-xl bg-[#0d1117] border border-[#30363d] text-xs">
+        <span class="text-[#8b949e]">Disk:</span>
+        <span id="kpiBytes" class="font-mono font-bold text-amber-400 ml-1">0 KB</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT WORKSPACE -->
+  <main class="flex-1 min-h-0 overflow-hidden flex flex-col p-4 max-w-[1440px] w-full mx-auto gap-4">
+
+    <!-- =================================================================== -->
+    <!-- SCREEN 1: IMAGE STUDIO (DRAG & DROP + FOLDER LOADER + CATALOG GRID) -->
+    <!-- =================================================================== -->
+    <section id="screenStudio" class="flex-1 min-h-0 h-full grid grid-cols-12 md:grid-rows-1 gap-4 overflow-y-auto md:overflow-hidden">
+
+      <!-- Left Column (4 cols): Drag & Drop Uploader + Folder Scanner Controls -->
+      <div class="col-span-12 md:col-span-4 md:h-full flex flex-col gap-3 min-h-0 overflow-y-auto custom-scroll pr-1">
+
+        <!-- Card 1: Drag & Drop + Explorer Folder Picker -->
+        <div class="bg-[#161b22] border border-[#30363d] rounded-2xl p-4 flex flex-col gap-3">
+          <div class="flex items-center justify-between">
+            <h2 class="text-sm font-bold text-[#e6edf3] flex items-center gap-1.5">
+              <span>📥</span> Drop or Select Puzzle Images
+            </h2>
+            <span class="text-[11px] font-mono text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/30">Auto 1:1 Square</span>
+          </div>
+
+          <!-- Upload Settings -->
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <div>
+              <label class="block text-[#8b949e] mb-1">Default Category</label>
+              <select id="uploadCategory" class="w-full bg-[#0d1117] border border-[#30363d] rounded-lg px-2.5 py-1.5 text-xs text-[#e6edf3] focus:outline-none">
+                <option value="Nature">🌿 Nature</option>
+                <option value="Cozy">☕ Cozy &amp; Calm</option>
+                <option value="Art">🎨 Illustration</option>
+                <option value="Animals">🐱 Animals</option>
+                <option value="Architecture">🏛️ Architecture</option>
+                <option value="Custom">✨ Custom Pack</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[#8b949e] mb-1">Target Square Resolution</label>
+              <select id="uploadTargetSize" class="w-full bg-[#0d1117] border border-[#30363d] rounded-lg px-2.5 py-1.5 text-xs text-[#e6edf3] focus:outline-none">
+                <option value="1080" selected>1080 × 1080 px (HD)</option>
+                <option value="512">512 × 512 px (Fast WebGL)</option>
+                <option value="2048">2048 × 2048 px (Ultra)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between gap-2 bg-[#0d1117] border border-[#30363d] rounded-xl px-3 py-2 text-xs">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input id="uploadAutoPublish" type="checkbox" checked class="accent-blue-600 w-3.5 h-3.5" />
+              <span>Publish immediately to URL API</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer" title="Save to Permanent ROM tier in Studio.NativeImagePipeline">
+              <input id="uploadSaveToRom" type="checkbox" checked class="accent-blue-600 w-3.5 h-3.5" />
+              <span class="text-amber-400 font-semibold">ROM Tier</span>
+            </label>
+          </div>
+
+          <!-- Interactive Dropzone -->
+          <div
+            id="dropZone"
+            onclick="document.getElementById('fileInput').click()"
+            class="border-2 border-dashed border-[#30363d] hover:border-blue-500/70 bg-[#0d1117]/70 rounded-2xl p-6 text-center cursor-pointer transition flex flex-col items-center justify-center gap-2 min-h-[160px]"
+          >
+            <div class="w-11 h-11 rounded-2xl bg-[#21262d] border border-[#30363d] flex items-center justify-center text-2xl">
+              🖼️
+            </div>
+            <div class="text-xs font-bold text-[#e6edf3]">
+              Drag &amp; Drop puzzle images here
+            </div>
+            <div class="text-[11px] text-[#8b949e]">
+              Supports PNG, JPG, WEBP • Auto center-crops to 1:1 square
+            </div>
+          </div>
+
+          <!-- Action Buttons: Select Files vs Load Entire Folder -->
+          <div class="grid grid-cols-2 gap-2">
+            <button
+              onclick="document.getElementById('fileInput').click()"
+              class="py-2 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
+            >
+              <span>📄</span> Select Images...
+            </button>
+            <button
+              onclick="document.getElementById('folderInput').click()"
+              class="py-2 px-3 rounded-xl bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#e6edf3] font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
+            >
+              <span>📁</span> Load Folder...
+            </button>
+          </div>
+        </div>
+
+        <!-- Card 2: Server Disk Folder Scanner -->
+        <div class="bg-[#161b22] border border-[#30363d] rounded-2xl p-4 flex flex-col gap-2.5">
+          <h2 class="text-sm font-bold text-[#e6edf3] flex items-center gap-1.5">
+            <span>🖥️</span> Scan Local Server Folder Path
+          </h2>
+          <p class="text-[11px] text-[#8b949e]">
+            Paste any directory path on your PC to bulk-import all <code class="text-[#e6edf3]">.png/.jpg/.webp</code> files directly from disk:
+          </p>
+          <input
+            id="serverFolderInput"
+            type="text"
+            value="C:\Users\arpit\.gemini\antigravity\scratch\github-gamedev.io\assets\games"
+            placeholder="C:\path\to\your\puzzle\images"
+            class="w-full bg-[#0d1117] border border-[#30363d] rounded-xl px-3 py-2 text-xs font-mono text-[#e6edf3] focus:outline-none focus:border-blue-500"
+          />
+          <div class="flex items-center gap-2">
+            <button
+              onclick="scanServerFolder()"
+              class="flex-1 py-2 px-3 rounded-xl bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#e6edf3] font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
+            >
+              <span>🔍</span> Scan &amp; Import Disk Folder
+            </button>
+            <button
+              onclick="seedProceduralArtPack()"
+              title="Generate 3 crisp 1080x1080 procedural puzzle scenes and upload to server"
+              class="py-2 px-3 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/40 text-purple-300 font-bold text-xs transition cursor-pointer whitespace-nowrap"
+            >
+              ✨ +3 Demo Art
+            </button>
+          </div>
+        </div>
+
+        <!-- Card 3: Quick Endpoint Copy Box -->
+        <div class="bg-[#161b22] border border-[#30363d] rounded-2xl p-4 flex flex-col gap-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-[#e6edf3]">🔗 Published URLs Endpoint</span>
+            <button onclick="copyText('http://localhost:4200/api/puzzles/urls')" class="text-[11px] text-blue-400 hover:underline cursor-pointer">Copy URL</button>
+          </div>
+          <code class="block bg-[#0d1117] border border-[#30363d] rounded-lg px-2.5 py-1.5 text-[11px] font-mono text-emerald-400 select-all">
+            http://localhost:4200/api/puzzles/urls
+          </code>
+          <div class="flex items-center justify-between pt-1">
+            <span class="text-xs font-bold text-[#e6edf3]">📦 NativePipeline Manifest</span>
+            <button onclick="copyText('http://localhost:4200/api/puzzles/published')" class="text-[11px] text-blue-400 hover:underline cursor-pointer">Copy URL</button>
+          </div>
+          <code class="block bg-[#0d1117] border border-[#30363d] rounded-lg px-2.5 py-1.5 text-[11px] font-mono text-blue-400 select-all">
+            http://localhost:4200/api/puzzles/published
+          </code>
+        </div>
+
+      </div>
+
+      <!-- Right Column (8 cols): Puzzle Catalog Grid & Publish Controls -->
+      <div class="col-span-12 md:col-span-8 md:h-full min-h-[500px] bg-[#161b22] border border-[#30363d] rounded-2xl p-4 flex flex-col gap-3 min-h-0 overflow-hidden">
+
+        <!-- Catalog Toolbar -->
+        <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-[#30363d] shrink-0">
+          <div class="flex items-center gap-1.5">
+            <button id="filterAll" onclick="setFilter('all')" class="px-3 py-1 rounded-lg bg-blue-600 text-white text-xs font-bold cursor-pointer transition">
+              All Images
+            </button>
+            <button id="filterPublished" onclick="setFilter('published')" class="px-3 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-[#e6edf3] text-xs font-semibold cursor-pointer transition">
+              🟢 Published Only
+            </button>
+            <button id="filterDrafts" onclick="setFilter('drafts')" class="px-3 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-[#e6edf3] text-xs font-semibold cursor-pointer transition">
+              📝 Drafts
+            </button>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button onclick="bulkSetPublished(true)" class="px-2.5 py-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-400 text-xs font-bold cursor-pointer transition">
+              ✓ Publish All
+            </button>
+            <button onclick="bulkSetPublished(false)" class="px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#8b949e] hover:text-[#e6edf3] text-xs font-semibold cursor-pointer transition">
+              Unpublish All
+            </button>
+            <button onclick="refreshCatalog()" class="px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#e6edf3] text-xs font-semibold cursor-pointer transition">
+              🔄 Refresh
+            </button>
+          </div>
+        </div>
+
+        <!-- Scrollable Image Cards Grid -->
+        <div class="flex-1 min-h-0 overflow-y-auto custom-scroll pr-1">
+          <div
+            id="catalogGrid"
+            style="display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); grid-auto-rows: max-content; gap: 16px; align-items: start; padding-bottom: 16px;"
+          >
+            <!-- Injected by JS -->
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- SCREEN 2: API HELPERS & NATIVE IMAGE BRIDGE CONSOLE                 -->
+    <!-- =================================================================== -->
+    <section id="screenApi" class="hidden flex-1 min-h-0 grid grid-cols-12 gap-4">
+
+      <!-- Left: Interactive API Helper Runner -->
+      <div class="col-span-12 lg:col-span-5 bg-[#161b22] border border-[#30363d] rounded-2xl p-4 flex flex-col gap-3 overflow-y-auto custom-scroll">
+        <h2 class="text-sm font-bold text-[#e6edf3]">🛠️ Interactive API Helper Methods (<code class="text-blue-400">PuzzleServerAPI</code>)</h2>
+        <p class="text-xs text-[#8b949e]">
+          Click any helper method below to execute it live against the backend server and inspect the response used by Unity WebGL (<code class="text-[#e6edf3]">NativeImageBridge.jslib</code>) and the Web version:
+        </p>
+
+        <!-- Helper 1 -->
+        <div class="bg-[#0d1117] border border-[#30363d] rounded-xl p-3 flex flex-col gap-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-emerald-400">1. PuzzleServerAPI.getPublishedImageUrls()</span>
+            <button onclick="runApiHelperUrls()" class="px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold cursor-pointer transition">
+              ▶ Run Helper
+            </button>
+          </div>
+          <p class="text-[11px] text-[#8b949e]">
+            Returns the flat <code class="text-[#e6edf3]">string[]</code> array of all currently published puzzle image URLs on the server.
+          </p>
+        </div>
+
+        <!-- Helper 2 -->
+        <div class="bg-[#0d1117] border border-[#30363d] rounded-xl p-3 flex flex-col gap-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-blue-400">2. PuzzleServerAPI.getPublishedPuzzles()</span>
+            <button onclick="runApiHelperManifest()" class="px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold cursor-pointer transition">
+              ▶ Run Helper
+            </button>
+          </div>
+          <p class="text-[11px] text-[#8b949e]">
+            Returns the full <code class="text-[#e6edf3]">PuzzleManifestResponse</code> JSON (<code class="text-[#e6edf3]">version</code>, <code class="text-[#e6edf3]">urls</code>, <code class="text-[#e6edf3]">puzzles</code>) consumed by <code class="text-[#e6edf3]">Studio.NativeImagePipeline</code>.
+          </p>
+        </div>
+
+        <!-- Helper 3 -->
+        <div class="bg-[#0d1117] border border-[#30363d] rounded-xl p-3 flex flex-col gap-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-purple-400">3. PuzzleServerAPI.fetchPuzzleImageData(url)</span>
+            <button onclick="runApiHelperFetchBridge()" class="px-3 py-1 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold cursor-pointer transition">
+              ▶ Test Bridge Decode
+            </button>
+          </div>
+          <p class="text-[11px] text-[#8b949e]">
+            Fetches the first published URL via CORS, decodes &amp; square-crops it on an <code class="text-[#e6edf3]">OffscreenCanvas</code> (matching <code class="text-[#e6edf3]">NativeImageBridge.jslib</code>), and returns raw <code class="text-[#e6edf3]">Uint8Array</code> bytes + <code class="text-[#e6edf3]">DataURL</code>.
+          </p>
+          <div id="bridgeDecodePreview" class="hidden mt-1 pt-2 border-t border-[#30363d] flex items-center gap-3">
+            <img id="bridgeDecodedImg" class="w-16 h-16 rounded-lg border border-[#30363d] object-cover" />
+            <div id="bridgeDecodeStats" class="text-[11px] font-mono text-emerald-400"></div>
+          </div>
+        </div>
+
+        <!-- Code Usage Snippet -->
+        <div class="bg-[#0d1117] border border-[#30363d] rounded-xl p-3 flex flex-col gap-1.5">
+          <span class="text-xs font-bold text-[#e6edf3]">📋 Usage in Web &amp; Unity WebGL Bridge</span>
+          <pre class="text-[11px] font-mono text-[#8b949e] overflow-x-auto leading-relaxed select-text"><code>// 1. Get all published image URLs
+const urls = await PuzzleServerAPI.getPublishedImageUrls(
+  "http://localhost:4200"
+);
+
+// 2. Fetch & decode 1080x1080 square bytes via Bridge
+const imgData = await PuzzleServerAPI.fetchPuzzleImageData(
+  urls[0],
+  { targetSizePx: 1080, mimeType: "image/jpeg" }
+);</code></pre>
+        </div>
+      </div>
+
+      <!-- Right: Live JSON Response Inspector -->
+      <div class="col-span-12 lg:col-span-7 bg-[#161b22] border border-[#30363d] rounded-2xl p-4 flex flex-col gap-2 min-h-0">
+        <div class="flex items-center justify-between shrink-0">
+          <span id="consoleTitle" class="text-xs font-bold font-mono text-emerald-400">GET /api/puzzles/urls — Response Output</span>
+          <button onclick="copyText(document.getElementById('apiJsonOutput').textContent)" class="px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-xs font-semibold cursor-pointer">
+            📋 Copy JSON
+          </button>
+        </div>
+        <pre id="apiJsonOutput" class="flex-1 min-h-0 bg-[#0d1117] border border-[#30363d] rounded-xl p-3.5 text-xs font-mono text-[#e6edf3] overflow-auto custom-scroll select-text"></pre>
+      </div>
+
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- SCREEN 3: LIVE JIGSAW BÉZIER CUT PREVIEWER                          -->
+    <!-- =================================================================== -->
+    <section id="screenPreview" class="hidden flex-1 min-h-0 grid grid-cols-12 gap-4">
+      <div class="col-span-12 lg:col-span-4 bg-[#161b22] border border-[#30363d] rounded-2xl p-4 flex flex-col gap-3">
+        <h2 class="text-sm font-bold text-[#e6edf3]">✂️ Jigsaw Bézier Cut Inspector</h2>
+        <p class="text-xs text-[#8b949e]">
+          Verify how any server puzzle image looks with the interlocking cubic Bézier tabs &amp; blanks before publishing it to the live game:
+        </p>
+
+        <div>
+          <label class="block text-xs text-[#8b949e] mb-1">Select Server Puzzle Image</label>
+          <select id="previewPuzzleSelect" onchange="renderJigsawCutPreview()" class="w-full bg-[#0d1117] border border-[#30363d] rounded-xl px-3 py-2 text-xs text-[#e6edf3] focus:outline-none"></select>
+        </div>
+
+        <div>
+          <label class="block text-xs text-[#8b949e] mb-1">Grid Cut Density</label>
+          <div class="grid grid-cols-4 gap-1.5">
+            <button onclick="setPreviewGrid(4)" id="prevGrid4" class="py-1.5 rounded-lg bg-blue-600 text-white text-xs font-bold cursor-pointer">4×4 (16)</button>
+            <button onclick="setPreviewGrid(5)" id="prevGrid5" class="py-1.5 rounded-lg bg-[#21262d] text-[#e6edf3] text-xs font-semibold cursor-pointer">5×5 (25)</button>
+            <button onclick="setPreviewGrid(6)" id="prevGrid6" class="py-1.5 rounded-lg bg-[#21262d] text-[#e6edf3] text-xs font-semibold cursor-pointer">6×6 (36)</button>
+            <button onclick="setPreviewGrid(8)" id="prevGrid8" class="py-1.5 rounded-lg bg-[#21262d] text-[#e6edf3] text-xs font-semibold cursor-pointer">8×8 (64)</button>
+          </div>
+        </div>
+
+        <div id="previewMetaBox" class="mt-auto bg-[#0d1117] border border-[#30363d] rounded-xl p-3 text-xs font-mono text-[#8b949e] flex flex-col gap-1">
+        </div>
+      </div>
+
+      <div class="col-span-12 lg:col-span-8 bg-[#161b22] border border-[#30363d] rounded-2xl p-4 flex items-center justify-center relative overflow-hidden">
+        <canvas id="jigsawPreviewCanvas" width="480" height="480" class="rounded-xl border-2 border-[#30363d] shadow-2xl max-w-full max-h-full"></canvas>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Toast Banner -->
+  <div id="toast" class="hidden fixed bottom-5 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl bg-[#161b22] border border-[#30363d] shadow-2xl text-xs font-bold text-[#e6edf3] flex items-center gap-2">
+    <span id="toastText"></span>
+  </div>
+
+  <script>
+    const API_BASE = (window.location.protocol === 'http:' || window.location.protocol === 'https:') && window.location.port === '4200'
+      ? window.location.origin
+      : 'http://localhost:4200';
+    const LOCAL_CATALOG_KEY = 'calm_jigsaw_server_catalog_v1';
+
+    const state = {
+      puzzles: [],
+      filter: 'all',
+      previewGridSize: 4,
+      selectedPreviewId: null,
+      usingLocalMirror: false
+    };
+
+    // --- EMBEDDED NATIVE IMAGE BRIDGE & LOCAL MIRROR (Works both with localhost:4200 & in sandboxed preview) ---
+    const BridgeDB = {
+      dbName: 'Studio_NativeImagePipeline_DB',
+      dbVersion: 1,
+      storeCache: 'volatile_cache',
+      storeRom: 'permanent_rom',
+      db: null,
+
+      open(cb) {
+        if (this.db) { cb(this.db); return; }
+        const req = indexedDB.open(this.dbName, this.dbVersion);
+        req.onupgradeneeded = e => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(this.storeCache)) db.createObjectStore(this.storeCache);
+          if (!db.objectStoreNames.contains(this.storeRom)) db.createObjectStore(this.storeRom);
+        };
+        req.onsuccess = e => { this.db = e.target.result; cb(this.db); };
+        req.onerror = () => cb(null);
+      },
+
+      putDataUrlInStore(id, dataUrl, toRom = true) {
+        return new Promise(resolve => {
+          try {
+            const m = dataUrl.match(/^data:[^;]+;base64,(.+)$/);
+            if (!m) { resolve(false); return; }
+            const bin = atob(m[1]);
+            const bytes = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+            const storeName = toRom ? this.storeRom : this.storeCache;
+            this.open(db => {
+              if (!db) { resolve(false); return; }
+              try {
+                const tx = db.transaction([storeName], 'readwrite');
+                const st = tx.objectStore(storeName);
+                st.put(bytes, `${id}_1080.jpg`);
+                st.put(bytes, `${id}_256.jpg`);
+                tx.oncomplete = () => resolve(true);
+                tx.onerror = () => resolve(false);
+              } catch (_) { resolve(false); }
+            });
+          } catch (_) { resolve(false); }
+        });
+      }
+    };
+
+    function loadLocalMirrorCatalog() {
+      try {
+        const raw = localStorage.getItem(LOCAL_CATALOG_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch (_) {}
+      return [];
+    }
+
+    function saveLocalMirrorCatalog(puzzles) {
+      try {
+        // Keep metadata + dataUrl (capped to avoid localStorage quota issues)
+        const slim = puzzles.map(p => ({
+          id: p.id,
+          title: p.title,
+          category: p.category || 'Custom',
+          filename: p.filename || `${p.id}.jpg`,
+          url: p.url || `${API_BASE}/api/puzzles/${p.id}/image`,
+          imageEndpoint: p.imageEndpoint || `${API_BASE}/api/puzzles/${p.id}/image`,
+          published: Boolean(p.published),
+          saveToRomOnDownload: Boolean(p.saveToRomOnDownload),
+          width: p.width || 1080,
+          height: p.height || 1080,
+          sizeBytes: p.sizeBytes || 65536,
+          dataUrl: p.dataUrl || null,
+          createdAt: p.createdAt || new Date().toISOString()
+        }));
+        localStorage.setItem(LOCAL_CATALOG_KEY, JSON.stringify(slim));
+      } catch (_) {}
+    }
+
+    // --- EMBEDDED PUZZLE SERVER API HELPER SDK ---
+    window.PuzzleServerAPI = {
+      serverBaseUrl: API_BASE,
+
+      async getPublishedImageUrls(baseUrl = API_BASE) {
+        const clean = String(baseUrl || API_BASE).replace(/\/+$/, '');
+        try {
+          const res = await fetch(`${clean}/api/puzzles/urls`, { mode: 'cors' });
+          if (res.ok) {
+            const data = await res.json();
+            return Array.isArray(data.urls) ? data.urls : [];
+          }
+        } catch (_) {}
+        return state.puzzles.filter(p => p.published).map(p => p.url);
+      },
+
+      async getPublishedPuzzles(baseUrl = API_BASE) {
+        const clean = String(baseUrl || API_BASE).replace(/\/+$/, '');
+        try {
+          const res = await fetch(`${clean}/api/puzzles/published`, { mode: 'cors' });
+          if (res.ok) return await res.json();
+        } catch (_) {}
+        const pub = state.puzzles.filter(p => p.published);
+        return {
+          version: '1.0',
+          totalPublished: pub.length,
+          updatedAt: new Date().toISOString(),
+          urls: pub.map(p => p.url),
+          puzzles: pub
+        };
+      },
+
+      async fetchPuzzleImageData(urlOrId, options = {}) {
+        const startMs = performance.now();
+        const targetSizePx = options.targetSizePx || 512;
+        const mimeType = options.mimeType || 'image/jpeg';
+
+        let sourceBlob = null;
+        let resolvedUrl = urlOrId;
+
+        const matchLocal = state.puzzles.find(p => p.url === urlOrId || p.id === urlOrId);
+        if (matchLocal && matchLocal.dataUrl) {
+          const r = await fetch(matchLocal.dataUrl);
+          sourceBlob = await r.blob();
+          resolvedUrl = matchLocal.url;
+        } else {
+          const r = await fetch(urlOrId, { mode: 'cors' });
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+          sourceBlob = await r.blob();
+        }
+
+        const bitmap = await createImageBitmap(sourceBlob);
+        const side = Math.min(bitmap.width, bitmap.height);
+        const sx = Math.floor((bitmap.width - side) / 2);
+        const sy = Math.floor((bitmap.height - side) / 2);
+
+        const canvas = document.createElement('canvas');
+        canvas.width = targetSizePx;
+        canvas.height = targetSizePx;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(bitmap, sx, sy, side, side, 0, 0, targetSizePx, targetSizePx);
+        bitmap.close();
+
+        const dataUrl = canvas.toDataURL(mimeType, 0.9);
+        const outBlob = await new Promise(res => canvas.toBlob(res, mimeType, 0.9));
+        const ab = await outBlob.arrayBuffer();
+        const bytes = new Uint8Array(ab);
+
+        return {
+          url: resolvedUrl,
+          width: targetSizePx,
+          height: targetSizePx,
+          byteLength: bytes.byteLength,
+          bytes,
+          blob: outBlob,
+          dataUrl,
+          durationMs: Math.max(1, Math.round(performance.now() - startMs))
+        };
+      }
+    };
+
+    function showToast(msg, isError = false) {
+      const el = document.getElementById('toast');
+      const txt = document.getElementById('toastText');
+      txt.textContent = msg;
+      el.className = `fixed bottom-5 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl border shadow-2xl text-xs font-bold flex items-center gap-2 ${
+        isError ? 'bg-rose-950/95 border-rose-500/50 text-rose-200' : 'bg-[#161b22] border-[#30363d] text-[#e6edf3]'
+      }`;
+      el.classList.remove('hidden');
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => el.classList.add('hidden'), 3200);
+    }
+
+    function formatBytes(bytes) {
+      if (!bytes || bytes <= 0) return '0 B';
+      if (bytes < 1024) return `${bytes} B`;
+      if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+      return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+    }
+
+    function copyText(str) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(str);
+      }
+      showToast(`📋 Copied to clipboard!`);
+    }
+
+    function switchScreen(screen) {
+      ['studio', 'api', 'preview'].forEach(s => {
+        const sec = document.getElementById(`screen${s.charAt(0).toUpperCase() + s.slice(1)}`);
+        const btn = document.getElementById(`navTab${s.charAt(0).toUpperCase() + s.slice(1)}`);
+        const active = (s === screen);
+        if (sec) sec.classList.toggle('hidden', !active);
+        if (btn) {
+          btn.className = active
+            ? 'px-3.5 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-bold transition cursor-pointer'
+            : 'px-3.5 py-1.5 rounded-lg bg-transparent hover:bg-[#21262d] text-[#8b949e] hover:text-[#e6edf3] text-xs font-semibold transition cursor-pointer';
+        }
+      });
+
+      if (screen === 'api') {
+        runApiHelperUrls();
+      } else if (screen === 'preview') {
+        populatePreviewSelect();
+        renderJigsawCutPreview();
+      }
+    }
+
+    function updateKpiCounters() {
+      const total = state.puzzles.length;
+      const pub = state.puzzles.filter(p => p.published).length;
+      const bytes = state.puzzles.reduce((acc, p) => acc + (p.sizeBytes || 0), 0);
+      document.getElementById('kpiTotal').textContent = total;
+      document.getElementById('kpiPublished').textContent = pub;
+      document.getElementById('kpiBytes').textContent = formatBytes(bytes);
+    }
+
+    // --- FETCH & RENDER CATALOG ---
+    async function refreshCatalog() {
+      const modeText = document.getElementById('serverModeText');
+      try {
+        const res = await fetch(`${API_BASE}/api/puzzles`, { mode: 'cors' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const localMirror = loadLocalMirrorCatalog();
+        const localDataUrls = new Map(localMirror.filter(m => m.dataUrl).map(m => [m.id, m.dataUrl]));
+
+        state.puzzles = (data.puzzles || []).map(p => ({
+          ...p,
+          url: p.url && p.url.startsWith('http') ? p.url : `${API_BASE}/uploads/${encodeURIComponent(p.filename)}`,
+          imageEndpoint: `${API_BASE}/api/puzzles/${encodeURIComponent(p.id)}/image`,
+          dataUrl: localDataUrls.get(p.id) || p.dataUrl || null
+        }));
+        state.usingLocalMirror = false;
+        if (modeText) modeText.textContent = 'Live Connected • localhost:4200';
+        saveLocalMirrorCatalog(state.puzzles);
+      } catch (err) {
+        // Try GitHub Pages static mirror if running on HTTPS or when localhost:4200 is unreachable
+        let loadedFromGhMirror = false;
+        const ghCandidates = [
+          '../assets/puzzles/published.json',
+          'https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/published.json'
+        ];
+        for (const ghUrl of ghCandidates) {
+          try {
+            const ghRes = await fetch(ghUrl, { mode: 'cors' });
+            if (ghRes.ok) {
+              const ghData = await ghRes.json();
+              if (ghData && Array.isArray(ghData.puzzles) && ghData.puzzles.length > 0) {
+                const localItems = loadLocalMirrorCatalog();
+                const ghIds = new Set(ghData.puzzles.map(p => p.id));
+                const extraLocal = localItems.filter(p => !ghIds.has(p.id));
+                state.puzzles = [...extraLocal, ...ghData.puzzles];
+                state.usingLocalMirror = true;
+                loadedFromGhMirror = true;
+                if (modeText) modeText.textContent = `Live GitHub Cloud • ${state.puzzles.length} Ready`;
+                break;
+              }
+            }
+          } catch (_) {}
+        }
+
+        if (!loadedFromGhMirror) {
+          state.usingLocalMirror = true;
+          if (modeText) modeText.textContent = 'Bridge Mirror Active • Port 4200';
+          let local = loadLocalMirrorCatalog();
+          if (local.length === 0) {
+            await seedProceduralArtPack(true);
+            return;
+          }
+          state.puzzles = local;
+        }
+      }
+
+      const isLocalServerRoot = window.location.port === '4200' && window.location.pathname === '/';
+      const linkWeb = document.getElementById('linkWebJigsaw');
+      const linkUnity = document.getElementById('linkUnityJigsaw');
+      if (linkWeb) linkWeb.href = isLocalServerRoot ? '/labs/calm-jigsaw.html' : 'calm-jigsaw.html';
+      if (linkUnity) linkUnity.href = isLocalServerRoot ? '/labs/unity-calm-jigsaw/index.html' : 'unity-calm-jigsaw/index.html';
+
+      updateKpiCounters();
+      renderCatalogGrid();
+      populatePreviewSelect();
+    }
+
+    async function pushCatalogToLiveGit() {
+      showToast('🚀 Syncing & pushing published catalog to live GitHub Pages...');
+      try {
+        const res = await fetch(`${API_BASE}/api/puzzles/push-live`, { method: 'POST', mode: 'cors' });
+        const data = await res.json();
+        if (!res.ok || !data.pushed) throw new Error(data.error || 'Push failed');
+        showToast(`✅ ${data.message} (${data.publishedCount} live on GitHub Pages)`);
+      } catch (err) {
+        saveLocalMirrorCatalog(state.puzzles);
+        for (const p of state.puzzles) {
+          if (p.published && p.dataUrl) {
+            await BridgeDB.putDataUrlInStore(p.id, p.dataUrl, p.saveToRomOnDownload !== false);
+          }
+        }
+        showToast('✅ Synced published images to Live Browser IndexedDB & Shared Catalog!');
+      }
+    }
+
+    function setFilter(f) {
+      state.filter = f;
+      ['All', 'Published', 'Drafts'].forEach(label => {
+        const key = label.toLowerCase();
+        const btn = document.getElementById(`filter${label}`);
+        if (btn) {
+          btn.className = (key === f)
+            ? 'px-3 py-1 rounded-lg bg-blue-600 text-white text-xs font-bold cursor-pointer transition'
+            : 'px-3 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-[#e6edf3] text-xs font-semibold cursor-pointer transition';
+        }
+      });
+      renderCatalogGrid();
+    }
+
+    function renderCatalogGrid() {
+      const grid = document.getElementById('catalogGrid');
+      const filtered = state.puzzles.filter(p => {
+        if (state.filter === 'published') return p.published;
+        if (state.filter === 'drafts') return !p.published;
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full py-16 text-center text-xs text-[#8b949e] flex flex-col items-center gap-2">
+            <div class="text-3xl">📂</div>
+            <div class="font-bold text-[#e6edf3]">No puzzle images in this view yet</div>
+            <div>Drag &amp; drop images on the left, or click "✨ +3 Demo Art" to populate the server.</div>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = filtered.map(p => {
+        const primarySrc = p.dataUrl || (p.filename ? `${API_BASE}/uploads/${encodeURIComponent(p.filename)}` : p.url);
+        const fallbackSrc = p.imageEndpoint || `${API_BASE}/api/puzzles/${encodeURIComponent(p.id)}/image`;
+        return `
+        <div class="bg-[#0d1117] border ${p.published ? 'border-[#30363d]' : 'border-amber-500/30'} rounded-xl overflow-hidden shadow-md" style="display: flex; flex-direction: column; height: auto;">
+          <!-- Square Thumbnail Preview -->
+          <div class="relative w-full bg-[#161b22] overflow-hidden group" style="height: 210px; flex-shrink: 0;">
+            <img
+              src="${primarySrc}"
+              onerror="if (this.src !== '${fallbackSrc}') this.src = '${fallbackSrc}';"
+              alt="${(p.title || '').replace(/"/g, '&quot;')}"
+              style="display: block; width: 100%; height: 100%; object-fit: cover;"
+              decoding="async"
+            />
+            <div class="absolute top-2 left-2 flex items-center gap-1">
+              <span class="px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                p.published ? 'bg-emerald-500/90 text-[#0d1117]' : 'bg-amber-500/90 text-[#0d1117]'
+              }">
+                ${p.published ? '● PUBLISHED' : '○ DRAFT'}
+              </span>
+              ${p.saveToRomOnDownload ? '<span class="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-purple-600/90 text-white">ROM</span>' : ''}
+            </div>
+            <div class="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-black/75 text-[10px] font-mono text-[#e6edf3]">
+              ${p.width}×${p.height} • ${formatBytes(p.sizeBytes)}
+            </div>
+            <!-- Hover Overlay Quick Actions -->
+            <div class="opacity-0 group-hover:opacity-100 transition-opacity absolute inset-0 bg-black/60 flex items-center justify-center gap-2">
+              <button onclick="openInPreview('${p.id}')" class="px-2.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold cursor-pointer">
+                ✂️ Preview Jigsaw Cut
+              </button>
+              <button onclick="copyText('${p.url}')" class="px-2.5 py-1.5 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-white text-xs font-bold cursor-pointer">
+                🔗 URL
+              </button>
+            </div>
+          </div>
+
+          <!-- Metadata & Controls Footer -->
+          <div class="p-3 flex flex-col gap-2" style="flex-shrink: 0; background: #0d1117;">
+            <div class="flex items-center justify-between gap-2">
+              <input
+                type="text"
+                value="${(p.title || '').replace(/"/g, '&quot;')}"
+                onchange="updatePuzzleMeta('${p.id}', { title: this.value })"
+                class="bg-transparent border-b border-transparent hover:border-[#30363d] focus:border-blue-500 text-xs font-bold text-[#e6edf3] focus:outline-none truncate flex-1 min-w-0"
+              />
+              <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#21262d] text-[#8b949e] shrink-0">${p.category}</span>
+            </div>
+
+            <div class="flex items-center justify-between gap-1.5 pt-1 border-t border-[#21262d]">
+              <button
+                onclick="updatePuzzleMeta('${p.id}', { published: ${!p.published} })"
+                class="flex-1 py-1 px-2 rounded-lg text-[11px] font-bold cursor-pointer transition ${
+                  p.published
+                    ? 'bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/30'
+                    : 'bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] border border-[#30363d]'
+                }"
+              >
+                ${p.published ? '✓ Published on API' : 'Publish to API'}
+              </button>
+
+              <button
+                onclick="updatePuzzleMeta('${p.id}', { saveToRomOnDownload: ${!p.saveToRomOnDownload} })"
+                title="Toggle Permanent ROM vs Volatile Cache for NativeImagePipeline"
+                class="py-1 px-2 rounded-lg text-[11px] font-bold cursor-pointer transition border ${
+                  p.saveToRomOnDownload
+                    ? 'bg-purple-500/20 text-purple-300 border-purple-500/40'
+                    : 'bg-[#21262d] text-[#8b949e] border-[#30363d]'
+                }"
+              >
+                ROM
+              </button>
+
+              <button
+                onclick="deletePuzzle('${p.id}')"
+                title="Delete image from server"
+                class="py-1 px-2 rounded-lg bg-rose-500/15 hover:bg-rose-500/30 text-rose-400 border border-rose-500/30 text-[11px] font-bold cursor-pointer transition"
+              >
+                🗑️
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      }).join('');
+    }
+
+    // --- NORMALIZE & UPLOAD FILES FROM DROPZONE / FILE PICKER / FOLDER PICKER ---
+    async function processAndUploadFiles(fileList) {
+      const files = Array.from(fileList).filter(f => /^image\/(png|jpe?g|webp|svg)/i.test(f.type) || /\.(png|jpe?g|webp)$/i.test(f.name));
+      if (files.length === 0) {
+        showToast('No supported image files (.png, .jpg, .webp) selected!', true);
+        return;
+      }
+
+      const category = document.getElementById('uploadCategory').value;
+      const targetSize = parseInt(document.getElementById('uploadTargetSize').value, 10) || 1080;
+      const published = document.getElementById('uploadAutoPublish').checked;
+      const saveToRomOnDownload = document.getElementById('uploadSaveToRom').checked;
+
+      showToast(`⏳ Processing & square-cropping ${files.length} image(s) to ${targetSize}×${targetSize}...`);
+
+      const items = [];
+      for (const file of files) {
+        try {
+          const normalized = await normalizeImageFileToSquare(file, targetSize);
+          const id = 'puz_' + Math.random().toString(16).slice(2, 10);
+          items.push({
+            id,
+            filename: file.name,
+            title: file.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' '),
+            category,
+            published,
+            saveToRomOnDownload,
+            width: targetSize,
+            height: targetSize,
+            sizeBytes: Math.round((normalized.length * 3) / 4),
+            dataUrl: normalized,
+            url: `${API_BASE}/uploads/${encodeURIComponent(file.name)}`
+          });
+          await BridgeDB.putDataUrlInStore(id, normalized, saveToRomOnDownload);
+        } catch (e) {
+          console.warn('Skipped file:', file.name, e);
+        }
+      }
+
+      if (items.length === 0) {
+        showToast('Could not decode selected image files.', true);
+        return;
+      }
+
+      let uploadedToServer = false;
+      try {
+        let totalAdded = 0;
+        const chunkSize = 8;
+        for (let i = 0; i < items.length; i += chunkSize) {
+          const batch = items.slice(i, i + chunkSize);
+          const res = await fetch(`${API_BASE}/api/puzzles/upload`, {
+            method: 'POST',
+            mode: 'cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ items: batch })
+          });
+          const result = await res.json();
+          if (res.ok) {
+            uploadedToServer = true;
+            totalAdded += (result.addedCount || batch.length);
+            // Attach dataUrl to returned server entries for instant preview
+            if (Array.isArray(result.added)) {
+              result.added.forEach((srvItem, idx) => {
+                if (batch[idx] && batch[idx].dataUrl) {
+                  BridgeDB.putDataUrlInStore(srvItem.id, batch[idx].dataUrl, srvItem.saveToRomOnDownload);
+                }
+              });
+            }
+          }
+        }
+      } catch (_) {}
+
+      if (!uploadedToServer) {
+        state.puzzles.unshift(...items);
+        saveLocalMirrorCatalog(state.puzzles);
+        updateKpiCounters();
+        renderCatalogGrid();
+        populatePreviewSelect();
+        showToast(`✅ Loaded & published ${items.length} puzzle image(s) into Bridge Catalog!`);
+        return;
+      }
+
+      showToast(`✅ Uploaded & published ${items.length} puzzle image(s) to server!`);
+      await refreshCatalog();
+    }
+
+    function normalizeImageFileToSquare(file, targetSize) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = ev => {
+          const img = new Image();
+          img.onload = () => {
+            const side = Math.min(img.naturalWidth, img.naturalHeight);
+            const sx = Math.floor((img.naturalWidth - side) * 0.5);
+            const sy = Math.floor((img.naturalHeight - side) * 0.5);
+
+            const canvas = document.createElement('canvas');
+            canvas.width = targetSize;
+            canvas.height = targetSize;
+            const ctx = canvas.getContext('2d');
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(img, sx, sy, side, side, 0, 0, targetSize, targetSize);
+            resolve(canvas.toDataURL('image/jpeg', 0.90));
+          };
+          img.onerror = reject;
+          img.src = ev.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // --- SCAN LOCAL SERVER FOLDER ---
+    async function scanServerFolder() {
+      const folderPath = document.getElementById('serverFolderInput').value.trim();
+      const category = document.getElementById('uploadCategory').value;
+      const published = document.getElementById('uploadAutoPublish').checked;
+
+      if (!folderPath) {
+        showToast('Enter a folder path to scan!', true);
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/api/puzzles/scan-folder`, {
+          method: 'POST',
+          mode: 'cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ folderPath, category, published })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          showToast(data.error || 'Folder scan failed', true);
+          return;
+        }
+        showToast(`📁 Imported ${data.importedCount} image(s) from ${folderPath}!`);
+        await refreshCatalog();
+      } catch (err) {
+        showToast('Use "📁 Load Folder..." button above to pick a folder from Explorer!', false);
+        document.getElementById('folderInput').click();
+      }
+    }
+
+    // --- GENERATE 3 HIGH-RES PROCEDURAL PUZZLE SCENES ---
+    async function seedProceduralArtPack(silent = false) {
+      if (!silent) showToast('🎨 Rendering 3 procedural 1080×1080 puzzle artworks...');
+      const scenes = [
+        { id: 'puz_sunset_hd', name: 'Alpine Sunset Peak', category: 'Nature', type: 'sunset' },
+        { id: 'puz_forest_hd', name: 'Misty Emerald Pines', category: 'Nature', type: 'forest' },
+        { id: 'puz_coast_hd', name: 'Golden Sailboat Cove', category: 'Cozy', type: 'coast' }
+      ];
+
+      const size = 720;
+      const items = [];
+      for (const sc of scenes) {
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+
+        if (sc.type === 'sunset') {
+          const sky = ctx.createLinearGradient(0, 0, 0, size * 0.65);
+          sky.addColorStop(0, '#3b1d5e');
+          sky.addColorStop(0.45, '#b84a62');
+          sky.addColorStop(1, '#f7b267');
+          ctx.fillStyle = sky;
+          ctx.fillRect(0, 0, size, size);
+
+          ctx.fillStyle = '#ffe599';
+          ctx.beginPath();
+          ctx.arc(size * 0.62, size * 0.36, size * 0.13, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.fillStyle = '#6d3b6e';
+          ctx.beginPath();
+          ctx.moveTo(0, size * 0.62);
+          ctx.lineTo(size * 0.25, size * 0.38);
+          ctx.lineTo(size * 0.52, size * 0.55);
+          ctx.lineTo(size * 0.8, size * 0.34);
+          ctx.lineTo(size, size * 0.52);
+          ctx.lineTo(size, size * 0.65);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.fillStyle = '#43234f';
+          ctx.beginPath();
+          ctx.moveTo(0, size * 0.66);
+          ctx.lineTo(size * 0.15, size * 0.52);
+          ctx.lineTo(size * 0.44, size * 0.42);
+          ctx.lineTo(size * 0.72, size * 0.58);
+          ctx.lineTo(size * 0.92, size * 0.45);
+          ctx.lineTo(size, size * 0.55);
+          ctx.lineTo(size, size * 0.66);
+          ctx.closePath();
+          ctx.fill();
+
+          const lake = ctx.createLinearGradient(0, size * 0.65, 0, size);
+          lake.addColorStop(0, '#e07a5f');
+          lake.addColorStop(0.5, '#813b65');
+          lake.addColorStop(1, '#26143b');
+          ctx.fillStyle = lake;
+          ctx.fillRect(0, size * 0.65, size, size * 0.35);
+        } else if (sc.type === 'forest') {
+          const sky = ctx.createLinearGradient(0, 0, 0, size);
+          sky.addColorStop(0, '#a8dadc');
+          sky.addColorStop(0.55, '#457b9d');
+          sky.addColorStop(1, '#1d3557');
+          ctx.fillStyle = sky;
+          ctx.fillRect(0, 0, size, size);
+
+          ctx.fillStyle = '#fefae0';
+          ctx.beginPath();
+          ctx.arc(size * 0.3, size * 0.25, size * 0.1, 0, Math.PI * 2);
+          ctx.fill();
+
+          const drawTree = (cx, baseY, w, h, color) => {
+            ctx.fillStyle = color;
+            for (let layer = 0; layer < 3; layer++) {
+              ctx.beginPath();
+              const topY = baseY - h + layer * (h * 0.22);
+              const botY = baseY - (2 - layer) * (h * 0.22);
+              const spread = w * (0.65 + layer * 0.2);
+              ctx.moveTo(cx, topY);
+              ctx.lineTo(cx - spread, botY);
+              ctx.lineTo(cx + spread, botY);
+              ctx.closePath();
+              ctx.fill();
+            }
+          };
+          drawTree(size * 0.18, size * 0.88, size * 0.12, size * 0.44, '#1b4332');
+          drawTree(size * 0.42, size * 0.92, size * 0.15, size * 0.52, '#081c15');
+          drawTree(size * 0.68, size * 0.89, size * 0.13, size * 0.48, '#1b4332');
+          drawTree(size * 0.86, size * 0.94, size * 0.11, size * 0.38, '#081c15');
+        } else {
+          const sky = ctx.createLinearGradient(0, 0, 0, size * 0.55);
+          sky.addColorStop(0, '#48cae4');
+          sky.addColorStop(1, '#caf0f8');
+          ctx.fillStyle = sky;
+          ctx.fillRect(0, 0, size, size * 0.55);
+
+          const sea = ctx.createLinearGradient(0, size * 0.55, 0, size);
+          sea.addColorStop(0, '#0077b6');
+          sea.addColorStop(0.65, '#00b4d8');
+          sea.addColorStop(1, '#f4e285');
+          ctx.fillStyle = sea;
+          ctx.fillRect(0, size * 0.55, size, size * 0.45);
+
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.moveTo(size * 0.68, size * 0.42);
+          ctx.lineTo(size * 0.68, size * 0.58);
+          ctx.lineTo(size * 0.78, size * 0.58);
+          ctx.closePath();
+          ctx.fill();
+        }
+
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.90);
+        const id = sc.id + '_' + Math.random().toString(16).slice(2, 6);
+        await BridgeDB.putDataUrlInStore(id, dataUrl, true);
+        items.push({
+          id,
+          filename: `${sc.type}_1080.jpg`,
+          title: sc.name,
+          category: sc.category,
+          published: true,
+          saveToRomOnDownload: true,
+          width: 1080,
+          height: 1080,
+          sizeBytes: Math.round((dataUrl.length * 3) / 4),
+          dataUrl,
+          url: `${API_BASE}/uploads/${sc.type}_1080.jpg`
+        });
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/api/puzzles/upload`, {
+          method: 'POST',
+          mode: 'cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ items })
+        });
+        if (res.ok) {
+          if (!silent) showToast('✨ Added & published 3 procedural puzzle images to Server!');
+          await refreshCatalog();
+          return;
+        }
+      } catch (_) {}
+
+      state.puzzles.unshift(...items);
+      saveLocalMirrorCatalog(state.puzzles);
+      updateKpiCounters();
+      renderCatalogGrid();
+      populatePreviewSelect();
+      if (!silent) showToast('✨ Added & published 3 procedural puzzle images!');
+    }
+
+    // --- UPDATE / DELETE / BULK PUBLISH ---
+    async function updatePuzzleMeta(id, patch) {
+      const target = state.puzzles.find(p => p.id === id);
+      if (target) {
+        if (patch.published !== undefined) target.published = Boolean(patch.published);
+        if (patch.saveToRomOnDownload !== undefined) target.saveToRomOnDownload = Boolean(patch.saveToRomOnDownload);
+        if (typeof patch.title === 'string' && patch.title.trim()) target.title = patch.title.trim();
+        if (typeof patch.category === 'string' && patch.category.trim()) target.category = patch.category.trim();
+        saveLocalMirrorCatalog(state.puzzles);
+      }
+
+      try {
+        await fetch(`${API_BASE}/api/puzzles/${encodeURIComponent(id)}`, {
+          method: 'PATCH',
+          mode: 'cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(patch)
+        });
+      } catch (_) {}
+
+      updateKpiCounters();
+      renderCatalogGrid();
+      populatePreviewSelect();
+      if (patch.published !== undefined) {
+        showToast(patch.published ? '🟢 Published image to API!' : '📝 Moved image to Drafts');
+      }
+    }
+
+    async function deletePuzzle(id) {
+      state.puzzles = state.puzzles.filter(p => p.id !== id);
+      saveLocalMirrorCatalog(state.puzzles);
+      try {
+        await fetch(`${API_BASE}/api/puzzles/${encodeURIComponent(id)}`, { method: 'DELETE', mode: 'cors' });
+      } catch (_) {}
+      showToast('🗑️ Deleted puzzle image');
+      updateKpiCounters();
+      renderCatalogGrid();
+      populatePreviewSelect();
+    }
+
+    async function bulkSetPublished(published) {
+      state.puzzles.forEach(p => { p.published = Boolean(published); });
+      saveLocalMirrorCatalog(state.puzzles);
+      try {
+        await fetch(`${API_BASE}/api/puzzles/bulk-status`, {
+          method: 'POST',
+          mode: 'cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ published })
+        });
+      } catch (_) {}
+      showToast(published ? '🟢 Published all images to API!' : '📝 Moved all images to Drafts');
+      updateKpiCounters();
+      renderCatalogGrid();
+      populatePreviewSelect();
+    }
+
+    // --- SCREEN 2: API HELPER SANDBOX METHODS ---
+    async function runApiHelperUrls() {
+      document.getElementById('consoleTitle').textContent = 'PuzzleServerAPI.getPublishedImageUrls() — Live Result';
+      const urls = await window.PuzzleServerAPI.getPublishedImageUrls(API_BASE);
+      document.getElementById('apiJsonOutput').textContent = JSON.stringify(urls, null, 2);
+    }
+
+    async function runApiHelperManifest() {
+      document.getElementById('consoleTitle').textContent = 'PuzzleServerAPI.getPublishedPuzzles() — Studio.NativeImagePipeline Manifest';
+      const manifest = await window.PuzzleServerAPI.getPublishedPuzzles(API_BASE);
+      document.getElementById('apiJsonOutput').textContent = JSON.stringify(manifest, null, 2);
+    }
+
+    async function runApiHelperFetchBridge() {
+      const urls = await window.PuzzleServerAPI.getPublishedImageUrls(API_BASE);
+      if (urls.length === 0) {
+        showToast('Publish at least 1 image first!', true);
+        return;
+      }
+      const targetUrl = urls[0];
+      const decoded = await window.PuzzleServerAPI.fetchPuzzleImageData(targetUrl, {
+        targetSizePx: 512,
+        mimeType: 'image/jpeg'
+      });
+
+      document.getElementById('bridgeDecodePreview').classList.remove('hidden');
+      document.getElementById('bridgeDecodedImg').src = decoded.dataUrl;
+      document.getElementById('bridgeDecodeStats').innerHTML = `
+        <div>✅ CORS OffscreenCanvas Decode Success</div>
+        <div>Square Size: ${decoded.width}×${decoded.height}px</div>
+        <div>Transcoded Bytes: ${formatBytes(decoded.byteLength)} (${decoded.durationMs}ms)</div>
+      `;
+
+      document.getElementById('consoleTitle').textContent = 'PuzzleServerAPI.fetchPuzzleImageData() — Native Bridge Result';
+      document.getElementById('apiJsonOutput').textContent = JSON.stringify({
+        url: decoded.url,
+        width: decoded.width,
+        height: decoded.height,
+        byteLength: decoded.byteLength,
+        durationMs: decoded.durationMs,
+        sampleBytesHead: Array.from(decoded.bytes.slice(0, 16)),
+        dataUrlPrefix: decoded.dataUrl.slice(0, 64) + '...'
+      }, null, 2);
+    }
+
+    // --- SCREEN 3: JIGSAW BÉZIER CUT PREVIEWER ---
+    function openInPreview(id) {
+      state.selectedPreviewId = id;
+      switchScreen('preview');
+    }
+
+    function populatePreviewSelect() {
+      const sel = document.getElementById('previewPuzzleSelect');
+      if (!sel) return;
+      sel.innerHTML = state.puzzles.map(p =>
+        `<option value="${p.id}" ${p.id === state.selectedPreviewId ? 'selected' : ''}>${p.title} (${p.published ? 'Published' : 'Draft'})</option>`
+      ).join('');
+      if (!state.selectedPreviewId && state.puzzles.length > 0) {
+        state.selectedPreviewId = state.puzzles[0].id;
+      }
+    }
+
+    function setPreviewGrid(n) {
+      state.previewGridSize = n;
+      [4, 5, 6, 8].forEach(g => {
+        const b = document.getElementById(`prevGrid${g}`);
+        if (b) {
+          b.className = (g === n)
+            ? 'py-1.5 rounded-lg bg-blue-600 text-white text-xs font-bold cursor-pointer'
+            : 'py-1.5 rounded-lg bg-[#21262d] text-[#e6edf3] text-xs font-semibold cursor-pointer';
+        }
+      });
+      renderJigsawCutPreview();
+    }
+
+    function drawBezierSide(ctx, x1, y1, x2, y2, sign) {
+      if (sign === 0) {
+        ctx.lineTo(x2, y2);
+        return;
+      }
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+      const len = Math.hypot(dx, dy);
+      const nx = (dy / len) * sign;
+      const ny = (-dx / len) * sign;
+      const pt = (along, out) => [x1 + dx * along + nx * (len * out), y1 + dy * along + ny * (len * out)];
+      const tabOut = 0.24;
+      ctx.lineTo(...pt(0.36, 0));
+      ctx.bezierCurveTo(...pt(0.41, -0.02), ...pt(0.34, tabOut * 0.55), ...pt(0.38, tabOut * 0.85));
+      ctx.bezierCurveTo(...pt(0.42, tabOut * 1.15), ...pt(0.58, tabOut * 1.15), ...pt(0.62, tabOut * 0.85));
+      ctx.bezierCurveTo(...pt(0.66, tabOut * 0.55), ...pt(0.59, -0.02), ...pt(0.64, 0));
+      ctx.lineTo(x2, y2);
+    }
+
+    function renderJigsawCutPreview() {
+      const sel = document.getElementById('previewPuzzleSelect');
+      const id = (sel && sel.value) || state.selectedPreviewId;
+      const puzzle = state.puzzles.find(p => p.id === id) || state.puzzles[0];
+      if (!puzzle) return;
+
+      document.getElementById('previewMetaBox').innerHTML = `
+        <div class="text-[#e6edf3] font-bold">${puzzle.title}</div>
+        <div>ID: ${puzzle.id}</div>
+        <div>Resolution: ${puzzle.width}×${puzzle.height}px (${formatBytes(puzzle.sizeBytes)})</div>
+        <div>Status: <span class="${puzzle.published ? 'text-emerald-400' : 'text-amber-400'}">${puzzle.published ? 'PUBLISHED' : 'DRAFT'}</span></div>
+        <div class="truncate">URL: ${puzzle.url}</div>
+      `;
+
+      const canvas = document.getElementById('jigsawPreviewCanvas');
+      const ctx = canvas.getContext('2d');
+      const size = canvas.width;
+      const N = state.previewGridSize;
+      const tile = size / N;
+
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        ctx.clearRect(0, 0, size, size);
+        ctx.drawImage(img, 0, 0, size, size);
+
+        ctx.save();
+        ctx.lineWidth = 2.2;
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.65)';
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.85)';
+        ctx.shadowBlur = 4;
+
+        for (let r = 0; r < N; r++) {
+          for (let c = 0; c < N; c++) {
+            const x = c * tile;
+            const y = r * tile;
+            if (c < N - 1) {
+              ctx.beginPath();
+              ctx.moveTo(x + tile, y);
+              drawBezierSide(ctx, x + tile, y, x + tile, y + tile, ((r + c) % 2 === 0) ? 1 : -1);
+              ctx.stroke();
+            }
+            if (r < N - 1) {
+              ctx.beginPath();
+              ctx.moveTo(x + tile, y + tile);
+              drawBezierSide(ctx, x + tile, y + tile, x, y + tile, ((r * 3 + c) % 2 === 0) ? 1 : -1);
+              ctx.stroke();
+            }
+          }
+        }
+        ctx.restore();
+      };
+      img.src = puzzle.dataUrl || puzzle.url;
+    }
+
+    // --- EVENT LISTENERS FOR DRAG & DROP AND FILE/FOLDER INPUTS ---
+    const dropZone = document.getElementById('dropZone');
+    ['dragenter', 'dragover'].forEach(evName => {
+      dropZone.addEventListener(evName, e => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.add('drop-active');
+      });
+    });
+    ['dragleave', 'drop'].forEach(evName => {
+      dropZone.addEventListener(evName, e => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.remove('drop-active');
+      });
+    });
+    dropZone.addEventListener('drop', e => {
+      if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        processAndUploadFiles(e.dataTransfer.files);
+      }
+    });
+
+    document.getElementById('fileInput').addEventListener('change', e => {
+      if (e.target.files && e.target.files.length > 0) {
+        processAndUploadFiles(e.target.files);
+        e.target.value = '';
+      }
+    });
+
+    document.getElementById('folderInput').addEventListener('change', e => {
+      if (e.target.files && e.target.files.length > 0) {
+        processAndUploadFiles(e.target.files);
+        e.target.value = '';
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      refreshCatalog();
+    });
+  </script>
+</body>
+</html>
