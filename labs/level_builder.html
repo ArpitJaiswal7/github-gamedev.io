@@ -56,7 +56,11 @@
 
       <!-- Action & Back to Game -->
       <div class="flex items-center gap-2.5">
-                <button onclick="returnToGame()" class="px-3.5 py-1.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#e6edf3] text-xs font-semibold flex items-center gap-2 cursor-pointer transition shadow-sm" title="Switch back to game tab">
+        <button onclick="openServerViewerModal()" class="px-3.5 py-1.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] border border-blue-500/40 text-blue-300 text-xs font-semibold flex items-center gap-2 cursor-pointer transition shadow-sm" title="View all published JSON levels from server & solve inspector">
+          <span>🌐</span>
+          <span>Server Levels & Solver</span>
+        </button>
+        <button onclick="returnToGame()" class="px-3.5 py-1.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#e6edf3] text-xs font-semibold flex items-center gap-2 cursor-pointer transition shadow-sm" title="Switch back to game tab">
           <span>🎮</span>
           <span>Return to Game</span>
         </button>
@@ -341,7 +345,13 @@
             <span>📑</span>
             <span>JSON Import / Export</span>
           </div>
-          <span class="text-[11px] font-mono text-[#8b949e]">Format: Unity Meowsweeper Schema</span>
+          <div class="flex items-center gap-2">
+            <button onclick="openServerViewerModal()" class="text-xs px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] border border-blue-500/40 text-blue-300 font-semibold flex items-center gap-1 cursor-pointer transition shadow-sm" title="View all published levels on server">
+              <span>🌐</span>
+              <span>View Server Levels (66)</span>
+            </button>
+            <span class="text-[11px] font-mono text-[#8b949e] hidden sm:inline">Format: Unity Meowsweeper Schema</span>
+          </div>
         </div>
 
         <!-- Live JSON Preview Box -->
@@ -442,6 +452,165 @@
       </div>
     </div>
 
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- FULL PAGE MODAL: PUBLISHED SERVER JSON LEVELS & MEOWSWEEPER SOLVER VIEWER -->
+  <!-- ========================================================================= -->
+  <div id="serverViewerModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex flex-col p-4 md:p-6 overflow-hidden">
+    <div class="flex-1 flex flex-col bg-[#161b22] border border-[#30363d] rounded-2xl shadow-2xl overflow-hidden max-w-7xl w-full mx-auto">
+      
+      <!-- Modal Top Bar -->
+      <div class="px-6 py-3.5 border-b border-[#30363d] bg-[#0d1117] flex items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-blue-500/15 border border-blue-500/30 flex items-center justify-center text-lg">
+            🌐
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="text-sm font-bold text-[#e6edf3]">Server Published Levels & Solver Explorer</h2>
+              <span id="serverTotalBadge" class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                Loading...
+              </span>
+              <span id="serverSourceBadge" class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                Live Source
+              </span>
+            </div>
+            <p class="text-[11px] text-[#8b949e]">View-only inspection of all JSON levels deployed on server with live Meowsweeper solver</p>
+          </div>
+        </div>
+
+        <!-- Filter & Search & Close Controls -->
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-1.5 bg-[#161b22] border border-[#30363d] rounded-xl px-2.5 py-1">
+            <span class="text-xs text-[#8b949e]">🔍</span>
+            <input type="text" id="serverViewerSearch" placeholder="Filter by ID or tier..." oninput="handleServerViewerFilter()" class="bg-transparent text-xs text-[#e6edf3] font-mono outline-none w-36 sm:w-48 placeholder-[#8b949e]/60" />
+          </div>
+          <select id="serverTierFilter" onchange="handleServerViewerFilter()" class="px-2.5 py-1.5 bg-[#161b22] border border-[#30363d] rounded-xl text-xs text-[#e6edf3] font-semibold outline-none cursor-pointer">
+            <option value="ALL">All Tiers</option>
+            <option value="Tutorial">Tutorial</option>
+            <option value="Easy">Easy</option>
+            <option value="Medium">Medium</option>
+            <option value="Hard">Hard</option>
+            <option value="Expert">Expert</option>
+          </select>
+          <button onclick="refreshServerLevelsList()" class="px-3 py-1.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-xs font-semibold text-[#e6edf3] flex items-center gap-1.5 cursor-pointer transition" title="Reload from server">
+            <span>🔄</span>
+            <span class="hidden sm:inline">Refresh</span>
+          </button>
+          <button onclick="closeServerViewerModal()" class="w-8 h-8 rounded-xl bg-[#21262d] hover:bg-rose-950/60 border border-[#30363d] hover:border-rose-500/50 text-[#8b949e] hover:text-rose-300 flex items-center justify-center font-bold text-sm cursor-pointer transition" title="Close Viewer">
+            ✕
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal Body (2 Columns Split) -->
+      <div class="flex-1 grid grid-cols-12 min-h-0 overflow-hidden divide-y md:divide-y-0 md:divide-x divide-[#30363d]">
+        
+        <!-- LEFT COLUMN: ALL SERVER JSON FILES LIST (Col 4) -->
+        <div class="col-span-12 md:col-span-4 lg:col-span-4 flex flex-col min-h-0 bg-[#0d1117]/60">
+          <div class="px-4 py-2.5 border-b border-[#30363d] bg-[#161b22] flex items-center justify-between">
+            <span class="text-xs font-bold text-[#8b949e] uppercase tracking-wider">Published Files</span>
+            <span id="serverFilteredCount" class="text-xs font-mono text-[#8b949e]">0 files</span>
+          </div>
+
+          <div id="serverLevelsList" class="flex-1 overflow-y-auto p-2 flex flex-col gap-1.5">
+            <!-- Populated dynamically via JS -->
+            <div class="p-8 text-center text-xs text-[#8b949e] flex flex-col items-center justify-center gap-2">
+              <span class="animate-spin text-xl">⏳</span>
+              <span>Fetching server manifest...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT COLUMN: MEOWSWEEPER SOLVER & JSON PREVIEW (Col 8) -->
+        <div class="col-span-12 md:col-span-8 lg:col-span-8 flex flex-col min-h-0 bg-[#161b22] p-4 gap-3 overflow-y-auto">
+          
+          <!-- Selected Level Header Bar -->
+          <div class="flex flex-wrap items-center justify-between gap-3 bg-[#0d1117] p-3 rounded-xl border border-[#30363d]">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div class="w-8 h-8 rounded-lg bg-pink-500/20 border border-pink-500/30 flex items-center justify-center text-base shrink-0">
+                🐱
+              </div>
+              <div class="min-w-0">
+                <div class="flex items-center gap-2">
+                  <h3 id="svDetailId" class="text-sm font-bold text-[#e6edf3] font-mono truncate">lvl_1</h3>
+                  <span id="svDetailTier" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/30">Tutorial</span>
+                  <span id="svDetailGridBadge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-[#21262d] text-[#8b949e] border border-[#30363d]">4x4</span>
+                </div>
+                <div class="text-[11px] text-[#8b949e] flex items-center gap-2">
+                  <span id="svDetailFileName" class="font-mono text-[#8b949e]">lvl_1.json</span>
+                  <span>•</span>
+                  <span id="svDetailHash" class="font-mono text-[10px] text-[#8b949e]/70">hash: -</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- View Actions -->
+            <div class="flex items-center gap-2 shrink-0">
+              <button onclick="toggleSvSolution()" id="btnSvToggleSolution" class="px-3 py-1.5 rounded-lg bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-xs font-semibold text-[#e6edf3] flex items-center gap-1.5 cursor-pointer transition">
+                <span>👁️</span>
+                <span id="lblSvToggleSolution">Show Solution</span>
+              </button>
+              <button onclick="copySvJsonContent()" class="px-3 py-1.5 rounded-lg bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-xs font-semibold text-[#e6edf3] flex items-center gap-1.5 cursor-pointer transition" title="Copy Raw JSON">
+                <span>📋</span>
+                <span>Copy JSON</span>
+              </button>
+              <button onclick="loadSvIntoLevelStudio()" class="px-3 py-1.5 rounded-lg bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer transition shadow" title="Open this level in Studio Canvas to edit">
+                <span>✏️</span>
+                <span>Load in Studio</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Solver Status & Deductive Validation Banner -->
+          <div id="svSolverFeedbackBox" class="p-3 bg-[#0d1117] border border-[#30363d] rounded-xl text-xs flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span id="svSolverStatusDot" class="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <span id="svSolverStatusMsg" class="text-[#e6edf3] font-semibold">Unique Solution Verified!</span>
+            </div>
+            <div class="flex items-center gap-3 font-mono text-[11px]">
+              <span class="text-[#8b949e]">Solve Time: <span id="svSolverTime" class="text-amber-400 font-bold">0.12ms</span></span>
+              <span class="text-[#8b949e]">Score: <span id="svSolverScore" class="text-pink-400 font-bold">87</span></span>
+            </div>
+          </div>
+
+          <!-- Split: Visual Meowsweeper Board (Left) & Raw JSON Viewer (Right) -->
+          <div class="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-3 min-h-0">
+            
+            <!-- Visual Meowsweeper Solver Board -->
+            <div class="bg-[#0d1117] border border-[#30363d] rounded-xl p-3 flex flex-col items-center justify-center min-h-[300px]">
+              <div class="text-[11px] font-bold text-[#8b949e] mb-2 self-start flex items-center justify-between w-full">
+                <span>Meowsweeper Solver Grid</span>
+                <span id="svCatCountBadge" class="font-mono text-emerald-400">4 / 4 Cats Placed</span>
+              </div>
+              <div class="flex-1 flex items-center justify-center w-full">
+                <div id="svGridCanvas" class="grid gap-1.5 p-2 bg-stone-900/60 rounded-xl shadow-inner max-w-full">
+                  <!-- Dynamically generated cells -->
+                </div>
+              </div>
+              <div class="text-[11px] text-[#8b949e] mt-2 flex items-center gap-3">
+                <span class="flex items-center gap-1"><span>🐱</span> Cat (1/row, 1/col, 1/reg, no 8-adj)</span>
+                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-stone-700 inline-block"></span> Region #</span>
+              </div>
+            </div>
+
+            <!-- Full Raw JSON Viewer -->
+            <div class="bg-[#0d1117] border border-[#30363d] rounded-xl p-3 flex flex-col min-h-[300px] overflow-hidden">
+              <div class="text-[11px] font-bold text-[#8b949e] mb-2 flex items-center justify-between">
+                <span>Server Raw JSON (View Only)</span>
+                <span id="svFileSizeLabel" class="font-mono text-[10px] text-[#8b949e]">671 bytes</span>
+              </div>
+              <pre id="svRawJsonText" class="flex-1 bg-[#161b22] border border-[#30363d] rounded-lg p-3 text-xs font-mono text-emerald-300 overflow-auto leading-relaxed select-text"></pre>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
   </div>
 
   <!-- SCRIPT LOGIC -->
@@ -1808,6 +1977,398 @@
         toast.style.opacity = '0';
         toast.style.transform = 'translateY(10px)';
       }, 2500);
+    }
+    // =========================================================================
+    // SERVER PUBLISHED JSON LEVELS & MEOWSWEEPER SOLVER VIEWER CONTROLLER
+    // =========================================================================
+    let svManifestData = null;
+    let svLevelsList = []; // Array of level meta items
+    let svCurrentLevel = null; // Currently selected level full JSON object
+    let svShowingSolution = true;
+    let svBaseUrl = '../content';
+
+    function openServerViewerModal() {
+      const modal = document.getElementById('serverViewerModal');
+      if (!modal) return;
+      modal.classList.remove('hidden');
+      document.body.classList.add('overflow-hidden');
+      if (!svManifestData) {
+        refreshServerLevelsList();
+      }
+    }
+
+    function closeServerViewerModal() {
+      const modal = document.getElementById('serverViewerModal');
+      if (!modal) return;
+      modal.classList.add('hidden');
+      document.body.classList.remove('overflow-hidden');
+    }
+
+    // Close on Escape key
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        const modal = document.getElementById('serverViewerModal');
+        if (modal && !modal.classList.contains('hidden')) {
+          closeServerViewerModal();
+        }
+      }
+    });
+
+    async function refreshServerLevelsList() {
+      const listContainer = document.getElementById('serverLevelsList');
+      const badge = document.getElementById('serverTotalBadge');
+      const sourceBadge = document.getElementById('serverSourceBadge');
+
+      if (listContainer) {
+        listContainer.innerHTML = `
+          <div class="p-8 text-center text-xs text-[#8b949e] flex flex-col items-center justify-center gap-2">
+            <span class="animate-spin text-xl">⏳</span>
+            <span>Fetching server manifest...</span>
+          </div>`;
+      }
+      if (badge) badge.textContent = 'Loading...';
+
+      let manifest = null;
+      let baseUrl = '../content';
+
+      // 1. Try local server first (http://localhost:3000)
+      try {
+        const ctrl = new AbortController();
+        const timeout = setTimeout(() => ctrl.abort(), 1200);
+        const res = await fetch(`${LOCAL_SERVER_URL}/manifest.json`, { signal: ctrl.signal });
+        clearTimeout(timeout);
+        if (res.ok) {
+          manifest = await res.json();
+          baseUrl = LOCAL_SERVER_URL;
+          if (sourceBadge) {
+            sourceBadge.textContent = 'Local Server (port 3000)';
+            sourceBadge.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+          }
+        }
+      } catch (e) {
+        // Fall back to static portfolio content
+      }
+
+      // 2. If local server not reachable, try static content/manifest.json
+      if (!manifest) {
+        try {
+          const res = await fetch('../content/manifest.json');
+          if (res.ok) {
+            manifest = await res.json();
+            baseUrl = '../content';
+            if (sourceBadge) {
+              sourceBadge.textContent = 'Live Portfolio Server';
+              sourceBadge.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30';
+            }
+          }
+        } catch (e) {
+          console.warn('Failed to load static manifest:', e);
+        }
+      }
+
+      if (!manifest || !manifest.levels) {
+        if (listContainer) {
+          listContainer.innerHTML = `
+            <div class="p-6 text-center text-xs text-rose-400 flex flex-col items-center justify-center gap-2">
+              <span class="text-xl">⚠️</span>
+              <span>Could not load manifest from server. Make sure server is running or levels are published.</span>
+              <button onclick="refreshServerLevelsList()" class="mt-2 px-3 py-1 bg-[#21262d] text-[#e6edf3] rounded-lg border border-[#30363d] hover:bg-[#30363d]">Try Again</button>
+            </div>`;
+        }
+        if (badge) badge.textContent = '0 levels';
+        return;
+      }
+
+      svManifestData = manifest;
+      svBaseUrl = baseUrl;
+
+      // Convert levels map to sorted array (by order or numeric ID)
+      const rawEntries = Object.values(manifest.levels || {});
+      svLevelsList = rawEntries.sort((a, b) => {
+        const ordA = a.order ?? parseInt((a.levelId || '').replace(/\D/g, ''), 10) ?? 0;
+        const ordB = b.order ?? parseInt((b.levelId || '').replace(/\D/g, ''), 10) ?? 0;
+        return ordA - ordB;
+      });
+
+      if (badge) {
+        badge.textContent = `${svLevelsList.length} Levels Published`;
+      }
+
+      renderServerLevelsList(svLevelsList);
+
+      // Automatically select first level if none selected
+      if (svLevelsList.length > 0) {
+        selectServerLevel(svLevelsList[0].levelId);
+      }
+    }
+
+    function handleServerViewerFilter() {
+      if (!svLevelsList) return;
+      const search = (document.getElementById('serverViewerSearch')?.value || '').toLowerCase().trim();
+      const tierFilter = document.getElementById('serverTierFilter')?.value || 'ALL';
+
+      const filtered = svLevelsList.filter(lvl => {
+        const matchesTier = (tierFilter === 'ALL') || (lvl.tier === tierFilter);
+        const matchesSearch = !search || 
+          (lvl.levelId && lvl.levelId.toLowerCase().includes(search)) ||
+          (lvl.levelDisplayName && lvl.levelDisplayName.toLowerCase().includes(search)) ||
+          (lvl.tier && lvl.tier.toLowerCase().includes(search));
+        return matchesTier && matchesSearch;
+      });
+
+      renderServerLevelsList(filtered);
+    }
+
+    function renderServerLevelsList(items) {
+      const container = document.getElementById('serverLevelsList');
+      const countEl = document.getElementById('serverFilteredCount');
+      if (!container) return;
+
+      if (countEl) {
+        countEl.textContent = `${items.length} ${items.length === 1 ? 'file' : 'files'}`;
+      }
+
+      if (items.length === 0) {
+        container.innerHTML = `
+          <div class="p-6 text-center text-xs text-[#8b949e]">
+            No levels match the current filter.
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = '';
+      items.forEach((meta) => {
+        const isSelected = svCurrentLevel && svCurrentLevel.levelId === meta.levelId;
+        const btn = document.createElement('button');
+        btn.id = `sv_item_${meta.levelId}`;
+        btn.className = `w-full text-left p-2.5 rounded-xl border flex items-center justify-between gap-2 text-xs transition cursor-pointer select-none ${
+          isSelected 
+            ? 'bg-blue-600/20 border-blue-500/60 text-[#e6edf3]' 
+            : 'bg-[#161b22] hover:bg-[#21262d] border-[#30363d] text-[#8b949e] hover:text-[#e6edf3]'
+        }`;
+        
+        const tierBadgeClass = getTierBadgeColorClass(meta.tier);
+        const sizeBadge = `${meta.gridSize || 6}x${meta.gridSize || 6}`;
+
+        btn.innerHTML = `
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="text-xs">📄</span>
+            <div class="truncate">
+              <div class="font-mono font-bold text-[#e6edf3] text-xs truncate">${meta.levelId}.json</div>
+              <div class="text-[10px] text-[#8b949e]/80 truncate">${meta.levelDisplayName || meta.levelId}</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#0d1117] text-[#8b949e] border border-[#30363d]">${sizeBadge}</span>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full border ${tierBadgeClass}">${meta.tier || 'Easy'}</span>
+          </div>
+        `;
+
+        btn.onclick = () => selectServerLevel(meta.levelId);
+        container.appendChild(btn);
+      });
+    }
+
+    function getTierBadgeColorClass(tier) {
+      switch (tier) {
+        case 'Tutorial': return 'bg-teal-500/20 text-teal-300 border-teal-500/40';
+        case 'Easy': return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40';
+        case 'Medium': return 'bg-amber-500/20 text-amber-300 border-amber-500/40';
+        case 'Hard': return 'bg-orange-500/20 text-orange-300 border-orange-500/40';
+        case 'Expert': return 'bg-rose-500/20 text-rose-300 border-rose-500/40';
+        default: return 'bg-blue-500/20 text-blue-300 border-blue-500/40';
+      }
+    }
+
+    async function selectServerLevel(levelId) {
+      if (!svManifestData || !svManifestData.levels) return;
+      const meta = svManifestData.levels[levelId];
+      if (!meta) return;
+
+      // Update active highlight in left list
+      const allButtons = document.querySelectorAll('#serverLevelsList button');
+      allButtons.forEach(b => {
+        b.className = 'w-full text-left p-2.5 rounded-xl border flex items-center justify-between gap-2 text-xs transition cursor-pointer select-none bg-[#161b22] hover:bg-[#21262d] border-[#30363d] text-[#8b949e] hover:text-[#e6edf3]';
+      });
+      const activeBtn = document.getElementById(`sv_item_${levelId}`);
+      if (activeBtn) {
+        activeBtn.className = 'w-full text-left p-2.5 rounded-xl border flex items-center justify-between gap-2 text-xs transition cursor-pointer select-none bg-blue-600/20 border-blue-500/60 text-[#e6edf3]';
+      }
+
+      // Fetch level JSON from server
+      const targetUrl = svBaseUrl.startsWith('http')
+        ? `${svBaseUrl}${meta.url || `/levels/${levelId}.json`}`
+        : `${svBaseUrl}/levels/${levelId}.json`;
+
+      try {
+        const res = await fetch(targetUrl);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const levelData = await res.json();
+        svCurrentLevel = levelData;
+        renderServerLevelDetail(levelData, meta);
+      } catch (err) {
+        console.error('Failed to fetch level JSON:', err);
+        showToast(`Failed to load ${levelId}.json from server`, 'error');
+      }
+    }
+
+    function renderServerLevelDetail(level, meta) {
+      const N = level.gridSize || 6;
+      document.getElementById('svDetailId').textContent = level.levelId || meta.levelId;
+      document.getElementById('svDetailFileName').textContent = `${level.levelId || meta.levelId}.json`;
+      
+      const tierEl = document.getElementById('svDetailTier');
+      tierEl.textContent = level.tier || meta.tier || 'Easy';
+      tierEl.className = `text-[10px] font-bold px-2 py-0.5 rounded-full border ${getTierBadgeColorClass(level.tier || meta.tier)}`;
+      
+      document.getElementById('svDetailGridBadge').textContent = `${N}x${N}`;
+      document.getElementById('svDetailHash').textContent = `hash: ${meta.hash ? meta.hash.slice(0, 10) + '...' : 'live'}`;
+
+      // Set Raw JSON display
+      const jsonFormatted = JSON.stringify(level, null, 2);
+      document.getElementById('svRawJsonText').textContent = jsonFormatted;
+      document.getElementById('svFileSizeLabel').textContent = `${new Blob([jsonFormatted]).size} bytes`;
+
+      // Solve & Verify with Meowsweeper Solver Algorithm
+      const solveResult = solveGrid(level.regions, N, 2);
+      updateSvSolverUI(solveResult, level);
+
+      // Render Visual Meowsweeper Board
+      renderSvVisualBoard(level, N);
+    }
+
+    function updateSvSolverUI(res, level) {
+      const dot = document.getElementById('svSolverStatusDot');
+      const msg = document.getElementById('svSolverStatusMsg');
+      const timeEl = document.getElementById('svSolverTime');
+      const scoreEl = document.getElementById('svSolverScore');
+
+      timeEl.textContent = `${res.elapsedMs}ms`;
+      scoreEl.textContent = `${level.stepScore ?? res.stepScore ?? 50}`;
+
+      if (res.solutionCount === 1) {
+        dot.className = 'w-2 h-2 rounded-full bg-emerald-400';
+        msg.textContent = 'Unique Solution Verified! (1 Solvable Path)';
+        msg.className = 'text-emerald-400 font-semibold';
+      } else if (res.solutionCount > 1) {
+        dot.className = 'w-2 h-2 rounded-full bg-amber-400';
+        msg.textContent = `Multiple Solutions (${res.solutionCount}) - Ambiguous`;
+        msg.className = 'text-amber-400 font-semibold';
+      } else {
+        dot.className = 'w-2 h-2 rounded-full bg-rose-400';
+        msg.textContent = 'Unsolvable Region Configuration';
+        msg.className = 'text-rose-400 font-semibold';
+      }
+    }
+
+    function renderSvVisualBoard(level, N) {
+      const canvas = document.getElementById('svGridCanvas');
+      if (!canvas) return;
+
+      canvas.innerHTML = '';
+      canvas.style.gridTemplateColumns = `repeat(${N}, minmax(0, 1fr))`;
+
+      // Adaptive cell size for viewer modal
+      const availableWidth = 320;
+      const cellSize = Math.min(Math.floor(availableWidth / N), 52);
+
+      let placedCats = 0;
+      const solution = level.solution || [];
+
+      for (let r = 0; r < N; r++) {
+        for (let c = 0; c < N; c++) {
+          const regId = (level.regions && level.regions[r]) ? level.regions[r][c] : 0;
+          const color = REGION_COLORS[regId % REGION_COLORS.length];
+
+          const cell = document.createElement('div');
+          cell.style.width = `${cellSize}px`;
+          cell.style.height = `${cellSize}px`;
+          cell.style.backgroundColor = color.bg;
+          cell.style.borderColor = color.border;
+          cell.className = 'relative flex items-center justify-center font-bold text-stone-900 border border-stone-800/40 rounded-lg shadow-sm transition';
+
+          const hasCat = solution[r] && solution[r][c] === 1;
+          if (hasCat) placedCats++;
+
+          if (svShowingSolution && hasCat) {
+            const cat = document.createElement('span');
+            cat.className = 'text-lg drop-shadow select-none';
+            cat.textContent = '🐱';
+            cell.appendChild(cat);
+          } else {
+            const num = document.createElement('span');
+            num.className = 'text-[10px] font-mono text-stone-700/60 select-none';
+            num.textContent = regId;
+            cell.appendChild(num);
+          }
+
+          canvas.appendChild(cell);
+        }
+      }
+
+      const catBadge = document.getElementById('svCatCountBadge');
+      if (catBadge) {
+        catBadge.textContent = `${placedCats} / ${N} Cats Placed`;
+      }
+    }
+
+    function toggleSvSolution() {
+      svShowingSolution = !svShowingSolution;
+      const lbl = document.getElementById('lblSvToggleSolution');
+      if (lbl) {
+        lbl.textContent = svShowingSolution ? 'Hide Solution' : 'Show Solution';
+      }
+      if (svCurrentLevel) {
+        renderSvVisualBoard(svCurrentLevel, svCurrentLevel.gridSize || 6);
+      }
+    }
+
+    function copySvJsonContent() {
+      if (!svCurrentLevel) {
+        showToast('No level selected', 'warn');
+        return;
+      }
+      const raw = JSON.stringify(svCurrentLevel, null, 2);
+      navigator.clipboard.writeText(raw).then(() => {
+        showToast(`Copied ${svCurrentLevel.levelId}.json to clipboard!`, 'success');
+      }).catch(err => {
+        showToast('Clipboard error: ' + err.message, 'error');
+      });
+    }
+
+    function loadSvIntoLevelStudio() {
+      if (!svCurrentLevel) return;
+      closeServerViewerModal();
+
+      // Load into Level Studio editor
+      try {
+        const N = svCurrentLevel.gridSize || 6;
+        document.getElementById('propLevelId').value = svCurrentLevel.levelId || '101';
+        document.getElementById('propDisplayName').value = svCurrentLevel.levelDisplayName || `level_${svCurrentLevel.levelId}`;
+        document.getElementById('propGridSize').value = N.toString();
+        document.getElementById('propTier').value = svCurrentLevel.tier || 'Easy';
+        document.getElementById('propHearts').value = svCurrentLevel.maxHearts ?? 3;
+        document.getElementById('propHints').value = svCurrentLevel.hintsAllowed ?? 3;
+        document.getElementById('propTime').value = svCurrentLevel.solveTimeSec ?? 120;
+        document.getElementById('chkGuided').checked = !!svCurrentLevel.requireGuided;
+        document.getElementById('chkLineLock').checked = !!svCurrentLevel.requireLineLock;
+
+        initGrid(N);
+
+        for (let r = 0; r < N; r++) {
+          for (let c = 0; c < N; c++) {
+            gridRegions[r][c] = (svCurrentLevel.regions && svCurrentLevel.regions[r]) ? svCurrentLevel.regions[r][c] : 0;
+          }
+        }
+
+        renderGridVisuals();
+        runSolverAndVerify();
+        exportCurrentToEditor();
+        showToast(`Loaded ${svCurrentLevel.levelId}.json into Level Studio canvas!`, 'success');
+      } catch (err) {
+        console.error('Failed to load into studio:', err);
+        showToast('Failed to import level into studio: ' + err.message, 'error');
+      }
     }
   </script>
 </body>
