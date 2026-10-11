@@ -603,7 +603,11 @@
 
         showToastPopup('🎉', `Cleared ${N}×${N} in ${(elapsedMs / 1000).toFixed(1)}s (+${leaguePts}p)${rankMsg}`, 'win');
         setTimeout(() => {
-          shuffleRandomLevel(false);
+          if (window.isPlayingCampaignMode && typeof LevelSyncManager !== 'undefined') {
+            LevelSyncManager.playNextCampaignLevel();
+          } else {
+            shuffleRandomLevel(false);
+          }
         }, 1650);
       }
     }
@@ -1711,6 +1715,7 @@
         currentCampaignIndex = (index + cachedLevelsList.length) % cachedLevelsList.length;
         const target = cachedLevelsList[currentCampaignIndex];
         if (target && target.data) {
+          window.isPlayingCampaignMode = true;
           loadCustomLevel(target.data);
 
           const label = document.getElementById('campaignBtnText');
@@ -1742,9 +1747,14 @@
         } catch (e) {}
 
         // Non-blocking background sync (never blocks startup)
-        setTimeout(() => {
-          syncFromManifest(false);
-        }, 500);
+        setTimeout(async () => {
+          await syncFromManifest(false);
+          // If playing initial game and cached levels exist, wire Level 1 automatically
+          const urlParams = new URLSearchParams(window.location.search);
+          if (urlParams.get('mode') !== 'custom' && cachedLevelsList.length > 0) {
+            playCampaignLevel(0);
+          }
+        }, 300);
       }
 
       return {
