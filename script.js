@@ -265,10 +265,10 @@ const UNITY_LAB_MANIFEST = {
     title: 'Calm Jigsaw',
     scene: 'CalmJigsaw_9Signature.unity',
     htmlUrl: 'labs/calm-jigsaw.html',
-    webglUrl: 'webgl/calm-jigsaw/index.html',
+    webglUrl: 'labs/unity-calm-jigsaw/index.html',
     hasWebgl: true,
-    unitySpecs: 'Unity 2022.3 LTS (URP / Procedural 9-Signature Bezier Mesh)',
-    desc: 'Procedural N×N Bezier Mesh + Full Viewport Board & Right Piece Drawer'
+    unitySpecs: 'Unity 6000.3.14f1 (C# / WebGL 2.0 WASM) • Procedural Jigsaw & Powerups',
+    desc: 'Procedural N×N Bezier Jigsaw + Full Viewport Board & Right Piece Drawer (Unity WebGL WASM)'
   },
   'jigsaw-solitaire': {
     icon: '🃏',
