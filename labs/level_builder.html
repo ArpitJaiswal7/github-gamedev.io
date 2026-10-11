@@ -1685,27 +1685,65 @@
     }
 
         function returnToGame() {
+      // 1. If opener is alive (portfolio main window or embedded game iframe)
       try {
         if (window.opener && !window.opener.closed) {
-          window.opener.focus();
+          try {
+            if (window.opener.top && !window.opener.top.closed) {
+              window.opener.top.focus();
+            }
+          } catch (e) {}
+          try {
+            window.opener.focus();
+          } catch (e) {}
           window.close();
+          // If browser closed the tab, done
+          setTimeout(() => {
+            if (!window.closed) {
+              navigateToPortfolioMechanicsLab();
+            }
+          }, 350);
           return;
         }
       } catch (e) {}
 
-      // Try closing current tab
-      window.close();
-
-      // If close was blocked (e.g. standalone navigation), switch to meowsweeper_game window
+      // 2. Try closing current studio tab
       try {
-        const gameWin = window.open('meowsweeper.html', 'meowsweeper_game');
-        if (gameWin) {
-          gameWin.focus();
-          return;
-        }
+        window.close();
       } catch (e) {}
 
-      window.location.href = 'meowsweeper.html';
+      // 3. Fallback: If no game page is open / window didn't close,
+      // switch back to the main page of portfolio at the meowsweeper embedded section!
+      setTimeout(() => {
+        navigateToPortfolioMechanicsLab();
+      }, 150);
+    }
+
+    function navigateToPortfolioMechanicsLab() {
+      const currentPath = window.location.pathname;
+      if (currentPath.includes('/labs/')) {
+        // Try targeting the named portfolio main window if already open in another tab
+        try {
+          const mainWin = window.open('../index.html?lab=meowsweeper#mechanics-lab', 'portfolio_main');
+          if (mainWin) {
+            mainWin.focus();
+            window.close();
+            return;
+          }
+        } catch (e) {}
+        window.location.href = '../index.html?lab=meowsweeper#mechanics-lab';
+      } else {
+        // Local preview fallback
+        try {
+          const previewWin = window.open('meowsweeper_preview.html', 'meowsweeper_preview');
+          if (previewWin) {
+            previewWin.focus();
+            window.close();
+            return;
+          }
+        } catch (e) {}
+        window.location.href = 'meowsweeper_preview.html';
+      }
     }
 
     function quickTestInGame() {
@@ -1716,13 +1754,33 @@
         const obj = JSON.parse(lvlJson);
         if (window.opener && !window.opener.closed) {
           window.opener.postMessage({ type: 'LOAD_CUSTOM_LEVEL', level: obj }, '*');
-          window.opener.focus();
-          showToast('Custom level sent to game tab! Switching back...', 'success');
-          setTimeout(() => window.close(), 600);
+          try {
+            if (window.opener.top && !window.opener.top.closed) window.opener.top.focus();
+          } catch (e) {}
+          try {
+            window.opener.focus();
+          } catch (e) {}
+          showToast('Custom level sent to game! Switching back...', 'success');
+          setTimeout(() => window.close(), 500);
           return;
         }
       } catch (e) {}
-      window.location.href = 'meowsweeper.html?mode=custom';
+
+      // If opener not open, switch to portfolio mechanics lab with custom level query
+      const currentPath = window.location.pathname;
+      if (currentPath.includes('/labs/')) {
+        try {
+          const mainWin = window.open('../index.html?lab=meowsweeper&mode=custom#mechanics-lab', 'portfolio_main');
+          if (mainWin) {
+            mainWin.focus();
+            window.close();
+            return;
+          }
+        } catch (e) {}
+        window.location.href = '../index.html?lab=meowsweeper&mode=custom#mechanics-lab';
+      } else {
+        window.location.href = 'meowsweeper_preview.html?mode=custom';
+      }
     }
 
     // TOAST POPUP

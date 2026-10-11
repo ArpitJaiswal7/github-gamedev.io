@@ -1,3 +1,4 @@
+window.name = 'portfolio_main';
 // ========================================================
 // Arpit Jaiswal - Senior Unity & Systems Engineer Portfolio
 // Interactive Engine: Unity Workstation + CAD Terminal
