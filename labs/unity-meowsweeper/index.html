@@ -189,6 +189,15 @@
       var canvas = document.querySelector("#unity-canvas");
       var stage = document.querySelector("#canvas-stage");
 
+      // Prevent default browser context menu so Right-Click places Crosses in Unity WebGL
+      canvas.addEventListener("contextmenu", function(e) {
+        e.preventDefault();
+        return false;
+      });
+      window.addEventListener("contextmenu", function(e) {
+        e.preventDefault();
+      });
+
       function fitCanvas() {
         if (!stage || !canvas) return;
         var sw = stage.clientWidth - 16;
