@@ -255,115 +255,12 @@
         canvas.focus();
       });
 
-      var activeUnityInstance = null;
-      var jsPointerDown = false;
-      var jsIsSwiping = false;
-      var jsStartRow = -1;
-      var jsStartCol = -1;
-      var jsStartPos = { x: 0, y: 0 };
-      var jsLastRow = -1;
-      var jsLastCol = -1;
-
-      function getBoardMetrics() {
-        var w = canvas.width;
-        var h = canvas.height;
-        var topY = 62;
-        var maxBoardW = w - 30;
-        var maxBoardH = h - topY - 45;
-        var boardSize = Math.min(maxBoardW, maxBoardH);
-        var startX = (w - boardSize) / 2;
-        return { w: w, h: h, topY: topY, boardSize: boardSize, startX: startX };
-      }
-
-      function getGridCell(e) {
-        var rect = canvas.getBoundingClientRect();
-        if (rect.width <= 0 || rect.height <= 0) return null;
-        var scaleX = canvas.width / rect.width;
-        var scaleY = canvas.height / rect.height;
-        var mx = (e.clientX - rect.left) * scaleX;
-        var my = (e.clientY - rect.top) * scaleY;
-
-        var m = getBoardMetrics();
-        if (mx < m.startX || mx > m.startX + m.boardSize || my < m.topY || my > m.topY + m.boardSize) {
-          return null;
-        }
-
-        var N = window.currentMeowGridSize || 4;
-        var cellSize = m.boardSize / N;
-        var col = Math.floor((mx - m.startX) / cellSize);
-        var row = Math.floor((my - m.topY) / cellSize);
-        if (row >= 0 && row < N && col >= 0 && col < N) {
-          return { row: row, col: col, mx: mx, my: my };
-        }
-        return null;
-      }
-
-      canvas.addEventListener("pointerdown", function(e) {
-        canvas.focus();
-        if (!activeUnityInstance) return;
-
-        var cell = getGridCell(e);
-        if (!cell) return;
-
-        if (e.button === 2) {
-          e.preventDefault();
-          activeUnityInstance.SendMessage("MeowsweeperGameSystem", "OnWebInput", cell.row + "," + cell.col + ",cross");
-          return;
-        }
-
-        if (e.button === 0) {
-          jsPointerDown = true;
-          jsIsSwiping = false;
-          jsStartRow = cell.row;
-          jsStartCol = cell.col;
-          jsStartPos = { x: cell.mx, y: cell.my };
-          jsLastRow = cell.row;
-          jsLastCol = cell.col;
-        }
-      });
-
-      canvas.addEventListener("pointermove", function(e) {
-        if (!jsPointerDown || !activeUnityInstance) return;
-        var cell = getGridCell(e);
-        if (!cell) return;
-
-        var dx = cell.mx - jsStartPos.x;
-        var dy = cell.my - jsStartPos.y;
-        var movedCell = (cell.row !== jsStartRow || cell.col !== jsStartCol);
-        if (!jsIsSwiping && (movedCell || (dx * dx + dy * dy) > 40)) {
-          jsIsSwiping = true;
-          activeUnityInstance.SendMessage("MeowsweeperGameSystem", "OnWebInput", jsStartRow + "," + jsStartCol + ",swipe_start");
-        }
-
-        if (jsIsSwiping) {
-          if (cell.row !== jsLastRow || cell.col !== jsLastCol) {
-            jsLastRow = cell.row;
-            jsLastCol = cell.col;
-            activeUnityInstance.SendMessage("MeowsweeperGameSystem", "OnWebInput", cell.row + "," + cell.col + ",swipe_move");
-          }
-        }
-      });
-
-      window.addEventListener("pointerup", function(e) {
-        if (!activeUnityInstance) return;
-        if (jsPointerDown && e.button === 0) {
-          if (!jsIsSwiping && jsStartRow >= 0 && jsStartCol >= 0) {
-            activeUnityInstance.SendMessage("MeowsweeperGameSystem", "OnWebInput", jsStartRow + "," + jsStartCol + ",cat");
-          }
-        }
-        jsPointerDown = false;
-        jsIsSwiping = false;
-        jsStartRow = -1;
-        jsStartCol = -1;
-      });
-
       var script = document.createElement("script");
       script.src = loaderUrl;
       script.onload = () => {
         createUnityInstance(canvas, config, (progress) => {
           document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
         }).then((unityInstance) => {
-          activeUnityInstance = unityInstance;
           document.querySelector("#unity-loading-bar").style.display = "none";
           fitCanvas();
           var fsBtn = document.querySelector("#btn-fs");
