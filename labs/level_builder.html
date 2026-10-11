@@ -1993,26 +1993,46 @@
 
       let manifest = null;
       let baseUrl = '../content';
+      const isLocalhostHost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
-      // 1. Try local server first (http://localhost:3000)
-      try {
-        const ctrl = new AbortController();
-        const timeout = setTimeout(() => ctrl.abort(), 1200);
-        const res = await fetch(`${LOCAL_SERVER_URL}/manifest.json`, { signal: ctrl.signal });
-        clearTimeout(timeout);
-        if (res.ok) {
-          manifest = await res.json();
-          baseUrl = LOCAL_SERVER_URL;
-          if (sourceBadge) {
-            sourceBadge.textContent = 'Local Server (port 3000)';
-            sourceBadge.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+      // 1. When running on GitHub Pages (or non-localhost), prioritize live repository content
+      if (!isLocalhostHost) {
+        try {
+          const res = await fetch('../content/manifest.json');
+          if (res.ok) {
+            manifest = await res.json();
+            baseUrl = '../content';
+            if (sourceBadge) {
+              sourceBadge.textContent = 'Live GitHub Repository';
+              sourceBadge.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30';
+            }
           }
+        } catch (e) {
+          console.warn('Failed to load static manifest:', e);
         }
-      } catch (e) {
-        // Fall back to static portfolio content
       }
 
-      // 2. If local server not reachable, try static content/manifest.json
+      // 2. If on localhost (or fallback), try local server (http://localhost:3000)
+      if (!manifest) {
+        try {
+          const ctrl = new AbortController();
+          const timeout = setTimeout(() => ctrl.abort(), 1200);
+          const res = await fetch(`${LOCAL_SERVER_URL}/manifest.json`, { signal: ctrl.signal });
+          clearTimeout(timeout);
+          if (res.ok) {
+            manifest = await res.json();
+            baseUrl = LOCAL_SERVER_URL;
+            if (sourceBadge) {
+              sourceBadge.textContent = 'Local Sync Server (port 3000)';
+              sourceBadge.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+            }
+          }
+        } catch (e) {
+          // Fall back to static portfolio content
+        }
+      }
+
+      // 3. Fallback to static manifest if local server wasn't found
       if (!manifest) {
         try {
           const res = await fetch('../content/manifest.json');
@@ -2020,13 +2040,11 @@
             manifest = await res.json();
             baseUrl = '../content';
             if (sourceBadge) {
-              sourceBadge.textContent = 'Live Portfolio Server';
+              sourceBadge.textContent = 'Live GitHub Repository';
               sourceBadge.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30';
             }
           }
-        } catch (e) {
-          console.warn('Failed to load static manifest:', e);
-        }
+        } catch (e) {}
       }
 
       if (!manifest || !manifest.levels) {
