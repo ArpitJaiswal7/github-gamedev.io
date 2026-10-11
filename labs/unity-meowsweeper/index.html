@@ -226,17 +226,18 @@
         }
       }
 
+      var buildVer = "?v=00f06be";
       var buildUrl = "Build";
-      var loaderUrl = buildUrl + "/unity-meowsweeper.loader.js";
+      var loaderUrl = buildUrl + "/unity-meowsweeper.loader.js" + buildVer;
       var config = {
         arguments: [],
-        dataUrl: buildUrl + "/unity-meowsweeper.data",
-        frameworkUrl: buildUrl + "/unity-meowsweeper.framework.js",
-        codeUrl: buildUrl + "/unity-meowsweeper.wasm",
+        dataUrl: buildUrl + "/unity-meowsweeper.data" + buildVer,
+        frameworkUrl: buildUrl + "/unity-meowsweeper.framework.js" + buildVer,
+        codeUrl: buildUrl + "/unity-meowsweeper.wasm" + buildVer,
         streamingAssetsUrl: "StreamingAssets",
         companyName: "ArpitJaiswal",
         productName: "Meowsweeper Core",
-        productVersion: "1.0.0",
+        productVersion: "1.0.2",
         showBanner: unityShowBanner,
         devicePixelRatio: 1,
         matchWebGLToCanvasSize: true,

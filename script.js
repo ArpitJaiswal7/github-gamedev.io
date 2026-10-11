@@ -254,8 +254,8 @@ const UNITY_LAB_MANIFEST = {
     icon: '🐱',
     title: 'MeowSweeper',
     scene: 'MeowSweeper_Lab.unity',
-    htmlUrl: 'labs/meowsweeper.html',
-    webglUrl: 'labs/unity-meowsweeper/index.html',
+    htmlUrl: 'labs/meowsweeper.html?v=00f06be',
+    webglUrl: 'labs/unity-meowsweeper/index.html?v=00f06be',
     hasWebgl: true,
     unitySpecs: 'Unity 6000.3.14f1 (C# / WebGL 2.0 WASM) • Connected to Live Level Server',
     desc: 'MeowSweeper Core & Offline Leaderboard (Headless Unity WebGL WASM wired to Live CDN)'
