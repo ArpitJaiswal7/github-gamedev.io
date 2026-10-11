@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Argos Offline Localization | Unity WebGL &amp; Localization Tables Showcase — Arpit Jaiswal</title>
+  <meta name="description" content="Interactive Unity WebGL & Editor Simulator for Argos Offline Localization: ArgosDemo.unity live 6-language TMP switcher, Hierarchy TMP_Text harvester, Unity StringTableCollection editor, and C# <-> Python stdin/stdout JSON IPC bridge.">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              page: '#0a0d14',
+              card: '#111622',
+              cardHover: '#161c2b',
+              border: '#1e293b',
+              cyan: '#38bdf8',
+              amber: '#f59e0b',
+              emerald: '#10b981'
+            },
+            unity: {
+              bg: '#202020',
+              panel: '#282828',
+              header: '#303030',
+              toolbar: '#383838',
+              border: '#191919',
+              rowEven: '#2b2b2b',
+              rowOdd: '#262626',
+              selected: '#2c5d87',
+              text: '#dcdcdc',
+              muted: '#8c8c8c',
+              canvas: '#1a1f29',
+              btnBlue: '#3373d9'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    body {
+      background-color: #0a0d14;
+      background-image: radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.08) 0%, transparent 60%);
+    }
+
+    .unity-scroll::-webkit-scrollbar {
+      width: 7px;
+      height: 7px;
+    }
+    .unity-scroll::-webkit-scrollbar-track {
+      background: #1c1c1c;
+    }
+    .unity-scroll::-webkit-scrollbar-thumb {
+      background: #484848;
+      border-radius: 4px;
+    }
+    .unity-scroll::-webkit-scrollbar-thumb:hover {
+      background: #5c5c5c;
+    }
+
+    @keyframes cellFlash {
+      0% {
+        background-color: rgba(16, 185, 129, 0.38);
+        box-shadow: inset 0 0 0 1px #10b981;
+      }
+      100% {
+        background-color: transparent;
+        box-shadow: inset 0 0 0 0 transparent;
+      }
+    }
+    .cell-just-translated {
+      animation: cellFlash 1.2s ease-out;
+    }
+
+    @keyframes tmpPop {
+      0% {
+        transform: scale(0.97);
+        opacity: 0.55;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+    .tmp-locale-pop {
+      animation: tmpPop 0.18s ease-out;
+    }
+  </style>
+</head>
+<body class="text-slate-100 antialiased selection:bg-sky-500 selection:text-black min-h-screen flex flex-col">
+
+  <!-- ================= TOP BAR ================= -->
+  <header class="sticky top-0 z-40 w-full backdrop-blur-md bg-[#0a0d14]/90 border-b border-slate-800/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-slate-900 border border-slate-700/80 flex items-center justify-center text-sky-400 shadow-md shadow-sky-500/10">
+          <i data-lucide="languages" class="w-4 h-4"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-white text-sm sm:text-base tracking-tight">Argos Offline Localization</span>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-semibold">Unity 6000.3 • Offline MT</span>
+          </div>
+          <p class="text-[11px] text-slate-400 hidden sm:block">ArgosDemo.unity WebGL Runtime &bull; Hierarchy TMP Harvester &bull; C# &harr; Python JSON IPC</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 flex-wrap">
+        <!-- View Mode Segmented Switcher -->
+        <div class="flex items-center bg-slate-900/90 p-0.5 rounded-lg border border-slate-700 text-xs">
+          <button id="mode-btn-split" type="button" onclick="setWorkspaceMode('split')" class="px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer bg-sky-500 text-slate-950">
+            Split (WebGL + Table)
+          </button>
+          <button id="mode-btn-webgl" type="button" onclick="setWorkspaceMode('webgl')" class="px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer text-slate-300 hover:text-white">
+            ▶ WebGL Player
+          </button>
+          <button id="mode-btn-editor" type="button" onclick="setWorkspaceMode('editor')" class="px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer text-slate-300 hover:text-white">
+            🛠️ Localization Tables
+          </button>
+        </div>
+
+        <a href="ARGOS_LOCALIZATION_AGENT.md" download="ARGOS_LOCALIZATION_AGENT.md" class="px-3 py-1.5 rounded-lg border border-amber-500/40 bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 font-semibold text-xs transition-all flex items-center gap-1.5">
+          <i data-lucide="file-code" class="w-3.5 h-3.5"></i>
+          <span class="hidden md:inline">Agent .md Playbook</span>
+          <span class="md:hidden">.md</span>
+        </a>
+
+        <a href="ArgosLocalizationTool.unitypackage" download="ArgosLocalizationTool.unitypackage" class="px-3 py-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-xs transition-all flex items-center gap-1.5 shadow-lg shadow-sky-500/20">
+          <i data-lucide="package-check" class="w-4 h-4"></i>
+          <span class="hidden sm:inline">Download .unitypackage</span>
+          <span class="sm:hidden">Package</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= MAIN CONTENT ================= -->
+  <main class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-5 flex-1">
+
+    <!-- Quick Interactive Guide Strip -->
+    <section class="rounded-xl bg-[#111622] border border-slate-800/90 p-3 shadow-xl">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 text-xs">
+        <div class="p-2.5 rounded-lg bg-slate-900/70 border border-slate-800 flex items-start gap-2">
+          <span class="px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/40 font-mono text-[10px] shrink-0 mt-0.5">1. Live WebGL UI</span>
+          <p class="text-slate-300 leading-snug">Click any of the <strong class="text-white">6 blue language buttons</strong> (<code class="text-sky-300">en, es, ja, hi, fr, de</code>) in the Unity Game View to switch all <strong class="text-white">18 TMP_Text labels</strong> live via <code class="text-sky-300">LanguageSwitcher.SetLocale()</code>.</p>
+        </div>
+
+        <div class="p-2.5 rounded-lg bg-slate-900/70 border border-slate-800 flex items-start gap-2">
+          <span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-mono text-[10px] shrink-0 mt-0.5">2. Harvest TMP</span>
+          <p class="text-slate-300 leading-snug">Add a new <code class="text-emerald-300">TMP_Text</code> in the Hierarchy or edit any English cell, then click <strong class="text-white">Harvest &amp; Translate All Locales</strong> to run the offline Argos bridge.</p>
+        </div>
+
+        <div class="p-2.5 rounded-lg bg-slate-900/70 border border-slate-800 flex items-start gap-2">
+          <span class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 font-mono text-[10px] shrink-0 mt-0.5">3. (English) Suffix</span>
+          <p class="text-slate-300 leading-snug">Toggle <strong class="text-amber-300">Append English in (brackets)</strong> in the toolbar to format cells as <code class="text-slate-200">"Juego (Play Game)"</code> or pure <code class="text-slate-200">"Juego"</code>.</p>
+        </div>
+
+        <div class="p-2.5 rounded-lg bg-slate-900/70 border border-slate-800 flex items-start gap-2">
+          <span class="px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/40 font-mono text-[10px] shrink-0 mt-0.5">4. JSON IPC Log</span>
+          <p class="text-slate-300 leading-snug">Inspect the live <code class="text-purple-300">stdin &rarr; argos_bridge.py &rarr; stdout</code> UTF-8 JSON payloads generated by <code class="text-purple-300">DependencyFreeJsonCodec</code> below.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= UNITY 6000.3 WORKSTATION (WEBGL PLAYER + LOCALIZATION TABLES) ================= -->
+    <section class="rounded-xl overflow-hidden border border-slate-700/80 shadow-2xl bg-unity-bg select-none">
+
+      <!-- Unity Editor Title & Menu Bar -->
+      <div class="bg-[#181818] px-3 py-1.5 border-b border-black flex flex-wrap items-center justify-between gap-2 text-[11px] text-neutral-400 font-mono">
+        <div class="flex items-center gap-2 flex-wrap">
+          <div class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-red-500/80"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-500/80"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500/80"></span>
+          </div>
+          <span class="ml-1 text-neutral-200 font-semibold">ArgosLocalization — ArgosDemo.unity — Unity 6000.3.14f1</span>
+
+          <!-- Simulated Unity Top Menu: Tools -> Argos Localization -->
+          <div class="relative inline-block ml-2">
+            <button id="unity-tools-menu-btn" type="button" onclick="toggleToolsDropdown(event)" class="px-2 py-0.5 rounded bg-[#2c2c2c] hover:bg-[#3d3d3d] text-sky-300 border border-sky-500/40 font-sans text-[11px] font-semibold flex items-center gap-1 cursor-pointer">
+              <span>Tools &rsaquo; Argos Localization</span>
+              <i data-lucide="chevron-down" class="w-3 h-3"></i>
+            </button>
+            <div id="unity-tools-dropdown" class="hidden absolute left-0 top-full mt-1 w-96 rounded-lg bg-[#252525] border border-black shadow-2xl py-1 z-50 font-sans text-xs text-neutral-200">
+              <button type="button" onclick="runMenuBuildDemoScene()" class="w-full text-left px-3 py-1.5 hover:bg-unity-selected flex items-center justify-between">
+                <span>0. Build Demo Scene (18 demo strings)</span>
+                <span class="text-[10px] font-mono text-neutral-400">ArgosDemo.unity</span>
+              </button>
+              <button type="button" onclick="runMenuHarvestAndTranslate()" class="w-full text-left px-3 py-1.5 hover:bg-unity-selected flex items-center justify-between font-semibold text-emerald-300">
+                <span>1. Harvest Scene TMP Texts &amp; Translate All Locales</span>
+                <span class="text-[10px] font-mono text-emerald-400">IPC Batch</span>
+              </button>
+              <button type="button" onclick="runMenuHarvestOnly()" class="w-full text-left px-3 py-1.5 hover:bg-unity-selected flex items-center justify-between">
+                <span>2. Harvest Scene TMP Texts Only (Populate English Column)</span>
+                <span class="text-[10px] font-mono text-neutral-400">en only</span>
+              </button>
+              <button type="button" onclick="runMenuTranslateExisting()" class="w-full text-left px-3 py-1.5 hover:bg-unity-selected flex items-center justify-between">
+                <span>3. Translate Existing Table Collection (Offline Argos)</span>
+                <span class="text-[10px] font-mono text-sky-400">5 Locales</span>
+              </button>
+              <div class="my-1 border-t border-neutral-700"></div>
+              <button type="button" onclick="toggleAppendEnglishBracket()" class="w-full text-left px-3 py-1.5 hover:bg-unity-selected flex items-center justify-between">
+                <span class="flex items-center gap-1.5">
+                  <span id="menu-check-append" class="text-amber-400 font-bold">&#10003;</span>
+                  <span>Append English in (brackets) after translation</span>
+                </span>
+                <span class="text-[10px] font-mono text-amber-300">FormatWithEnglish</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Action Toolbar Buttons -->
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="toggleAppendEnglishBracket()" id="toolbar-append-btn" class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 font-sans text-[11px] font-semibold cursor-pointer hover:bg-amber-500/30 transition">
+            ✓ Append "(English)"
+          </button>
+          <button type="button" onclick="runMenuHarvestAndTranslate()" class="px-2.5 py-0.5 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-sans text-[11px] font-bold cursor-pointer flex items-center gap-1 shadow">
+            <i data-lucide="sparkles" class="w-3 h-3"></i>
+            <span>Harvest TMP &amp; Translate All</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Simulated Editor Progress Bar (Shown during sequential per-locale Python subprocess calls) -->
+      <div id="argos-progress-banner" class="hidden bg-[#1b2432] border-b border-sky-500/40 px-4 py-2 flex items-center justify-between gap-4">
+        <div class="flex items-center gap-2 text-xs font-mono text-sky-300">
+          <span class="w-2 h-2 rounded-full bg-sky-400 animate-ping"></span>
+          <span id="argos-progress-title">Argos Offline Localization: Translating 18 strings (en &rarr; es)...</span>
+        </div>
+        <div class="w-64 h-2 rounded-full bg-slate-900 overflow-hidden border border-slate-700">
+          <div id="argos-progress-fill" class="h-full bg-sky-400 transition-all duration-200" style="width: 20%"></div>
+        </div>
+      </div>
+
+      <!-- WORKSPACE GRID: LEFT = UNITY WEBGL GAME VIEW (ArgosDemo.unity) | RIGHT = LOCALIZATION TABLES + HIERARCHY -->
+      <div id="workspace-grid" class="grid grid-cols-1 lg:grid-cols-12 min-h-[580px]">
+
+        <!-- ================= PANE 1: UNITY PLAY MODE / WEBGL BUILD VIEW (ArgosDemo.unity) ================= -->
+        <div id="pane-webgl" class="lg:col-span-6 flex flex-col border-b lg:border-b-0 lg:border-r border-black bg-unity-panel">
+
+          <!-- Unity Game Tab Header -->
+          <div class="bg-unity-header px-2 pt-1 flex items-center justify-between border-b border-unity-border">
+            <div class="flex items-center gap-1">
+              <div class="bg-unity-panel text-unity-text text-xs font-medium px-3 py-1 rounded-t border-t-2 border-sky-400 flex items-center gap-1.5">
+                <i data-lucide="gamepad-2" class="w-3.5 h-3.5 text-sky-400"></i>
+                <span>Game (ArgosDemo.unity WebGL)</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 pr-1 text-[10px] font-mono">
+              <span class="px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30" id="active-locale-pill">SelectedLocale: en (English)</span>
+              <span class="text-neutral-400">1920&times;1080 ScaleWithScreenSize</span>
+            </div>
+          </div>
+
+          <!-- Game View Sub-Toolbar -->
+          <div class="bg-unity-toolbar px-2.5 py-1 border-b border-unity-border flex items-center justify-between gap-2 text-[11px]">
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded bg-sky-600 text-white font-semibold text-[10px] flex items-center gap-1">
+                <span>&#9654;</span> <span>Play Mode Active</span>
+              </span>
+              <span class="text-neutral-300 text-[11px]">Click any language button below or press <button type="button" onclick="cycleNextLocale()" class="underline text-sky-300 hover:text-white cursor-pointer font-mono">LanguageSwitcher.Next()</button></span>
+            </div>
+            <span class="text-[10px] text-emerald-400 font-mono">DemoFontFallback: OS CJK + Devanagari Active</span>
+          </div>
+
+          <!-- THE EXACT UNITY SCENE CANVAS (ArgosDemoSceneBuilder.cs: #1a1f29 background, 6 blue buttons, 2x9 TMP Grid) -->
+          <div class="flex-1 bg-[#1a1f29] p-3.5 sm:p-4 flex flex-col gap-3 overflow-y-auto unity-scroll">
+
+            <!-- Top Row: HorizontalLayoutGroup "Language Buttons" (6 buttons with Color(0.20f, 0.45f, 0.85f)) -->
+            <div class="grid grid-cols-3 sm:grid-cols-6 gap-2 shrink-0" id="webgl-language-buttons">
+              <!-- Populated by JS -->
+            </div>
+
+            <!-- Center Grid: GridLayoutGroup "Labels" (FixedColumnCount = 2, 18 TMP_Text labels bound via LocalizeStringEvent) -->
+            <div id="webgl-labels-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-1.5 flex-1 content-start pt-1">
+              <!-- Populated by JS -->
+            </div>
+
+          </div>
+
+          <!-- Bottom Bar: Add New TMP_Text to Scene Hierarchy to Test Live Harvesting -->
+          <div class="bg-unity-toolbar px-3 py-2 border-t border-unity-border flex flex-wrap items-center justify-between gap-2 text-xs">
+            <div class="flex items-center gap-1.5 text-[11px] text-neutral-300">
+              <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-emerald-400"></i>
+              <span>Add Scene <code class="text-sky-300">TMP_Text</code>:</span>
+            </div>
+            <div class="flex items-center gap-1.5 flex-1 max-w-md">
+              <input id="input-new-tmp-text" type="text" placeholder="e.g. Daily Reward Claimed! or Boss Battle..." class="flex-1 bg-[#1b1b1b] text-white placeholder-neutral-500 border border-neutral-700 rounded px-2.5 py-1 text-xs focus:outline-none focus:border-sky-500">
+              <button type="button" onclick="addCustomTmpToScene()" class="px-2.5 py-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs cursor-pointer whitespace-nowrap">
+                + Add &amp; Translate
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ================= PANE 2: UNITY LOCALIZATION TABLES WINDOW (UI_Strings StringTableCollection) ================= -->
+        <div id="pane-editor" class="lg:col-span-6 flex flex-col bg-unity-panel">
+
+          <!-- Unity Dock Header -->
+          <div class="bg-unity-header px-2 pt-1 flex items-center justify-between border-b border-unity-border">
+            <div class="flex items-center gap-1">
+              <div class="bg-unity-panel text-unity-text text-xs font-medium px-3 py-1 rounded-t border-t-2 border-amber-400 flex items-center gap-1.5">
+                <i data-lucide="table-2" class="w-3.5 h-3.5 text-amber-400"></i>
+                <span>Localization Tables (UI_Strings.asset)</span>
+              </div>
+            </div>
+            <span class="text-[10px] text-neutral-400 font-mono pr-1">Assets/Localization/Tables/UI_Strings</span>
+          </div>
+
+          <!-- Localization Table Toolbar -->
+          <div class="bg-unity-toolbar px-2.5 py-1 border-b border-unity-border flex flex-wrap items-center justify-between gap-2 text-[11px]">
+            <div class="flex items-center gap-1.5">
+              <span class="text-neutral-400">Collection:</span>
+              <span class="px-2 py-0.5 rounded bg-[#252525] border border-neutral-700 text-white font-mono text-[10px]">UI_Strings (StringTableCollection)</span>
+              <span id="table-row-count-badge" class="px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 font-mono text-[10px]">18 Keys &times; 6 Locales</span>
+            </div>
+
+            <div class="relative flex items-center w-48">
+              <i data-lucide="search" class="w-3 h-3 text-neutral-400 absolute left-2 pointer-events-none"></i>
+              <input id="input-table-search" type="text" oninput="renderLocalizationTable()" placeholder="Filter keys or text..." class="w-full bg-[#1e1e1e] text-neutral-100 placeholder-neutral-500 border border-neutral-700 rounded-full pl-6 pr-2.5 py-0.5 text-[11px] focus:outline-none focus:border-sky-500">
+            </div>
+          </div>
+
+          <!-- Multi-Column StringTableCollection Grid -->
+          <div class="flex-1 overflow-auto unity-scroll max-h-[450px]">
+            <table class="w-full border-collapse text-left text-[11px]">
+              <thead class="sticky top-0 z-10 bg-[#2f2f2f] text-neutral-300 uppercase font-mono text-[10px] border-b border-black shadow">
+                <tr>
+                  <th class="py-1.5 px-2 border-r border-neutral-700/80 min-w-[135px]">Key (SharedData)</th>
+                  <th class="py-1.5 px-2 border-r border-neutral-700/80 min-w-[150px] text-sky-300">English (en) [Source]</th>
+                  <th class="py-1.5 px-2 border-r border-neutral-700/80 min-w-[150px]">Spanish (es)</th>
+                  <th class="py-1.5 px-2 border-r border-neutral-700/80 min-w-[150px]">Japanese (ja)</th>
+                  <th class="py-1.5 px-2 border-r border-neutral-700/80 min-w-[150px]">Hindi (hi)</th>
+                  <th class="py-1.5 px-2 border-r border-neutral-700/80 min-w-[150px]">French (fr)</th>
+                  <th class="py-1.5 px-2 min-w-[150px]">German (de)</th>
+                </tr>
+              </thead>
+              <tbody id="localization-table-body" class="divide-y divide-neutral-800">
+                <!-- Populated by JS -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Table Footer Bar -->
+          <div class="bg-unity-toolbar px-3 py-1.5 border-t border-unity-border flex flex-wrap items-center justify-between gap-2 text-[11px] text-neutral-400">
+            <span>Tip: Click any <strong class="text-sky-300">English (en)</strong> cell to edit source text, then click <strong class="text-emerald-300">Retranslate Row</strong>.</span>
+            <button type="button" onclick="resetDemoTable()" class="px-2 py-0.5 rounded bg-[#2a2a2a] hover:bg-[#3a3a3a] text-neutral-200 border border-neutral-700 text-[10px] cursor-pointer">
+              Reset to 18 Default Strings
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ================= BOTTOM DOCK: OS PROCESS BOUNDARY & JSON STDIN/STDOUT INSPECTOR ================= -->
+      <div class="bg-[#141821] border-t border-black p-3 font-mono text-xs">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-bold">OS PROCESS BOUNDARY (IPC)</span>
+            <span class="text-slate-300 text-[11px]">C# <code class="text-sky-300">ArgosTranslateTool.TryRunPythonTranslation()</code> &rarr; <code class="text-emerald-300">.argos_venv/Scripts/python.exe argos_bridge.py</code></span>
+          </div>
+          <div class="flex items-center gap-1.5 text-[10px]">
+            <span class="text-slate-400">Inspect Locale Call:</span>
+            <button type="button" onclick="inspectIpcLocale('es')" class="ipc-locale-btn px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/40 cursor-pointer" data-ipc="es">en&rarr;es</button>
+            <button type="button" onclick="inspectIpcLocale('ja')" class="ipc-locale-btn px-2 py-0.5 rounded bg-slate-800 text-slate-300 hover:text-white cursor-pointer" data-ipc="ja">en&rarr;ja</button>
+            <button type="button" onclick="inspectIpcLocale('hi')" class="ipc-locale-btn px-2 py-0.5 rounded bg-slate-800 text-slate-300 hover:text-white cursor-pointer" data-ipc="hi">en&rarr;hi</button>
+            <button type="button" onclick="inspectIpcLocale('fr')" class="ipc-locale-btn px-2 py-0.5 rounded bg-slate-800 text-slate-300 hover:text-white cursor-pointer" data-ipc="fr">en&rarr;fr</button>
+            <button type="button" onclick="inspectIpcLocale('de')" class="ipc-locale-btn px-2 py-0.5 rounded bg-slate-800 text-slate-300 hover:text-white cursor-pointer" data-ipc="de">en&rarr;de</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+          <div class="rounded-lg bg-[#0d1117] border border-slate-800 p-2.5">
+            <div class="text-[10px] text-sky-400 uppercase mb-1 flex items-center justify-between">
+              <span>C# &rarr; Python Subprocess (JSON stdin)</span>
+              <span class="text-slate-500">UTF-8 without BOM</span>
+            </div>
+            <pre id="ipc-stdin-preview" class="text-[11px] text-slate-300 overflow-x-auto whitespace-pre-wrap max-h-28 unity-scroll"></pre>
+          </div>
+
+          <div class="rounded-lg bg-[#0d1117] border border-slate-800 p-2.5">
+            <div class="text-[10px] text-emerald-400 uppercase mb-1 flex items-center justify-between">
+              <span>Python argostranslate &rarr; C# (JSON stdout)</span>
+              <span id="ipc-status-badge" class="text-emerald-400">ExitCode: 0 • 18 cells written</span>
+            </div>
+            <pre id="ipc-stdout-preview" class="text-[11px] text-emerald-200/90 overflow-x-auto whitespace-pre-wrap max-h-28 unity-scroll"></pre>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ================= SHEET 13 ARCHITECTURE & INTERNAL MECHANISMS ================= -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div class="lg:col-span-7 rounded-xl bg-[#111622] border border-slate-800 p-5 shadow-xl space-y-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <span class="text-[10px] font-mono uppercase tracking-widest text-sky-400 block">Sheet 13 — Surface Cut</span>
+            <h2 class="text-lg font-bold text-white">Cross-Process Offline Localization Architecture</h2>
+          </div>
+          <span class="px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-mono">Zero Cloud API Cost</span>
+        </div>
+        <p class="text-xs text-slate-300 leading-relaxed">
+          Argos Translate runs OpenNMT / CTranslate2 neural machine translation models in Python, which cannot run inside Unity's Mono/IL2CPP AppDomain directly. <code class="text-sky-300">ArgosTranslateTool</code> bridges this OS process boundary deterministically: harvesting <code class="text-amber-300">TMP_Text</code> strings from the scene hierarchy, serializing them via a dependency-free UTF-8 JSON codec over <code class="text-sky-300">stdin</code>, and writing the translated arrays directly into Unity's <code class="text-emerald-300">StringTableCollection</code> assets.
+        </p>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-1 text-[11px]">
+          <div class="p-2.5 rounded-lg bg-slate-900/90 border border-slate-800">
+            <div class="font-bold text-amber-300 font-mono">Python Exe Resolution</div>
+            <p class="text-slate-400 mt-0.5">Auto-detects project-local <code class="text-slate-200">.argos_venv</code> on Windows &amp; macOS before system paths.</p>
+          </div>
+          <div class="p-2.5 rounded-lg bg-slate-900/90 border border-slate-800">
+            <div class="font-bold text-sky-300 font-mono">Dependency-Free JSON</div>
+            <p class="text-slate-400 mt-0.5">Custom C# JSON string array serializer/parser with full <code class="text-slate-200">\uXXXX</code> surrogate support.</p>
+          </div>
+          <div class="p-2.5 rounded-lg bg-slate-900/90 border border-slate-800">
+            <div class="font-bold text-emerald-300 font-mono">Reflection Window Sync</div>
+            <p class="text-slate-400 mt-0.5">Invokes <code class="text-slate-200">LocalizationTablesWindow.ReloadTables()</code> so open Editor windows repaint live.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="lg:col-span-5 rounded-xl bg-[#111622] border border-slate-800 p-5 shadow-xl space-y-3">
+        <span class="text-[10px] font-mono uppercase tracking-widest text-amber-400 block">Runtime &amp; Font Pipeline</span>
+        <h3 class="text-base font-bold text-white">Verified Unity Implementation Details</h3>
+        <div class="space-y-2 text-xs text-slate-300">
+          <div class="p-2.5 rounded-lg bg-slate-900/70 border border-slate-800">
+            <strong class="text-white">Idempotent Scene Harvesting (<code class="text-sky-300">ArgosIgnoreLocalization</code>):</strong>
+            Skips language-switcher button captions and checks existing <code class="text-sky-300">LocalizeStringEvent</code> bindings so re-harvesting never duplicates keys.
+          </div>
+          <div class="p-2.5 rounded-lg bg-slate-900/70 border border-slate-800">
+            <strong class="text-white">Dynamic OS Font Fallback (<code class="text-emerald-300">DemoFontFallback.cs</code>):</strong>
+            Appends OS CJK (<code class="text-slate-200">Yu Gothic / Hiragino Sans</code>) and Devanagari (<code class="text-slate-200">Nirmala UI / Kohinoor</code>) fallback <code class="text-sky-300">TMP_FontAsset</code> instances at runtime and cleans them up in <code class="text-sky-300">OnDestroy</code>.
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // =========================================================================
+    // AUTHENTIC ARGOS TRANSLATE DATA FROM D:\UnityProjects\ArgosLocalization
+    // =========================================================================
+    const LANGUAGES = [
+      { code: 'en', label: 'English',  nativeName: 'English' },
+      { code: 'es', label: 'Español',  nativeName: 'Spanish' },
+      { code: 'ja', label: '日本語',    nativeName: 'Japanese' },
+      { code: 'hi', label: 'हिन्दी',    nativeName: 'Hindi' },
+      { code: 'fr', label: 'Français', nativeName: 'French' },
+      { code: 'de', label: 'Deutsch',  nativeName: 'German' }
+    ];
+
+    const INITIAL_ENTRIES = [
+      {
+        id: 3014348800,
+        key: 'UI_GAME_TITLE',
+        en: 'Maze Adventure',
+        raw: { es: 'Maze Adventure', ja: '迷路アドベンチャー', hi: 'मज़े साहसिक', fr: 'Aventure à labyrinthe', de: 'Maze Adventure' }
+      },
+      {
+        id: 3094040576,
+        key: 'UI_PLAY_GAME',
+        en: 'Play Game',
+        raw: { es: 'Juego', ja: 'プレイゲーム', hi: 'खेल', fr: 'Jouer à un jeu', de: 'Spielspiel' }
+      },
+      {
+        id: 3098234880,
+        key: 'UI_CONTINUE',
+        en: 'Continue',
+        raw: { es: 'Continuar', ja: 'お問い合わせ', hi: 'जारी', fr: 'Continuer', de: 'Weiterfahren' }
+      },
+      {
+        id: 3098234881,
+        key: 'UI_SETTINGS',
+        en: 'Settings',
+        raw: { es: 'Ajustes', ja: 'コンテンツ', hi: 'सेटिंग', fr: 'Paramètres', de: 'Einstellungen' }
+      },
+      {
+        id: 3098234882,
+        key: 'UI_HIGH_SCORE',
+        en: 'High Score',
+        raw: { es: 'Alta puntuación', ja: '高いスコア', hi: 'उच्च स्कोर', fr: 'Score élevé', de: 'Hoher Score' }
+      },
+      {
+        id: 3098234883,
+        key: 'UI_LEADERBOARD',
+        en: 'Leaderboard',
+        raw: { es: 'Leaderboard', ja: 'リーダーボード', hi: 'लीडरबोर्ड', fr: 'Tableau de bord', de: 'Leaderboard' }
+      },
+      {
+        id: 3098234884,
+        key: 'UI_LANGUAGE',
+        en: 'Select Language',
+        raw: { es: 'Seleccionar idioma', ja: '言語を選択', hi: 'भाषा चुनें', fr: 'Sélectionner la langue', de: 'Wählen Sie die Sprache' }
+      },
+      {
+        id: 3098234885,
+        key: 'UI_SOUND_ON',
+        en: 'Sound On',
+        raw: { es: 'Sonido', ja: 'サウンド・オン', hi: 'ध्वनि', fr: 'Sonnez', de: 'Sound On' }
+      },
+      {
+        id: 3098234886,
+        key: 'UI_MUSIC_VOLUME',
+        en: 'Music Volume',
+        raw: { es: 'Volumen de música', ja: 'ミュージックボリューム', hi: 'संगीत वॉल्यूम', fr: 'Volume de musique', de: 'Musikvolumen' }
+      },
+      {
+        id: 3098234887,
+        key: 'UI_PAUSE',
+        en: 'Game Paused',
+        raw: { es: 'Juego fusionado', ja: 'ゲームパユース', hi: 'खेल Pause', fr: 'Jeu Pausé', de: 'Spiel unterbrochen' }
+      },
+      {
+        id: 3098234888,
+        key: 'UI_RESUME',
+        en: 'Resume',
+        raw: { es: 'Resumen', ja: 'ログイン', hi: 'फिर से शुरू', fr: 'Résumé', de: 'Lebenslauf' }
+      },
+      {
+        id: 3098234889,
+        key: 'UI_RESTART',
+        en: 'Restart Level',
+        raw: { es: 'Nivel de reinicio', ja: 'レベルを再起動する', hi: 'रीस्टार्ट स्तर', fr: 'Redémarrer le niveau', de: 'Startstufe' }
+      },
+      {
+        id: 3098234890,
+        key: 'UI_LEVEL_COMPLETE',
+        en: 'Level Complete!',
+        raw: { es: 'Nivel completo!', ja: 'レベル完了!', hi: 'स्तर पूरा!', fr: 'Niveau complet !', de: 'Level abgeschlossen!' }
+      },
+      {
+        id: 3098234891,
+        key: 'UI_GAME_OVER',
+        en: 'Game Over',
+        raw: { es: 'Cambio de juego', ja: 'ゲームオーバー', hi: 'गेम ओवर', fr: 'Jeu terminé', de: 'Game Over' }
+      },
+      {
+        id: 3098234892,
+        key: 'UI_TRY_AGAIN',
+        en: 'Try Again',
+        raw: { es: 'Otra vez.', ja: 'お問い合わせ', hi: 'फिर से प्रयास करें', fr: 'Essaie encore', de: 'Versuchen Sie es erneut' }
+      },
+      {
+        id: 3098234893,
+        key: 'UI_LOADING',
+        en: 'Loading, please wait...',
+        raw: { es: 'Carga, por favor, espera...', ja: 'ローディング、待って下さい...', hi: 'लोड हो रहा है, कृपया प्रतीक्षा करें ...', fr: 'Chargement, veuillez patienter...', de: 'Laden, bitte warten...' }
+      },
+      {
+        id: 3098234894,
+        key: 'UI_WATCH_AD',
+        en: 'Watch a video to get a free reward',
+        raw: { es: 'Vea un video para obtener una recompensa gratuita', ja: '無料報酬を得るためにビデオを見る', hi: 'एक मुफ्त इनाम पाने के लिए एक वीडियो देखें', fr: 'Regarder une vidéo pour obtenir une récompense gratuite', de: 'Sehen Sie sich ein Video an, um eine kostenlose Belohnung zu erhalten' }
+      },
+      {
+        id: 3098234895,
+        key: 'UI_EXIT_CONFIRM',
+        en: 'Are you sure you want to quit?',
+        raw: { es: '¿Seguro que quieres renunciar?', ja: '辞めたいですか?', hi: 'क्या आपको यकीन है कि आप छोड़ना चाहते हैं?', fr: 'Tu es sûr de vouloir démissionner ?', de: 'Bist du sicher, dass du aufhören willst?' }
+      }
+    ];
+
+    // Offline neural phrase dictionary for custom user-added TMP strings in the sandbox
+    const OFFLINE_WORD_MODELS = {
+      es: { 'daily': 'Diario', 'reward': 'recompensa', 'claimed': 'reclamada', 'victory': '¡Victoria', 'boss': 'Jefe', 'battle': 'batalla', 'start': 'Iniciar', 'quest': 'misión', 'new': 'Nuevo', 'score': 'puntuación', 'level': 'nivel', 'shop': 'Tienda', 'coins': 'Monedas', 'gems': 'Gemas', 'inventory': 'Inventario', 'profile': 'Perfil', 'save': 'Guardar', 'load': 'Cargar', 'win': 'Ganar', 'bonus': 'Bono' },
+      ja: { 'daily': 'デイリー', 'reward': '報酬', 'claimed': '獲得済み', 'victory': '勝利', 'boss': 'ボス', 'battle': 'バトル', 'start': 'スタート', 'quest': 'クエスト', 'new': '新規', 'score': 'スコア', 'level': 'レベル', 'shop': 'ショップ', 'coins': 'コイン', 'gems': 'ジェム', 'inventory': 'インベントリ', 'profile': 'プロフィール', 'save': 'セーブ', 'load': 'ロード', 'win': '勝利', 'bonus': 'ボーナス' },
+      hi: { 'daily': 'दैनिक', 'reward': 'इनाम', 'claimed': 'प्राप्त किया', 'victory': 'जीत', 'boss': 'बॉस', 'battle': 'युद्ध', 'start': 'शुरू', 'quest': 'खोज', 'new': 'नया', 'score': 'स्कोर', 'level': 'स्तर', 'shop': 'दुकान', 'coins': 'सिक्के', 'gems': 'रत्न', 'inventory': 'इन्वेंटरी', 'profile': 'प्रोफ़ाइल', 'save': 'सहेजें', 'load': 'लोड', 'win': 'जीत', 'bonus': 'बोनस' },
+      fr: { 'daily': 'Quotidien', 'reward': 'récompense', 'claimed': 'réclamée', 'victory': 'Victoire', 'boss': 'Boss', 'battle': 'bataille', 'start': 'Démarrer', 'quest': 'quête', 'new': 'Nouveau', 'score': 'score', 'level': 'niveau', 'shop': 'Boutique', 'coins': 'Pièces', 'gems': 'Gemmes', 'inventory': 'Inventaire', 'profile': 'Profil', 'save': 'Sauvegarder', 'load': 'Charger', 'win': 'Gagner', 'bonus': 'Bonus' },
+      de: { 'daily': 'Tägliche', 'reward': 'Belohnung', 'claimed': 'erhalten', 'victory': 'Sieg', 'boss': 'Boss', 'battle': 'Kampf', 'start': 'Starten', 'quest': 'Quest', 'new': 'Neu', 'score': 'Punkte', 'level': 'Stufe', 'shop': 'Shop', 'coins': 'Münzen', 'gems': 'Edelsteine', 'inventory': 'Inventar', 'profile': 'Profil', 'save': 'Speichern', 'load': 'Laden', 'win': 'Gewinnen', 'bonus': 'Bonus' }
+    };
+
+    let tableEntries = JSON.parse(JSON.stringify(INITIAL_ENTRIES));
+    let selectedLocale = 'en';
+    let appendEnglish = true;
+    let inspectedIpcLocale = 'es';
+    let flashRows = false;
+
+    // Exact C# FormatWithEnglish implementation from ArgosTranslateTool.cs
+    function formatWithEnglish(translated, english) {
+      if (!appendEnglish || !english || !english.trim()) return translated;
+      if ((translated || '').trim().toLowerCase() === english.trim().toLowerCase()) return translated;
+      return `${translated} (${english})`;
+    }
+
+    function getCellDisplayValue(entry, localeCode) {
+      if (localeCode === 'en') return entry.en;
+      const rawVal = (entry.raw && entry.raw[localeCode]) ? entry.raw[localeCode] : entry.en;
+      return formatWithEnglish(rawVal, entry.en);
+    }
+
+    function synthesizeArgosTranslation(englishText, localeCode) {
+      const seedMatch = INITIAL_ENTRIES.find(e => e.en.toLowerCase() === englishText.trim().toLowerCase());
+      if (seedMatch) return seedMatch.raw[localeCode];
+
+      const dict = OFFLINE_WORD_MODELS[localeCode] || {};
+      const tokens = englishText.split(/(\s+)/);
+      let changed = false;
+      const out = tokens.map(tok => {
+        const clean = tok.replace(/[^a-zA-Z]/g, '').toLowerCase();
+        if (clean && dict[clean]) {
+          changed = true;
+          return tok.replace(/[a-zA-Z]+/, dict[clean]);
+        }
+        return tok;
+      }).join('');
+
+      if (changed) return out;
+      const prefixes = { es: 'ES', ja: 'JP', hi: 'HI', fr: 'FR', de: 'DE' };
+      return `[${prefixes[localeCode]}] ${englishText}`;
+    }
+
+    // =========================================================================
+    // RENDER UNITY WEBGL SCENE VIEW (ArgosDemo.unity)
+    // =========================================================================
+    function renderWebglScene() {
+      const btnContainer = document.getElementById('webgl-language-buttons');
+      const gridContainer = document.getElementById('webgl-labels-grid');
+      const localePill = document.getElementById('active-locale-pill');
+
+      const activeLangObj = LANGUAGES.find(l => l.code === selectedLocale) || LANGUAGES[0];
+      if (localePill) {
+        localePill.textContent = `SelectedLocale: ${selectedLocale} (${activeLangObj.nativeName})`;
+      }
+
+      // Render 6 Language Buttons matching ArgosDemoSceneBuilder.CreateLanguageButton
+      btnContainer.innerHTML = LANGUAGES.map(lang => {
+        const isSelected = lang.code === selectedLocale;
+        return `
+          <button
+            type="button"
+            onclick="setLocale('${lang.code}')"
+            class="h-11 rounded-md font-sans font-semibold text-sm text-white transition-all cursor-pointer flex items-center justify-center shadow ${
+              isSelected
+                ? 'bg-[#3b82f6] ring-2 ring-amber-400 shadow-lg shadow-sky-500/25'
+                : 'bg-[#3373d9] hover:bg-[#4182eb] opacity-90 hover:opacity-100'
+            }"
+            title="LanguageSwitcher.SetLocale('${lang.code}')">
+            <span>${lang.label}</span>
+          </button>
+        `;
+      }).join('');
+
+      // Render 2-column TMP_Text Grid matching ArgosDemoSceneBuilder.BuildDemoScene
+      gridContainer.innerHTML = tableEntries.map(entry => {
+        const localizedText = getCellDisplayValue(entry, selectedLocale);
+        return `
+          <div class="tmp-locale-pop min-h-[38px] px-2.5 py-1.5 rounded bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.06] flex items-center justify-between gap-2 transition">
+            <span class="text-white text-[13px] sm:text-[14px] font-medium leading-snug break-words">${escapeHtml(localizedText)}</span>
+            <span class="text-[9px] font-mono text-slate-500 shrink-0">${escapeHtml(entry.key)}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // =========================================================================
+    // RENDER UNITY LOCALIZATION TABLES WINDOW (UI_Strings)
+    // =========================================================================
+    function renderLocalizationTable() {
+      const tbody = document.getElementById('localization-table-body');
+      const searchInput = document.getElementById('input-table-search');
+      const badge = document.getElementById('table-row-count-badge');
+      const query = (searchInput ? searchInput.value : '').trim().toLowerCase();
+
+      if (badge) {
+        badge.textContent = `${tableEntries.length} Keys × 6 Locales`;
+      }
+
+      const filtered = tableEntries.filter(entry => {
+        if (!query) return true;
+        if (entry.key.toLowerCase().includes(query) || entry.en.toLowerCase().includes(query)) return true;
+        return ['es', 'ja', 'hi', 'fr', 'de'].some(c => getCellDisplayValue(entry, c).toLowerCase().includes(query));
+      });
+
+      tbody.innerHTML = filtered.map((entry, idx) => {
+        const rowBg = idx % 2 === 0 ? 'bg-unity-rowEven' : 'bg-unity-rowOdd';
+        const flashClass = flashRows ? 'cell-just-translated' : '';
+        return `
+          <tr class="${rowBg} hover:bg-[#343d4b] transition-colors">
+            <td class="py-1.5 px-2 border-r border-neutral-800 font-mono text-[10px] text-amber-300">
+              ${escapeHtml(entry.key)}
+            </td>
+            <td class="py-1.5 px-2 border-r border-neutral-800">
+              <input
+                type="text"
+                value="${escapeHtml(entry.en)}"
+                onchange="updateEnglishSourceCell('${entry.key}', this.value)"
+                class="w-full bg-transparent text-white font-medium focus:bg-[#181818] focus:outline-none focus:ring-1 focus:ring-sky-400 rounded px-1 py-0.5"
+                title="Edit English ('en') source string and retranslate"
+              />
+            </td>
+            ${['es', 'ja', 'hi', 'fr', 'de'].map(code => {
+              const isColActive = selectedLocale === code;
+              const val = getCellDisplayValue(entry, code);
+              return `
+                <td class="py-1.5 px-2 border-r border-neutral-800 ${flashClass} ${isColActive ? 'bg-sky-500/10 text-sky-200 font-medium' : 'text-neutral-200'}">
+                  ${escapeHtml(val)}
+                </td>
+              `;
+            }).join('')}
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // =========================================================================
+    // RENDER C# <-> PYTHON IPC STDIN/STDOUT INSPECTOR
+    // =========================================================================
+    function renderIpcInspector() {
+      const stdinEl = document.getElementById('ipc-stdin-preview');
+      const stdoutEl = document.getElementById('ipc-stdout-preview');
+      const statusEl = document.getElementById('ipc-status-badge');
+
+      document.querySelectorAll('.ipc-locale-btn').forEach(btn => {
+        const code = btn.getAttribute('data-ipc');
+        if (code === inspectedIpcLocale) {
+          btn.className = 'ipc-locale-btn px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/40 cursor-pointer';
+        } else {
+          btn.className = 'ipc-locale-btn px-2 py-0.5 rounded bg-slate-800 text-slate-300 hover:text-white cursor-pointer';
+        }
+      });
+
+      const reqObj = {
+        source_locale: 'en',
+        target_locale: inspectedIpcLocale,
+        texts: tableEntries.map(e => e.en)
+      };
+
+      const resObj = {
+        ok: true,
+        source_locale: 'en',
+        target_locale: inspectedIpcLocale,
+        translations: tableEntries.map(e => e.raw[inspectedIpcLocale] || e.en)
+      };
+
+      if (stdinEl) stdinEl.textContent = JSON.stringify(reqObj, null, 2);
+      if (stdoutEl) stdoutEl.textContent = JSON.stringify(resObj, null, 2);
+      if (statusEl) statusEl.textContent = `ExitCode: 0 • ${tableEntries.length} cells written to UI_Strings_${inspectedIpcLocale}.asset`;
+    }
+
+    // =========================================================================
+    // INTERACTIVE ACTIONS (MATCHING ArgosTranslateTool.cs & LanguageSwitcher.cs)
+    // =========================================================================
+    function setLocale(code) {
+      selectedLocale = code;
+      if (code !== 'en') {
+        inspectedIpcLocale = code;
+      }
+      renderWebglScene();
+      renderLocalizationTable();
+      renderIpcInspector();
+    }
+
+    function cycleNextLocale() {
+      const idx = LANGUAGES.findIndex(l => l.code === selectedLocale);
+      const next = LANGUAGES[(idx + 1) % LANGUAGES.length];
+      setLocale(next.code);
+    }
+
+    function inspectIpcLocale(code) {
+      inspectedIpcLocale = code;
+      renderIpcInspector();
+    }
+
+    function toggleAppendEnglishBracket() {
+      appendEnglish = !appendEnglish;
+      const checkEl = document.getElementById('menu-check-append');
+      const toolbarBtn = document.getElementById('toolbar-append-btn');
+      if (checkEl) checkEl.style.visibility = appendEnglish ? 'visible' : 'hidden';
+      if (toolbarBtn) {
+        toolbarBtn.textContent = appendEnglish ? '✓ Append "(English)"' : '○ Pure Translation Only';
+        toolbarBtn.className = appendEnglish
+          ? 'px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 font-sans text-[11px] font-semibold cursor-pointer hover:bg-amber-500/30 transition'
+          : 'px-2 py-0.5 rounded bg-neutral-800 text-neutral-300 border border-neutral-600 font-sans text-[11px] font-semibold cursor-pointer hover:bg-neutral-700 transition';
+      }
+      closeToolsDropdown();
+      renderWebglScene();
+      renderLocalizationTable();
+    }
+
+    function updateEnglishSourceCell(key, newEnglishValue) {
+      const entry = tableEntries.find(e => e.key === key);
+      if (!entry) return;
+      entry.en = newEnglishValue.trim() || entry.en;
+      ['es', 'ja', 'hi', 'fr', 'de'].forEach(code => {
+        entry.raw[code] = synthesizeArgosTranslation(entry.en, code);
+      });
+      flashRows = true;
+      renderWebglScene();
+      renderLocalizationTable();
+      renderIpcInspector();
+      setTimeout(() => { flashRows = false; }, 1200);
+    }
+
+    function addCustomTmpToScene() {
+      const input = document.getElementById('input-new-tmp-text');
+      if (!input) return;
+      const rawText = input.value.trim();
+      if (!rawText) return;
+
+      const slug = rawText.toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 20) || 'CUSTOM';
+      const key = `TMP_${slug}`;
+
+      let existing = tableEntries.find(e => e.key === key);
+      if (!existing) {
+        existing = {
+          id: Date.now(),
+          key,
+          en: rawText,
+          raw: {}
+        };
+        tableEntries.push(existing);
+      } else {
+        existing.en = rawText;
+      }
+
+      input.value = '';
+      runSequentialPerLocaleTranslation(() => {
+        ['es', 'ja', 'hi', 'fr', 'de'].forEach(code => {
+          existing.raw[code] = synthesizeArgosTranslation(rawText, code);
+        });
+      });
+    }
+
+    function runSequentialPerLocaleTranslation(mutatorFn) {
+      const banner = document.getElementById('argos-progress-banner');
+      const title = document.getElementById('argos-progress-title');
+      const fill = document.getElementById('argos-progress-fill');
+      const targetCodes = ['es', 'ja', 'hi', 'fr', 'de'];
+
+      if (banner) banner.classList.remove('hidden');
+      let step = 0;
+
+      const tick = () => {
+        if (step < targetCodes.length) {
+          const code = targetCodes[step];
+          if (title) {
+            title.textContent = `Argos Offline Localization: Translating ${tableEntries.length} strings (en -> ${code})...`;
+          }
+          if (fill) {
+            fill.style.width = `${Math.round(((step + 1) / targetCodes.length) * 100)}%`;
+          }
+          inspectedIpcLocale = code;
+          step++;
+          setTimeout(tick, 110);
+        } else {
+          if (mutatorFn) mutatorFn();
+          if (banner) banner.classList.add('hidden');
+          flashRows = true;
+          renderWebglScene();
+          renderLocalizationTable();
+          renderIpcInspector();
+          setTimeout(() => { flashRows = false; }, 1200);
+        }
+      };
+      tick();
+    }
+
+    function runMenuBuildDemoScene() {
+      closeToolsDropdown();
+      resetDemoTable();
+    }
+
+    function runMenuHarvestAndTranslate() {
+      closeToolsDropdown();
+      runSequentialPerLocaleTranslation(() => {
+        tableEntries.forEach(entry => {
+          ['es', 'ja', 'hi', 'fr', 'de'].forEach(code => {
+            entry.raw[code] = synthesizeArgosTranslation(entry.en, code);
+          });
+        });
+      });
+    }
+
+    function runMenuHarvestOnly() {
+      closeToolsDropdown();
+      renderWebglScene();
+      renderLocalizationTable();
+    }
+
+    function runMenuTranslateExisting() {
+      closeToolsDropdown();
+      runMenuHarvestAndTranslate();
+    }
+
+    function resetDemoTable() {
+      tableEntries = JSON.parse(JSON.stringify(INITIAL_ENTRIES));
+      selectedLocale = 'en';
+      renderWebglScene();
+      renderLocalizationTable();
+      renderIpcInspector();
+    }
+
+    function setWorkspaceMode(mode) {
+      const paneWebgl = document.getElementById('pane-webgl');
+      const paneEditor = document.getElementById('pane-editor');
+      const btnSplit = document.getElementById('mode-btn-split');
+      const btnWebgl = document.getElementById('mode-btn-webgl');
+      const btnEditor = document.getElementById('mode-btn-editor');
+
+      const activeCls = 'px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer bg-sky-500 text-slate-950';
+      const idleCls = 'px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer text-slate-300 hover:text-white';
+
+      btnSplit.className = mode === 'split' ? activeCls : idleCls;
+      btnWebgl.className = mode === 'webgl' ? activeCls : idleCls;
+      btnEditor.className = mode === 'editor' ? activeCls : idleCls;
+
+      if (mode === 'split') {
+        paneWebgl.className = 'lg:col-span-6 flex flex-col border-b lg:border-b-0 lg:border-r border-black bg-unity-panel';
+        paneEditor.className = 'lg:col-span-6 flex flex-col bg-unity-panel';
+      } else if (mode === 'webgl') {
+        paneWebgl.className = 'lg:col-span-12 flex flex-col bg-unity-panel';
+        paneEditor.className = 'hidden';
+      } else {
+        paneWebgl.className = 'hidden';
+        paneEditor.className = 'lg:col-span-12 flex flex-col bg-unity-panel';
+      }
+    }
+
+    function toggleToolsDropdown(e) {
+      e.stopPropagation();
+      const menu = document.getElementById('unity-tools-dropdown');
+      if (menu) menu.classList.toggle('hidden');
+    }
+
+    function closeToolsDropdown() {
+      const menu = document.getElementById('unity-tools-dropdown');
+      if (menu) menu.classList.add('hidden');
+    }
+
+    document.addEventListener('click', () => closeToolsDropdown());
+
+    function escapeHtml(str) {
+      return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // Boot initial state
+    document.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      const requestedMode = params.get('mode');
+      if (requestedMode === 'webgl' || requestedMode === 'editor' || requestedMode === 'split') {
+        setWorkspaceMode(requestedMode);
+      }
+      renderWebglScene();
+      renderLocalizationTable();
+      renderIpcInspector();
+      if (window.lucide) lucide.createIcons();
+    });
+  </script>
+</body>
+</html>

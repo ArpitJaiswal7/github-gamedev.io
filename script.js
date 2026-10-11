@@ -308,6 +308,16 @@ const UNITY_LAB_MANIFEST = {
     hasWebgl: false,
     unitySpecs: 'Unity EditorWindow API (com.arrowstrike.asset-organizer • AssetDatabase)',
     desc: 'Unity Editor Project Window Badges, C/R Hover Tags & Multi-Asset Explorer Reveal'
+  },
+  'argos-localization': {
+    icon: '🌐',
+    title: 'Argos Localization',
+    scene: 'ArgosDemo.unity',
+    htmlUrl: 'labs/argos-localization.html',
+    webglUrl: 'labs/argos-localization.html?mode=webgl',
+    hasWebgl: true,
+    unitySpecs: 'Unity 6000.3.14f1 (ArgosDemo.unity • Unity.Localization + Offline Python IPC)',
+    desc: 'ArgosDemo.unity 6-Locale Switcher, Hierarchy TMP Harvester & Offline Python Bridge'
   }
 };
 
@@ -688,7 +698,7 @@ const blueprintsData = [
     engine: 'Unity + Python (offline)',
     desc: 'Cross-process communication tool linking Unity C# to an offline Python translation subprocess over stdin/stdout JSON codecs.',
     img: 'assets/blueprints/sheet-13-argos-localization.png',
-    labDemo: null
+    labDemo: 'argos-localization'
   },
   {
     id: 'sheet-11',

@@ -93,6 +93,12 @@
           <span>🪙</span>
           <span id="topWalletCoins">150</span>
         </div>
+
+        <!-- Level Builder / Studio Button -->
+        <button id="btnOpenLevelBuilder" onclick="openLevelBuilder()" class="px-3 py-1 rounded-lg bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold text-xs shadow-md flex items-center gap-1.5 cursor-pointer transition animate-pulse" title="Pause game and launch Level Studio">
+          <span>🛠️</span>
+          <span>Level Studio</span>
+        </button>
       </div>
     </div>
 
@@ -1429,6 +1435,136 @@
     shuffleRandomLevel(false);
     lbRenderUI(false);
   </script>
+
+  <!-- LEVEL BUILDER MODAL OVERLAY -->
+  <div id="levelBuilderModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex flex-col p-2 md:p-4">
+    <div class="w-full max-w-7xl mx-auto h-full flex flex-col bg-[#161b22] border border-[#30363d] rounded-2xl overflow-hidden shadow-2xl">
+      <!-- Modal Header Bar -->
+      <div class="shrink-0 px-4 py-2.5 bg-[#0d1117] border-b border-[#30363d] flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <span class="text-base">🛠️</span>
+          <span class="text-xs font-bold text-[#e6edf3]">Meowsweeper Level Studio & Batch Generator</span>
+          <span class="text-[10px] px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-400 font-bold border border-pink-500/30">GAME PAUSED</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <a href="level_builder.html" target="_blank" class="px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#e6edf3] text-xs font-semibold flex items-center gap-1 border border-[#30363d] transition">
+            <span>↗</span>
+            <span>Open in Tab</span>
+          </a>
+          <button onclick="closeLevelBuilderModal()" class="px-3 py-1 rounded-lg bg-rose-600/80 hover:bg-rose-600 text-white text-xs font-bold flex items-center gap-1 transition cursor-pointer">
+            <span>✕</span>
+            <span>Resume Game</span>
+          </button>
+        </div>
+      </div>
+      <!-- Modal Iframe -->
+      <div class="flex-1 min-h-0 bg-[#0d1117]">
+        <iframe id="levelBuilderIframe" src="" class="w-full h-full border-0"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let isGameManuallyPaused = false;
+    let savedTimerElapsedSec = 0;
+
+    function openLevelBuilder() {
+      if (runTimerInterval) {
+        clearInterval(runTimerInterval);
+        runTimerInterval = null;
+      }
+      isGameManuallyPaused = true;
+      savedTimerElapsedSec = Math.max(0, Math.floor((Date.now() - runStartTimeMs) / 1000));
+
+      const modal = document.getElementById('levelBuilderModal');
+      const iframe = document.getElementById('levelBuilderIframe');
+      if (modal && iframe) {
+        if (!iframe.src || iframe.src.indexOf('level_builder.html') === -1) {
+          iframe.src = 'level_builder.html';
+        }
+        modal.classList.remove('hidden');
+      }
+      showToastPopup('⏸️', 'Game Paused • Level Studio Opened', 'info');
+    }
+
+    function closeLevelBuilderModal() {
+      const modal = document.getElementById('levelBuilderModal');
+      if (modal) modal.classList.add('hidden');
+
+      isGameManuallyPaused = false;
+      runStartTimeMs = Date.now() - savedTimerElapsedSec * 1000;
+      if (!runTimerInterval) {
+        runTimerInterval = setInterval(updateRunTimerUI, 500);
+      }
+      showToastPopup('▶️', 'Game Resumed', 'info');
+    }
+
+    function loadCustomLevel(customLvl) {
+      isTransitioningLevel = false;
+      const size = customLvl.gridSize;
+      currentSizeIdx = GRID_SIZES.indexOf(size);
+      if (currentSizeIdx === -1) currentSizeIdx = 0;
+
+      let catCoord = [0, 0];
+      if (customLvl.solution && customLvl.solution.length > 0) {
+        for (let r = 0; r < size; r++) {
+          for (let c = 0; c < size; c++) {
+            if (customLvl.solution[r][c] === 1) {
+              catCoord = [r, c];
+              break;
+            }
+          }
+        }
+      }
+
+      currentLevelObj = {
+        gridSize: size,
+        hasSingleCellColor: false,
+        defaultCat: catCoord,
+        regions: customLvl.regions,
+        solution: customLvl.solution
+      };
+      defaultCatCoord = catCoord;
+
+      boardState = Array.from({ length: size }, () => Array(size).fill(0));
+      boardState[defaultCatCoord[0]][defaultCatCoord[1]] = 2;
+
+      lives = customLvl.maxHearts || MAX_LIVES;
+      powers = { catReveal: customLvl.hintsAllowed || 5, hint: 5, useMouse: 5 };
+      runStartTimeMs = Date.now();
+      updateRunTimerUI();
+      if (!runTimerInterval) {
+        runTimerInterval = setInterval(updateRunTimerUI, 500);
+      }
+
+      initBoardDOM();
+      fitSquareBoardToViewport();
+      updateTopUI();
+      updateJsonInspector();
+      showToastPopup('🎨', 'Custom Level Loaded!', 'win');
+    }
+
+    // Listen to messages from level builder iframe
+    window.addEventListener('message', (e) => {
+      if (e.data && e.data.type === 'LOAD_CUSTOM_LEVEL' && e.data.level) {
+        closeLevelBuilderModal();
+        loadCustomLevel(e.data.level);
+      }
+    });
+
+    // Check for custom level on load
+    window.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('mode') === 'custom') {
+        const stored = localStorage.getItem('meowsweeper_custom_level_test');
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            setTimeout(() => loadCustomLevel(parsed), 100);
+          } catch(e) {}
+        }
+      }
+    });
+  </script>
 </body>
 </html>
-
