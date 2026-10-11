@@ -246,7 +246,14 @@
         productName: "Meowsweeper Core",
         productVersion: "1.0.0",
         showBanner: unityShowBanner,
+        devicePixelRatio: 1,
+        matchWebGLToCanvasSize: true,
       };
+
+      // Ensure canvas captures focus and input events immediately
+      canvas.addEventListener("pointerdown", function() {
+        canvas.focus();
+      });
 
       var script = document.createElement("script");
       script.src = loaderUrl;
