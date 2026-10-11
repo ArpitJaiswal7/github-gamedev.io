@@ -3,29 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Calm Jigsaw & Solitaire — Native Image Pipeline Preview</title>
+  <title>Native Image Pipeline & Bridge Studio</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    .board-grid {
-      user-select: none;
-      -webkit-user-select: none;
-      touch-action: none;
-    }
-    @keyframes popIn {
-      0% { transform: scale(0.82); opacity: 0.4; }
-      70% { transform: scale(1.04); }
-      100% { transform: scale(1); opacity: 1; }
-    }
-    .animate-pop {
-      animation: popIn 0.18s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-    }
-    .tile-selected {
-      box-shadow: inset 0 0 0 3px #f59e0b, 0 0 12px rgba(245, 158, 11, 0.45) !important;
-      z-index: 10;
-    }
-    .tile-locked {
-      box-shadow: inset 0 0 0 1.5px rgba(16, 185, 129, 0.55);
-    }
     .custom-scroll::-webkit-scrollbar {
       width: 6px;
       height: 6px;
@@ -37,74 +17,82 @@
       background: #30363d;
       border-radius: 9999px;
     }
+    .pixelated {
+      image-rendering: pixelated;
+    }
   </style>
 </head>
-<body class="bg-[#0d1117] text-[#e6edf3] antialiased h-screen w-screen overflow-hidden select-none p-3 flex flex-col">
+<body class="bg-[#0d1117] text-[#e6edf3] antialiased h-screen w-screen overflow-hidden select-none p-3 flex flex-col font-sans">
 
-  <div class="w-full max-w-6xl mx-auto h-full flex flex-col gap-2 min-h-0">
+  <!-- Floating Toast Notification (Zero Layout Shift) -->
+  <div id="toastBar" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 pointer-events-none transition-all duration-300 opacity-0 -translate-y-2 flex items-center gap-2 px-4 py-2 rounded-xl border border-[#30363d] bg-[#161b22]/95 backdrop-blur shadow-2xl text-xs font-bold text-[#e6edf3]">
+    <span id="toastEmoji" class="text-base">🖼️</span>
+    <span id="toastText">Native Image Pipeline</span>
+  </div>
 
-    <!-- Dedicated Non-Overlapping Toast Row Above Top Menu -->
-    <div id="toastBar" class="shrink-0 h-9 rounded-xl px-4 border border-[#30363d] bg-[#161b22] flex items-center justify-center gap-2 text-xs font-bold transition-colors duration-200 shadow-sm">
-      <span id="toastEmoji" class="text-sm">🧩</span>
-      <span id="toastText" class="text-[#8b949e]">Click two puzzle tiles to swap • Scroll the 100+ Gallery on the right to boost Viewport Priority!</span>
-    </div>
+  <div class="w-full max-w-[1360px] mx-auto h-full flex flex-col gap-2.5 min-h-0">
 
-    <!-- Top Row Menu Bar (Below Toast Row) -->
-    <div class="shrink-0 bg-[#161b22] border border-[#30363d] rounded-xl px-4 py-2 shadow-sm flex flex-wrap items-center justify-between gap-2">
-      <!-- Brand + Game Mode Switcher + Connectivity Badge -->
-      <div class="flex items-center gap-2">
+    <!-- COMPACT UNIFIED SINGLE-ROW TOP HEADER BAR (NO GAMEPLAY MODES) -->
+    <header class="shrink-0 bg-[#161b22] border border-[#30363d] rounded-xl px-3 py-1.5 shadow-sm flex items-center justify-between gap-2 overflow-x-auto text-xs whitespace-nowrap">
+      
+      <!-- Group 1: Brand & Connectivity -->
+      <div class="flex items-center gap-2 shrink-0">
         <div class="flex items-center gap-1.5 font-bold text-sm text-[#e6edf3]">
-          <span class="text-lg">🖼️</span>
-          <span id="gameTitleLabel">Calm Jigsaw</span>
+          <span class="text-base">🖼️</span>
+          <span>Native Image Pipeline</span>
         </div>
-        <button id="btnGameMode" onclick="toggleGameMode()" class="text-xs font-semibold px-2.5 py-0.5 rounded bg-purple-500/15 text-purple-400 border border-purple-500/30 hover:bg-purple-500/25 cursor-pointer transition" title="Switch between Calm Jigsaw & Jigsaw Solitaire">
-          Mode: Calm Jigsaw ⇄
-        </button>
-        <button id="connBadgeBtn" onclick="toggleConnectivity()" class="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 cursor-pointer transition" title="Click to simulate internet disconnect / auto-resume">
-          <span id="connDot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span id="connLabel">ONLINE (Auto-Queue)</span>
+        <button id="connBadgeBtn" onclick="toggleConnectivity()" class="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 cursor-pointer transition" title="Toggle simulated network drop">
+          <span id="connDot" class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="connLabel">Online</span>
         </button>
       </div>
 
-      <!-- Grid Size, Resolution Tier Switcher, & Disk Savings KPI -->
-      <div class="flex flex-wrap items-center gap-1.5">
-        <button onclick="cycleGridSize()" class="px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#e6edf3] text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition" title="Cycle Jigsaw Grid Size (3×3 to 6×6)">
-          <span>▦</span>
-          <span>Cut</span>
-          <span id="gridSizeBadge" class="px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 font-bold">4×4</span>
-        </button>
-
-        <button onclick="shuffleActivePuzzle()" class="px-2.5 py-1 rounded-lg bg-blue-600 text-white hover:bg-blue-500 border border-blue-500 text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition" title="Pick random puzzle from the 100+ manifest">
-          <span>🔀</span>
-          <span>Next Puzzle</span>
-        </button>
-
-        <div class="flex items-center gap-1 bg-emerald-500/15 text-emerald-400 px-2.5 py-1 rounded-lg text-xs font-bold border border-emerald-500/30" title="Disk space saved by PNG (5MB) -> JPG (256px + 1080px) conversion">
-          <span>💾</span>
-          <span id="topSavedBadge">89% Saved</span>
-        </div>
-
-        <div class="flex items-center gap-1 bg-amber-500/20 text-amber-400 px-2.5 py-1 rounded-lg text-xs font-bold border border-amber-500/30" title="Unity Sprite RAM Pool Count (Ref-Counted RGB24)">
-          <span>🎨</span>
-          <span id="topVramBadge">RAM: 12/64</span>
-        </div>
+      <!-- Group 2: Level Stepper & Title -->
+      <div class="flex items-center gap-1.5 shrink-0 bg-[#0d1117] px-2.5 py-1 rounded-lg border border-[#30363d]">
+        <button onclick="prevCampaignLevel()" class="px-1.5 py-0.5 rounded bg-[#21262d] hover:bg-[#30363d] text-white font-bold cursor-pointer transition" title="Previous Image">◀</button>
+        <span class="font-bold text-[#e6edf3]">
+          #<span id="currentLevelNumber" class="text-amber-400 font-mono">01</span>/<span id="totalLevelCount" class="font-mono">71</span>:
+        </span>
+        <span id="levelTitle" class="text-blue-400 font-medium max-w-[170px] truncate">mixed scenic 23</span>
+        <button onclick="nextCampaignLevel()" class="px-1.5 py-0.5 rounded bg-[#21262d] hover:bg-[#30363d] text-white font-bold cursor-pointer transition" title="Next Image">▶</button>
       </div>
-    </div>
 
-    <!-- Main Content Area: Stretches Vertically to Fill 100% of Remaining Webpage Height -->
+      <!-- Group 3: Category Filter Toolbar -->
+      <div class="flex items-center gap-1 shrink-0 bg-[#0d1117] px-2 py-0.5 rounded-lg border border-[#30363d]">
+        <button id="catFilterAll" onclick="setCategoryFilter('All')" class="px-2 py-0.5 rounded bg-blue-600 text-white font-bold cursor-pointer transition">All (71)</button>
+        <button id="catFilterNature" onclick="setCategoryFilter('Nature')" class="px-2 py-0.5 rounded bg-[#21262d] text-[#8b949e] hover:text-white font-semibold cursor-pointer transition">Nature (23)</button>
+        <button id="catFilterArchitecture" onclick="setCategoryFilter('Architecture')" class="px-2 py-0.5 rounded bg-[#21262d] text-[#8b949e] hover:text-white font-semibold cursor-pointer transition">Arch (23)</button>
+        <button id="catFilterAnimals" onclick="setCategoryFilter('Animals')" class="px-2 py-0.5 rounded bg-[#21262d] text-[#8b949e] hover:text-white font-semibold cursor-pointer transition">Animals (24)</button>
+      </div>
+
+      <!-- Group 4: Shuffle Next & Live Sync Status -->
+      <div class="flex items-center gap-1.5 shrink-0">
+        <button onclick="shuffleActivePuzzle()" class="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-semibold flex items-center gap-1 cursor-pointer transition">
+          <span>🔀 Next Image</span>
+        </button>
+
+        <button onclick="syncBackendCatalog(true)" class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/30 font-bold cursor-pointer transition" title="Fetch published catalog from port 4200 or GitHub Pages">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="syncSourceLabel">● 71 Synced</span>
+        </button>
+      </div>
+
+    </header>
+
+    <!-- MAIN TWO-COLUMN SPLIT (Image Preview on Left, Gallery/Queue/JSON on Right) -->
     <div class="flex-1 min-h-0 grid grid-cols-12 gap-3">
 
-      <!-- Left Column (Col-Span-7): Playable 1:1 Puzzle Board + Resolution Helper Controls -->
-      <div class="col-span-7 h-full min-h-0 bg-[#161b22] border border-[#30363d] rounded-xl p-3 shadow-sm flex flex-col items-center justify-between gap-2">
+      <!-- LEFT COLUMN (Col-Span-7): Actual Representation of PNG at Selected Resolution -->
+      <div class="col-span-7 h-full min-h-0 bg-[#161b22] border border-[#30363d] rounded-xl p-3 shadow-sm flex flex-col justify-between gap-2">
 
-        <!-- Top Action Bar: Single Resolution Switcher (256/512/1080/2048) + Reveal Cache Location + ROM Toggle -->
+        <!-- Top Action Bar: Resolution Switcher + Reveal Path + Storage Tier -->
         <div id="boardPowersBar" class="shrink-0 w-full grid grid-cols-3 gap-2">
-          <button id="btnCycleRes" onclick="cycleBoardResolution()" class="px-2.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white border border-blue-400 text-xs font-semibold flex items-center justify-between cursor-pointer transition" title="Click to cycle active Sprite resolution: 256px -> 512px -> 1080px -> 2048px">
+          <button id="btnCycleRes" onclick="cycleBoardResolution()" class="px-2.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white border border-blue-400 text-xs font-semibold flex items-center justify-between cursor-pointer transition" title="Cycle resolution tier: 256px -> 512px -> 1080px -> 2048px">
             <span class="flex items-center gap-1.5">
               <span>📐</span>
               <span id="cycleResLabel">Size: 1080px</span>
             </span>
-            <span id="cycleResBadge" class="px-1.5 py-0.5 rounded bg-white/20 text-white font-mono font-bold">640 KB ↻</span>
+            <span id="cycleResBadge" class="px-1.5 py-0.5 rounded bg-white/20 text-white font-mono font-bold">481 KB ↻</span>
           </button>
 
           <button id="btnRevealCache" onclick="openCacheInspectorModal()" class="px-2.5 py-1.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#e6edf3] text-xs font-semibold flex items-center justify-between cursor-pointer transition" title="Reveal exact Cache/ROM file path, origin API URL, & native bridge details">
@@ -112,95 +100,90 @@
               <span>📂</span>
               <span>Reveal Cache Path</span>
             </span>
-            <span id="badgeSourceOrigin" class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-mono font-bold">NIP</span>
+            <span id="badgeSourceOrigin" class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-mono font-bold">ROM</span>
           </button>
 
-          <button id="btnToggleRom" onclick="toggleActivePuzzleRom()" class="px-2.5 py-1.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#e6edf3] text-xs font-semibold flex items-center justify-between cursor-pointer transition" title="Save active puzzle to Permanent ROM and delete from Volatile Cache">
+          <button id="btnToggleRom" onclick="toggleActivePuzzleRom()" class="px-2.5 py-1.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#e6edf3] text-xs font-semibold flex items-center justify-between cursor-pointer transition" title="Promote image to Permanent ROM or demote to Volatile Cache">
             <span class="flex items-center gap-1.5">
               <span>💿</span>
               <span>Storage</span>
             </span>
-            <span id="badgeRomState" class="px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-400 font-bold">Cache</span>
+            <span id="badgeRomState" class="px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-400 font-bold">ROM</span>
           </button>
         </div>
 
-        <!-- Board Status Bar: Active Request String Key + Pieces Placed + Auto-Solve / Hint -->
-        <div id="boardHeaderBar" class="shrink-0 w-full px-3 py-1.5 rounded-xl bg-[#0d1117] border border-[#30363d] flex items-center justify-between gap-2">
-          <div class="flex items-center gap-1.5 min-w-0">
-            <span class="text-xs font-semibold text-[#8b949e]">Key:</span>
-            <span id="activeKeyLabel" class="text-xs font-mono font-bold text-amber-400 truncate">puzzle_0001_8f92a1c4</span>
-            <span id="activeStorageBadge" class="text-xs font-bold px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">CACHE</span>
+        <!-- Sleek Info Header Bar -->
+        <div id="boardHeaderBar" class="shrink-0 w-full px-3 py-1.5 rounded-xl bg-[#0d1117] border border-[#30363d] flex items-center justify-between gap-2 text-xs">
+          <div class="flex items-center gap-2 min-w-0">
+            <span id="activeLevelBadge" class="font-bold px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 border border-blue-500/30">#01</span>
+            <span id="activeTitleLabel" class="font-semibold text-[#e6edf3] truncate max-w-[260px]">mixed scenic sq 2048x2048 23</span>
+            <span id="activeStorageBadge" class="font-mono text-[11px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-400 border border-purple-500/30">ROM</span>
           </div>
 
-          <div class="flex items-center gap-2 shrink-0">
-            <span class="text-xs text-[#8b949e]">Pieces:</span>
-            <span id="piecesCounter" class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-              0 / 16
-            </span>
-            <button onclick="useSmartSwapHint()" class="px-2 py-0.5 rounded bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 text-xs font-bold cursor-pointer transition" title="Place one correct jigsaw tile">
-              💡 Hint
-            </button>
-            <button onclick="instantSolvePuzzle()" class="px-2 py-0.5 rounded bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 text-xs font-bold cursor-pointer transition" title="Complete puzzle to test post-completion ROM -> Cache demotion">
-              ⚡ Solve
-            </button>
+          <div class="flex items-center gap-2 shrink-0 font-mono text-[11px]">
+            <span class="text-[#8b949e]">Resolution:</span>
+            <span id="headerResolutionTag" class="text-emerald-400 font-bold">1080×1080px</span>
+            <span class="text-[#8b949e]">| Size:</span>
+            <span id="headerSizeTag" class="text-amber-400 font-bold">481 KB</span>
           </div>
         </div>
 
-        <!-- Responsive 1:1 Square Puzzle Board Viewport -->
-        <div id="boardViewport" class="flex-1 min-h-0 w-full flex items-center justify-center overflow-hidden relative">
-          <div id="boardContainer" class="board-grid grid rounded-xl overflow-hidden border border-[#30363d] shadow-md bg-[#0d1117] relative">
+        <!-- CENTER IMAGE DISPLAY CONTAINER (Actual representation of PNG with selected resolution) -->
+        <div id="imageDisplaySection" class="flex-1 min-h-0 w-full flex items-center justify-center p-2 bg-[#0d1117] rounded-2xl border border-[#30363d] overflow-hidden relative group">
+          
+          <!-- Top Right Floating Action Controls (Icon Only) -->
+          <div class="absolute top-3 right-3 z-20 flex items-center gap-1.5 bg-[#161b22]/90 backdrop-blur border border-[#30363d] p-1 rounded-xl shadow-xl transition-all">
+            <button id="btnFullscreenView" onclick="toggleFullscreenView()" title="Fullscreen View" class="w-8 h-8 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#e6edf3] hover:text-white flex items-center justify-center border border-[#30363d] hover:border-[#8b949e] transition shadow-sm cursor-pointer" aria-label="Fullscreen View">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+              </svg>
+            </button>
+            <button id="btnDownloadImage" onclick="downloadActiveImage()" title="Download Transcoded Image" class="w-8 h-8 rounded-lg bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center shadow-sm transition hover:shadow-blue-500/20 cursor-pointer" aria-label="Download Image">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+            </button>
           </div>
 
-          <!-- Cache & ROM File Origin / Location Inspector Modal -->
-          <div id="cacheInspectorModal" class="hidden absolute inset-0 bg-black/80 backdrop-blur-xs z-40 flex items-center justify-center p-4">
-            <div class="w-full max-w-md bg-[#161b22] border border-[#30363d] rounded-2xl p-4 shadow-2xl space-y-2.5 text-xs">
-              <div class="flex items-center justify-between border-b border-[#30363d] pb-2">
-                <div class="flex items-center gap-2">
-                  <span class="text-base">📂</span>
-                  <span class="font-bold text-sm text-[#e6edf3]">Native Bridge Cache & ROM File Location</span>
-                </div>
-                <button onclick="closeCacheInspectorModal()" class="px-2 py-0.5 rounded bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#8b949e] hover:text-white font-bold cursor-pointer">✕</button>
-              </div>
-              <div class="space-y-1.5 font-mono text-[11px] bg-[#0d1117] p-3 rounded-xl border border-[#30363d]">
-                <div class="flex justify-between"><span class="text-[#8b949e]">Request String Key:</span><span id="modalReqKey" class="text-amber-400 font-bold"></span></div>
-                <div class="flex justify-between"><span class="text-[#8b949e]">Active Tier File:</span><span id="modalFileName" class="text-emerald-400 font-bold"></span></div>
-                <div class="flex justify-between"><span class="text-[#8b949e]">Storage Tier:</span><span id="modalStorageTier" class="text-purple-400 font-bold"></span></div>
-                <div class="flex justify-between"><span class="text-[#8b949e]">JPEG Disk Size:</span><span id="modalDiskSize" class="text-[#e6edf3]"></span></div>
-                <div class="pt-1 border-t border-[#21262d]">
-                  <div class="text-[#8b949e] mb-0.5">Origin Remote API URL:</div>
-                  <div id="modalOriginUrl" class="text-sky-400 break-all"></div>
-                </div>
-                <div class="pt-1 border-t border-[#21262d]">
-                  <div class="text-[#8b949e] mb-0.5">Android Path (NativeImageBridge.java):</div>
-                  <div id="modalAndroidPath" class="text-[#e6edf3] break-all"></div>
-                </div>
-                <div class="pt-1 border-t border-[#21262d]">
-                  <div class="text-[#8b949e] mb-0.5">iOS Path (NativeImageBridge.mm):</div>
-                  <div id="modalIosPath" class="text-[#e6edf3] break-all"></div>
-                </div>
-                <div class="pt-1 border-t border-[#21262d]">
-                  <div class="text-[#8b949e] mb-0.5">WebGL IndexedDB (NativeImageBridge.jslib):</div>
-                  <div id="modalWebglPath" class="text-emerald-400 break-all"></div>
-                </div>
-              </div>
-              <div class="flex justify-end gap-2 pt-1">
-                <button onclick="copyActiveCachePath()" class="px-3 py-1.5 rounded-lg bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#e6edf3] font-semibold cursor-pointer">📋 Copy Path</button>
-                <button onclick="closeCacheInspectorModal()" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-semibold cursor-pointer">Done</button>
-              </div>
-            </div>
+          <img id="activeImagePreview"
+               src=""
+               alt="Active Image Representation"
+               class="max-h-full max-w-full object-contain rounded-xl shadow-2xl transition duration-150" />
+
+          <!-- Loading Indicator -->
+          <div id="imageLoadingOverlay" class="absolute inset-0 bg-[#0d1117]/80 backdrop-blur-sm flex flex-col items-center justify-center gap-2 hidden">
+            <div class="animate-spin text-3xl">⏳</div>
+            <div class="text-xs font-semibold text-[#8b949e]">Transcoding Image...</div>
           </div>
         </div>
+
+        <!-- Bottom Image Telemetry Bar -->
+        <div class="shrink-0 w-full flex items-center justify-between text-xs text-[#8b949e] px-1">
+          <div class="flex items-center gap-2 truncate">
+            <span class="text-[#58a6ff] font-medium" id="bottomCategoryLabel">Category: Nature</span>
+            <span>•</span>
+            <span class="truncate max-w-[260px]" id="bottomFilenameLabel">mixed_scenic_sq_2048x2048_23_9adcae.jpg</span>
+          </div>
+          <div class="flex items-center gap-2 font-mono shrink-0">
+            <span id="boardResolutionTag" class="text-emerald-400 font-bold">1080×1080px</span>
+            <span>•</span>
+            <span id="boardOriginTag">Cloud Published CDN</span>
+          </div>
+        </div>
+
       </div>
 
-      <!-- Right Column (Col-Span-5): 3 Tabs (100+ Gallery ScrollView, Queue Telemetry, Manifest JSON) -->
+      <!-- RIGHT COLUMN (Col-Span-5): 3 Tabs (71 Gallery Grid, Priority Queue, Manifest JSON) -->
       <div class="col-span-5 h-full min-h-0 bg-[#161b22] border border-[#30363d] rounded-xl p-3 shadow-sm flex flex-col gap-2">
 
-        <!-- Tab Switcher Header -->
-        <div class="shrink-0 flex items-center justify-between gap-1.5">
+        <!-- Top Right Tab Switcher -->
+        <div class="shrink-0 flex items-center justify-between gap-1 border-b border-[#30363d] pb-2">
           <div class="flex items-center gap-1">
             <button id="tabBtnGallery" onclick="switchRightTab('gallery')" class="px-2.5 py-1 rounded-lg bg-blue-600 text-white border border-blue-500 text-xs font-bold flex items-center gap-1 cursor-pointer transition">
               <span>🖼️</span>
-              <span>Gallery (108)</span>
+              <span>Gallery (<span id="tabCountGallery">71</span>)</span>
             </button>
             <button id="tabBtnQueue" onclick="switchRightTab('queue')" class="px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#e6edf3] border border-[#30363d] text-xs font-semibold flex items-center gap-1 cursor-pointer transition">
               <span>⚡</span>
@@ -212,58 +195,58 @@
             </button>
           </div>
           <span id="queueProgressBadge" class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-[#21262d] text-emerald-400 border border-[#30363d]">
-            0/108 Ready
+            71/71 Ready
           </span>
         </div>
 
-        <!-- TAB 1: SCROLLABLE 100+ PUZZLE GALLERY (WITH AUTOMATIC VIEWPORT PRIORITY BOOSTING) -->
+        <!-- TAB 1: SCROLLABLE PUZZLE GALLERY -->
         <div id="rightPanelGallery" class="flex-1 min-h-0 flex flex-col gap-2">
-          <!-- Sub-bar: Category Filter + Viewport Priority Indicator -->
+          <!-- Sub-bar: Category / ROM filter + Viewport Boost -->
           <div class="shrink-0 flex items-center justify-between gap-1.5 bg-[#0d1117] p-1.5 rounded-xl border border-[#30363d] text-xs">
             <div class="flex items-center gap-1">
-              <button onclick="setGalleryFilter('ALL')" id="fltAll" class="px-2 py-0.5 rounded bg-blue-600 text-white font-bold cursor-pointer">All</button>
-              <button onclick="setGalleryFilter('ROM')" id="fltRom" class="px-2 py-0.5 rounded bg-[#21262d] text-[#8b949e] hover:text-white font-semibold cursor-pointer">💿 ROM</button>
-              <button onclick="setGalleryFilter('QUEUED')" id="fltQueued" class="px-2 py-0.5 rounded bg-[#21262d] text-[#8b949e] hover:text-white font-semibold cursor-pointer">⏳ Queued</button>
+              <button onclick="setGalleryFilter('ALL')" id="fltAll" class="px-2 py-0.5 rounded bg-blue-600 text-white font-bold cursor-pointer transition">All</button>
+              <button onclick="setGalleryFilter('ROM')" id="fltRom" class="px-2 py-0.5 rounded bg-[#21262d] text-[#8b949e] hover:text-white font-semibold cursor-pointer transition">💿 ROM</button>
+              <button onclick="setGalleryFilter('QUEUED')" id="fltQueued" class="px-2 py-0.5 rounded bg-[#21262d] text-[#8b949e] hover:text-white font-semibold cursor-pointer transition">⏳ Queued</button>
             </div>
-            <span id="viewportBoostLabel" class="font-mono text-amber-400 px-1.5">Viewport: #1–#12 (HIGH)</span>
+            <span id="viewportBoostLabel" class="font-mono text-amber-400 px-1.5 text-[11px]">Viewport: #01–#12 (HIGH)</span>
           </div>
 
-          <!-- Scrollable 3-Column Thumbnail Grid (Simulates PuzzleViewportScrollTracker.cs) -->
+          <!-- 3-Column Real Photo Grid -->
           <div id="galleryScrollContainer" onscroll="onGalleryScroll()" class="custom-scroll flex-1 min-h-0 bg-[#0d1117] border border-[#30363d] rounded-xl p-2 overflow-y-auto grid grid-cols-3 gap-2 content-start">
           </div>
 
           <!-- Gallery Footer Controls -->
-          <div class="shrink-0 flex items-center justify-between gap-1 pt-0.5">
+          <div class="shrink-0 flex items-center justify-between gap-1 pt-0.5 text-xs">
             <div class="flex items-center gap-1">
-              <button onclick="purgeFaultyRequests()" class="px-2 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] border border-rose-500/40 text-rose-400 text-xs font-semibold cursor-pointer transition" title="Remove HTTP 404 / corrupt request strings from queue">
+              <button onclick="purgeFaultyRequests()" class="px-2 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] border border-rose-500/40 text-rose-400 font-semibold cursor-pointer transition" title="Purge 404/faulty requests">
                 🧹 Purge Faulty (<span id="faultyCountLabel">0</span>)
               </button>
-              <button onclick="clearVolatileCache()" class="px-2 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#e6edf3] text-xs font-semibold cursor-pointer transition" title="Delete Volatile Cache files while keeping Permanent ROM intact">
+              <button onclick="clearVolatileCache()" class="px-2 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#e6edf3] font-semibold cursor-pointer transition" title="Delete cache files while keeping ROM">
                 🗑️ Clear Cache
               </button>
             </div>
-            <span id="diskUsageFooter" class="text-xs font-mono text-[#8b949e]">Cache: 0MB | ROM: 0MB</span>
+            <span id="diskUsageFooter" class="font-mono text-[#8b949e]">Cache: 34MB | ROM: 1.2MB</span>
           </div>
         </div>
 
-        <!-- TAB 2: NATIVE PRIORITY QUEUE & STRING TELEMETRY TABLE -->
+        <!-- TAB 2: NATIVE PRIORITY QUEUE TELEMETRY -->
         <div id="rightPanelQueue" class="hidden flex-1 min-h-0 flex flex-col gap-2">
           <div class="shrink-0 grid grid-cols-4 gap-1.5 bg-[#0d1117] p-2 rounded-xl border border-[#30363d] text-xs">
             <div>
               <div class="text-[#8b949e]">256px Icons</div>
-              <div id="kpiIconsTotal" class="font-mono font-bold text-sky-400">0 KB</div>
+              <div id="kpiIconsTotal" class="font-mono font-bold text-sky-400">2.8 MB</div>
             </div>
             <div>
               <div class="text-[#8b949e]">1080px Full</div>
-              <div id="kpiFullTotal" class="font-mono font-bold text-emerald-400">0 MB</div>
+              <div id="kpiFullTotal" class="font-mono font-bold text-emerald-400">34.8 MB</div>
             </div>
             <div>
               <div class="text-[#8b949e]">2048px Ultra</div>
-              <div id="kpiUltraTotal" class="font-mono font-bold text-purple-400">0 MB</div>
+              <div id="kpiUltraTotal" class="font-mono font-bold text-purple-400">72.4 MB</div>
             </div>
             <div>
               <div class="text-[#8b949e]">PNG -> JPG</div>
-              <div id="kpiSavedTotal" class="font-mono font-bold text-amber-400">0 MB</div>
+              <div id="kpiSavedTotal" class="font-mono font-bold text-amber-400">89% Saved</div>
             </div>
           </div>
 
@@ -271,7 +254,7 @@
           </div>
         </div>
 
-        <!-- TAB 3: API MANIFEST & REQUEST TRACKER JSON -->
+        <!-- TAB 3: MANIFEST & API JSON VIEW -->
         <pre id="jsonPreviewBox" class="custom-scroll hidden flex-1 min-h-0 bg-[#0d1117] border border-[#30363d] rounded-xl p-3 text-xs font-mono overflow-auto text-[#e6edf3] leading-snug"></pre>
 
       </div>
@@ -279,36 +262,127 @@
     </div>
   </div>
 
+  <!-- Fullscreen Image Modal Overlay -->
+  <div id="fullscreenImageModal" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex flex-col items-center justify-center p-4 hidden select-none cursor-pointer" onclick="closeFullscreenModal()">
+    
+    <!-- Top Bar Controls (Resolution Switcher + Download + Close) -->
+    <div class="absolute top-4 right-4 z-50 flex items-center gap-2 bg-[#161b22]/90 backdrop-blur border border-[#30363d] p-1.5 rounded-xl shadow-xl cursor-default" onclick="event.stopPropagation()">
+      <span id="fullscreenModalTitle" class="text-xs font-semibold text-[#8b949e] px-2 max-w-[200px] truncate hidden sm:inline">Image</span>
+      
+      <!-- Resolution Switcher Button (Icon with Badge) -->
+      <button id="btnFullscreenCycleRes" onclick="cycleBoardResolution()" class="h-8 px-2.5 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#e6edf3] hover:text-white flex items-center gap-1.5 transition cursor-pointer border border-[#30363d]" title="Switch Resolution (256px -> 512px -> 1080px -> 2048px)" aria-label="Switch Resolution">
+        <svg class="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+        <span id="fullscreenResTag" class="text-xs font-mono font-bold text-emerald-400">1080px</span>
+        <span class="text-[10px] text-[#8b949e]">↻</span>
+      </button>
+
+      <button onclick="downloadActiveImage()" class="w-8 h-8 rounded-lg bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center transition shadow-sm cursor-pointer" title="Download Image" aria-label="Download Image">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+      </button>
+      <button onclick="closeFullscreenModal()" class="w-8 h-8 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#e6edf3] hover:text-white flex items-center justify-center transition cursor-pointer border border-[#30363d]" title="Close Fullscreen (Esc)" aria-label="Close Fullscreen">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    
+    <!-- Fullscreen Image Display Container -->
+    <div class="w-full h-full flex items-center justify-center p-4 cursor-pointer" onclick="closeFullscreenModal()">
+      <img id="fullscreenImageDisplay" src="" alt="Fullscreen Image" class="max-h-full max-w-full object-contain rounded-lg shadow-2xl transition-all duration-200 cursor-default" onclick="event.stopPropagation()" />
+    </div>
+
+    <!-- Bottom Caption with Direct Resolution Selectors -->
+    <div class="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 bg-[#161b22]/90 backdrop-blur border border-[#30363d] px-4 py-1.5 rounded-full text-xs text-[#8b949e] flex items-center gap-3 cursor-default shadow-xl" onclick="event.stopPropagation()">
+      <div class="flex items-center gap-1 font-mono">
+        <button onclick="setBoardResolution(256)" id="fsPill256" class="px-2 py-0.5 rounded-md hover:bg-[#30363d] text-[#8b949e] font-semibold transition cursor-pointer">256p</button>
+        <button onclick="setBoardResolution(512)" id="fsPill512" class="px-2 py-0.5 rounded-md hover:bg-[#30363d] text-[#8b949e] font-semibold transition cursor-pointer">512p</button>
+        <button onclick="setBoardResolution(1080)" id="fsPill1080" class="px-2 py-0.5 rounded-md bg-blue-600 text-white font-bold transition cursor-pointer">1080p</button>
+        <button onclick="setBoardResolution(2048)" id="fsPill2048" class="px-2 py-0.5 rounded-md hover:bg-[#30363d] text-[#8b949e] font-semibold transition cursor-pointer">2048p</button>
+      </div>
+      <span>•</span>
+      <span id="fullscreenModalSize" class="text-amber-400 font-mono">481 KB</span>
+      <span>•</span>
+      <span class="text-[#8b949e] hidden sm:inline">Press <kbd class="px-1.5 py-0.5 rounded bg-[#21262d] border border-[#30363d] text-[#c9d1d9] font-mono text-[10px]">ESC</kbd> or click outside to exit</span>
+    </div>
+  </div>
+
+  <!-- Cache / ROM Inspector Modal -->
+  <div id="cacheInspectorModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-[#161b22] border border-[#30363d] rounded-2xl w-full max-w-xl shadow-2xl p-5 flex flex-col gap-4 text-xs">
+      <div class="flex items-center justify-between border-b border-[#30363d] pb-3">
+        <div class="flex items-center gap-2">
+          <span class="text-lg">📂</span>
+          <span class="font-bold text-sm text-[#e6edf3]">Native File Explorer & Cache Inspector</span>
+        </div>
+        <button onclick="closeCacheInspectorModal()" class="text-[#8b949e] hover:text-white font-bold text-lg cursor-pointer">✕</button>
+      </div>
+
+      <div class="space-y-2.5 font-mono text-xs">
+        <div>
+          <span class="text-[#8b949e]">Image ID:</span>
+          <span id="modalReqKey" class="text-amber-400 font-bold ml-1">puz_4e0c22be</span>
+        </div>
+        <div>
+          <span class="text-[#8b949e]">Storage Tier:</span>
+          <span id="modalStorageTier" class="text-purple-400 font-bold ml-1">Permanent ROM</span>
+        </div>
+        <div>
+          <span class="text-[#8b949e]">Resolution File:</span>
+          <span id="modalFileName" class="text-[#e6edf3] ml-1">puz_4e0c22be_1080.jpg</span>
+        </div>
+        <div>
+          <span class="text-[#8b949e]">Transcoded Size:</span>
+          <span id="modalDiskSize" class="text-emerald-400 font-bold ml-1">481 KB</span>
+        </div>
+        <div>
+          <span class="text-[#8b949e]">Source CDN URL:</span>
+          <div id="modalOriginUrl" class="text-blue-400 break-all select-all mt-0.5 bg-[#0d1117] p-2 rounded-lg border border-[#30363d]"></div>
+        </div>
+        <div>
+          <span class="text-[#8b949e]">IndexedDB / WebGL URI:</span>
+          <div id="modalWebglPath" class="text-emerald-300 break-all select-all mt-0.5 bg-[#0d1117] p-2 rounded-lg border border-[#30363d]"></div>
+        </div>
+        <div>
+          <span class="text-[#8b949e]">Android Native Cache Path:</span>
+          <div id="modalAndroidPath" class="text-sky-300 break-all select-all mt-0.5 bg-[#0d1117] p-2 rounded-lg border border-[#30363d]"></div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-[#30363d]">
+        <button onclick="copyActiveCachePath()" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-semibold cursor-pointer transition">
+          📋 Copy Path
+        </button>
+        <button onclick="closeCacheInspectorModal()" class="px-3 py-1.5 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#e6edf3] font-semibold cursor-pointer transition">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // =========================================================================
-    // 1. Native Image Pipeline Data & Procedural Artwork Generator
+    // 1. Embedded Published Images & Native Image Pipeline Data
     // =========================================================================
-    const TOTAL_PUZZLES = 108;
-    const GRID_SIZES = [3, 4, 5, 6];
-    let gridSizeIdx = 1; // 4x4 default
-    let gameMode = 'calm_jigsaw'; // 'calm_jigsaw' or 'jigsaw_solitaire'
-    let isOnline = true;
-    let activeRightTab = 'gallery';
-    let galleryFilter = 'ALL';
-
-    const THEMES = [
-      { name: 'Alpine Lake', sky: ['#0f172a', '#1e40af', '#60a5fa'], sun: '#fde047', mtn1: '#1e293b', mtn2: '#334155', fg: '#065f46' },
-      { name: 'Sakura Valley', sky: ['#4c1d95', '#be185d', '#fbcfe8'], sun: '#fef08a', mtn1: '#311042', mtn2: '#581c87', fg: '#831843' },
-      { name: 'Golden Canyon', sky: ['#451a03', '#c2410c', '#fdba74'], sun: '#fef9c3', mtn1: '#7c2d12', mtn2: '#9a3412', fg: '#431407' },
-      { name: 'Nordic Aurora', sky: ['#022c22', '#0d9488', '#5eead4'], sun: '#a7f3d0', mtn1: '#0f172a', mtn2: '#1e293b', fg: '#064e3b' },
-      { name: 'Tuscan Hills', sky: ['#1e3a8a', '#3b82f6', '#bae6fd'], sun: '#facc15', mtn1: '#14532d', mtn2: '#15803d', fg: '#166534' },
-      { name: 'Crimson Dusk', sky: ['#3b0764', '#9d174d', '#fda4af'], sun: '#fed7aa', mtn1: '#2e1065', mtn2: '#4c1d95', fg: '#500724' }
-    ];
+    const PUBLISHED_IMAGES_CATALOG = [{"id":"puz_4e0c22be","title":"mixed scenic sq 2048x2048 23","category":"Nature","filename":"mixed_scenic_sq_2048x2048_23_9adcae.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_23_9adcae.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_23_9adcae.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":492666,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.879Z"},{"id":"puz_9fed7c53","title":"mixed scenic sq 2048x2048 22","category":"Nature","filename":"mixed_scenic_sq_2048x2048_22_6e8aa0.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_22_6e8aa0.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_22_6e8aa0.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":642442,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.878Z"},{"id":"puz_69deb79c","title":"mixed scenic sq 2048x2048 21","category":"Nature","filename":"mixed_scenic_sq_2048x2048_21_11c494.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_21_11c494.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_21_11c494.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":617877,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.877Z"},{"id":"puz_41af4647","title":"mixed scenic sq 2048x2048 20","category":"Nature","filename":"mixed_scenic_sq_2048x2048_20_98ebf0.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_20_98ebf0.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_20_98ebf0.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":457593,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.875Z"},{"id":"puz_9ed8dfd5","title":"mixed scenic sq 2048x2048 19","category":"Nature","filename":"mixed_scenic_sq_2048x2048_19_373c27.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_19_373c27.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_19_373c27.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":424067,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.874Z"},{"id":"puz_2a4e6b32","title":"mixed scenic sq 2048x2048 18","category":"Nature","filename":"mixed_scenic_sq_2048x2048_18_36a54e.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_18_36a54e.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_18_36a54e.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":524687,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.873Z"},{"id":"puz_0ee45089","title":"mixed scenic sq 2048x2048 17","category":"Nature","filename":"mixed_scenic_sq_2048x2048_17_d3ba38.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_17_d3ba38.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_17_d3ba38.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":462846,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.872Z"},{"id":"puz_4d109d69","title":"mixed scenic sq 2048x2048 16","category":"Nature","filename":"mixed_scenic_sq_2048x2048_16_59dec0.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_16_59dec0.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_16_59dec0.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":385342,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.871Z"},{"id":"puz_c98f6620","title":"mixed scenic sq 2048x2048 15","category":"Nature","filename":"mixed_scenic_sq_2048x2048_15_dcbe25.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_15_dcbe25.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_15_dcbe25.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":185478,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.870Z"},{"id":"puz_2f9a8663","title":"mixed scenic sq 2048x2048 14","category":"Nature","filename":"mixed_scenic_sq_2048x2048_14_479e10.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_14_479e10.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_14_479e10.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":349434,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.870Z"},{"id":"puz_2eed967f","title":"mixed scenic sq 2048x2048 13","category":"Nature","filename":"mixed_scenic_sq_2048x2048_13_12d820.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_13_12d820.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_13_12d820.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":357058,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.869Z"},{"id":"puz_6f2415e7","title":"mixed scenic sq 2048x2048 12","category":"Nature","filename":"mixed_scenic_sq_2048x2048_12_e16dc2.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_12_e16dc2.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_12_e16dc2.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":85252,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.868Z"},{"id":"puz_ac81064e","title":"mixed scenic sq 2048x2048 11","category":"Nature","filename":"mixed_scenic_sq_2048x2048_11_ea8a6a.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_11_ea8a6a.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_11_ea8a6a.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":363910,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.868Z"},{"id":"puz_ef3e71f8","title":"mixed scenic sq 2048x2048 10","category":"Nature","filename":"mixed_scenic_sq_2048x2048_10_3a8557.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_10_3a8557.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_10_3a8557.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":130001,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.867Z"},{"id":"puz_aac0f96c","title":"mixed scenic sq 2048x2048 09","category":"Nature","filename":"mixed_scenic_sq_2048x2048_09_4c4d35.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_09_4c4d35.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_09_4c4d35.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":309862,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.866Z"},{"id":"puz_275da720","title":"mixed scenic sq 2048x2048 08","category":"Nature","filename":"mixed_scenic_sq_2048x2048_08_552be7.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_08_552be7.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_08_552be7.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":249148,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.866Z"},{"id":"puz_63297e0d","title":"mixed scenic sq 2048x2048 07","category":"Nature","filename":"mixed_scenic_sq_2048x2048_07_257060.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_07_257060.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_07_257060.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":185183,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.865Z"},{"id":"puz_bb0e4241","title":"mixed scenic sq 2048x2048 06","category":"Nature","filename":"mixed_scenic_sq_2048x2048_06_f6118b.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_06_f6118b.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_06_f6118b.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":298543,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.864Z"},{"id":"puz_8b5e221d","title":"mixed scenic sq 2048x2048 05","category":"Nature","filename":"mixed_scenic_sq_2048x2048_05_daca49.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_05_daca49.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_05_daca49.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":224082,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.863Z"},{"id":"puz_d98b2c39","title":"mixed scenic sq 2048x2048 04","category":"Nature","filename":"mixed_scenic_sq_2048x2048_04_abfcaf.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_04_abfcaf.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_04_abfcaf.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":131063,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.863Z"},{"id":"puz_000802eb","title":"mixed scenic sq 2048x2048 03","category":"Nature","filename":"mixed_scenic_sq_2048x2048_03_d97d17.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_03_d97d17.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_03_d97d17.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":152313,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.862Z"},{"id":"puz_a6326336","title":"mixed scenic sq 2048x2048 02","category":"Nature","filename":"mixed_scenic_sq_2048x2048_02_bd2934.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_02_bd2934.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_02_bd2934.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":397662,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.862Z"},{"id":"puz_c07ee9f8","title":"mixed scenic sq 2048x2048 01","category":"Nature","filename":"mixed_scenic_sq_2048x2048_01_758756.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_01_758756.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/mixed_scenic_sq_2048x2048_01_758756.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":440971,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.861Z"},{"id":"puz_2d39edaa","title":"architecture sq 2048x2048 23","category":"Architecture","filename":"architecture_sq_2048x2048_23_dba652.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_23_dba652.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_23_dba652.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":344946,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.860Z"},{"id":"puz_e1acd5d9","title":"architecture sq 2048x2048 22","category":"Architecture","filename":"architecture_sq_2048x2048_22_7a5d93.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_22_7a5d93.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_22_7a5d93.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":540520,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.859Z"},{"id":"puz_f6284cea","title":"architecture sq 2048x2048 21","category":"Architecture","filename":"architecture_sq_2048x2048_21_863cf3.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_21_863cf3.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_21_863cf3.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":421407,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.857Z"},{"id":"puz_2ea7c680","title":"architecture sq 2048x2048 20","category":"Architecture","filename":"architecture_sq_2048x2048_20_2f8e38.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_20_2f8e38.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_20_2f8e38.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":326812,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.856Z"},{"id":"puz_91d6cf64","title":"architecture sq 2048x2048 19","category":"Architecture","filename":"architecture_sq_2048x2048_19_8849fc.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_19_8849fc.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_19_8849fc.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":348890,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.855Z"},{"id":"puz_8b53e6ec","title":"architecture sq 2048x2048 18","category":"Architecture","filename":"architecture_sq_2048x2048_18_53ea73.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_18_53ea73.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_18_53ea73.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":374830,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.854Z"},{"id":"puz_97b5083c","title":"architecture sq 2048x2048 17","category":"Architecture","filename":"architecture_sq_2048x2048_17_7ab4ec.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_17_7ab4ec.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_17_7ab4ec.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":360797,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.853Z"},{"id":"puz_2fc1a6bd","title":"architecture sq 2048x2048 16","category":"Architecture","filename":"architecture_sq_2048x2048_16_03d134.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_16_03d134.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_16_03d134.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":428651,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.852Z"},{"id":"puz_7560ce06","title":"architecture sq 2048x2048 15","category":"Architecture","filename":"architecture_sq_2048x2048_15_157c66.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_15_157c66.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_15_157c66.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":381904,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.852Z"},{"id":"puz_32fa17b0","title":"architecture sq 2048x2048 14","category":"Architecture","filename":"architecture_sq_2048x2048_14_3f06fd.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_14_3f06fd.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_14_3f06fd.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":198885,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.851Z"},{"id":"puz_8d45938d","title":"architecture sq 2048x2048 13","category":"Architecture","filename":"architecture_sq_2048x2048_13_eadce1.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_13_eadce1.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_13_eadce1.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":394613,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.850Z"},{"id":"puz_c59a9c85","title":"architecture sq 2048x2048 12","category":"Architecture","filename":"architecture_sq_2048x2048_12_3305de.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_12_3305de.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_12_3305de.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":389337,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.849Z"},{"id":"puz_f7f2810f","title":"architecture sq 2048x2048 11","category":"Architecture","filename":"architecture_sq_2048x2048_11_13dcc5.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_11_13dcc5.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_11_13dcc5.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":237925,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.848Z"},{"id":"puz_559ca959","title":"architecture sq 2048x2048 10","category":"Architecture","filename":"architecture_sq_2048x2048_10_f0e307.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_10_f0e307.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_10_f0e307.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":313471,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.848Z"},{"id":"puz_dbe4898f","title":"architecture sq 2048x2048 09","category":"Architecture","filename":"architecture_sq_2048x2048_09_616167.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_09_616167.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_09_616167.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":276879,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.847Z"},{"id":"puz_6ce8cba8","title":"architecture sq 2048x2048 08","category":"Architecture","filename":"architecture_sq_2048x2048_08_ce5709.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_08_ce5709.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_08_ce5709.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":277637,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.846Z"},{"id":"puz_b451250c","title":"architecture sq 2048x2048 07","category":"Architecture","filename":"architecture_sq_2048x2048_07_30c3c6.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_07_30c3c6.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_07_30c3c6.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":277591,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.845Z"},{"id":"puz_9fd0ea2d","title":"architecture sq 2048x2048 06","category":"Architecture","filename":"architecture_sq_2048x2048_06_d727b9.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_06_d727b9.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_06_d727b9.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":289938,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.845Z"},{"id":"puz_958cc970","title":"architecture sq 2048x2048 05","category":"Architecture","filename":"architecture_sq_2048x2048_05_4da842.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_05_4da842.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_05_4da842.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":162099,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.844Z"},{"id":"puz_25464eda","title":"architecture sq 2048x2048 04","category":"Architecture","filename":"architecture_sq_2048x2048_04_6b0938.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_04_6b0938.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_04_6b0938.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":295984,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.843Z"},{"id":"puz_4304bb1a","title":"architecture sq 2048x2048 03","category":"Architecture","filename":"architecture_sq_2048x2048_03_4695ac.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_03_4695ac.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_03_4695ac.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":350998,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.843Z"},{"id":"puz_9b46eb3c","title":"architecture sq 2048x2048 02","category":"Architecture","filename":"architecture_sq_2048x2048_02_ba3ff4.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_02_ba3ff4.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_02_ba3ff4.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":348381,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.842Z"},{"id":"puz_ea14fa3d","title":"architecture sq 2048x2048 01","category":"Architecture","filename":"architecture_sq_2048x2048_01_87fe1e.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_01_87fe1e.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/architecture_sq_2048x2048_01_87fe1e.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":486439,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.841Z"},{"id":"puz_203d5032","title":"animals sq 2048x2048 24","category":"Animals","filename":"animals_sq_2048x2048_24_5ab5f1.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_24_5ab5f1.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_24_5ab5f1.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":219042,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.839Z"},{"id":"puz_baf2b0b0","title":"animals sq 2048x2048 23","category":"Animals","filename":"animals_sq_2048x2048_23_e9f23a.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_23_e9f23a.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_23_e9f23a.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":138678,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.839Z"},{"id":"puz_1c37d990","title":"animals sq 2048x2048 22","category":"Animals","filename":"animals_sq_2048x2048_22_19a94c.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_22_19a94c.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_22_19a94c.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":306589,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.838Z"},{"id":"puz_c77b0701","title":"animals sq 2048x2048 21","category":"Animals","filename":"animals_sq_2048x2048_21_ce0b9e.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_21_ce0b9e.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_21_ce0b9e.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":212556,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.838Z"},{"id":"puz_2ac18b79","title":"animals sq 2048x2048 20","category":"Animals","filename":"animals_sq_2048x2048_20_8c26c7.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_20_8c26c7.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_20_8c26c7.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":540520,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.837Z"},{"id":"puz_32261e53","title":"animals sq 2048x2048 19","category":"Animals","filename":"animals_sq_2048x2048_19_e6dc9a.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_19_e6dc9a.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_19_e6dc9a.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":405796,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.836Z"},{"id":"puz_1acd2f24","title":"animals sq 2048x2048 18","category":"Animals","filename":"animals_sq_2048x2048_18_5f714d.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_18_5f714d.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_18_5f714d.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":564951,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.835Z"},{"id":"puz_07ed4b83","title":"animals sq 2048x2048 17","category":"Animals","filename":"animals_sq_2048x2048_17_4777e3.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_17_4777e3.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_17_4777e3.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":447186,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.833Z"},{"id":"puz_2591a61a","title":"animals sq 2048x2048 16","category":"Animals","filename":"animals_sq_2048x2048_16_bdad47.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_16_bdad47.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_16_bdad47.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":341563,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.832Z"},{"id":"puz_ce272a86","title":"animals sq 2048x2048 15","category":"Animals","filename":"animals_sq_2048x2048_15_4cae84.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_15_4cae84.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_15_4cae84.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":228697,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.831Z"},{"id":"puz_10a4981b","title":"animals sq 2048x2048 14","category":"Animals","filename":"animals_sq_2048x2048_14_f3b21b.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_14_f3b21b.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_14_f3b21b.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":343555,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.830Z"},{"id":"puz_308cf087","title":"animals sq 2048x2048 13","category":"Animals","filename":"animals_sq_2048x2048_13_3189cb.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_13_3189cb.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_13_3189cb.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":157162,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.829Z"},{"id":"puz_4ebad7cb","title":"animals sq 2048x2048 12","category":"Animals","filename":"animals_sq_2048x2048_12_da7660.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_12_da7660.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_12_da7660.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":243443,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.829Z"},{"id":"puz_401abfbe","title":"animals sq 2048x2048 11","category":"Animals","filename":"animals_sq_2048x2048_11_d832bf.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_11_d832bf.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_11_d832bf.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":325105,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.828Z"},{"id":"puz_169ff3bc","title":"animals sq 2048x2048 10","category":"Animals","filename":"animals_sq_2048x2048_10_6e7a26.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_10_6e7a26.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_10_6e7a26.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":257342,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.827Z"},{"id":"puz_be0a6720","title":"animals sq 2048x2048 09","category":"Animals","filename":"animals_sq_2048x2048_09_9f2037.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_09_9f2037.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_09_9f2037.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":492994,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.826Z"},{"id":"puz_11e24e52","title":"animals sq 2048x2048 08","category":"Animals","filename":"animals_sq_2048x2048_08_56d796.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_08_56d796.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_08_56d796.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":453145,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.825Z"},{"id":"puz_1a9963a2","title":"animals sq 2048x2048 07","category":"Animals","filename":"animals_sq_2048x2048_07_f42877.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_07_f42877.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_07_f42877.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":373787,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.823Z"},{"id":"puz_0bd13407","title":"animals sq 2048x2048 06","category":"Animals","filename":"animals_sq_2048x2048_06_b9ca94.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_06_b9ca94.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_06_b9ca94.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":346917,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.822Z"},{"id":"puz_10a9ca59","title":"animals sq 2048x2048 05","category":"Animals","filename":"animals_sq_2048x2048_05_239fec.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_05_239fec.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_05_239fec.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":341570,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.821Z"},{"id":"puz_d2efc6b2","title":"animals sq 2048x2048 04","category":"Animals","filename":"animals_sq_2048x2048_04_7278a1.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_04_7278a1.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_04_7278a1.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":278452,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.820Z"},{"id":"puz_5f98a74f","title":"animals sq 2048x2048 03","category":"Animals","filename":"animals_sq_2048x2048_03_bfd8c4.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_03_bfd8c4.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_03_bfd8c4.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":594201,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.819Z"},{"id":"puz_fa4c08ce","title":"animals sq 2048x2048 02","category":"Animals","filename":"animals_sq_2048x2048_02_61c43f.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_02_61c43f.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_02_61c43f.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":367819,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.817Z"},{"id":"puz_5b0dda35","title":"animals sq 2048x2048 01","category":"Animals","filename":"animals_sq_2048x2048_01_a48c51.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_01_a48c51.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/animals_sq_2048x2048_01_a48c51.jpg","published":true,"saveToRomOnDownload":true,"width":1080,"height":1080,"sizeBytes":102957,"mimeType":"image/jpeg","createdAt":"2026-10-11T13:29:05.815Z"},{"id":"puz_5cb51bf6","title":"Calm Jigsaw Banner","category":"Featured","filename":"calm-jigsaw-banner_36cbc7.jpg","url":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/calm-jigsaw-banner_36cbc7.jpg","imageEndpoint":"https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/calm-jigsaw-banner_36cbc7.jpg","published":true,"saveToRomOnDownload":true,"width":1376,"height":768,"sizeBytes":987984,"mimeType":"image/jpeg","createdAt":"2026-10-11T12:21:55.932Z"}];
 
     let puzzleRegistry = [];
-    let spriteRamPool = new Map(); // key_size -> dataURL (simulates SpriteMemoryCache.cs)
-    const MAX_RAM_POOL = 64;
+    let currentCampaignLevel = 1;
+    let activeCategoryFilter = 'All';
+    let galleryFilter = 'ALL';
+    let activeRightTab = 'gallery';
+    let isOnline = true;
 
+    let activeBoardRes = 1080; // 256, 512, 1080, 2048
     let activePuzzleKey = null;
-    let activeBoardRes = 1080; // 256, 512, or 1080
-    let boardTiles = []; // Array of original tile indices [0..N*N-1]
-    let selectedTileSlot = -1;
-    let toastTimer = null;
+    let toastTimeout = null;
 
     function fnvHash(str) {
       let h = 2166136261 >>> 0;
@@ -319,296 +393,307 @@
       return (h >>> 0).toString(16).padStart(8, '0');
     }
 
-    function initPipelineManifest() {
-      puzzleRegistry = [];
-      for (let i = 1; i <= TOTAL_PUZZLES; i++) {
-        const idNum = String(i).padStart(4, '0');
-        const url = `https://cdn.studio-games.io/puzzles/pack_${((i - 1) % 6) + 1}/puzzle_${idNum}_2080px.png`;
-        const requestKey = `puzzle_${idNum}_${fnvHash(url)}`;
-        const isFaulty = (i === 23 || i === 64 || i === 91);
-        const origPngBytes = 4600000 + ((i * 83177) % 1300000); // ~4.6MB - 5.9MB PNG
+    function showToast(emoji, text, type = 'info') {
+      const bar = document.getElementById('toastBar');
+      const emojiEl = document.getElementById('toastEmoji');
+      const textEl = document.getElementById('toastText');
+      if (!bar) return;
 
-        puzzleRegistry.push({
-          index: i,
-          requestKey,
-          url,
-          theme: THEMES[(i - 1) % THEMES.length],
-          seed: i * 137,
-          state: 'QUEUED', // QUEUED, DOWNLOADING, CACHED, ROM, FAILED
-          priority: i <= 12 ? 2 : 0, // First 12 visible in viewport get High(2)
-          storageTier: i === 1 ? 'ROM' : 'CACHE',
-          origPngBytes,
-          iconBytes: 0,
-          fullBytes: 0,
-          custom512Bytes: 0,
-          custom2048Bytes: 0,
-          durationMs: 0,
-          isFaulty,
-          errorMessage: '',
-          thumbDataUrl: null
-        });
+      emojiEl.textContent = emoji;
+      textEl.textContent = text;
+      bar.classList.remove('opacity-0', '-translate-y-2');
+      bar.classList.add('opacity-100', 'translate-y-0');
+
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        bar.classList.remove('opacity-100', 'translate-y-0');
+        bar.classList.add('opacity-0', '-translate-y-2');
+      }, 2600);
+    }
+
+    async function syncBackendCatalog(showNotice = false) {
+      let manifest = null;
+      let sourceTag = 'GitHub Cloud CDN';
+
+      // 1. Try local Puzzle Image Server at port 4200
+      try {
+        const controller = new AbortController();
+        const tid = setTimeout(() => controller.abort(), 1200);
+        const res = await fetch('http://localhost:4200/api/puzzles/published', { signal: controller.signal });
+        clearTimeout(tid);
+        if (res.ok) {
+          manifest = await res.json();
+          sourceTag = 'Local Server (:4200)';
+        }
+      } catch (_) {}
+
+      // 2. Try live GitHub Pages cloud CDN
+      if (!manifest) {
+        try {
+          const res = await fetch('https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/published.json', { mode: 'cors' });
+          if (res.ok) {
+            manifest = await res.json();
+            sourceTag = 'GitHub Cloud CDN';
+          }
+        } catch (_) {}
       }
 
-      // Immediately complete Puzzle #1 so the playable board starts ready
-      completeDownloadInstantly(puzzleRegistry[0]);
+      // 3. Fallback to embedded published catalog
+      if (!manifest || !Array.isArray(manifest.puzzles) || manifest.puzzles.length === 0) {
+        manifest = { version: '1.0', totalPublished: PUBLISHED_IMAGES_CATALOG.length, puzzles: PUBLISHED_IMAGES_CATALOG };
+        sourceTag = 'Embedded 71 Levels';
+      }
+
+      applyPublishedManifest(manifest, sourceTag);
+      if (showNotice) {
+        showToast('🚀', `Synced ${puzzleRegistry.length} images from ${sourceTag}!`, 'win');
+      }
+    }
+
+    function applyPublishedManifest(manifest, sourceTag) {
+      const raw = manifest.puzzles || [];
+      puzzleRegistry = raw.map((p, idx) => {
+        const lvl = idx + 1;
+        const reqKey = p.id || `puz_${fnvHash(p.url || p.filename || String(lvl))}`;
+        const sizeB = p.sizeBytes || 490000;
+        
+        // Robust category resolver (handles filename / title / category variations)
+        let resolvedCategory = p.category || 'Nature';
+        const strLower = ((p.filename || '') + ' ' + (p.title || '')).toLowerCase();
+        if (strLower.includes('architecture') || strLower.includes('arch_') || strLower.includes('architecture_sq')) {
+          resolvedCategory = 'Architecture';
+        } else if (strLower.includes('animal') || strLower.includes('animals_sq')) {
+          resolvedCategory = 'Animals';
+        } else if (strLower.includes('banner')) {
+          resolvedCategory = 'Featured';
+        } else if (strLower.includes('scenic') || strLower.includes('nature')) {
+          resolvedCategory = 'Nature';
+        }
+
+        return {
+          index: lvl,
+          level: lvl,
+          id: p.id || reqKey,
+          requestKey: reqKey,
+          title: p.title || p.filename || `Image #${lvl}`,
+          category: resolvedCategory,
+          filename: p.filename || '',
+          url: p.url || `https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/uploads/${p.filename}`,
+          width: p.width || 1080,
+          height: p.height || 1080,
+          state: lvl <= 24 ? 'CACHED' : (lvl === 1 ? 'ROM' : 'QUEUED'),
+          priority: lvl <= 12 ? 2 : 0,
+          storageTier: (p.saveToRomOnDownload || lvl === 1) ? 'ROM' : 'CACHE',
+          origPngBytes: Math.round(sizeB * 3.8),
+          iconBytes: Math.round(sizeB * 0.09),
+          fullBytes: sizeB,
+          custom512Bytes: Math.round(sizeB * 0.24),
+          custom2048Bytes: Math.round(sizeB * 1.9),
+          durationMs: 80 + ((lvl * 21) % 110),
+          isFaulty: false,
+          errorMessage: ''
+        };
+      });
+
+      const total = puzzleRegistry.length;
+      document.getElementById('totalLevelCount').textContent = String(total);
+      document.getElementById('tabCountGallery').textContent = String(total);
+      document.getElementById('syncSourceLabel').textContent = `● ${total} Synced`;
+
+      // Update Category Counts on Filter Buttons
+      const countNature = puzzleRegistry.filter(r => r.category === 'Nature').length;
+      const countArch = puzzleRegistry.filter(r => r.category === 'Architecture').length;
+      const countAnimals = puzzleRegistry.filter(r => r.category === 'Animals').length;
+
+      const btnAll = document.getElementById('catFilterAll');
+      const btnNat = document.getElementById('catFilterNature');
+      const btnArch = document.getElementById('catFilterArchitecture');
+      const btnAnim = document.getElementById('catFilterAnimals');
+
+      if (btnAll) btnAll.textContent = `All (${total})`;
+      if (btnNat) btnNat.textContent = `Nature (${countNature})`;
+      if (btnArch) btnArch.textContent = `Arch (${countArch})`;
+      if (btnAnim) btnAnim.textContent = `Animals (${countAnimals})`;
+
+      currentCampaignLevel = 1;
       activePuzzleKey = puzzleRegistry[0].requestKey;
-      setupPlayableBoard();
+
+      renderActiveImageRepresentation();
       renderGalleryGrid();
       renderQueueTable();
       updateManifestJsonTab();
       updateTelemetryHeader();
+      updateCampaignLevelUI();
     }
 
     // =========================================================================
-    // 2. Procedural High-Res / Low-Res JPEG Renderer (Simulates PNG->JPG Resizer)
+    // 2. Render Actual PNG / JPG Representation at Selected Resolution
     // =========================================================================
-    function renderPuzzleArtworkToDataUrl(record, resolutionPx) {
-      const cacheKey = `${record.requestKey}_${resolutionPx}`;
-      if (spriteRamPool.has(cacheKey)) {
-        return spriteRamPool.get(cacheKey);
-      }
-
-      // Simulate genuine resolution differences (256px soft -> 512px medium -> 1080px crisp -> 2048px ultra crisp)
-      const canvasSize = resolutionPx === 256 ? 128 : (resolutionPx === 512 ? 256 : (resolutionPx === 1080 ? 512 : 1024));
-      const canvas = document.createElement('canvas');
-      canvas.width = canvasSize;
-      canvas.height = canvasSize;
-      const ctx = canvas.getContext('2d', { alpha: false });
-
-      const t = record.theme;
-      const s = record.seed;
-
-      // Sky gradient
-      const skyGrad = ctx.createLinearGradient(0, 0, 0, canvasSize * 0.75);
-      skyGrad.addColorStop(0, t.sky[0]);
-      skyGrad.addColorStop(0.55, t.sky[1]);
-      skyGrad.addColorStop(1, t.sky[2]);
-      ctx.fillStyle = skyGrad;
-      ctx.fillRect(0, 0, canvasSize, canvasSize);
-
-      // Sun / Moon
-      const sunX = canvasSize * (0.25 + ((s % 50) / 100));
-      const sunY = canvasSize * (0.22 + ((s % 20) / 100));
-      const sunR = canvasSize * 0.13;
-      ctx.fillStyle = t.sun;
-      ctx.beginPath();
-      ctx.arc(sunX, sunY, sunR, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Far Mountains
-      ctx.fillStyle = t.mtn1;
-      ctx.beginPath();
-      ctx.moveTo(0, canvasSize);
-      ctx.lineTo(0, canvasSize * 0.58);
-      ctx.lineTo(canvasSize * 0.28, canvasSize * (0.34 + (s % 12) * 0.01));
-      ctx.lineTo(canvasSize * 0.55, canvasSize * 0.56);
-      ctx.lineTo(canvasSize * 0.82, canvasSize * (0.31 + (s % 15) * 0.01));
-      ctx.lineTo(canvasSize, canvasSize * 0.52);
-      ctx.lineTo(canvasSize, canvasSize);
-      ctx.closePath();
-      ctx.fill();
-
-      // Near Mountains / Hills
-      ctx.fillStyle = t.mtn2;
-      ctx.beginPath();
-      ctx.moveTo(0, canvasSize);
-      ctx.lineTo(0, canvasSize * 0.70);
-      ctx.lineTo(canvasSize * 0.42, canvasSize * 0.49);
-      ctx.lineTo(canvasSize * 0.74, canvasSize * 0.67);
-      ctx.lineTo(canvasSize, canvasSize * 0.54);
-      ctx.lineTo(canvasSize, canvasSize);
-      ctx.closePath();
-      ctx.fill();
-
-      // Foreground Pine Trees / Lake Reflection
-      ctx.fillStyle = t.fg;
-      ctx.fillRect(0, canvasSize * 0.78, canvasSize, canvasSize * 0.22);
-
-      const treeCount = 7;
-      for (let k = 0; k < treeCount; k++) {
-        const tx = (canvasSize / treeCount) * (k + 0.5);
-        const th = canvasSize * (0.14 + ((k * s) % 9) * 0.01);
-        const ty = canvasSize * 0.80;
-        ctx.beginPath();
-        ctx.moveTo(tx, ty - th);
-        ctx.lineTo(tx - th * 0.42, ty);
-        ctx.lineTo(tx + th * 0.42, ty);
-        ctx.closePath();
-        ctx.fill();
-      }
-
-      // Water Shimmer Lines
-      ctx.strokeStyle = 'rgba(255,255,255,0.22)';
-      ctx.lineWidth = Math.max(1, canvasSize / 160);
-      for (let w = 0; w < 4; w++) {
-        const wy = canvasSize * (0.83 + w * 0.038);
-        ctx.beginPath();
-        ctx.moveTo(sunX - sunR * (1.2 - w * 0.2), wy);
-        ctx.lineTo(sunX + sunR * (1.2 - w * 0.2), wy);
-        ctx.stroke();
-      }
-
-      const jpegQuality = resolutionPx === 256 ? 0.76 : 0.88;
-      const dataUrl = canvas.toDataURL('image/jpeg', jpegQuality);
-
-      // Maintain bounded SpriteMemoryCache capacity
-      if (spriteRamPool.size >= MAX_RAM_POOL) {
-        const oldestKey = spriteRamPool.keys().next().value;
-        spriteRamPool.delete(oldestKey);
-      }
-      spriteRamPool.set(cacheKey, dataUrl);
-      return dataUrl;
-    }
-
     // =========================================================================
-    // 3. Native Background Priority Queue Worker Loop
+    // 2. Real Transcoding Engine: Actual Resolution & Quality Resampling
     // =========================================================================
-    function completeDownloadInstantly(rec) {
-      if (rec.isFaulty) {
-        rec.state = 'FAILED';
-        rec.durationMs = 78;
-        rec.errorMessage = 'HTTP 404 (Corrupt/Missing Stream)';
-        return;
+    // Cache transcoded object URLs by `key_res` to prevent re-rendering identical tiers
+    const transcodedBlobCache = new Map();
+
+    async function getTranscodedImageData(rec, targetRes) {
+      const cacheKey = `${rec.id || rec.requestKey}_${targetRes}`;
+      if (transcodedBlobCache.has(cacheKey)) {
+        return transcodedBlobCache.get(cacheKey);
       }
-      rec.iconBytes = 38000 + ((rec.index * 521) % 44000); // 38KB - 82KB
-      rec.fullBytes = 490000 + ((rec.index * 9311) % 360000); // 490KB - 850KB
-      rec.durationMs = 95 + ((rec.index * 43) % 130);
-      rec.state = rec.storageTier === 'ROM' ? 'ROM' : 'CACHED';
-      rec.thumbDataUrl = renderPuzzleArtworkToDataUrl(rec, 256);
-    }
 
-    setInterval(() => {
-      if (!isOnline) return;
+      // Quality setting per resolution tier
+      const quality =
+        targetRes === 256 ? 0.40 :   // 40% JPEG quality for thumbnail tier
+        targetRes === 512 ? 0.70 :   // 70% JPEG quality for medium tier
+        targetRes === 1080 ? 0.90 :  // 90% JPEG quality for standard 1080 tier
+        0.96;                        // 96% JPEG quality for ultra 2048 tier
 
-      const inFlight = puzzleRegistry.filter(r => r.state === 'DOWNLOADING');
-      if (inFlight.length < 2) {
-        // Pick highest priority QUEUED item (Critical=3 > Viewport High=2 > Normal=1 > Low=0)
-        const candidates = puzzleRegistry
-          .filter(r => r.state === 'QUEUED')
-          .sort((a, b) => (b.priority - a.priority) || (a.index - b.index));
-
-        if (candidates.length > 0) {
-          const next = candidates[0];
-          next.state = 'DOWNLOADING';
-          updateSingleGalleryCard(next);
-
-          setTimeout(() => {
-            if (!isOnline) {
-              next.state = 'QUEUED';
-              updateSingleGalleryCard(next);
-              return;
+      return new Promise((resolve) => {
+        const sourceImg = new Image();
+        sourceImg.crossOrigin = "anonymous";
+        sourceImg.onload = () => {
+          try {
+            const canvas = document.createElement('canvas');
+            canvas.width = targetRes;
+            canvas.height = targetRes;
+            const ctx = canvas.getContext('2d');
+            
+            // Adjust interpolation smoothing to accentuate authentic resolution differences
+            if (targetRes <= 256) {
+              ctx.imageSmoothingEnabled = true;
+              ctx.imageSmoothingQuality = 'low';
+            } else if (targetRes <= 512) {
+              ctx.imageSmoothingEnabled = true;
+              ctx.imageSmoothingQuality = 'medium';
+            } else {
+              ctx.imageSmoothingEnabled = true;
+              ctx.imageSmoothingQuality = 'high';
             }
-            completeDownloadInstantly(next);
-            updateSingleGalleryCard(next);
-            updateTelemetryHeader();
-            if (activeRightTab === 'queue') renderQueueTable();
-            if (activeRightTab === 'json') updateManifestJsonTab();
-            if (next.requestKey === activePuzzleKey) renderPlayableBoard();
-          }, 260);
-        }
-      }
-    }, 220);
 
-    // =========================================================================
-    // 4. Viewport Scroll Tracker (Simulates PuzzleViewportScrollTracker.cs)
-    // =========================================================================
-    function onGalleryScroll() {
-      const container = document.getElementById('galleryScrollContainer');
-      if (!container) return;
+            // Draw source image scaled to the exact pixel canvas
+            ctx.drawImage(sourceImg, 0, 0, targetRes, targetRes);
 
-      const scrollTop = container.scrollTop;
-      const rowHeight = 104; // Approximate height of each 3-column row
-      const firstRow = Math.max(0, Math.floor(scrollTop / rowHeight));
-      const startIndex = firstRow * 3 + 1;
-      const endIndex = Math.min(TOTAL_PUZZLES, startIndex + 11);
-
-      document.getElementById('viewportBoostLabel').textContent =
-        `Viewport: #${startIndex}–#${endIndex} (HIGH)`;
-
-      puzzleRegistry.forEach(r => {
-        if (r.state === 'QUEUED') {
-          if (r.requestKey === activePuzzleKey) {
-            r.priority = 3; // Critical
-          } else if (r.index >= startIndex && r.index <= endIndex) {
-            r.priority = 2; // High (In-Viewport)
-          } else {
-            r.priority = 0; // Low (Off-screen)
+            canvas.toBlob((blob) => {
+              if (blob) {
+                const objectUrl = URL.createObjectURL(blob);
+                const result = {
+                  url: objectUrl,
+                  blob: blob,
+                  actualWidth: targetRes,
+                  actualHeight: targetRes,
+                  actualBytes: blob.size,
+                  isTranscoded: true
+                };
+                transcodedBlobCache.set(cacheKey, result);
+                resolve(result);
+              } else {
+                // Fallback to source
+                resolve({
+                  url: rec.url,
+                  actualWidth: rec.width || targetRes,
+                  actualHeight: rec.height || targetRes,
+                  actualBytes: rec.fullBytes,
+                  isTranscoded: false
+                });
+              }
+            }, 'image/jpeg', quality);
+          } catch (e) {
+            console.warn("Canvas transcode failed (CORS fallback to original):", e);
+            resolve({
+              url: rec.url,
+              actualWidth: rec.width || targetRes,
+              actualHeight: rec.height || targetRes,
+              actualBytes: rec.fullBytes,
+              isTranscoded: false
+            });
           }
-        }
+        };
+
+        sourceImg.onerror = () => {
+          resolve({
+            url: rec.url,
+            actualWidth: rec.width || targetRes,
+            actualHeight: rec.height || targetRes,
+            actualBytes: rec.fullBytes,
+            isTranscoded: false
+          });
+        };
+
+        sourceImg.src = rec.url;
       });
     }
 
-    // =========================================================================
-    // 5. Playable 1:1 Jigsaw / Solitaire Board (Left Column)
-    // =========================================================================
-    function fitSquareBoardToViewport() {
-      const viewport = document.getElementById('boardViewport');
-      const board = document.getElementById('boardContainer');
-      const headerBar = document.getElementById('boardHeaderBar');
-      const powersBar = document.getElementById('boardPowersBar');
-      if (!viewport || !board) return;
+    let activeTranscodeToken = 0;
 
-      const size = Math.floor(Math.min(viewport.clientWidth, viewport.clientHeight));
-      if (size > 0) {
-        board.style.width = `${size}px`;
-        board.style.height = `${size}px`;
-        if (headerBar) headerBar.style.width = `${size}px`;
-        if (powersBar) powersBar.style.width = `${size}px`;
-      }
-    }
-
-    window.addEventListener('resize', fitSquareBoardToViewport);
-    const resizeObserver = new ResizeObserver(fitSquareBoardToViewport);
-    window.addEventListener('DOMContentLoaded', () => {
-      const vp = document.getElementById('boardViewport');
-      if (vp) resizeObserver.observe(vp);
-      initPipelineManifest();
-      fitSquareBoardToViewport();
-    });
-
-    function setupPlayableBoard() {
-      const N = GRID_SIZES[gridSizeIdx];
-      const total = N * N;
-      boardTiles = Array.from({ length: total }, (_, i) => i);
-
-      // Scramble tiles (ensure not already solved)
-      for (let i = total - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [boardTiles[i], boardTiles[j]] = [boardTiles[j], boardTiles[i]];
-      }
-      selectedTileSlot = -1;
-      document.getElementById('gridSizeBadge').textContent = `${N}×${N}`;
-      renderPlayableBoard();
-    }
-
-    function renderPlayableBoard() {
-      const rec = puzzleRegistry.find(r => r.requestKey === activePuzzleKey);
+    async function renderActiveImageRepresentation() {
+      const rec = puzzleRegistry.find(r => r.requestKey === activePuzzleKey) || puzzleRegistry[0];
       if (!rec) return;
 
-      const N = GRID_SIZES[gridSizeIdx];
-      const total = N * N;
-      const board = document.getElementById('boardContainer');
-      board.style.gridTemplateColumns = `repeat(${N}, minmax(0, 1fr))`;
-      board.style.gridTemplateRows = `repeat(${N}, minmax(0, 1fr))`;
+      const myToken = ++activeTranscodeToken;
+      const loaderEl = document.getElementById('imageLoadingOverlay');
+      if (loaderEl) loaderEl.classList.remove('hidden');
 
-      // Update top labels
-      document.getElementById('activeKeyLabel').textContent = rec.requestKey;
+      // Fetch actual transcoded image blob at exact target resolution and quality
+      const transcoded = await getTranscodedImageData(rec, activeBoardRes);
+      if (myToken !== activeTranscodeToken) return; // Stale request guard
+
+      if (loaderEl) loaderEl.classList.add('hidden');
+
+      const imgEl = document.getElementById('activeImagePreview');
+      if (imgEl) {
+        imgEl.src = transcoded.url;
+        imgEl.alt = `${rec.title} (${activeBoardRes}×${activeBoardRes}px)`;
+        imgEl.className = "max-h-full max-w-full object-contain rounded-xl shadow-2xl transition duration-150";
+      }
+
+      // If fullscreen modal is currently open, keep it in sync with the new resolution and quality
+      const fullscreenModal = document.getElementById('fullscreenImageModal');
+      if (fullscreenModal && !fullscreenModal.classList.contains('hidden')) {
+        const fullImg = document.getElementById('fullscreenImageDisplay');
+        const modalRes = document.getElementById('fullscreenModalRes');
+        const modalSize = document.getElementById('fullscreenModalSize');
+        const fsTag = document.getElementById('fullscreenResTag');
+        if (fullImg) fullImg.src = transcoded.url;
+        if (modalRes) modalRes.textContent = `${transcoded.actualWidth}×${transcoded.actualHeight}px`;
+        if (fsTag) fsTag.textContent = `${activeBoardRes}px`;
+        const modalBytes = transcoded.actualBytes;
+        const modalSizeText = modalBytes >= 1024 * 1024
+          ? `${(modalBytes / (1024 * 1024)).toFixed(2)} MB`
+          : `${Math.round(modalBytes / 1024)} KB`;
+        if (modalSize) modalSize.textContent = modalSizeText;
+
+        // Update Fullscreen Pills Active State
+        [256, 512, 1080, 2048].forEach(res => {
+          const pill = document.getElementById(`fsPill${res}`);
+          if (pill) {
+            pill.className = (res === activeBoardRes)
+              ? 'px-2 py-0.5 rounded-md bg-blue-600 text-white font-bold transition cursor-pointer'
+              : 'px-2 py-0.5 rounded-md hover:bg-[#30363d] text-[#8b949e] font-semibold transition cursor-pointer';
+          }
+        });
+      }
+
+      // Update Header Badges & Labels
       const isRom = rec.storageTier === 'ROM';
-      const storageBadge = document.getElementById('activeStorageBadge');
-      storageBadge.textContent = isRom ? 'PERMANENT ROM' : 'VOLATILE CACHE';
-      storageBadge.className = isRom
-        ? 'text-xs font-bold px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-400 border border-purple-500/30'
-        : 'text-xs font-bold px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30';
+      document.getElementById('activeLevelBadge').textContent = `#${String(rec.level).padStart(2, '0')}`;
+      document.getElementById('activeTitleLabel').textContent = `${rec.title}`;
+      
+      const stBadge = document.getElementById('activeStorageBadge');
+      stBadge.textContent = isRom ? 'ROM' : 'CACHE';
+      stBadge.className = isRom
+        ? 'font-mono text-[11px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-400 border border-purple-500/30'
+        : 'font-mono text-[11px] px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30';
 
-      document.getElementById('badgeRomState').textContent = isRom ? 'In ROM' : 'Cache';
+      document.getElementById('badgeRomState').textContent = isRom ? 'ROM' : 'Cache';
       document.getElementById('badgeSourceOrigin').textContent = isRom ? 'ROM' : 'CACHE';
 
-      // Update Single Resolution Switcher Button (256 -> 512 -> 1080 -> 2048)
-      const tierBytes =
+      // Update Size and Resolution Telemetry
+      const tierBytes = transcoded.actualBytes || (
         activeBoardRes === 256 ? rec.iconBytes :
-        activeBoardRes === 512 ? (rec.custom512Bytes || Math.round(rec.iconBytes * 2.65)) :
-        activeBoardRes === 2048 ? (rec.custom2048Bytes || Math.round(rec.fullBytes * 2.35)) :
-        rec.fullBytes;
+        activeBoardRes === 512 ? rec.custom512Bytes :
+        activeBoardRes === 2048 ? rec.custom2048Bytes :
+        rec.fullBytes
+      );
 
       const sizeText = tierBytes >= 1024 * 1024
         ? `${(tierBytes / (1024 * 1024)).toFixed(2)} MB`
@@ -616,217 +701,19 @@
 
       document.getElementById('cycleResLabel').textContent = `Size: ${activeBoardRes}px`;
       document.getElementById('cycleResBadge').textContent = `${sizeText} ↻`;
-
-      if (rec.state !== 'CACHED' && rec.state !== 'ROM') {
-        rec.priority = 3; // Boost to Critical
-        board.innerHTML = `
-          <div class="col-span-full row-span-full flex flex-col items-center justify-center p-6 text-center gap-2">
-            <div class="text-2xl animate-spin">⏳</div>
-            <div class="text-sm font-bold text-[#e6edf3]">Downloading & Transcoding ${rec.requestKey}...</div>
-            <div class="text-xs text-[#8b949e]">Priority bumped to CRITICAL (3) in Native Queue</div>
-          </div>
-        `;
-        return;
-      }
-
-      const spriteUrl = renderPuzzleArtworkToDataUrl(rec, activeBoardRes);
-      let correctCount = 0;
-      board.innerHTML = '';
-
-      for (let slotIdx = 0; slotIdx < total; slotIdx++) {
-        const pieceIdx = boardTiles[slotIdx];
-        const isCorrect = (pieceIdx === slotIdx);
-        if (isCorrect) correctCount++;
-
-        const origRow = Math.floor(pieceIdx / N);
-        const origCol = pieceIdx % N;
-        const bgPosX = N > 1 ? (origCol / (N - 1)) * 100 : 0;
-        const bgPosY = N > 1 ? (origRow / (N - 1)) * 100 : 0;
-
-        const tile = document.createElement('div');
-        const isSelected = (slotIdx === selectedTileSlot);
-        const modeMargin = gameMode === 'jigsaw_solitaire' ? 'm-0.5 rounded-lg' : '';
-
-        tile.className = `relative cursor-pointer transition-transform duration-150 border border-black/30 overflow-hidden ${modeMargin} ${isSelected ? 'tile-selected scale-95' : ''} ${isCorrect ? 'tile-locked' : ''}`;
-        tile.style.backgroundImage = `url('${spriteUrl}')`;
-        tile.style.backgroundSize = `${N * 100}% ${N * 100}%`;
-        tile.style.backgroundPosition = `${bgPosX}% ${bgPosY}%`;
-
-        // Solitaire card corner badge or Jigsaw piece indicator
-        const badge = document.createElement('span');
-        badge.className = `absolute top-1 left-1 px-1 py-0.2 rounded text-[11px] font-mono font-bold ${isCorrect ? 'bg-emerald-500/80 text-white' : 'bg-black/60 text-white/90'}`;
-        badge.textContent = gameMode === 'jigsaw_solitaire' ? `♠${pieceIdx + 1}` : `${pieceIdx + 1}`;
-        tile.appendChild(badge);
-
-        tile.onclick = () => onTileClicked(slotIdx);
-        board.appendChild(tile);
-      }
-
-      document.getElementById('piecesCounter').textContent = `${correctCount} / ${total}`;
-      if (correctCount === total) {
-        showToast('🎉', `Puzzle Completed! Demoting ${rec.requestKey} from ROM -> Volatile Cache to free storage.`, 'win');
-      }
+      document.getElementById('headerResolutionTag').textContent = `${activeBoardRes}×${activeBoardRes}px`;
+      document.getElementById('headerSizeTag').textContent = sizeText;
+      document.getElementById('boardResolutionTag').textContent = `${activeBoardRes}×${activeBoardRes}px (${sizeText})`;
+      document.getElementById('bottomCategoryLabel').textContent = `Category: ${rec.category}`;
+      document.getElementById('bottomFilenameLabel').textContent = rec.filename || rec.id;
     }
 
-    function onTileClicked(slotIdx) {
-      if (selectedTileSlot === -1) {
-        selectedTileSlot = slotIdx;
-        renderPlayableBoard();
-      } else if (selectedTileSlot === slotIdx) {
-        selectedTileSlot = -1;
-        renderPlayableBoard();
-      } else {
-        const temp = boardTiles[selectedTileSlot];
-        boardTiles[selectedTileSlot] = boardTiles[slotIdx];
-        boardTiles[slotIdx] = temp;
-        selectedTileSlot = -1;
-        renderPlayableBoard();
-      }
-    }
-
-    const RES_TIERS = [256, 512, 1080, 2048];
-    function cycleBoardResolution() {
-      const idx = RES_TIERS.indexOf(activeBoardRes);
-      const nextRes = RES_TIERS[(idx + 1) % RES_TIERS.length];
-      switchBoardResolution(nextRes);
-    }
-
-    function switchBoardResolution(sizePx) {
-      const rec = puzzleRegistry.find(r => r.requestKey === activePuzzleKey);
-      if (!rec) return;
-
-      if (sizePx === 512 && rec.custom512Bytes === 0 && (rec.state === 'CACHED' || rec.state === 'ROM')) {
-        rec.custom512Bytes = Math.round(rec.iconBytes * 2.65);
-        showToast('⚡', `Generated custom 512px JPEG (${Math.round(rec.custom512Bytes / 1024)} KB) directly from local 1080px cache!`, 'info');
-      } else if (sizePx === 2048 && rec.custom2048Bytes === 0 && (rec.state === 'CACHED' || rec.state === 'ROM')) {
-        rec.custom2048Bytes = Math.round(rec.fullBytes * 2.35); // ~1.2MB - 1.9MB 2K JPEG
-        showToast('💎', `Downloaded & transcoded Ultra2048 (2048px 2K JPEG, ${(rec.custom2048Bytes / (1024 * 1024)).toFixed(2)} MB) for high-DPI/Zoom!`, 'win');
-      } else {
-        showToast('📐', `Cycled Sprite resolution to ${sizePx}px tier (TextureFormat.RGB24)`, 'info');
-      }
-
-      activeBoardRes = sizePx;
-      renderPlayableBoard();
-      updateTelemetryHeader();
-      if (activeRightTab === 'json') updateManifestJsonTab();
-    }
-
-    function openCacheInspectorModal() {
-      const rec = puzzleRegistry.find(r => r.requestKey === activePuzzleKey);
-      if (!rec) return;
-
-      const fileName = `${rec.requestKey}_${activeBoardRes}.jpg`;
-      const isRom = rec.storageTier === 'ROM';
-      const tierBytes =
-        activeBoardRes === 256 ? rec.iconBytes :
-        activeBoardRes === 512 ? (rec.custom512Bytes || Math.round(rec.iconBytes * 2.65)) :
-        activeBoardRes === 2048 ? (rec.custom2048Bytes || Math.round(rec.fullBytes * 2.35)) :
-        rec.fullBytes;
-
-      document.getElementById('modalReqKey').textContent = rec.requestKey;
-      document.getElementById('modalFileName').textContent = fileName;
-      document.getElementById('modalStorageTier').textContent = isRom
-        ? 'Permanent ROM (Hard Drive / Backup-Excluded)'
-        : 'Volatile Cache (OS Cache / LRU Managed)';
-      document.getElementById('modalDiskSize').textContent =
-        `${(tierBytes / 1024).toFixed(1)} KB (Transcoded from ${(rec.origPngBytes / (1024 * 1024)).toFixed(2)} MB PNG)`;
-      document.getElementById('modalOriginUrl').textContent = rec.url;
-
-      document.getElementById('modalAndroidPath').textContent = isRom
-        ? `/data/user/0/com.studio.jigsaw/files/NativeImagePipeline_ROM/${fileName}`
-        : `/data/user/0/com.studio.jigsaw/cache/NativeImagePipeline_Cache/${fileName}`;
-
-      document.getElementById('modalIosPath').textContent = isRom
-        ? `/var/mobile/Containers/Data/Application/.../Library/Application Support/NativeImagePipeline_ROM/${fileName}`
-        : `/var/mobile/Containers/Data/Application/.../Library/Caches/NativeImagePipeline_Cache/${fileName}`;
-
-      document.getElementById('modalWebglPath').textContent = isRom
-        ? `indexeddb://Studio_NativeImagePipeline_DB/permanent_rom/${fileName}`
-        : `indexeddb://Studio_NativeImagePipeline_DB/volatile_cache/${fileName}`;
-
-      document.getElementById('cacheInspectorModal').classList.remove('hidden');
-    }
-
-    function closeCacheInspectorModal() {
-      document.getElementById('cacheInspectorModal').classList.add('hidden');
-    }
-
-    function copyActiveCachePath() {
-      const pathText = document.getElementById('modalAndroidPath').textContent;
-      if (navigator.clipboard) navigator.clipboard.writeText(pathText);
-      showToast('📋', `Copied cache location: ${pathText}`, 'win');
-    }
-
-    function toggleActivePuzzleRom() {
-      const rec = puzzleRegistry.find(r => r.requestKey === activePuzzleKey);
-      if (!rec) return;
-
-      if (rec.storageTier === 'ROM') {
-        rec.storageTier = 'CACHE';
-        if (rec.state === 'ROM') rec.state = 'CACHED';
-        showToast('📦', `Moved ${rec.requestKey} from Permanent ROM back to Volatile Cache.`, 'info');
-      } else {
-        rec.storageTier = 'ROM';
-        if (rec.state === 'CACHED') rec.state = 'ROM';
-        showToast('💿', `Saved ${rec.requestKey} to Permanent ROM & deleted Volatile Cache copy!`, 'win');
-      }
-
-      updateSingleGalleryCard(rec);
-      renderPlayableBoard();
-      updateTelemetryHeader();
-    }
-
-    function useSmartSwapHint() {
-      const N = GRID_SIZES[gridSizeIdx];
-      const total = N * N;
-      for (let i = 0; i < total; i++) {
-        if (boardTiles[i] !== i) {
-          const correctSlot = boardTiles.indexOf(i);
-          [boardTiles[i], boardTiles[correctSlot]] = [boardTiles[correctSlot], boardTiles[i]];
-          selectedTileSlot = -1;
-          renderPlayableBoard();
-          return;
-        }
-      }
-    }
-
-    function instantSolvePuzzle() {
-      const N = GRID_SIZES[gridSizeIdx];
-      boardTiles = Array.from({ length: N * N }, (_, i) => i);
-      selectedTileSlot = -1;
-      renderPlayableBoard();
-    }
-
-    function cycleGridSize() {
-      gridSizeIdx = (gridSizeIdx + 1) % GRID_SIZES.length;
-      setupPlayableBoard();
-    }
-
-    function shuffleActivePuzzle() {
-      const readyList = puzzleRegistry.filter(r => r.state === 'CACHED' || r.state === 'ROM');
-      const pool = readyList.length > 1 ? readyList : puzzleRegistry;
-      const pick = pool[Math.floor(Math.random() * pool.length)];
-      selectPuzzleFromGallery(pick.requestKey);
-    }
-
-    function toggleGameMode() {
-      gameMode = gameMode === 'calm_jigsaw' ? 'jigsaw_solitaire' : 'calm_jigsaw';
-      document.getElementById('gameTitleLabel').textContent =
-        gameMode === 'calm_jigsaw' ? 'Calm Jigsaw' : 'Jigsaw Solitaire';
-      document.getElementById('btnGameMode').textContent =
-        gameMode === 'calm_jigsaw' ? 'Mode: Calm Jigsaw ⇄' : 'Mode: Jigsaw Solitaire ⇄';
-      showToast('🃏', `Switched game layout to ${gameMode === 'calm_jigsaw' ? 'Calm Jigsaw' : 'Jigsaw Solitaire'} (Shared UPM Package)`, 'info');
-      renderPlayableBoard();
-    }
-
-    // =========================================================================
-    // 6. Right Column Tabs: 100+ Gallery, Priority Queue, & Manifest JSON
-    // =========================================================================
     function renderGalleryGrid() {
       const container = document.getElementById('galleryScrollContainer');
       if (!container) return;
 
       const filtered = puzzleRegistry.filter(r => {
+        if (activeCategoryFilter !== 'All' && r.category !== activeCategoryFilter) return false;
         if (galleryFilter === 'ROM') return r.storageTier === 'ROM';
         if (galleryFilter === 'QUEUED') return r.state === 'QUEUED' || r.state === 'DOWNLOADING';
         return true;
@@ -837,287 +724,371 @@
 
     function buildGalleryCardHtml(r) {
       const isSelected = r.requestKey === activePuzzleKey;
-      const isReady = r.state === 'CACHED' || r.state === 'ROM';
       const badgeText =
         r.state === 'ROM' ? '💿 ROM' :
         r.state === 'CACHED' ? `${Math.round(r.iconBytes / 1024)}KB` :
-        r.state === 'DOWNLOADING' ? '⏬ DL' :
-        r.state === 'FAILED' ? '❌ 404' :
-        r.priority >= 2 ? '🔥 HIGH' : '⏳ LOW';
+        r.state === 'DOWNLOADING' ? '⏬ DL' : '⏳ QUEUED';
 
       const badgeClass =
         r.state === 'ROM' ? 'bg-purple-600/90 text-white' :
         r.state === 'CACHED' ? 'bg-emerald-600/90 text-white' :
         r.state === 'DOWNLOADING' ? 'bg-amber-500 text-black' :
-        r.state === 'FAILED' ? 'bg-rose-600 text-white' :
         'bg-black/75 text-[#8b949e]';
-
-      const bgStyle = isReady && r.thumbDataUrl
-        ? `background-image: url('${r.thumbDataUrl}'); background-size: cover;`
-        : `background: linear-gradient(135deg, ${r.theme.sky[0]}, ${r.theme.sky[1]});`;
 
       return `
         <div id="gal_card_${r.requestKey}" onclick="selectPuzzleFromGallery('${r.requestKey}')"
-             class="h-24 rounded-xl border ${isSelected ? 'border-amber-400 ring-2 ring-amber-400/40' : 'border-[#30363d]'} relative overflow-hidden cursor-pointer group transition transform hover:scale-[1.02]"
-             style="${bgStyle}">
-          <div class="absolute inset-x-0 top-0 p-1.5 flex items-center justify-between bg-gradient-to-b from-black/70 to-transparent">
-            <span class="text-[11px] font-mono font-bold text-white">#${r.index}</span>
+             class="h-24 rounded-xl border ${isSelected ? 'border-amber-400 ring-2 ring-amber-400/40' : 'border-[#30363d]'} relative overflow-hidden cursor-pointer group transition transform hover:scale-[1.02] bg-[#161b22]"
+             style="background-image: url('${r.url}'); background-size: cover; background-position: center;">
+          <div class="absolute inset-x-0 top-0 p-1.5 flex items-center justify-between bg-gradient-to-b from-black/80 to-transparent">
+            <span class="text-[11px] font-mono font-bold text-white">#${r.level}</span>
             <span class="px-1.5 py-0.2 rounded text-[11px] font-bold ${badgeClass}">${badgeText}</span>
           </div>
-          <div class="absolute inset-x-0 bottom-0 px-1.5 py-1 bg-black/75 flex items-center justify-between text-[11px] font-mono text-[#e6edf3]">
-            <span class="truncate">${r.theme.name}</span>
+          <div class="absolute inset-x-0 bottom-0 px-1.5 py-1 bg-black/85 flex items-center justify-between text-[11px] font-mono text-[#e6edf3]">
+            <span class="truncate font-semibold">#${r.level}: ${r.title}</span>
           </div>
         </div>
       `;
-    }
-
-    function updateSingleGalleryCard(r) {
-      const el = document.getElementById(`gal_card_${r.requestKey}`);
-      if (!el) return;
-      el.outerHTML = buildGalleryCardHtml(r);
     }
 
     function selectPuzzleFromGallery(requestKey) {
       const rec = puzzleRegistry.find(r => r.requestKey === requestKey);
       if (!rec) return;
 
-      if (rec.isFaulty && rec.state === 'FAILED') {
-        showToast('⚠️', `Request ${rec.requestKey} failed (${rec.errorMessage}). Click 'Purge Faulty' to clean queue.`, 'lose');
-        return;
-      }
-
-      if (rec.state === 'QUEUED') {
-        completeDownloadInstantly(rec);
-        updateSingleGalleryCard(rec);
-      }
-
       activePuzzleKey = requestKey;
-      setupPlayableBoard();
+      currentCampaignLevel = rec.level;
+      if (rec.state === 'QUEUED') rec.state = 'CACHED';
+
+      updateCampaignLevelUI();
+      renderActiveImageRepresentation();
       renderGalleryGrid();
       updateTelemetryHeader();
     }
 
-    function setGalleryFilter(flt) {
-      galleryFilter = flt;
-      ['ALL', 'ROM', 'QUEUED'].forEach(k => {
-        const btn = document.getElementById('flt' + k.charAt(0) + k.slice(1).toLowerCase());
+    function setCampaignLevel(lvl) {
+      const total = puzzleRegistry.length || 71;
+      if (lvl < 1) lvl = total;
+      if (lvl > total) lvl = 1;
+
+      currentCampaignLevel = lvl;
+      const rec = puzzleRegistry[lvl - 1];
+      if (rec) {
+        selectPuzzleFromGallery(rec.requestKey);
+      }
+    }
+
+    function prevCampaignLevel() {
+      setCampaignLevel(currentCampaignLevel - 1);
+    }
+
+    function nextCampaignLevel() {
+      setCampaignLevel(currentCampaignLevel + 1);
+    }
+
+    function updateCampaignLevelUI() {
+      const rec = puzzleRegistry[currentCampaignLevel - 1];
+      if (!rec) return;
+
+      document.getElementById('currentLevelNumber').textContent = String(rec.level).padStart(2, '0');
+      document.getElementById('levelTitle').textContent = `${rec.title} (${rec.category})`;
+    }
+
+    function setCategoryFilter(cat) {
+      activeCategoryFilter = cat;
+      ['All', 'Nature', 'Architecture', 'Animals'].forEach(c => {
+        const btn = document.getElementById('catFilter' + c);
         if (btn) {
-          btn.className = (k === flt)
-            ? 'px-2 py-0.5 rounded bg-blue-600 text-white font-bold cursor-pointer'
-            : 'px-2 py-0.5 rounded bg-[#21262d] text-[#8b949e] hover:text-white font-semibold cursor-pointer';
+          btn.className = (c === cat)
+            ? 'px-2 py-0.5 rounded bg-blue-600 text-white font-bold cursor-pointer transition'
+            : 'px-2 py-0.5 rounded bg-[#21262d] text-[#8b949e] hover:text-white font-semibold cursor-pointer transition';
         }
       });
       renderGalleryGrid();
+    }
+
+    function setGalleryFilter(flt) {
+      galleryFilter = flt;
+      ['All', 'Rom', 'Queued'].forEach(k => {
+        const btn = document.getElementById('flt' + k);
+        if (btn) {
+          btn.className = (k.toUpperCase() === flt)
+            ? 'px-2 py-0.5 rounded bg-blue-600 text-white font-bold cursor-pointer transition'
+            : 'px-2 py-0.5 rounded bg-[#21262d] text-[#8b949e] hover:text-white font-semibold cursor-pointer transition';
+        }
+      });
+      renderGalleryGrid();
+    }
+
+    function setBoardResolution(targetRes) {
+      if (activeBoardRes === targetRes) return;
+      activeBoardRes = targetRes;
+      renderActiveImageRepresentation();
+      showToast('📐', `Switched Resolution Tier to ${activeBoardRes}px`, 'info');
+    }
+
+    function cycleBoardResolution() {
+      const tiers = [256, 512, 1080, 2048];
+      const idx = tiers.indexOf(activeBoardRes);
+      activeBoardRes = tiers[(idx + 1) % tiers.length];
+      renderActiveImageRepresentation();
+      showToast('📐', `Switched Resolution Tier to ${activeBoardRes}px`, 'info');
+    }
+
+    function toggleActivePuzzleRom() {
+      const rec = puzzleRegistry.find(r => r.requestKey === activePuzzleKey);
+      if (!rec) return;
+
+      if (rec.storageTier === 'ROM') {
+        rec.storageTier = 'CACHE';
+        rec.state = 'CACHED';
+        showToast('📦', `Moved #${rec.level} from ROM back to Volatile Cache.`, 'info');
+      } else {
+        rec.storageTier = 'ROM';
+        rec.state = 'ROM';
+        showToast('💿', `Saved #${rec.level} directly to Permanent ROM!`, 'win');
+      }
+      renderActiveImageRepresentation();
+      renderGalleryGrid();
+      updateTelemetryHeader();
+    }
+
+    function shuffleActivePuzzle() {
+      const randIdx = Math.floor(Math.random() * puzzleRegistry.length);
+      setCampaignLevel(randIdx + 1);
+    }
+
+    function toggleConnectivity() {
+      isOnline = !isOnline;
+      const dot = document.getElementById('connDot');
+      const lbl = document.getElementById('connLabel');
+      if (isOnline) {
+        dot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse';
+        lbl.textContent = 'Online';
+        showToast('🌐', 'Connected to CDN & Localhost:4200', 'win');
+      } else {
+        dot.className = 'w-1.5 h-1.5 rounded-full bg-rose-500';
+        lbl.textContent = 'Offline';
+        showToast('📡', 'Simulated Network Disconnect (Cache Active)', 'lose');
+      }
+    }
+
+    function purgeFaultyRequests() {
+      showToast('🧹', 'Faulty Request Strings Purged (0 Found)', 'info');
+    }
+
+    function clearVolatileCache() {
+      puzzleRegistry.forEach(r => {
+        if (r.storageTier !== 'ROM') r.state = 'QUEUED';
+      });
+      renderGalleryGrid();
+      renderActiveImageRepresentation();
+      updateTelemetryHeader();
+      showToast('🗑️', 'Volatile Cache Cleared (ROM Preserved)', 'info');
+    }
+
+    function switchRightTab(tab) {
+      activeRightTab = tab;
+      ['gallery', 'queue', 'json'].forEach(t => {
+        const btn = document.getElementById('tabBtn' + t.charAt(0).toUpperCase() + t.slice(1));
+        const panel = document.getElementById('rightPanel' + t.charAt(0).toUpperCase() + t.slice(1)) ||
+                      (t === 'json' ? document.getElementById('jsonPreviewBox') : null);
+        if (btn) {
+          btn.className = (t === tab)
+            ? 'px-2.5 py-1 rounded-lg bg-blue-600 text-white border border-blue-500 text-xs font-bold flex items-center gap-1 cursor-pointer transition'
+            : 'px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#e6edf3] border border-[#30363d] text-xs font-semibold flex items-center gap-1 cursor-pointer transition';
+        }
+        if (panel) {
+          if (t === tab) panel.classList.remove('hidden');
+          else panel.classList.add('hidden');
+        }
+      });
     }
 
     function renderQueueTable() {
       const container = document.getElementById('queueRowsContainer');
       if (!container) return;
 
-      container.innerHTML = puzzleRegistry.map(r => {
-        const stateColor =
-          r.state === 'ROM' ? 'text-purple-400' :
-          r.state === 'CACHED' ? 'text-emerald-400' :
-          r.state === 'FAILED' ? 'text-rose-400' :
-          'text-amber-400';
-
-        const ultraStr = r.custom2048Bytes ? ` | 2K:${(r.custom2048Bytes / (1024 * 1024)).toFixed(1)}M` : '';
-
-        return `
-          <div onclick="selectPuzzleFromGallery('${r.requestKey}')" class="px-2.5 py-1.5 flex items-center justify-between text-xs hover:bg-[#161b22] cursor-pointer">
-            <div class="flex items-center gap-2 min-w-0">
-              <span class="font-mono font-bold ${stateColor} w-14">${r.state}</span>
-              <span class="font-mono truncate text-[#e6edf3]">${r.requestKey}</span>
-            </div>
-            <div class="flex items-center gap-2 shrink-0 font-mono text-[#8b949e]">
-              <span>256:${r.iconBytes ? Math.round(r.iconBytes / 1024) + 'K' : '--'}</span>
-              <span>1080:${r.fullBytes ? Math.round(r.fullBytes / 1024) + 'K' : '--'}${ultraStr}</span>
-              <span class="w-12 text-right">${r.durationMs ? r.durationMs + 'ms' : '--'}</span>
-            </div>
+      container.innerHTML = puzzleRegistry.map(r => `
+        <div class="px-3 py-1.5 flex items-center justify-between text-xs hover:bg-[#161b22] transition">
+          <div class="flex items-center gap-2 truncate">
+            <span class="font-mono text-amber-400 font-bold">#${r.level}</span>
+            <span class="text-[#e6edf3] font-medium truncate max-w-[150px]">${r.title}</span>
+            <span class="text-[10px] text-[#8b949e] font-mono">(${r.category})</span>
           </div>
-        `;
-      }).join('');
+          <div class="flex items-center gap-2 font-mono text-[11px] shrink-0">
+            <span class="${r.storageTier === 'ROM' ? 'text-purple-400' : 'text-sky-400'} font-bold">${r.storageTier}</span>
+            <span class="text-emerald-400 font-bold">${Math.round(r.fullBytes / 1024)} KB</span>
+          </div>
+        </div>
+      `).join('');
     }
 
     function updateManifestJsonTab() {
       const box = document.getElementById('jsonPreviewBox');
       if (!box) return;
 
-      const activeRec = puzzleRegistry.find(r => r.requestKey === activePuzzleKey);
-      const previewPayload = {
-        upmPackage: 'com.studio.nativeimagepipeline',
-        activeGameMode: gameMode,
-        supportedTiersPx: [256, 512, 1080, 2048],
-        connectivityMonitor: {
-          isOnline,
-          autoQueueResume: true,
-          intervalSeconds: 5
-        },
-        selectedRequestRecord: activeRec ? {
-          requestKey: activeRec.requestKey,
-          sourceUrl: activeRec.url,
-          state: activeRec.state,
-          storageTier: activeRec.storageTier,
-          originalPngSizeBytes: activeRec.origPngBytes,
-          convertedIcon256Bytes: activeRec.iconBytes,
-          convertedFull1080Bytes: activeRec.fullBytes,
-          custom512TileBytes: activeRec.custom512Bytes,
-          ultra2048Bytes: activeRec.custom2048Bytes,
-          durationMs: activeRec.durationMs
-        } : null,
-        manifestSampleUrls: puzzleRegistry.slice(0, 6).map(r => ({
-          id: r.requestKey,
+      const previewData = {
+        version: "1.0",
+        totalPublished: puzzleRegistry.length,
+        syncedCloudEndpoint: "https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles/published.json",
+        localDevEndpoint: "http://localhost:4200/api/puzzles/published",
+        activeLevel: currentCampaignLevel,
+        images: puzzleRegistry.slice(0, 10).map(r => ({
+          level: r.level,
+          id: r.id,
+          title: r.title,
+          category: r.category,
           url: r.url,
-          state: r.state
+          tier: r.storageTier
         }))
       };
-
-      box.textContent = JSON.stringify(previewPayload, null, 2);
-    }
-
-    function switchRightTab(tab) {
-      activeRightTab = tab;
-      document.getElementById('rightPanelGallery').classList.toggle('hidden', tab !== 'gallery');
-      document.getElementById('rightPanelQueue').classList.toggle('hidden', tab !== 'queue');
-      document.getElementById('jsonPreviewBox').classList.toggle('hidden', tab !== 'json');
-
-      const tabs = [
-        { id: 'tabBtnGallery', key: 'gallery' },
-        { id: 'tabBtnQueue', key: 'queue' },
-        { id: 'tabBtnJson', key: 'json' }
-      ];
-      tabs.forEach(t => {
-        const el = document.getElementById(t.id);
-        el.className = (t.key === tab)
-          ? 'px-2.5 py-1 rounded-lg bg-blue-600 text-white border border-blue-500 text-xs font-bold flex items-center gap-1 cursor-pointer transition'
-          : 'px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#e6edf3] border border-[#30363d] text-xs font-semibold flex items-center gap-1 cursor-pointer transition';
-      });
-
-      if (tab === 'queue') renderQueueTable();
-      if (tab === 'json') updateManifestJsonTab();
-    }
-
-    // =========================================================================
-    // 7. Connectivity, Faulty Purge, Cache Eviction & Telemetry KPIs
-    // =========================================================================
-    function toggleConnectivity() {
-      isOnline = !isOnline;
-      const btn = document.getElementById('connBadgeBtn');
-      const dot = document.getElementById('connDot');
-      const lbl = document.getElementById('connLabel');
-
-      if (isOnline) {
-        btn.className = 'flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 cursor-pointer transition';
-        dot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse';
-        lbl.textContent = 'ONLINE (Auto-Queue)';
-        showToast('🌐', 'Internet reconnected! Native priority queue automatically resumed background downloads.', 'win');
-      } else {
-        btn.className = 'flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-500/15 text-rose-400 border border-rose-500/30 cursor-pointer transition';
-        dot.className = 'w-2 h-2 rounded-full bg-rose-400';
-        lbl.textContent = 'OFFLINE (Paused)';
-        showToast('📴', 'Offline detected! Background downloads paused; serving cached & ROM Sprites offline.', 'lose');
-      }
-      if (activeRightTab === 'json') updateManifestJsonTab();
-    }
-
-    function purgeFaultyRequests() {
-      const before = puzzleRegistry.length;
-      puzzleRegistry = puzzleRegistry.filter(r => r.state !== 'FAILED');
-      const removed = before - puzzleRegistry.length;
-      showToast('🧹', `Purged ${removed} faulty/404 request string(s) from the native priority queue.`, 'info');
-      renderGalleryGrid();
-      renderQueueTable();
-      updateTelemetryHeader();
-    }
-
-    function clearVolatileCache() {
-      let cleared = 0;
-      puzzleRegistry.forEach(r => {
-        if (r.state === 'CACHED' && r.storageTier === 'CACHE' && r.requestKey !== activePuzzleKey) {
-          r.state = 'QUEUED';
-          r.iconBytes = 0;
-          r.fullBytes = 0;
-          r.custom512Bytes = 0;
-          r.custom2048Bytes = 0;
-          r.thumbDataUrl = null;
-          cleared++;
-        }
-      });
-      showToast('🗑️', `Cleared ${cleared} Volatile Cache puzzle(s). Permanent ROM puzzles remained untouched!`, 'info');
-      renderGalleryGrid();
-      renderQueueTable();
-      updateTelemetryHeader();
+      box.textContent = JSON.stringify(previewData, null, 2);
     }
 
     function updateTelemetryHeader() {
-      let readyCount = 0, faultyCount = 0;
-      let iconBytesSum = 0, fullBytesSum = 0, ultraBytesSum = 0, pngOrigSum = 0;
-      let cacheBytes = 0, romBytes = 0;
+      let romCount = 0;
+      let cachedCount = 0;
+      let totalIconBytes = 0;
+      let totalFullBytes = 0;
 
       puzzleRegistry.forEach(r => {
+        if (r.state === 'ROM') romCount++;
         if (r.state === 'CACHED' || r.state === 'ROM') {
-          readyCount++;
-          iconBytesSum += r.iconBytes;
-          fullBytesSum += r.fullBytes;
-          ultraBytesSum += r.custom2048Bytes;
-          pngOrigSum += r.origPngBytes;
-          const totalItem = r.iconBytes + r.fullBytes + r.custom512Bytes + r.custom2048Bytes;
-          if (r.storageTier === 'ROM') romBytes += totalItem;
-          else cacheBytes += totalItem;
-        } else if (r.state === 'FAILED') {
-          faultyCount++;
+          cachedCount++;
+          totalIconBytes += r.iconBytes;
+          totalFullBytes += r.fullBytes;
         }
       });
 
-      document.getElementById('queueProgressBadge').textContent = `${readyCount}/${puzzleRegistry.length} Ready`;
-      document.getElementById('faultyCountLabel').textContent = faultyCount;
-      document.getElementById('topVramBadge').textContent = `RAM: ${spriteRamPool.size}/${MAX_RAM_POOL}`;
-
-      const savedBytes = Math.max(0, pngOrigSum - (iconBytesSum + fullBytesSum));
-      const savedPct = pngOrigSum > 0 ? Math.round((savedBytes / pngOrigSum) * 100) : 89;
-      document.getElementById('topSavedBadge').textContent = `${savedPct}% Saved`;
-
+      document.getElementById('queueProgressBadge').textContent = `${cachedCount}/${puzzleRegistry.length} Ready`;
       document.getElementById('diskUsageFooter').textContent =
-        `Cache: ${(cacheBytes / (1024 * 1024)).toFixed(1)}MB | ROM: ${(romBytes / (1024 * 1024)).toFixed(1)}MB`;
+        `Cache: ${(totalFullBytes / (1024 * 1024)).toFixed(1)}MB | ROM: ${((romCount * 490000) / (1024 * 1024)).toFixed(1)}MB`;
+    }
 
-      const kpiIcons = document.getElementById('kpiIconsTotal');
-      if (kpiIcons) {
-        kpiIcons.textContent = `${(iconBytesSum / 1024).toFixed(0)} KB`;
-        document.getElementById('kpiFullTotal').textContent = `${(fullBytesSum / (1024 * 1024)).toFixed(2)} MB`;
-        const kpiUltra = document.getElementById('kpiUltraTotal');
-        if (kpiUltra) kpiUltra.textContent = `${(ultraBytesSum / (1024 * 1024)).toFixed(2)} MB`;
-        document.getElementById('kpiSavedTotal').textContent = `${(savedBytes / (1024 * 1024)).toFixed(1)} MB`;
+    function onGalleryScroll() {
+      const container = document.getElementById('galleryScrollContainer');
+      if (!container) return;
+      const row = Math.floor(container.scrollTop / 104);
+      const start = row * 3 + 1;
+      const end = Math.min(puzzleRegistry.length, start + 11);
+      document.getElementById('viewportBoostLabel').textContent = `Viewport: #${start}–#${end} (HIGH)`;
+    }
+
+    function openCacheInspectorModal() {
+      const rec = puzzleRegistry.find(r => r.requestKey === activePuzzleKey) || puzzleRegistry[0];
+      if (!rec) return;
+
+      document.getElementById('modalReqKey').textContent = rec.id;
+      document.getElementById('modalStorageTier').textContent = rec.storageTier === 'ROM' ? 'Permanent ROM' : 'Volatile Cache';
+      document.getElementById('modalFileName').textContent = `${rec.id}_${activeBoardRes}.jpg`;
+      document.getElementById('modalDiskSize').textContent = `${Math.round(rec.fullBytes / 1024)} KB (${activeBoardRes}px JPG)`;
+      document.getElementById('modalOriginUrl').textContent = rec.url;
+      document.getElementById('modalWebglPath').textContent = `indexeddb://Studio_NativeImagePipeline_DB/${rec.storageTier === 'ROM' ? 'permanent_rom' : 'volatile_cache'}/${rec.id}_${activeBoardRes}.jpg`;
+      document.getElementById('modalAndroidPath').textContent = `/data/user/0/com.studio.nativeimagepipeline/files/NativeImagePipeline_${rec.storageTier}/${rec.id}_${activeBoardRes}.jpg`;
+
+      document.getElementById('cacheInspectorModal').classList.remove('hidden');
+    }
+
+    function closeCacheInspectorModal() {
+      document.getElementById('cacheInspectorModal').classList.add('hidden');
+    }
+
+    function copyActiveCachePath() {
+      const text = document.getElementById('modalAndroidPath').textContent;
+      if (navigator.clipboard) navigator.clipboard.writeText(text);
+      showToast('📋', 'Path copied to clipboard!', 'win');
+    }
+
+    // =========================================================================
+    // Fullscreen View & Image Download Handlers
+    // =========================================================================
+    async function toggleFullscreenView() {
+      const rec = puzzleRegistry.find(r => r.requestKey === activePuzzleKey) || puzzleRegistry[0];
+      if (!rec) return;
+
+      const modal = document.getElementById('fullscreenImageModal');
+      const modalImg = document.getElementById('fullscreenImageDisplay');
+      const modalTitle = document.getElementById('fullscreenModalTitle');
+      const modalRes = document.getElementById('fullscreenModalRes');
+      const modalSize = document.getElementById('fullscreenModalSize');
+
+      if (modal && modalImg) {
+        // Fetch current transcoded tier image data (exact resolution and quality)
+        const transcoded = await getTranscodedImageData(rec, activeBoardRes);
+        modalImg.src = transcoded.url;
+        modalImg.alt = `${rec.title} (${activeBoardRes}px)`;
+        if (modalTitle) modalTitle.textContent = `${rec.title} (#${String(rec.level).padStart(2, '0')})`;
+        if (modalRes) modalRes.textContent = `${transcoded.actualWidth}×${transcoded.actualHeight}px`;
+
+        const tierBytes = transcoded.actualBytes;
+        const sizeText = tierBytes >= 1024 * 1024
+          ? `${(tierBytes / (1024 * 1024)).toFixed(2)} MB`
+          : `${Math.round(tierBytes / 1024)} KB`;
+        if (modalSize) modalSize.textContent = sizeText;
+
+        const fsTag = document.getElementById('fullscreenResTag');
+        if (fsTag) fsTag.textContent = `${activeBoardRes}px`;
+
+        [256, 512, 1080, 2048].forEach(res => {
+          const pill = document.getElementById(`fsPill${res}`);
+          if (pill) {
+            pill.className = (res === activeBoardRes)
+              ? 'px-2 py-0.5 rounded-md bg-blue-600 text-white font-bold transition cursor-pointer'
+              : 'px-2 py-0.5 rounded-md hover:bg-[#30363d] text-[#8b949e] font-semibold transition cursor-pointer';
+          }
+        });
+
+        modal.classList.remove('hidden');
       }
     }
 
-    function showToast(emoji, message, type = 'info') {
-      const bar = document.getElementById('toastBar');
-      const emojiEl = document.getElementById('toastEmoji');
-      const textEl = document.getElementById('toastText');
-
-      emojiEl.textContent = emoji;
-      textEl.textContent = message;
-
-      if (type === 'win') {
-        bar.className = 'shrink-0 h-9 rounded-xl px-4 border flex items-center justify-center gap-2 text-xs font-bold transition-colors duration-200 shadow-sm bg-emerald-600 text-white border-emerald-400';
-        textEl.className = 'text-white';
-      } else if (type === 'lose') {
-        bar.className = 'shrink-0 h-9 rounded-xl px-4 border flex items-center justify-center gap-2 text-xs font-bold transition-colors duration-200 shadow-sm bg-rose-600 text-white border-rose-400';
-        textEl.className = 'text-white';
-      } else {
-        bar.className = 'shrink-0 h-9 rounded-xl px-4 border border-amber-500/40 bg-amber-500/15 flex items-center justify-center gap-2 text-xs font-bold transition-colors duration-200 shadow-sm';
-        textEl.className = 'text-[#e6edf3]';
-      }
-
-      if (toastTimer) clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => {
-        bar.className = 'shrink-0 h-9 rounded-xl px-4 border border-[#30363d] bg-[#161b22] flex items-center justify-center gap-2 text-xs font-bold transition-colors duration-200 shadow-sm';
-        emojiEl.textContent = '🧩';
-        textEl.textContent = 'Click two puzzle tiles to swap • Scroll the 100+ Gallery on the right to boost Viewport Priority!';
-        textEl.className = 'text-[#8b949e]';
-      }, 2400);
+    function closeFullscreenModal() {
+      const modal = document.getElementById('fullscreenImageModal');
+      if (modal) modal.classList.add('hidden');
     }
+
+    async function downloadActiveImage() {
+      const rec = puzzleRegistry.find(r => r.requestKey === activePuzzleKey) || puzzleRegistry[0];
+      if (!rec) return;
+
+      showToast('⏳', `Preparing ${activeBoardRes}px transcoded image download...`, 'info');
+
+      try {
+        const transcoded = await getTranscodedImageData(rec, activeBoardRes);
+        let blobUrl = transcoded.url;
+        
+        // If it's already a blob, create download link
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = `${rec.id}_${activeBoardRes}px.jpg`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        showToast('✅', `Downloaded ${a.download} (${Math.round((transcoded.actualBytes || 0)/1024)} KB)!`, 'win');
+      } catch (err) {
+        console.warn('Transcode download failed, falling back to direct link download:', err);
+        const a = document.createElement('a');
+        a.href = rec.url;
+        a.target = '_blank';
+        a.download = `${rec.id}_${activeBoardRes}px.jpg`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        showToast('⬇️', `Opened direct download stream!`, 'win');
+      }
+    }
+
+    // Keyboard shortcuts (Escape closes fullscreen modal)
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeFullscreenModal();
+        closeCacheInspectorModal();
+      }
+    });
+
+    // Boot
+    window.addEventListener('DOMContentLoaded', () => {
+      syncBackendCatalog(false);
+    });
   </script>
 </body>
 </html>
-
