@@ -770,6 +770,115 @@ window.showLabWebglFailurePanel = showLabWebglFailurePanel;
 // --------------------------------------------------------
 const blueprintsData = [
   {
+    id: 'sheet-10',
+    sheetNum: 'Sheet 10 — Live Mermaid',
+    title: 'Meowdoku Engine & Solver (MeowSweeper)',
+    domain: 'Core Gameplay Logic',
+    engine: 'Unity 6000.3 + Live CDN',
+    desc: 'Multi-touch gesture router with input locks during animations, 5-tier deterministic hint cascade, and cross-level powerup wallet.',
+    img: 'assets/blueprints/sheet-10-meowdoku.png',
+    labDemo: 'meowsweeper',
+    mermaidFlowchart: `flowchart TB
+  subgraph Inputs["INPUT & CONTENT LAYER"]
+    direction LR
+    Tap["Single Tap (Mark X)"]
+    DblTap["Double Tap (Place Cat)"]
+    Drag["Drag Gesture (Paint X)"]
+    CDN["Live Level Server (lvl_1..65.json)"]
+  end
+
+  subgraph Core["CORE MODULE — MEOWDOKU ENGINE"]
+    Controller["PuzzleController (Input Lock + State Machine)"]
+  end
+
+  subgraph Adjacent["ADJACENT RUNTIME SYSTEMS"]
+    direction LR
+    Solver["Deterministic Solver (Validates Moves & Hints)"]
+    Wallet["Powerup Wallet (Hint / Cat Reveal / Coins)"]
+    Score["Score & Save Progress (Offline Leaderboard Sync)"]
+    Penalty["Heart Penalty & Lock (3-Heart Strike Rule)"]
+  end
+
+  subgraph Internal["INTERNAL ENGINE SUBSYSTEMS (BELOW CUT-LINE)"]
+    direction LR
+    Cascade["5-Tier Hint Cascade (Single-Empty to Elimination)"]
+    Undo["Correct-Only Undo Stack"]
+    Hash["Save-vs-Level Hash Validation"]
+  end
+
+  Tap -->|"mark cell"| Controller
+  DblTap -->|"place cat"| Controller
+  Drag -->|"batch paint"| Controller
+  CDN -->|"manifest + grid config"| Controller
+
+  Controller <-->|"verify solution"| Solver
+  Controller <-->|"spend / grant"| Wallet
+  Controller -->|"valid placement"| Score
+  Controller -->|"invalid placement"| Penalty
+
+  Controller -.-> Cascade
+  Controller -.-> Undo
+  Controller -.-> Hash
+
+  classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
+  classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
+  classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1px,stroke-dasharray: 5 5,color:#94a3b8
+
+  class Controller coreNode
+  class Tap,DblTap,Drag,CDN,Solver,Wallet,Score,Penalty adjNode
+  class Cascade,Undo,Hash intNode`,
+    mermaidEr: `erDiagram
+  LEVEL_MANIFEST ||--o{ LEVEL_DATA : "indexes 65 levels"
+  LEVEL_DATA ||--|| BOARD_STATE : "initializes"
+  BOARD_STATE ||--|{ CELL_NODE : "contains N x N"
+  BOARD_STATE ||--o{ HINT_CASCADE_STEP : "evaluates"
+  PLAYER_PROFILE ||--|| POWERUP_WALLET : "owns"
+  PLAYER_PROFILE ||--o{ BOARD_STATE : "saves progress"
+  BOARD_STATE ||--o| LEADERBOARD_ENTRY : "submits on win"
+
+  LEVEL_MANIFEST {
+    int version
+    int totalLevels
+    string_array levelIds
+  }
+  LEVEL_DATA {
+    int id
+    int gridSize
+    int_matrix regions
+    int_matrix solutionCats
+    int maxHearts
+  }
+  BOARD_STATE {
+    int levelId
+    string levelHash
+    int remainingHearts
+    int elapsedMs
+    boolean isInputLocked
+  }
+  CELL_NODE {
+    int row
+    int col
+    int regionId
+    string state "EMPTY_CROSS_CAT"
+    boolean isLocked
+  }
+  HINT_CASCADE_STEP {
+    int techniqueTier "1_to_5"
+    string ruleName
+    int_array targetCells
+  }
+  POWERUP_WALLET {
+    int hintCount
+    int catRevealCount
+    int coinsBalance
+  }
+  LEADERBOARD_ENTRY {
+    string presetId "meowsweeper"
+    int bestTimeMs
+    int starsEarned
+  }`
+  },
+  {
     id: 'sheet-02',
     sheetNum: 'Sheet 02 — Surface Cut',
     title: 'Native Image Pipeline',
@@ -788,16 +897,6 @@ const blueprintsData = [
     desc: 'Dynamic procedural N×N board generator using 9 tab/blank edge signatures with custom shader UV quad projections.',
     img: 'assets/blueprints/sheet-09-jigsaw-board-renderer.png',
     labDemo: 'calm-jigsaw'
-  },
-  {
-    id: 'sheet-10',
-    sheetNum: 'Sheet 10 — Surface Cut',
-    title: 'Meowdoku Engine & Solver',
-    domain: 'Core Gameplay Logic',
-    engine: 'Unity',
-    desc: 'Multi-touch gesture router with input locks during animations and an ordered hint-technique cascade.',
-    img: 'assets/blueprints/sheet-10-meowdoku.png',
-    labDemo: 'meowsweeper'
   },
   {
     id: 'sheet-06',
@@ -861,16 +960,45 @@ const blueprintsData = [
   }
 ];
 
+let activeBlueprintIdx = 0;
+let activeBlueprintDiagramMode = 'flowchart'; // 'flowchart' | 'er'
+
 function initBlueprintTerminal() {
   const navContainer = document.getElementById('blueprint-nav-list');
   const stageImg = document.getElementById('bp-stage-img');
+  const stageMermaid = document.getElementById('bp-stage-mermaid');
   const stageTitle = document.getElementById('bp-stage-title');
   const stageDomain = document.getElementById('bp-stage-domain');
   const stageDesc = document.getElementById('bp-stage-desc');
+  const footerBadge = document.getElementById('bp-stage-footer-badge');
+  const modeToggleContainer = document.getElementById('bp-diagram-mode-toggle');
+  const btnModeFlowchart = document.getElementById('bp-mode-flowchart');
+  const btnModeEr = document.getElementById('bp-mode-er');
   const zoomBtn = document.getElementById('btn-zoom-blueprint');
   const launchLabBtn = document.getElementById('btn-launch-blueprint-lab');
 
   if (!navContainer) return;
+
+  if (window.mermaid) {
+    window.mermaid.initialize({
+      startOnLoad: false,
+      theme: 'dark',
+      securityLevel: 'loose',
+      fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+      themeVariables: {
+        darkMode: true,
+        background: '#0c101a',
+        primaryColor: '#0f1b2d',
+        primaryTextColor: '#e2e8f0',
+        primaryBorderColor: '#38bdf8',
+        lineColor: '#64748b',
+        secondaryColor: '#1e293b',
+        tertiaryColor: '#0d121c',
+        clusterBkg: '#0a0f18',
+        clusterBorder: '#1e293b'
+      }
+    });
+  }
 
   function syncLaunchLabButton(bp) {
     if (!launchLabBtn) return;
@@ -886,49 +1014,157 @@ function initBlueprintTerminal() {
     }
   }
 
-  // Sync initial blueprint (Sheet 02 -> Native Image Bridge)
-  syncLaunchLabButton(blueprintsData[0]);
+  function updateDiagramModeButtons() {
+    if (!btnModeFlowchart || !btnModeEr) return;
+    if (activeBlueprintDiagramMode === 'flowchart') {
+      btnModeFlowchart.className = 'px-2.5 py-1 rounded-md font-bold transition-all cursor-pointer flex items-center gap-1.5 bg-sky-500 text-slate-950 shadow';
+      btnModeEr.className = 'px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer flex items-center gap-1.5 text-slate-400 hover:text-white';
+    } else {
+      btnModeFlowchart.className = 'px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer flex items-center gap-1.5 text-slate-400 hover:text-white';
+      btnModeEr.className = 'px-2.5 py-1 rounded-md font-bold transition-all cursor-pointer flex items-center gap-1.5 bg-amber-500 text-slate-950 shadow';
+    }
+  }
+
+  async function renderBlueprintStage(bp) {
+    if (!bp) return;
+
+    stageTitle.textContent = bp.title;
+    stageDomain.textContent = `INDEPENDENT SYSTEM — ${bp.domain.toUpperCase()}`;
+    stageDesc.textContent = bp.desc;
+    syncLaunchLabButton(bp);
+
+    const hasMermaid = Boolean(bp.mermaidFlowchart || bp.mermaidEr);
+
+    if (modeToggleContainer) {
+      modeToggleContainer.classList.toggle('hidden', !hasMermaid);
+      modeToggleContainer.classList.toggle('flex', hasMermaid);
+    }
+
+    if (hasMermaid && stageMermaid && window.mermaid) {
+      updateDiagramModeButtons();
+      stageImg.classList.add('hidden');
+      stageMermaid.classList.remove('hidden');
+      if (footerBadge) {
+        footerBadge.textContent = activeBlueprintDiagramMode === 'flowchart'
+          ? 'Live Mermaid SVG • Architecture Flowchart (Cut-Line Framework)'
+          : 'Live Mermaid SVG • Entity-Relationship (E-R) Data Schema';
+        footerBadge.className = 'text-sky-400';
+      }
+
+      const definition = activeBlueprintDiagramMode === 'er' && bp.mermaidEr
+        ? bp.mermaidEr
+        : bp.mermaidFlowchart;
+
+      try {
+        const renderId = `mermaid-bp-${bp.id}-${activeBlueprintDiagramMode}-${Date.now()}`;
+        const { svg } = await window.mermaid.render(renderId, definition);
+        stageMermaid.innerHTML = svg;
+        const svgEl = stageMermaid.querySelector('svg');
+        if (svgEl) {
+          svgEl.style.maxWidth = '100%';
+          svgEl.style.maxHeight = '440px';
+          svgEl.style.height = 'auto';
+        }
+      } catch (err) {
+        console.error('Mermaid render error:', err);
+        stageMermaid.classList.add('hidden');
+        stageImg.classList.remove('hidden');
+        stageImg.src = bp.img;
+      }
+    } else {
+      if (stageMermaid) stageMermaid.classList.add('hidden');
+      if (stageImg) {
+        stageImg.classList.remove('hidden');
+        stageImg.src = bp.img;
+      }
+      if (footerBadge) {
+        footerBadge.textContent = 'Portfolio Reference • Diagrams Only • NDA Compliant';
+        footerBadge.className = 'text-slate-500';
+      }
+    }
+  }
+
+  if (btnModeFlowchart) {
+    btnModeFlowchart.addEventListener('click', () => {
+      activeBlueprintDiagramMode = 'flowchart';
+      renderBlueprintStage(blueprintsData[activeBlueprintIdx]);
+    });
+  }
+
+  if (btnModeEr) {
+    btnModeEr.addEventListener('click', () => {
+      activeBlueprintDiagramMode = 'er';
+      renderBlueprintStage(blueprintsData[activeBlueprintIdx]);
+    });
+  }
 
   blueprintsData.forEach((bp, idx) => {
     const item = document.createElement('button');
-    item.className = `w-full text-left p-2.5 rounded-lg border transition-all flex items-center justify-between ${idx === 0 ? 'bg-[#1a2333] border-sky-500/50 text-white' : 'bg-[#0f141f] border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-[#161c28]'}`;
+    item.className = `w-full text-left p-2.5 rounded-lg border transition-all flex items-center justify-between cursor-pointer ${idx === 0 ? 'bg-[#1a2333] border-sky-500/50 text-white' : 'bg-[#0f141f] border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-[#161c28]'}`;
     item.setAttribute('data-index', idx);
 
+    const hasMermaidBadge = Boolean(bp.mermaidFlowchart || bp.mermaidEr);
     item.innerHTML = `
       <div>
-        <div class="font-bold text-xs">${bp.title}</div>
+        <div class="font-bold text-xs flex items-center gap-1.5">
+          <span>${bp.title}</span>
+          ${hasMermaidBadge ? '<span class="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[9px] font-mono">MERMAID</span>' : ''}
+        </div>
         <div class="text-[10px] text-slate-500 font-mono">${bp.domain}</div>
       </div>
       <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-sky-400 font-mono">${bp.sheetNum.split(' ')[1]}</span>
     `;
 
     item.addEventListener('click', () => {
+      activeBlueprintIdx = idx;
       document.querySelectorAll('#blueprint-nav-list button').forEach(b => {
-        b.className = 'w-full text-left p-2.5 rounded-lg border transition-all flex items-center justify-between bg-[#0f141f] border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-[#161c28]';
+        b.className = 'w-full text-left p-2.5 rounded-lg border transition-all flex items-center justify-between cursor-pointer bg-[#0f141f] border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-[#161c28]';
       });
-      item.className = 'w-full text-left p-2.5 rounded-lg border transition-all flex items-center justify-between bg-[#1a2333] border-sky-500/50 text-white';
+      item.className = 'w-full text-left p-2.5 rounded-lg border transition-all flex items-center justify-between cursor-pointer bg-[#1a2333] border-sky-500/50 text-white';
 
-      stageTitle.textContent = bp.title;
-      stageDomain.textContent = `INDEPENDENT SYSTEM — ${bp.domain.toUpperCase()}`;
-      stageDesc.textContent = bp.desc;
-      stageImg.src = bp.img;
-      syncLaunchLabButton(bp);
+      renderBlueprintStage(bp);
     });
 
     navContainer.appendChild(item);
   });
 
-  if (zoomBtn && stageImg) {
+  // Render initial blueprint (Sheet 10 -> MeowSweeper Mermaid Flowchart & E-R Schema)
+  renderBlueprintStage(blueprintsData[0]);
+
+  if (zoomBtn) {
     zoomBtn.addEventListener('click', () => {
       const modal = document.getElementById('lightbox-modal');
       const modalImg = document.getElementById('lightbox-img');
+      const modalMermaid = document.getElementById('lightbox-mermaid');
       const modalTitle = document.getElementById('lightbox-title');
-      if (modal && modalImg) {
-        modalTitle.textContent = stageTitle.textContent;
-        modalImg.src = stageImg.src;
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
+      const currentBp = blueprintsData[activeBlueprintIdx];
+
+      if (!modal || !currentBp) return;
+
+      const hasMermaid = Boolean(currentBp.mermaidFlowchart || currentBp.mermaidEr);
+      if (modalTitle) {
+        modalTitle.textContent = hasMermaid
+          ? `${currentBp.title} — ${activeBlueprintDiagramMode === 'er' ? 'E-R Data Schema' : 'Architecture Flowchart'}`
+          : currentBp.title;
       }
+
+      if (hasMermaid && modalMermaid && stageMermaid) {
+        modalImg.classList.add('hidden');
+        modalMermaid.classList.remove('hidden');
+        modalMermaid.innerHTML = stageMermaid.innerHTML;
+        const svgEl = modalMermaid.querySelector('svg');
+        if (svgEl) {
+          svgEl.style.maxHeight = '80vh';
+          svgEl.style.width = '100%';
+        }
+      } else if (modalImg && stageImg) {
+        if (modalMermaid) modalMermaid.classList.add('hidden');
+        modalImg.classList.remove('hidden');
+        modalImg.src = stageImg.src;
+      }
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
     });
   }
 }

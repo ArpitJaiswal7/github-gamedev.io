@@ -32,6 +32,8 @@
   <link rel="stylesheet" href="styles.css">
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Mermaid.js for Live Architecture Flowcharts & E-R Schemas -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
 </head>
 <body class="bg-[#0a0d14] text-slate-100 antialiased selection:bg-sky-500 selection:text-black bg-vignette min-h-screen">
 
@@ -538,23 +540,38 @@
           <!-- Schematic Header -->
           <div class="flex flex-wrap items-start justify-between gap-3 pb-3 border-b border-slate-800">
             <div>
-              <div id="bp-stage-domain" class="text-xs font-mono text-sky-400 uppercase">INDEPENDENT SYSTEM — PLATFORM SERVICES</div>
-              <h3 id="bp-stage-title" class="text-xl sm:text-2xl font-bold text-white mt-1">Native Image Pipeline</h3>
-              <p id="bp-stage-desc" class="text-xs text-slate-400 mt-1 max-w-xl">Fetches, resizes, and caches remote images across Android, iOS, and Unity Editor through one shared C# API.</p>
+              <div id="bp-stage-domain" class="text-xs font-mono text-sky-400 uppercase">INDEPENDENT SYSTEM — CORE GAMEPLAY LOGIC</div>
+              <h3 id="bp-stage-title" class="text-xl sm:text-2xl font-bold text-white mt-1">Meowdoku Engine &amp; Solver</h3>
+              <p id="bp-stage-desc" class="text-xs text-slate-400 mt-1 max-w-xl">Multi-touch gesture router with input locks during animations and an ordered hint-technique cascade.</p>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex flex-wrap items-center gap-2">
+              <!-- Segmented Toggle: Architecture Flowchart vs E-R Schema (Visible when Mermaid diagrams exist) -->
+              <div id="bp-diagram-mode-toggle" class="flex items-center bg-[#0d1117] p-0.5 rounded-lg border border-slate-800 font-mono text-xs">
+                <button type="button" id="bp-mode-flowchart" class="px-2.5 py-1 rounded-md font-bold transition-all cursor-pointer flex items-center gap-1.5 bg-sky-500 text-slate-950 shadow">
+                  <span>🔀</span>
+                  <span>Flowchart</span>
+                </button>
+                <button type="button" id="bp-mode-er" class="px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer flex items-center gap-1.5 text-slate-400 hover:text-white">
+                  <span>🗂️</span>
+                  <span>E-R Schema</span>
+                </button>
+              </div>
+
               <a id="btn-launch-blueprint-lab" href="#mechanics-lab" class="px-3 py-1.5 rounded-lg bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/40 text-sky-300 font-mono text-xs font-semibold flex items-center gap-1.5 transition-all">
                 <i data-lucide="play" class="w-3.5 h-3.5 fill-current"></i> Launch in Unity Lab
               </a>
-              <button id="btn-zoom-blueprint" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-mono text-xs flex items-center gap-1.5 transition-all">
+              <button id="btn-zoom-blueprint" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-mono text-xs flex items-center gap-1.5 transition-all cursor-pointer">
                 <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i> Expand
               </button>
             </div>
           </div>
 
           <!-- The Diagram Canvas Hero -->
-          <div class="relative rounded-xl overflow-hidden bg-[#0c101a] border border-slate-800/80 flex items-center justify-center p-3 min-h-[380px]">
-            <img id="bp-stage-img" src="assets/blueprints/sheet-02-native-image-pipeline.png" alt="Architecture Blueprint Flowchart" class="max-w-full max-h-[460px] object-contain rounded">
+          <div class="relative rounded-xl overflow-hidden bg-[#0c101a] border border-slate-800/80 flex items-center justify-center p-4 min-h-[420px]">
+            <!-- Live Mermaid SVG Container -->
+            <div id="bp-stage-mermaid" class="w-full h-full flex items-center justify-center overflow-auto"></div>
+            <!-- Fallback Static PNG Container (for remaining blueprints) -->
+            <img id="bp-stage-img" src="assets/blueprints/sheet-10-meowdoku.png" alt="Architecture Blueprint Flowchart" class="hidden max-w-full max-h-[460px] object-contain rounded">
           </div>
 
           <!-- Bottom Legend -->
@@ -564,7 +581,7 @@
               <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-sky-500"></span> Adjacent Systems</span>
               <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm border border-dashed border-slate-400"></span> Internal Engine Code</span>
             </div>
-            <span class="text-slate-500">Portfolio Reference &bull; Diagrams Only &bull; NDA Compliant</span>
+            <span id="bp-stage-footer-badge" class="text-sky-400">Live Mermaid SVG Schematic &bull; Flowchart &amp; E-R Schema</span>
           </div>
 
         </div>
@@ -658,17 +675,18 @@
     <div class="relative max-w-6xl w-full max-h-[92vh] flex flex-col items-center bg-[#0d121c] border border-slate-800 rounded-2xl overflow-hidden shadow-2xl">
       <div class="w-full px-6 py-3 border-b border-slate-800 flex items-center justify-between bg-[#111622]">
         <h3 id="lightbox-title" class="text-sm font-bold text-white font-mono">Schematic Inspection</h3>
-        <button id="lightbox-close" class="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-colors">
+        <button id="lightbox-close" class="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
-      <div class="w-full overflow-auto p-4 flex items-center justify-center max-h-[calc(92vh-60px)]">
+      <div class="w-full overflow-auto p-6 flex items-center justify-center max-h-[calc(92vh-60px)]">
+        <div id="lightbox-mermaid" class="hidden w-full h-full flex items-center justify-center"></div>
         <img id="lightbox-img" src="" alt="Full Schematic" class="max-w-full max-h-full object-contain">
       </div>
     </div>
   </div>
 
-  <script src="script.js?v=calm-arrow-1012"></script>
+  <script src="script.js?v=mermaid-meow-1"></script>
   <script>
     lucide.createIcons();
   </script>
