@@ -188,8 +188,8 @@
         <!-- Card 1: MeowSweeper -->
         <div class="bg-[#111622] rounded-2xl border border-slate-800/90 overflow-hidden flex flex-col justify-between hover:border-slate-700 transition-all duration-300 hover:-translate-y-1 shadow-xl">
           <div>
-            <div class="relative aspect-[16/10] overflow-hidden bg-slate-900 border-b border-slate-800/80">
-              <img src="assets/games/meowsweeper-banner.jpg" alt="MeowSweeper: Sudoku Brain Game" class="w-full h-full object-cover">
+            <div class="relative aspect-[1024/500] overflow-hidden bg-slate-900 border-b border-slate-800/80">
+              <img src="assets/games/meowsweeper-banner.png" alt="MeowSweeper: Sudoku Brain Game" class="w-full h-full object-cover">
               <div class="absolute top-3 right-3">
                 <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-black/80 backdrop-blur-md text-amber-400 text-xs font-semibold border border-amber-500/30 shadow-md">
                   ★ 4.6
@@ -198,7 +198,10 @@
             </div>
 
             <div class="p-5 space-y-3">
-              <h3 class="text-lg font-bold text-white">MeowSweeper</h3>
+              <div class="flex items-center gap-3">
+                <img src="assets/games/meowsweeper-icon.png" alt="MeowSweeper Play Store Icon" class="w-10 h-10 rounded-xl border border-slate-700/80 shadow-md shrink-0 object-cover">
+                <h3 class="text-lg font-bold text-white">MeowSweeper</h3>
+              </div>
               <p class="text-xs text-slate-300 leading-relaxed">
                 Hybrid Queens / Star-Battle, Sudoku, and Minesweeper logic puzzle with discrete multi-touch input locks and deterministic hint cascade solvers.
               </p>
@@ -226,8 +229,8 @@
         <!-- Card 2: Calm Jigsaw -->
         <div class="bg-[#111622] rounded-2xl border border-slate-800/90 overflow-hidden flex flex-col justify-between hover:border-slate-700 transition-all duration-300 hover:-translate-y-1 shadow-xl">
           <div>
-            <div class="relative aspect-[16/10] overflow-hidden bg-slate-900 border-b border-slate-800/80">
-              <img src="assets/games/calm-jigsaw-banner.jpg" alt="Calm Jigsaw" class="w-full h-full object-cover">
+            <div class="relative aspect-[1024/500] overflow-hidden bg-slate-900 border-b border-slate-800/80">
+              <img src="assets/games/calm-jigsaw-banner.png" alt="Calm Jigsaw" class="w-full h-full object-cover">
               <div class="absolute top-3 right-3">
                 <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-black/80 backdrop-blur-md text-amber-400 text-xs font-semibold border border-amber-500/30 shadow-md">
                   ★ 4.7
@@ -236,7 +239,10 @@
             </div>
 
             <div class="p-5 space-y-3">
-              <h3 class="text-lg font-bold text-white">Calm Jigsaw</h3>
+              <div class="flex items-center gap-3">
+                <img src="assets/games/calm-jigsaw-icon.png" alt="Calm Jigsaw Play Store Icon" class="w-10 h-10 rounded-xl border border-slate-700/80 shadow-md shrink-0 object-cover">
+                <h3 class="text-lg font-bold text-white">Calm Jigsaw</h3>
+              </div>
               <p class="text-xs text-slate-300 leading-relaxed">
                 Zen puzzle featuring procedural N×N grid cuts with 9 mathematical tab/blank edge signatures (zero pre-sliced art) and multi-tier image caching.
               </p>
@@ -264,8 +270,8 @@
         <!-- Card 3: Calm Jigsaw Solitaire -->
         <div class="bg-[#111622] rounded-2xl border border-slate-800/90 overflow-hidden flex flex-col justify-between hover:border-slate-700 transition-all duration-300 hover:-translate-y-1 shadow-xl">
           <div>
-            <div class="relative aspect-[16/10] overflow-hidden bg-slate-900 border-b border-slate-800/80">
-              <img src="assets/games/calm-jigsaw-solitaire-banner.jpg" alt="Calm Jigsaw Solitaire" class="w-full h-full object-cover">
+            <div class="relative aspect-[1024/500] overflow-hidden bg-slate-900 border-b border-slate-800/80">
+              <img src="assets/games/calm-jigsaw-solitaire-banner.png" alt="Calm Jigsaw Solitaire" class="w-full h-full object-cover">
               <div class="absolute top-3 right-3">
                 <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-black/80 backdrop-blur-md text-amber-400 text-xs font-semibold border border-amber-500/30 shadow-md">
                   ★ 5.0
@@ -274,7 +280,10 @@
             </div>
 
             <div class="p-5 space-y-3">
-              <h3 class="text-lg font-bold text-white">Calm Jigsaw Solitaire</h3>
+              <div class="flex items-center gap-3">
+                <img src="assets/games/calm-jigsaw-solitaire-icon.png" alt="Calm Jigsaw Solitaire Play Store Icon" class="w-10 h-10 rounded-xl border border-slate-700/80 shadow-md shrink-0 object-cover">
+                <h3 class="text-lg font-bold text-white">Calm Jigsaw Solitaire</h3>
+              </div>
               <p class="text-xs text-slate-300 leading-relaxed">
                 Innovative crossover merging jigsaw tab fitting with solitaire card column queues and spatial stacking with procedural noise flame VFX.
               </p>
@@ -348,13 +357,13 @@
             <!-- 7 Demo Tabs (Strictly 1 Active Instance at a Time) -->
             <div class="flex items-center gap-1.5 flex-wrap" id="unity-lab-tabs" role="tablist">
               <button type="button" data-lab-demo="meowsweeper" class="lab-tab-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 bg-sky-500/20 text-sky-300 border border-sky-500/40 shadow-sm">
-                <span>🐱</span> <span>MeowSweeper</span>
+                <img src="assets/games/meowsweeper-icon.png" alt="" class="w-4 h-4 rounded-sm object-cover shrink-0"> <span>MeowSweeper</span>
               </button>
               <button type="button" data-lab-demo="calm-jigsaw" class="lab-tab-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 bg-[#21262d] text-slate-300 hover:text-white border border-transparent hover:border-slate-700">
-                <span>🧩</span> <span>Calm Jigsaw</span>
+                <img src="assets/games/calm-jigsaw-icon.png" alt="" class="w-4 h-4 rounded-sm object-cover shrink-0"> <span>Calm Jigsaw</span>
               </button>
               <button type="button" data-lab-demo="jigsaw-solitaire" class="lab-tab-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 bg-[#21262d] text-slate-300 hover:text-white border border-transparent hover:border-slate-700">
-                <span>🃏</span> <span>Jigsaw Solitaire</span>
+                <img src="assets/games/calm-jigsaw-solitaire-icon.png" alt="" class="w-4 h-4 rounded-sm object-cover shrink-0"> <span>Jigsaw Solitaire</span>
               </button>
               <button type="button" data-lab-demo="offline-leaderboard" class="lab-tab-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 bg-[#21262d] text-slate-300 hover:text-white border border-transparent hover:border-slate-700">
                 <span>🏆</span> <span>Offline Leaderboard</span>
