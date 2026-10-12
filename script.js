@@ -856,44 +856,46 @@ const blueprintsData = [
   {
     id: 'sheet-09',
     sheetNum: 'Sheet 09 — Live Mermaid',
-    title: 'Jigsaw Board Renderer',
+    title: 'Calm Jigsaw & Board Renderer',
     domain: 'Core Gameplay Logic',
-    engine: 'Unity',
+    engine: 'Unity 6000.3.14f1 (WebGL WASM)',
     labDemo: 'calm-jigsaw',
     mermaidFlowchart: `flowchart TB
-  subgraph Inputs["PUZZLE CONFIG & ARTWORK"]
+  subgraph Inputs["ARTWORK BRIDGE & DRAG INPUT"]
     direction LR
-    GridCfg["Grid Preset<br/>(3x3 up to 10x10)"]
-    SourceArt["HD Source Texture2D<br/>(Single Shared Atlas)"]
-    TouchDrag["Multi-Touch Drag<br/>(Piece Pointer Input)"]
+    UIInput["CalmJigsawGameUI.cs<br/>(Tray Drawer & draggingGroup)"]
+    Bridge["CalmJigsawServerBridge.cs<br/>(NIP_WebGL + published.json)"]
   end
 
-  subgraph Core["CORE MODULE — JIGSAW BOARD RENDERER"]
-    Generator["ProceduralBoardGenerator.cs<br/>(Edge Signature Matrix + UV Mapper)"]
-  end
-
-  subgraph Runtime["SHADER & SNAP SUBSYSTEMS"]
+  subgraph Core["CORE MODULE — CALM JIGSAW & BOARD RENDERER"]
     direction LR
-    Shader["PieceMaskShader<br/>(9-Slice Bevel + Alpha)"]
-    SnapGroup["Union-Find Cluster<br/>(Magnetic Neighbor Snap)"]
-    UVRect["Oversized UV Quad (+28%)<br/>& Dynamic Z-Order Stack"]
+    Mgr["CalmJigsawGameManager.cs<br/>(InitPuzzle & Edge Matrix ±1/0)"]
+    Baker["BakePieceTextures(160x160)<br/>(Cubic Bezier + 4px SDF Bevel)"]
   end
 
-  GridCfg -->|"N x N size"| Generator
-  SourceArt -->|"shared atlas"| Generator
-  TouchDrag -->|"transform"| Generator
+  subgraph Runtime["CLUSTER SNAP, POWER-UPS & LIVEOPS"]
+    direction LR
+    Powers["TriggerHint() & TriggerMagnet()<br/>(PieceFlightAnim & Trio Cluster)"]
+    Merge["CheckAndMergeBoardNeighbors()<br/>(groupId Union & snapThreshold)"]
+    LB["LbSubmitRun() & Season State<br/>(CalmJigsaw + UnifiedLeague)"]
+  end
 
-  Generator -->|"UV + mask ID"| Shader
-  Generator <-->|"snap check"| SnapGroup
-  Generator -.->|"tab bleed margin"| UVRect
+  UIInput -->|"HandleMouseInput() & N×N"| Mgr
+  Bridge -->|"activeServerTexture"| Mgr
+  Bridge -->|"fullBoardTexture (512px)"| Baker
+
+  Mgr <-->|"activeFlights"| Powers
+  Mgr <-->|"Board / Locked"| Merge
+  Baker -->|"pieceTexture + outline"| Merge
+  Mgr -.->|"CheckWinCondition()"| LB
 
   classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
   classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
   classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1.5px,stroke-dasharray: 5 5,color:#cbd5e1
 
-  class Generator coreNode
-  class GridCfg,SourceArt,TouchDrag,Shader,SnapGroup adjNode
-  class UVRect intNode`
+  class Mgr,Baker coreNode
+  class UIInput,Bridge,Powers,Merge adjNode
+  class LB intNode`
   },
   {
     id: 'sheet-06',
