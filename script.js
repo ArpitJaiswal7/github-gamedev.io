@@ -1007,12 +1007,12 @@ const blueprintsData = [
   subgraph Core["CORE MODULE — OFFLINE LEADERBOARD ENGINE"]
     direction LR
     SimEngine["OfflineLeaderboardService.cs<br/>(SyncAndCalculate & lastSeenSec Clamp)"]
-    BotPacer["29 Seeded BotState Pacing<br/>(Elite / Rival Convergence >=65%)"]
+    BotPacer["29 Seeded BotState Pacing<br/>(Elite / Rival Convergence ≥65%)"]
   end
 
   subgraph Runtime["WINDOWED STANDINGS & REWARD GUARD"]
     direction LR
-    WindowUI["BuildResult() Windowed Rows<br/>(Top 3 + Player Neighborhood +-2)"]
+    WindowUI["BuildResult() Windowed Rows<br/>(Top 3 + Player Neighborhood ±2)"]
     RewardGuard["ClaimSeasonReward() & StartNextSeason<br/>(Idempotent Guard & PlayerPrefs Coins)"]
   end
 
@@ -1059,11 +1059,11 @@ const blueprintsData = [
   end
 
   ShopUI -->|"InitiatePurchase(sku)"| Gateway
-  CatalogSO -->|"ProductDefinition[]"| Gateway
+  CatalogSO -->|"ProductDefinition List"| Gateway
   RestoreBtn -->|"re-verify owned"| Gateway
 
   Gateway <-->|"PurchaseProcessingResult"| StoreSDK
-  Gateway -.->|"1. Grant -> 2. Confirm"| Ledger
+  Gateway -.->|"1. Grant → 2. Confirm"| Ledger
 
   classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
   classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
@@ -1095,7 +1095,7 @@ const blueprintsData = [
 
   subgraph PythonWorker["STRING TABLES & REFLECTION REFRESH"]
     direction LR
-    StringTable["StringTableCollection (UI_Strings)<br/>(Row Key x Target Locale Cell Write)"]
+    StringTable["StringTableCollection (UI_Strings)<br/>(Row Key × Target Locale Cell Write)"]
     Repaint["EditorUtility.SetDirty & Reflection<br/>(Instant Localization Window Repaint)"]
   end
 
@@ -1104,7 +1104,7 @@ const blueprintsData = [
   Harvester -->|"batch EN payload"| PyBridge
 
   EditorTool <-->|"AddEntry(key, translated)"| StringTable
-  PyBridge -->|"JSON translations[]"| StringTable
+  PyBridge -->|"JSON translations"| StringTable
   EditorTool -.->|"AssetDatabase.SaveAssets"| Repaint
 
   classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
@@ -1181,7 +1181,7 @@ const blueprintsData = [
 
   subgraph ShaderMath["SDF MASKING & AMBIENT GLOW SYNC"]
     direction LR
-    TeardropSDF["Teardrop SDF & 3-Stop Color Ramp<br/>(Core White -> Amber -> Crimson Tip)"]
+    TeardropSDF["Teardrop SDF & 3-Stop Color Ramp<br/>(Core White → Amber → Crimson Tip)"]
     AmbientSync["2D Ambient Light & Scale Pulse<br/>(Synchronized Luminance & Zero GC)"]
   end
 
