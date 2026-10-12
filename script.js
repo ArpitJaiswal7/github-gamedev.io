@@ -942,6 +942,52 @@ const blueprintsData = [
   class WinLB intNode`
   },
   {
+    id: 'sheet-05',
+    sheetNum: 'Sheet 05 — Live Mermaid',
+    title: 'Arrow Strike & Shape Generator',
+    domain: 'Core Gameplay Logic',
+    engine: 'Unity 6000.3.14f1 (WebGL WASM)',
+    labDemo: 'calm-arrow',
+    mermaidFlowchart: `flowchart TB
+  subgraph Inputs["SHAPE MASK & OUTSIDE-IN PEEL GENERATOR"]
+    direction LR
+    ShapeCfg["ShapeLevelConfig.cs<br/>(BuildShapeData & 100 Shapes)"]
+    PeelGen["SolvableShapeGenerator.cs<br/>(IsExitRayClear & GrowTailBackwards)"]
+    GridSys["ShapeGridSystem.cs<br/>(activeMask & occupantMap)"]
+  end
+
+  subgraph Core["CORE MODULE — ARROW STRIKE ENGINE"]
+    direction LR
+    LevelMgr["ShapeLevelManager.cs<br/>(LoadLevelRoutine & SpawnArrowFromPlan)"]
+    ArrowCtrl["ShapeArrow.cs<br/>(OnArrowClicked & MoveOrBonkRoutine)"]
+  end
+
+  subgraph Runtime["STEP PROBE, REBOUND & VICTORY HUD"]
+    direction LR
+    VictoryHUD["OnArrowClearedFromBoard()<br/>(TriggerHintArrow & VictoryPopup)"]
+    BonkRebound["PlayBlockedBonkRoutine()<br/>(3-Lives Deduct & Path Snapback)"]
+    StepAnim["AnimateOneStepRoutine()<br/>(LineRenderer & Chevron Sprite)"]
+  end
+
+  ShapeCfg -->|"EvaluateProceduralShape()"| LevelMgr
+  PeelGen -->|"GeneratedArrowPlan[]"| LevelMgr
+  PeelGen -->|"reversedPath & dir"| ArrowCtrl
+  GridSys -->|"IsCoordinateOccupiedByOther"| ArrowCtrl
+
+  LevelMgr -.->|"allArrows cleared"| VictoryHUD
+  LevelMgr <-->|"OnArrowBlocked (-1 life)"| BonkRebound
+  ArrowCtrl <-->|"pathHistory rewind"| BonkRebound
+  ArrowCtrl -->|"exitStepsRemaining"| StepAnim
+
+  classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
+  classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
+  classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1.5px,stroke-dasharray: 5 5,color:#cbd5e1
+
+  class LevelMgr,ArrowCtrl coreNode
+  class ShapeCfg,PeelGen,GridSys,BonkRebound,StepAnim adjNode
+  class VictoryHUD intNode`
+  },
+  {
     id: 'sheet-06',
     sheetNum: 'Sheet 06 — Live Mermaid',
     title: 'Offline Leaderboard',
@@ -982,48 +1028,6 @@ const blueprintsData = [
   class SimEngine coreNode
   class GameWin,BootClock,ModeCfg,LeagueUI,RewardBox adjNode
   class AntiCheat intNode`
-  },
-  {
-    id: 'sheet-08',
-    sheetNum: 'Sheet 08 — Live Mermaid',
-    title: 'Level Sync (OTA Content)',
-    domain: 'Platform Services',
-    engine: 'Unity',
-    labDemo: 'native-image-bridge',
-    mermaidFlowchart: `flowchart TB
-  subgraph Triggers["BOOT & CDN ENDPOINTS"]
-    direction LR
-    AppBoot["Game Cold Boot<br/>(Zero-Block Start)"]
-    RemoteCDN["GitHub Pages CDN<br/>(manifest.json + levels)"]
-    Fallback["Offline Fallback<br/>(65 Linked-Chain Levels)"]
-  end
-
-  subgraph Core["CORE MODULE — OTA LEVEL SYNCHRONIZER"]
-    SyncMgr["LevelSyncService.cs<br/>(FetchManifest & DownloadLevelCoroutine)"]
-  end
-
-  subgraph Runtime["PARSING & REGISTRY"]
-    direction LR
-    ActiveDB["AvailableLevelIds<br/>& LevelsBySize Registry"]
-    JsonParser["MeowLevelData.FromJson<br/>(Parse2DArray Flat)"]
-    HashDiff["Timeout Guard (5s)<br/>& Chained Level Fallback"]
-  end
-
-  AppBoot -->|"init coroutine"| SyncMgr
-  RemoteCDN -->|"UnityWebRequest"| SyncMgr
-  Fallback -->|"seed catalog"| SyncMgr
-
-  SyncMgr -->|"index levels"| ActiveDB
-  SyncMgr -->|"deserialize"| JsonParser
-  SyncMgr -.->|"on offline"| HashDiff
-
-  classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
-  classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
-  classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1.5px,stroke-dasharray: 5 5,color:#cbd5e1
-
-  class SyncMgr coreNode
-  class AppBoot,RemoteCDN,Fallback,ActiveDB,JsonParser adjNode
-  class HashDiff intNode`
   },
   {
     id: 'sheet-04',
