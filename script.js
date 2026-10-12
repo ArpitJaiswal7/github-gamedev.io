@@ -207,13 +207,7 @@ function initResumeDropdown() {
     });
   });
 
-  // Webpage HTML View Feedback Toast
-  if (webpageBtn) {
-    webpageBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      showToast('Interactive Web Resume (.html): Coming soon! Arpit will share the dedicated HTML document shortly. In the meantime, you can download the full Word (.docx) or PDF version above.');
-    });
-  }
+  // Webpage HTML View opens resume.html directly via <a href="resume.html" target="_blank">
 }
 
 // Toast Notification Utility
