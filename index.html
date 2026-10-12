@@ -534,34 +534,37 @@
           </div>
         </div>
 
-        <!-- Right Column: Maximized Flowchart / E-R Illustration Stage -->
-        <div class="lg:col-span-8 bg-[#0a0d14] p-3 sm:p-4 flex flex-col gap-2.5 h-full min-h-[560px]">
+        <!-- Right Column: Maximized Full-Bleed Flowchart / E-R Illustration Stage -->
+        <div class="lg:col-span-8 bg-[#0a0d14] flex flex-col h-full min-h-[580px]">
           
-          <!-- Single Compact Control Row: ONLY Flowchart / E-R Schema Toggle + Expand Button -->
-          <div class="flex items-center justify-between gap-2 shrink-0">
-            <div id="bp-diagram-mode-toggle" class="flex items-center bg-[#0d1117] p-0.5 rounded-lg border border-slate-800 font-mono text-xs">
-              <button type="button" id="bp-mode-flowchart" class="px-3 py-1.5 rounded-md font-bold transition-all cursor-pointer flex items-center gap-1.5 bg-sky-500 text-slate-950 shadow">
-                <span>🔀</span>
-                <span>Flowchart</span>
-              </button>
-              <button type="button" id="bp-mode-er" class="px-3 py-1.5 rounded-md font-semibold transition-all cursor-pointer flex items-center gap-1.5 text-slate-400 hover:text-white">
-                <span>🗂️</span>
-                <span>E-R Schema</span>
+          <!-- Single Compact Row: Title on Left + ONLY Flowchart / E-R Schema / Expand on Right -->
+          <div class="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 border-b border-slate-800/80 bg-[#0d121c] shrink-0">
+            <h3 id="bp-stage-title" class="text-sm sm:text-base font-bold text-white tracking-tight">MeowSweeper &amp; Level Generator</h3>
+
+            <div class="flex items-center gap-2">
+              <div id="bp-diagram-mode-toggle" class="flex items-center bg-[#080b11] p-0.5 rounded-lg border border-slate-800 font-mono text-xs">
+                <button type="button" id="bp-mode-flowchart" class="px-3 py-1 rounded-md font-bold transition-all cursor-pointer flex items-center gap-1.5 bg-sky-500 text-slate-950 shadow">
+                  <span>🔀</span>
+                  <span>Flowchart</span>
+                </button>
+                <button type="button" id="bp-mode-er" class="px-3 py-1 rounded-md font-semibold transition-all cursor-pointer flex items-center gap-1.5 text-slate-400 hover:text-white">
+                  <span>🗂️</span>
+                  <span>E-R Schema</span>
+                </button>
+              </div>
+
+              <button id="btn-zoom-blueprint" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-mono text-xs flex items-center gap-1.5 transition-all cursor-pointer">
+                <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i> Expand
               </button>
             </div>
-
-            <button id="btn-zoom-blueprint" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-mono text-xs flex items-center gap-1.5 transition-all cursor-pointer">
-              <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i> Expand
-            </button>
           </div>
 
-          <!-- Maximized Square-Proportioned Diagram Illustration Box -->
-          <div id="bp-canvas-viewport" class="relative flex-1 w-full h-full rounded-xl overflow-hidden bg-[#0c101a] border border-slate-800/80 flex items-center justify-center p-2 sm:p-3 min-h-[500px]" style="background-image: radial-gradient(rgba(56, 189, 248, 0.08) 1px, transparent 1px); background-size: 20px 20px;">
+          <!-- Full-Bleed Square-Proportioned Diagram Illustration Box (Zero outer empty margin) -->
+          <div id="bp-canvas-viewport" class="relative flex-1 w-full h-full overflow-hidden bg-[#0c101a] flex items-center justify-center p-2 min-h-[530px]" style="background-image: radial-gradient(rgba(56, 189, 248, 0.08) 1px, transparent 1px); background-size: 20px 20px;">
             <div id="bp-stage-mermaid" class="w-full h-full flex items-center justify-center"></div>
           </div>
 
         </div>
-
       </div>
     </section>
 
@@ -662,7 +665,7 @@
     </div>
   </div>
 
-  <script src="script.js?v=mermaid-square-max-1"></script>
+  <script src="script.js?v=mermaid-unity-meow-2"></script>
   <script>
     lucide.createIcons();
   </script>
