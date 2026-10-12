@@ -1205,13 +1205,20 @@ function initBlueprintTerminal() {
         stageMermaid.innerHTML = svg;
         const svgEl = stageMermaid.querySelector('svg');
         if (svgEl) {
+          try {
+            const bbox = svgEl.getBBox();
+            if (bbox && bbox.width > 0 && bbox.height > 0) {
+              const pad = 6;
+              svgEl.setAttribute('viewBox', `${bbox.x - pad} ${bbox.y - pad} ${bbox.width + pad * 2} ${bbox.height + pad * 2}`);
+            }
+          } catch (_) {}
           svgEl.removeAttribute('style');
           svgEl.setAttribute('width', '100%');
           svgEl.setAttribute('height', '100%');
           svgEl.setAttribute('preserveAspectRatio', 'xMidYMid meet');
           svgEl.style.width = '100%';
           svgEl.style.height = '100%';
-          svgEl.style.maxHeight = '545px';
+          svgEl.style.maxHeight = '460px';
           svgEl.style.maxWidth = '100%';
         }
       } catch (err) {
@@ -1223,25 +1230,25 @@ function initBlueprintTerminal() {
 
   blueprintsData.forEach((bp, idx) => {
     const item = document.createElement('button');
-    item.className = `w-full text-left px-2.5 py-2 rounded-lg border transition-all flex items-center justify-between gap-2 cursor-pointer ${idx === 0 ? 'bg-[#1a2333] border-sky-500/50 text-white' : 'bg-[#0f141f] border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-[#161c28]'}`;
+    item.className = `w-full text-left px-2 py-1.5 rounded-lg border transition-all flex items-center justify-between gap-1.5 cursor-pointer ${idx === 0 ? 'bg-[#1a2333] border-sky-500/50 text-white' : 'bg-[#0f141f] border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-[#161c28]'}`;
     item.setAttribute('data-index', idx);
 
     item.innerHTML = `
       <div class="min-w-0">
-        <div class="font-bold text-[11px] leading-snug truncate">
+        <div class="font-bold text-[10.5px] leading-tight truncate">
           ${bp.title}
         </div>
-        <div class="text-[9.5px] text-slate-500 font-mono truncate">${bp.domain}</div>
+        <div class="text-[9px] text-slate-500 font-mono truncate">${bp.domain}</div>
       </div>
-      <span class="text-[9.5px] px-1.5 py-0.5 rounded bg-slate-800 text-sky-400 font-mono shrink-0">${bp.sheetNum.split(' ')[1]}</span>
+      <span class="text-[9px] px-1 py-0.5 rounded bg-slate-800 text-sky-400 font-mono shrink-0">${bp.sheetNum.split(' ')[1]}</span>
     `;
 
     item.addEventListener('click', () => {
       activeBlueprintIdx = idx;
       document.querySelectorAll('#blueprint-nav-list button').forEach(b => {
-        b.className = 'w-full text-left px-2.5 py-2 rounded-lg border transition-all flex items-center justify-between gap-2 cursor-pointer bg-[#0f141f] border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-[#161c28]';
+        b.className = 'w-full text-left px-2 py-1.5 rounded-lg border transition-all flex items-center justify-between gap-1.5 cursor-pointer bg-[#0f141f] border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-[#161c28]';
       });
-      item.className = 'w-full text-left px-2.5 py-2 rounded-lg border transition-all flex items-center justify-between gap-2 cursor-pointer bg-[#1a2333] border-sky-500/50 text-white';
+      item.className = 'w-full text-left px-2 py-1.5 rounded-lg border transition-all flex items-center justify-between gap-1.5 cursor-pointer bg-[#1a2333] border-sky-500/50 text-white';
 
       renderBlueprintStage(bp);
     });

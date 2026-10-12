@@ -519,14 +519,24 @@
         <p class="text-xs sm:text-sm text-slate-400 mt-1">Interactive Split-View CAD Terminal featuring clean system boundary flowcharts and the Cut-Line framework</p>
       </div>
 
+      <style>
+        @media (min-width: 768px) {
+          #bp-sidebar-col {
+            width: 215px !important;
+            min-width: 215px !important;
+            max-width: 215px !important;
+            flex: 0 0 215px !important;
+          }
+        }
+      </style>
       <!-- Split-View CAD Terminal Container -->
-      <div class="bg-[#111622] rounded-2xl border border-slate-800 overflow-hidden shadow-2xl flex flex-col lg:flex-row min-h-[580px]">
+      <div class="bg-[#111622] rounded-2xl border border-slate-800 overflow-hidden shadow-2xl flex flex-col md:flex-row min-h-[470px]">
         
-        <!-- Left Column: Compact Systems Navigator List -->
-        <div class="w-full lg:w-[250px] xl:w-[260px] shrink-0 bg-[#0d121c] border-b lg:border-b-0 lg:border-r border-slate-800 p-2.5 space-y-1.5 font-mono text-xs">
-          <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-1 pb-2 border-b border-slate-800 flex items-center justify-between">
+        <!-- Left Column: Compact Systems Navigator List (~21% width) -->
+        <div id="bp-sidebar-col" class="w-full md:w-[215px] shrink-0 bg-[#0d121c] border-b md:border-b-0 md:border-r border-slate-800 p-2 space-y-1 font-mono text-xs">
+          <div class="text-[9.5px] font-bold text-slate-400 uppercase tracking-wider px-1 pb-1.5 border-b border-slate-800 flex items-center justify-between">
             <span>Systems Catalog</span>
-            <span class="text-sky-400">9 Schematics</span>
+            <span class="text-sky-400">9</span>
           </div>
 
           <div class="space-y-1 pt-0.5" id="blueprint-nav-list">
@@ -534,11 +544,11 @@
           </div>
         </div>
 
-        <!-- Right Column: Expanded Full-Bleed Flowchart Illustration Stage -->
-        <div class="flex-1 min-w-0 bg-[#0a0d14] flex flex-col h-full min-h-[580px]">
+        <!-- Right Column: Expanded Full-Bleed Flowchart Illustration Stage (~79% width) -->
+        <div class="flex-1 min-w-0 bg-[#0a0d14] flex flex-col h-full min-h-[470px]">
           
           <!-- Single Compact Row: Title on Left + Expand on Right -->
-          <div class="flex items-center justify-between gap-2 px-4 py-2.5 border-b border-slate-800/80 bg-[#0d121c] shrink-0">
+          <div class="flex items-center justify-between gap-2 px-4 py-2 border-b border-slate-800/80 bg-[#0d121c] shrink-0">
             <h3 id="bp-stage-title" class="text-sm sm:text-base font-bold text-white tracking-tight">MeowSweeper &amp; Level Generator</h3>
 
             <button id="btn-zoom-blueprint" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-mono text-xs flex items-center gap-1.5 transition-all cursor-pointer">
@@ -546,8 +556,8 @@
             </button>
           </div>
 
-          <!-- Full-Bleed Square-Proportioned Diagram Illustration Box -->
-          <div id="bp-canvas-viewport" class="relative flex-1 w-full h-full overflow-hidden bg-[#0c101a] flex items-center justify-center p-1 sm:p-2 min-h-[535px]" style="background-image: radial-gradient(rgba(56, 189, 248, 0.08) 1px, transparent 1px); background-size: 20px 20px;">
+          <!-- Full-Bleed Diagram Illustration Box -->
+          <div id="bp-canvas-viewport" class="relative flex-1 w-full h-full overflow-hidden bg-[#0c101a] flex items-center justify-center p-1 min-h-[430px]" style="background-image: radial-gradient(rgba(56, 189, 248, 0.08) 1px, transparent 1px); background-size: 20px 20px;">
             <div id="bp-stage-mermaid" class="w-full h-full flex items-center justify-center"></div>
           </div>
 
@@ -652,7 +662,7 @@
     </div>
   </div>
 
-  <script src="script.js?v=mermaid-short-fc-4"></script>
+  <script src="script.js?v=mermaid-short-fc-5"></script>
   <script>
     lucide.createIcons();
   </script>
