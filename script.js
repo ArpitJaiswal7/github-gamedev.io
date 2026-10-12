@@ -773,20 +773,20 @@ const blueprintsData = [
     mermaidFlowchart: `flowchart TB
   subgraph Inputs["INPUT & LEVEL GENERATOR"]
     direction LR
-    Input["MeowGameUI Input<br/>(Tap X / Swipe / DblTap Cat)"]
-    Sync["LevelSyncService<br/>(65 CDN Levels + JSON)"]
-    Gen["GenerateChainedLevel(N)<br/>(N-Queens + Region Growth)"]
+    Input["MeowGameUI Input<br/><span class='bp-sub'>(Tap X / Swipe / DblTap Cat)</span>"]
+    Sync["LevelSyncService<br/><span class='bp-sub'>(65 CDN Levels + JSON)</span>"]
+    Gen["GenerateChainedLevel(N)<br/><span class='bp-sub'>(N-Queens + Region Growth)</span>"]
   end
 
   subgraph Core["CORE MODULE — MEOWSWEEPER ENGINE"]
-    Mgr["MeowGameManager.cs<br/>(SetupBoard & boardState[N,N])"]
+    Mgr["MeowGameManager.cs<br/><span class='bp-sub'>(SetupBoard & boardState[N,N])</span>"]
   end
 
   subgraph Runtime["RUNTIME & INTERNAL SUBSYSTEMS"]
     direction LR
-    Powers["Power-Up Cascade<br/>(SmartHint / Reveal / Mouse)"]
-    Lives["5-Lives & Win Check<br/>(remainingHearts & Flash)"]
-    LB["OfflineLeaderboardService<br/>(29 Bots & Season Rank)"]
+    Powers["Power-Up Cascade<br/><span class='bp-sub'>(SmartHint / Reveal / Mouse)</span>"]
+    Lives["5-Lives & Win Check<br/><span class='bp-sub'>(remainingHearts & Flash)</span>"]
+    LB["OfflineLeaderboardService<br/><span class='bp-sub'>(29 Bots & Season Rank)</span>"]
   end
 
   Input -->|"cell action"| Mgr
@@ -797,57 +797,13 @@ const blueprintsData = [
   Mgr -->|"validate Cat"| Lives
   Mgr -.->|"SubmitRun()"| LB
 
-  classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
-  classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
-  classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1.5px,stroke-dasharray: 5 5,color:#cbd5e1
+  classDef coreNode fill:#1c1610,stroke:#a16207,stroke-width:1.5px,color:#cbd5e1
+  classDef adjNode fill:#111722,stroke:#284160,stroke-width:1.25px,color:#cbd5e1
+  classDef intNode fill:#0e131d,stroke:#334155,stroke-width:1.25px,stroke-dasharray: 4 4,color:#94a3b8
 
   class Mgr coreNode
   class Input,Sync,Gen,Powers,Lives adjNode
   class LB intNode`
-  },
-  {
-    id: 'sheet-02',
-    sheetNum: 'Sheet 02 — Live Mermaid',
-    title: 'Native Image Pipeline',
-    domain: 'Platform Services',
-    engine: 'Unity 6000.3.14f1 (WebGL + Android/iOS)',
-    labDemo: 'native-image-bridge',
-    mermaidFlowchart: `flowchart TB
-  subgraph Callers["MANIFEST, VIEWPORT & TEST HARNESS"]
-    direction LR
-    Harness["NativeImagePipelineTestHarness.cs<br/>(FetchAndEnqueueManifest & 120 Keys)"]
-    Viewport["PuzzleViewportScrollTracker.cs<br/>(UpdatePriority & currentViewportKeys)"]
-  end
-
-  subgraph Core["CORE MODULE — NATIVE IMAGE PIPELINE"]
-    direction LR
-    Pipeline["NativeImagePipeline.cs<br/>(EnqueueUrl & RequestCustomSize)"]
-    Receiver["NativeBridgeCallbackReceiver.cs<br/>(OnDownloadCompleted & Retry Guard)"]
-  end
-
-  subgraph Backends["PLATFORM BRIDGES, RAM LRU & TIERED STORAGE"]
-    direction LR
-    WebGLBridge["WebGLImageBridge.cs (.jslib)<br/>(OffscreenCanvas 256/1080px + IDB)"]
-    MobileBridge["AndroidImageBridge / IOSImageBridge<br/>(JNI Glide + ObjC vImage Downsample)"]
-    CachePool["SpriteMemoryCache & DiskStorageHelper<br/>(RAM LRU Pool + VolatileCache / ROM)"]
-  end
-
-  Harness -->|"published.json URLs"| Pipeline
-  Viewport -->|"Visible / Prefetch"| Pipeline
-  Harness -->|"status telemetry"| Receiver
-
-  Pipeline <-->|"NIP_WebGL_* async"| WebGLBridge
-  Pipeline <-->|"JNI / DllImport"| MobileBridge
-  Receiver -->|"DecodeFileToSprite"| CachePool
-  Pipeline -.->|"TryGetSprite() hit"| CachePool
-
-  classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
-  classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
-  classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1.5px,stroke-dasharray: 5 5,color:#cbd5e1
-
-  class Pipeline,Receiver coreNode
-  class Harness,Viewport,WebGLBridge,MobileBridge adjNode
-  class CachePool intNode`
   },
   {
     id: 'sheet-09',
@@ -859,21 +815,21 @@ const blueprintsData = [
     mermaidFlowchart: `flowchart TB
   subgraph Inputs["ARTWORK BRIDGE & DRAG INPUT"]
     direction LR
-    UIInput["CalmJigsawGameUI.cs<br/>(Tray Drawer & draggingGroup)"]
-    Bridge["CalmJigsawServerBridge.cs<br/>(NIP_WebGL + published.json)"]
+    UIInput["CalmJigsawGameUI.cs<br/><span class='bp-sub'>(Tray Drawer & draggingGroup)</span>"]
+    Bridge["CalmJigsawServerBridge.cs<br/><span class='bp-sub'>(NIP_WebGL + published.json)</span>"]
   end
 
   subgraph Core["CORE MODULE — CALM JIGSAW & BOARD RENDERER"]
     direction LR
-    Mgr["CalmJigsawGameManager.cs<br/>(InitPuzzle & Edge Matrix ±1/0)"]
-    Baker["BakePieceTextures(160x160)<br/>(Cubic Bezier + 4px SDF Bevel)"]
+    Mgr["CalmJigsawGameManager.cs<br/><span class='bp-sub'>(InitPuzzle & Edge Matrix ±1/0)</span>"]
+    Baker["BakePieceTextures(160x160)<br/><span class='bp-sub'>(Cubic Bezier + 4px SDF Bevel)</span>"]
   end
 
   subgraph Runtime["CLUSTER SNAP, POWER-UPS & LIVEOPS"]
     direction LR
-    Powers["TriggerHint() & TriggerMagnet()<br/>(PieceFlightAnim & Trio Cluster)"]
-    Merge["CheckAndMergeBoardNeighbors()<br/>(groupId Union & snapThreshold)"]
-    LB["LbSubmitRun() & Season State<br/>(CalmJigsaw + UnifiedLeague)"]
+    Powers["TriggerHint() & TriggerMagnet()<br/><span class='bp-sub'>(PieceFlightAnim & Trio Cluster)</span>"]
+    Merge["CheckAndMergeBoardNeighbors()<br/><span class='bp-sub'>(groupId Union & snapThreshold)</span>"]
+    LB["LbSubmitRun() & Season State<br/><span class='bp-sub'>(CalmJigsaw + UnifiedLeague)</span>"]
   end
 
   UIInput -->|"HandleMouseInput() & N×N"| Mgr
@@ -885,9 +841,9 @@ const blueprintsData = [
   Baker -->|"pieceTexture + outline"| Merge
   Mgr -.->|"CheckWinCondition()"| LB
 
-  classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
-  classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
-  classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1.5px,stroke-dasharray: 5 5,color:#cbd5e1
+  classDef coreNode fill:#1c1610,stroke:#a16207,stroke-width:1.5px,color:#cbd5e1
+  classDef adjNode fill:#111722,stroke:#284160,stroke-width:1.25px,color:#cbd5e1
+  classDef intNode fill:#0e131d,stroke:#334155,stroke-width:1.25px,stroke-dasharray: 4 4,color:#94a3b8
 
   class Mgr,Baker coreNode
   class UIInput,Bridge,Powers,Merge adjNode
@@ -903,21 +859,21 @@ const blueprintsData = [
     mermaidFlowchart: `flowchart TB
   subgraph Inputs["CARD SLICER, SCRAMBLER & DRAG INPUT"]
     direction LR
-    UIInput["JigsawSolitaireGameUI.cs<br/>(draggingCluster Slot Drop)"]
-    Scrambler["InitPuzzle & BakeCardTexture<br/>(Zero-Match + 22% Mystery Flip)"]
-    Bridge["JigsawSolitaireServerBridge.cs<br/>(NIP_WebGL + 0.80f Aspect Art)"]
+    UIInput["JigsawSolitaireGameUI.cs<br/><span class='bp-sub'>(draggingCluster Slot Drop)</span>"]
+    Scrambler["InitPuzzle & BakeCardTexture<br/><span class='bp-sub'>(Zero-Match + 22% Mystery Flip)</span>"]
+    Bridge["JigsawSolitaireServerBridge.cs<br/><span class='bp-sub'>(NIP_WebGL + 0.80f Aspect Art)</span>"]
   end
 
   subgraph Core["CORE MODULE — SOLITAIRE SWAP & MERGE ENGINE"]
     direction LR
-    SwapEngine["ExecuteClusterDrop(lead, R, C)<br/>(vacatedSlots Displacement Swap)"]
-    MergeEngine["EvaluateBoardMerges()<br/>(dBoard == dTrue Union & Flip)"]
+    SwapEngine["ExecuteClusterDrop(lead, R, C)<br/><span class='bp-sub'>(vacatedSlots Displacement Swap)</span>"]
+    MergeEngine["EvaluateBoardMerges()<br/><span class='bp-sub'>(dBoard == dTrue Union & Flip)</span>"]
   end
 
   subgraph Runtime["POWER-UPS, SEAM VFX & LIVEOPS"]
     direction LR
-    Powers["TriggerHint / Magnet / Shuffle<br/>(CardFlightAnim & Seam Sparkles)"]
-    WinLB["RegisterWin() & LbSubmitRun()<br/>(SolitaireLeague + UnifiedLeague)"]
+    Powers["TriggerHint / Magnet / Shuffle<br/><span class='bp-sub'>(CardFlightAnim & Seam Sparkles)</span>"]
+    WinLB["RegisterWin() & LbSubmitRun()<br/><span class='bp-sub'>(SolitaireLeague + UnifiedLeague)</span>"]
   end
 
   UIInput -->|"targetLeadRow / Col"| SwapEngine
@@ -929,9 +885,9 @@ const blueprintsData = [
   MergeEngine <-->|"re-evaluate merges"| Powers
   MergeEngine -.->|"single groupId win"| WinLB
 
-  classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
-  classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
-  classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1.5px,stroke-dasharray: 5 5,color:#cbd5e1
+  classDef coreNode fill:#1c1610,stroke:#a16207,stroke-width:1.5px,color:#cbd5e1
+  classDef adjNode fill:#111722,stroke:#284160,stroke-width:1.25px,color:#cbd5e1
+  classDef intNode fill:#0e131d,stroke:#334155,stroke-width:1.25px,stroke-dasharray: 4 4,color:#94a3b8
 
   class SwapEngine,MergeEngine coreNode
   class UIInput,Scrambler,Bridge,Powers adjNode
@@ -947,26 +903,26 @@ const blueprintsData = [
     mermaidFlowchart: `flowchart TB
   subgraph Inputs["SHAPE MASK & OUTSIDE-IN PEEL GENERATOR"]
     direction LR
-    ShapeCfg["ShapeLevelConfig.cs<br/>(BuildShapeData & 100 Shapes)"]
-    PeelGen["SolvableShapeGenerator.cs<br/>(IsExitRayClear & GrowTailBackwards)"]
-    GridSys["ShapeGridSystem.cs<br/>(activeMask & occupantMap)"]
+    ShapeCfg["ShapeLevelConfig.cs<br/><span class='bp-sub'>(BuildShapeData & 100 Shapes)</span>"]
+    PeelGen["SolvableShapeGenerator.cs<br/><span class='bp-sub'>(IsExitRayClear & GrowTailBackwards)</span>"]
+    GridSys["ShapeGridSystem.cs<br/><span class='bp-sub'>(activeMask & occupantMap)</span>"]
   end
 
   subgraph Core["CORE MODULE — ARROW STRIKE ENGINE"]
     direction LR
-    LevelMgr["ShapeLevelManager.cs<br/>(LoadLevelRoutine & SpawnArrowFromPlan)"]
-    ArrowCtrl["ShapeArrow.cs<br/>(OnArrowClicked & MoveOrBonkRoutine)"]
+    LevelMgr["ShapeLevelManager.cs<br/><span class='bp-sub'>(LoadLevelRoutine & SpawnArrowFromPlan)</span>"]
+    ArrowCtrl["ShapeArrow.cs<br/><span class='bp-sub'>(OnArrowClicked & MoveOrBonkRoutine)</span>"]
   end
 
   subgraph Runtime["STEP PROBE, REBOUND & VICTORY HUD"]
     direction LR
-    VictoryHUD["OnArrowClearedFromBoard()<br/>(TriggerHintArrow & VictoryPopup)"]
-    BonkRebound["PlayBlockedBonkRoutine()<br/>(3-Lives Deduct & Path Snapback)"]
-    StepAnim["AnimateOneStepRoutine()<br/>(LineRenderer & Chevron Sprite)"]
+    VictoryHUD["OnArrowClearedFromBoard()<br/><span class='bp-sub'>(TriggerHintArrow & VictoryPopup)</span>"]
+    BonkRebound["PlayBlockedBonkRoutine()<br/><span class='bp-sub'>(3-Lives Deduct & Path Snapback)</span>"]
+    StepAnim["AnimateOneStepRoutine()<br/><span class='bp-sub'>(LineRenderer & Chevron Sprite)</span>"]
   end
 
   ShapeCfg -->|"EvaluateProceduralShape()"| LevelMgr
-  PeelGen -->|"GeneratedArrowPlan[]"| LevelMgr
+  PeelGen -->|"GeneratedArrowPlan List"| LevelMgr
   PeelGen -->|"reversedPath & dir"| ArrowCtrl
   GridSys -->|"IsCoordinateOccupiedByOther"| ArrowCtrl
 
@@ -975,13 +931,57 @@ const blueprintsData = [
   ArrowCtrl <-->|"pathHistory rewind"| BonkRebound
   ArrowCtrl -->|"exitStepsRemaining"| StepAnim
 
-  classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
-  classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
-  classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1.5px,stroke-dasharray: 5 5,color:#cbd5e1
+  classDef coreNode fill:#1c1610,stroke:#a16207,stroke-width:1.5px,color:#cbd5e1
+  classDef adjNode fill:#111722,stroke:#284160,stroke-width:1.25px,color:#cbd5e1
+  classDef intNode fill:#0e131d,stroke:#334155,stroke-width:1.25px,stroke-dasharray: 4 4,color:#94a3b8
 
   class LevelMgr,ArrowCtrl coreNode
   class ShapeCfg,PeelGen,GridSys,BonkRebound,StepAnim adjNode
   class VictoryHUD intNode`
+  },
+  {
+    id: 'sheet-02',
+    sheetNum: 'Sheet 02 — Live Mermaid',
+    title: 'Native Image Pipeline',
+    domain: 'Platform Services',
+    engine: 'Unity 6000.3.14f1 (WebGL + Android/iOS)',
+    labDemo: 'native-image-bridge',
+    mermaidFlowchart: `flowchart TB
+  subgraph Callers["MANIFEST, VIEWPORT & TEST HARNESS"]
+    direction LR
+    Harness["NativeImagePipelineTestHarness.cs<br/><span class='bp-sub'>(FetchAndEnqueueManifest & 120 Keys)</span>"]
+    Viewport["PuzzleViewportScrollTracker.cs<br/><span class='bp-sub'>(UpdatePriority & currentViewportKeys)</span>"]
+  end
+
+  subgraph Core["CORE MODULE — NATIVE IMAGE PIPELINE"]
+    direction LR
+    Pipeline["NativeImagePipeline.cs<br/><span class='bp-sub'>(EnqueueUrl & RequestCustomSize)</span>"]
+    Receiver["NativeBridgeCallbackReceiver.cs<br/><span class='bp-sub'>(OnDownloadCompleted & Retry Guard)</span>"]
+  end
+
+  subgraph Backends["PLATFORM BRIDGES, RAM LRU & TIERED STORAGE"]
+    direction LR
+    WebGLBridge["WebGLImageBridge.cs (.jslib)<br/><span class='bp-sub'>(OffscreenCanvas 256/1080px + IDB)</span>"]
+    MobileBridge["AndroidImageBridge / IOSImageBridge<br/><span class='bp-sub'>(JNI Glide + ObjC vImage Downsample)</span>"]
+    CachePool["SpriteMemoryCache & DiskStorageHelper<br/><span class='bp-sub'>(RAM LRU Pool + VolatileCache / ROM)</span>"]
+  end
+
+  Harness -->|"published.json URLs"| Pipeline
+  Viewport -->|"Visible / Prefetch"| Pipeline
+  Harness -->|"status telemetry"| Receiver
+
+  Pipeline <-->|"NIP_WebGL_* async"| WebGLBridge
+  Pipeline <-->|"JNI / DllImport"| MobileBridge
+  Receiver -->|"DecodeFileToSprite"| CachePool
+  Pipeline -.->|"TryGetSprite() hit"| CachePool
+
+  classDef coreNode fill:#1c1610,stroke:#a16207,stroke-width:1.5px,color:#cbd5e1
+  classDef adjNode fill:#111722,stroke:#284160,stroke-width:1.25px,color:#cbd5e1
+  classDef intNode fill:#0e131d,stroke:#334155,stroke-width:1.25px,stroke-dasharray: 4 4,color:#94a3b8
+
+  class Pipeline,Receiver coreNode
+  class Harness,Viewport,WebGLBridge,MobileBridge adjNode
+  class CachePool intNode`
   },
   {
     id: 'sheet-06',
@@ -993,21 +993,21 @@ const blueprintsData = [
     mermaidFlowchart: `flowchart TB
   subgraph Events["SCORE SUBMISSION & SEASON CLOCK"]
     direction LR
-    SubmitRun["SubmitRun(modeId, rawScore)<br/>(BestTimeMs vs LeaguePts)"]
-    SimClock["NowSec() & AdvanceTimeHours()<br/>(Realtime + simOffsetSec)"]
-    SeasonStore["GetOrCreateSeason(modeId)<br/>(S01_MEOW & S01_UNIFIED JSON)"]
+    SubmitRun["SubmitRun(modeId, rawScore)<br/><span class='bp-sub'>(BestTimeMs vs LeaguePts)</span>"]
+    SimClock["NowSec() & AdvanceTimeHours()<br/><span class='bp-sub'>(Realtime + simOffsetSec)</span>"]
+    SeasonStore["GetOrCreateSeason(modeId)<br/><span class='bp-sub'>(S01_MEOW & S01_UNIFIED JSON)</span>"]
   end
 
   subgraph Core["CORE MODULE — OFFLINE LEADERBOARD ENGINE"]
     direction LR
-    SimEngine["OfflineLeaderboardService.cs<br/>(SyncAndCalculate & lastSeenSec Clamp)"]
-    BotPacer["29 Seeded BotState Pacing<br/>(Elite / Rival Convergence ≥65%)"]
+    SimEngine["OfflineLeaderboardService.cs<br/><span class='bp-sub'>(SyncAndCalculate & lastSeenSec Clamp)</span>"]
+    BotPacer["29 Seeded BotState Pacing<br/><span class='bp-sub'>(Elite / Rival Convergence ≥65%)</span>"]
   end
 
   subgraph Runtime["WINDOWED STANDINGS & REWARD GUARD"]
     direction LR
-    WindowUI["BuildResult() Windowed Rows<br/>(Top 3 + Player Neighborhood ±2)"]
-    RewardGuard["ClaimSeasonReward() & StartNextSeason<br/>(Idempotent Guard & PlayerPrefs Coins)"]
+    WindowUI["BuildResult() Windowed Rows<br/><span class='bp-sub'>(Top 3 + Player Neighborhood ±2)</span>"]
+    RewardGuard["ClaimSeasonReward() & StartNextSeason<br/><span class='bp-sub'>(Idempotent Guard & PlayerPrefs Coins)</span>"]
   end
 
   SubmitRun -->|"improved score"| SimEngine
@@ -1019,95 +1019,13 @@ const blueprintsData = [
   BotPacer -->|"simulated bot scores"| WindowUI
   SimEngine -.->|"isSeasonOver & rank"| RewardGuard
 
-  classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
-  classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
-  classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1.5px,stroke-dasharray: 5 5,color:#cbd5e1
+  classDef coreNode fill:#1c1610,stroke:#a16207,stroke-width:1.5px,color:#cbd5e1
+  classDef adjNode fill:#111722,stroke:#284160,stroke-width:1.25px,color:#cbd5e1
+  classDef intNode fill:#0e131d,stroke:#334155,stroke-width:1.25px,stroke-dasharray: 4 4,color:#94a3b8
 
   class SimEngine,BotPacer coreNode
   class SubmitRun,SimClock,SeasonStore,WindowUI adjNode
   class RewardGuard intNode`
-  },
-  {
-    id: 'sheet-04',
-    sheetNum: 'Sheet 04 — Live Mermaid',
-    title: 'IAP System Gateway',
-    domain: 'Monetization',
-    engine: 'Unity (Google Play Billing + StoreKit 2)',
-    labDemo: null,
-    mermaidFlowchart: `flowchart TB
-  subgraph StoreUI["STOREFRONT, SKU CATALOG & RESTORE"]
-    direction LR
-    ShopUI["StorePurchaseButton.cs<br/>(PurchaseProduct(skuId))"]
-    CatalogSO["IAPCatalogConfig.asset<br/>(Real-Money IAP + Soft Coin SKUs)"]
-    RestoreBtn["RestoreTransactions()<br/>(Boot & Manual Entitlement Sync)"]
-  end
-
-  subgraph Core["CORE MODULE — IAP SYSTEM GATEWAY"]
-    Gateway["IAPStoreGateway.cs<br/>(ProcessPurchase & Grant-Before-Confirm)"]
-  end
-
-  subgraph Providers["NATIVE BILLING & IDEMPOTENT LEDGER"]
-    direction LR
-    StoreSDK["IStoreController & IExtensionProvider<br/>(GooglePlay / Apple StoreKit 2)"]
-    Ledger["EntitlementLedger & PendingTxLog<br/>(Receipt Hash Dedup & ConfirmPending)"]
-  end
-
-  ShopUI -->|"InitiatePurchase(sku)"| Gateway
-  CatalogSO -->|"ProductDefinition List"| Gateway
-  RestoreBtn -->|"re-verify owned"| Gateway
-
-  Gateway <-->|"PurchaseProcessingResult"| StoreSDK
-  Gateway -.->|"1. Grant → 2. Confirm"| Ledger
-
-  classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
-  classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
-  classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1.5px,stroke-dasharray: 5 5,color:#cbd5e1
-
-  class Gateway coreNode
-  class ShopUI,CatalogSO,RestoreBtn,StoreSDK adjNode
-  class Ledger intNode`
-  },
-  {
-    id: 'sheet-13',
-    sheetNum: 'Sheet 13 — Live Mermaid',
-    title: 'Argos Localization IPC',
-    domain: 'Editor Tooling / IPC',
-    engine: 'Unity Editor + Offline Python IPC',
-    labDemo: 'argos-localization',
-    mermaidFlowchart: `flowchart TB
-  subgraph EditorUI["HIERARCHY HARVESTER & RUNTIME SWITCHER"]
-    direction LR
-    Harvester["HarvestSceneTmpTextsIntoEnglishTable()<br/>(Scans 18 TMP_Text & LocalizeStringEvent)"]
-    Switcher["LanguageSwitcher.SetLocale(code)<br/>(Live 6-Locale Switch: en/es/ja/hi/fr/de)"]
-  end
-
-  subgraph Core["CORE MODULE — ARGOS TRANSLATE BRIDGE"]
-    direction LR
-    EditorTool["ArgosTranslateTool.cs<br/>(TranslateStringTableCollection & JSON Pipe)"]
-    PyBridge["argos_bridge.py (.argos_venv)<br/>(UTF-8 stdin/stdout & argostranslate)"]
-  end
-
-  subgraph PythonWorker["STRING TABLES & REFLECTION REFRESH"]
-    direction LR
-    StringTable["StringTableCollection (UI_Strings)<br/>(Row Key × Target Locale Cell Write)"]
-    Repaint["EditorUtility.SetDirty & Reflection<br/>(Instant Localization Window Repaint)"]
-  end
-
-  Harvester -->|"SharedTableData keys"| EditorTool
-  Switcher -->|"SelectedLocaleChanged"| EditorTool
-  Harvester -->|"batch EN payload"| PyBridge
-
-  EditorTool <-->|"AddEntry(key, translated)"| StringTable
-  PyBridge -->|"JSON translations"| StringTable
-  EditorTool -.->|"AssetDatabase.SaveAssets"| Repaint
-
-  classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
-  classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
-  classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1.5px,stroke-dasharray: 5 5,color:#cbd5e1
-
-  class EditorTool,PyBridge coreNode
-  class Harvester,Switcher,StringTable adjNode
-  class Repaint intNode`
   },
   {
     id: 'sheet-11',
@@ -1119,21 +1037,21 @@ const blueprintsData = [
     mermaidFlowchart: `flowchart TB
   subgraph EditorHooks["PROJECT WINDOW HOOKS & HOTKEYS"]
     direction LR
-    BadgeOverlay["ProjectWindowBadgeOverlay.cs<br/>(projectWindowItemOnGUI & SDF Badges)"]
-    HoverTag["Hover C / R Tag-Button & Hotkey<br/>(Ctrl+Win+P Win32 Poll & Corner Rect)"]
-    Watcher["AssetChangeWatcher.cs<br/>(AssetPostprocessor Move/Rename Heal)"]
+    BadgeOverlay["ProjectWindowBadgeOverlay.cs<br/><span class='bp-sub'>(projectWindowItemOnGUI & SDF Badges)</span>"]
+    HoverTag["Hover C / R Tag-Button & Hotkey<br/><span class='bp-sub'>(Ctrl+Win+P Win32 Poll & Corner Rect)</span>"]
+    Watcher["AssetChangeWatcher.cs<br/><span class='bp-sub'>(AssetPostprocessor Move/Rename Heal)</span>"]
   end
 
   subgraph Core["CORE MODULE — ASSET ORGANIZER STORE & WINDOW"]
     direction LR
-    PinStore["PinnedAssetsStore.cs<br/>(ProjectSettings JSON & O(1) GUID Map)"]
-    OrganizerWin["AssetOrganizerWindow.cs<br/>(Build-Report Groups, Sizes & Ping)"]
+    PinStore["PinnedAssetsStore.cs<br/><span class='bp-sub'>(ProjectSettings JSON & O(1) GUID Map)</span>"]
+    OrganizerWin["AssetOrganizerWindow.cs<br/><span class='bp-sub'>(Build-Report Groups, Sizes & Ping)</span>"]
   end
 
   subgraph Subsystems["OS SHELL INTEROP & CLIPBOARD"]
     direction LR
-    OSExplorer["OSFileExplorerUtility.cs<br/>(SHOpenFolderAndSelectItems / osascript)"]
-    ClipPath["EditorGUIUtility.systemCopyBuffer<br/>(Full Disk Path Copy & 0B Runtime Cost)"]
+    OSExplorer["OSFileExplorerUtility.cs<br/><span class='bp-sub'>(SHOpenFolderAndSelectItems / osascript)</span>"]
+    ClipPath["EditorGUIUtility.systemCopyBuffer<br/><span class='bp-sub'>(Full Disk Path Copy & 0B Runtime Cost)</span>"]
   end
 
   BadgeOverlay -->|"IsPinned(guid)"| PinStore
@@ -1145,13 +1063,95 @@ const blueprintsData = [
   PinStore -.->|"AssetDatabase.GUIDToAssetPath"| ClipPath
   OrganizerWin -.->|"CopyFullDiskPath"| ClipPath
 
-  classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
-  classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
-  classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1.5px,stroke-dasharray: 5 5,color:#cbd5e1
+  classDef coreNode fill:#1c1610,stroke:#a16207,stroke-width:1.5px,color:#cbd5e1
+  classDef adjNode fill:#111722,stroke:#284160,stroke-width:1.25px,color:#cbd5e1
+  classDef intNode fill:#0e131d,stroke:#334155,stroke-width:1.25px,stroke-dasharray: 4 4,color:#94a3b8
 
   class PinStore,OrganizerWin coreNode
   class BadgeOverlay,HoverTag,Watcher,OSExplorer adjNode
   class ClipPath intNode`
+  },
+  {
+    id: 'sheet-13',
+    sheetNum: 'Sheet 13 — Live Mermaid',
+    title: 'Argos Localization IPC',
+    domain: 'Editor Tooling / IPC',
+    engine: 'Unity Editor + Offline Python IPC',
+    labDemo: 'argos-localization',
+    mermaidFlowchart: `flowchart TB
+  subgraph EditorUI["HIERARCHY HARVESTER & RUNTIME SWITCHER"]
+    direction LR
+    Harvester["HarvestSceneTmpTextsIntoEnglishTable()<br/><span class='bp-sub'>(Scans 18 TMP_Text & LocalizeStringEvent)</span>"]
+    Switcher["LanguageSwitcher.SetLocale(code)<br/><span class='bp-sub'>(Live 6-Locale Switch: en/es/ja/hi/fr/de)</span>"]
+  end
+
+  subgraph Core["CORE MODULE — ARGOS TRANSLATE BRIDGE"]
+    direction LR
+    EditorTool["ArgosTranslateTool.cs<br/><span class='bp-sub'>(TranslateStringTableCollection & JSON Pipe)</span>"]
+    PyBridge["argos_bridge.py (.argos_venv)<br/><span class='bp-sub'>(UTF-8 stdin/stdout & argostranslate)</span>"]
+  end
+
+  subgraph PythonWorker["STRING TABLES & REFLECTION REFRESH"]
+    direction LR
+    StringTable["StringTableCollection (UI_Strings)<br/><span class='bp-sub'>(Row Key × Target Locale Cell Write)</span>"]
+    Repaint["EditorUtility.SetDirty & Reflection<br/><span class='bp-sub'>(Instant Localization Window Repaint)</span>"]
+  end
+
+  Harvester -->|"SharedTableData keys"| EditorTool
+  Switcher -->|"SelectedLocaleChanged"| EditorTool
+  Harvester -->|"batch EN payload"| PyBridge
+
+  EditorTool <-->|"AddEntry(key, translated)"| StringTable
+  PyBridge -->|"JSON translations"| StringTable
+  EditorTool -.->|"AssetDatabase.SaveAssets"| Repaint
+
+  classDef coreNode fill:#1c1610,stroke:#a16207,stroke-width:1.5px,color:#cbd5e1
+  classDef adjNode fill:#111722,stroke:#284160,stroke-width:1.25px,color:#cbd5e1
+  classDef intNode fill:#0e131d,stroke:#334155,stroke-width:1.25px,stroke-dasharray: 4 4,color:#94a3b8
+
+  class EditorTool,PyBridge coreNode
+  class Harvester,Switcher,StringTable adjNode
+  class Repaint intNode`
+  },
+  {
+    id: 'sheet-04',
+    sheetNum: 'Sheet 04 — Live Mermaid',
+    title: 'IAP System Gateway',
+    domain: 'Monetization',
+    engine: 'Unity (Google Play Billing + StoreKit 2)',
+    labDemo: null,
+    mermaidFlowchart: `flowchart TB
+  subgraph StoreUI["STOREFRONT, SKU CATALOG & RESTORE"]
+    direction LR
+    ShopUI["StorePurchaseButton.cs<br/><span class='bp-sub'>(PurchaseProduct(skuId))</span>"]
+    CatalogSO["IAPCatalogConfig.asset<br/><span class='bp-sub'>(Real-Money IAP + Soft Coin SKUs)</span>"]
+    RestoreBtn["RestoreTransactions()<br/><span class='bp-sub'>(Boot & Manual Entitlement Sync)</span>"]
+  end
+
+  subgraph Core["CORE MODULE — IAP SYSTEM GATEWAY"]
+    Gateway["IAPStoreGateway.cs<br/><span class='bp-sub'>(ProcessPurchase & Grant-Before-Confirm)</span>"]
+  end
+
+  subgraph Providers["NATIVE BILLING & IDEMPOTENT LEDGER"]
+    direction LR
+    StoreSDK["IStoreController & IExtensionProvider<br/><span class='bp-sub'>(GooglePlay / Apple StoreKit 2)</span>"]
+    Ledger["EntitlementLedger & PendingTxLog<br/><span class='bp-sub'>(Receipt Hash Dedup & ConfirmPending)</span>"]
+  end
+
+  ShopUI -->|"InitiatePurchase(sku)"| Gateway
+  CatalogSO -->|"ProductDefinition List"| Gateway
+  RestoreBtn -->|"re-verify owned"| Gateway
+
+  Gateway <-->|"PurchaseProcessingResult"| StoreSDK
+  Gateway -.->|"1. Grant → 2. Confirm"| Ledger
+
+  classDef coreNode fill:#1c1610,stroke:#a16207,stroke-width:1.5px,color:#cbd5e1
+  classDef adjNode fill:#111722,stroke:#284160,stroke-width:1.25px,color:#cbd5e1
+  classDef intNode fill:#0e131d,stroke:#334155,stroke-width:1.25px,stroke-dasharray: 4 4,color:#94a3b8
+
+  class Gateway coreNode
+  class ShopUI,CatalogSO,RestoreBtn,StoreSDK adjNode
+  class Ledger intNode`
   },
   {
     id: 'sheet-12',
@@ -1163,20 +1163,20 @@ const blueprintsData = [
     mermaidFlowchart: `flowchart TB
   subgraph SceneInputs["UI GRAPHIC & FLICKER PRESETS"]
     direction LR
-    CanvasGraphic["UnityEngine.UI.Graphic / Image<br/>(IMaterialModifier & CanvasRenderer)"]
-    PresetSO["FlameFlickerProfile.cs<br/>(Hearth / Torch / Candle Curves)"]
+    CanvasGraphic["UnityEngine.UI.Graphic / Image<br/><span class='bp-sub'>(IMaterialModifier & CanvasRenderer)</span>"]
+    PresetSO["FlameFlickerProfile.cs<br/><span class='bp-sub'>(Hearth / Torch / Candle Curves)</span>"]
   end
 
   subgraph Core["CORE MODULE — FLAME FLICKER DRIVER & SHADER"]
     direction LR
-    Driver["FlameFlickerDriver.cs<br/>(Per-Instance Phase Seed & Uniform Push)"]
-    ShaderPass["UI/ProceduralFlame.shader<br/>(2-Octave Simplex FBM & Domain Warp)"]
+    Driver["FlameFlickerDriver.cs<br/><span class='bp-sub'>(Per-Instance Phase Seed & Uniform Push)</span>"]
+    ShaderPass["UI/ProceduralFlame.shader<br/><span class='bp-sub'>(2-Octave Simplex FBM & Domain Warp)</span>"]
   end
 
   subgraph ShaderMath["SDF MASKING & AMBIENT GLOW SYNC"]
     direction LR
-    TeardropSDF["Teardrop SDF & 3-Stop Color Ramp<br/>(Core White → Amber → Crimson Tip)"]
-    AmbientSync["2D Ambient Light & Scale Pulse<br/>(Synchronized Luminance & Zero GC)"]
+    TeardropSDF["Teardrop SDF & 3-Stop Color Ramp<br/><span class='bp-sub'>(Core White → Amber → Crimson Tip)</span>"]
+    AmbientSync["2D Ambient Light & Scale Pulse<br/><span class='bp-sub'>(Synchronized Luminance & Zero GC)</span>"]
   end
 
   CanvasGraphic -->|"GetModifiedMaterial()"| Driver
@@ -1187,9 +1187,9 @@ const blueprintsData = [
   ShaderPass -->|"smoothstep alpha mask"| TeardropSDF
   Driver -.->|"EvaluatedFlickerIntensity"| AmbientSync
 
-  classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
-  classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
-  classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1.5px,stroke-dasharray: 5 5,color:#cbd5e1
+  classDef coreNode fill:#1c1610,stroke:#a16207,stroke-width:1.5px,color:#cbd5e1
+  classDef adjNode fill:#111722,stroke:#284160,stroke-width:1.25px,color:#cbd5e1
+  classDef intNode fill:#0e131d,stroke:#334155,stroke-width:1.25px,stroke-dasharray: 4 4,color:#94a3b8
 
   class Driver,ShaderPass coreNode
   class CanvasGraphic,PresetSO,TeardropSDF adjNode
@@ -1212,7 +1212,7 @@ function initBlueprintTerminal() {
       startOnLoad: false,
       theme: 'dark',
       securityLevel: 'loose',
-      fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+      fontFamily: 'Inter, ui-sans-serif, system-ui, -apple-system, sans-serif',
       flowchart: {
         htmlLabels: true,
         curve: 'basis',
@@ -1225,14 +1225,15 @@ function initBlueprintTerminal() {
       themeVariables: {
         darkMode: true,
         background: '#0c101a',
-        primaryColor: '#0f1b2d',
-        primaryTextColor: '#e2e8f0',
-        primaryBorderColor: '#38bdf8',
-        lineColor: '#64748b',
-        secondaryColor: '#1e293b',
+        primaryColor: '#111722',
+        primaryTextColor: '#cbd5e1',
+        primaryBorderColor: '#284160',
+        lineColor: '#475569',
+        secondaryColor: '#0e131d',
         tertiaryColor: '#0d121c',
         clusterBkg: '#0a0f18',
-        clusterBorder: '#1e293b'
+        clusterBorder: '#1e293b',
+        edgeLabelBackground: '#0c101a'
       }
     });
   }

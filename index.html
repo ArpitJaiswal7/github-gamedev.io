@@ -181,7 +181,6 @@
     <section id="shipped" class="space-y-6 scroll-mt-24">
       <div>
         <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">Commercial Shipped Titles</h2>
-        <p class="text-xs sm:text-sm text-slate-400 mt-1">Published titles on Google Play powered by modular architecture subsystems</p>
       </div>
 
       <!-- 3-Card Grid Side-by-Side -->
@@ -313,20 +312,14 @@
       </div>
     </section>
 
-    <!-- ================= SCREEN 2: UNITY LAB — FULL-VIEWPORT INTERACTIVE ARTIFACT & WEBGL WORKSTATION ================= -->
+    <!-- ================= SCREEN 2: UNITY LAB — PLAYABLE SANDBOX ================= -->
     <section id="mechanics-lab" class="space-y-4 scroll-mt-24">
       <div class="flex flex-col md:flex-row md:items-end justify-between gap-3">
         <div>
-          <div class="text-xs font-mono text-sky-400 uppercase tracking-wider flex items-center gap-2">
-            <i data-lucide="cpu" class="w-4 h-4"></i> Interactive Gameplay &amp; Systems Sandbox
-          </div>
-          <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight mt-1">Unity Lab: Playable Vertical Slices &amp; Engine Simulators</h2>
-          <p class="text-xs sm:text-sm text-slate-400 mt-1">
-            Switch between 8 live playable systems below &bull; Only 1 instance runs in memory at a time &bull; Supports embedded &amp; 100% Fullscreen play
-          </p>
+          <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">Unity Lab: Playable Sandbox</h2>
         </div>
 
-        <div class="flex items-center gap-2 text-xs font-mono text-slate-400 bg-[#111622] px-3 py-1.5 rounded-xl border border-slate-800">
+        <div class="hidden items-center gap-2 text-xs font-mono text-slate-400 bg-[#111622] px-3 py-1.5 rounded-xl border border-slate-800">
           <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
           <span id="lab-active-badge">Active Scene: MeowSweeper_Lab.unity</span>
         </div>
@@ -334,21 +327,21 @@
 
       <!-- Prefetch hints for instant tab switching -->
       <link rel="prefetch" href="labs/meowsweeper.html">
-      <link rel="prefetch" href="labs/calm-arrow.html">
       <link rel="prefetch" href="labs/calm-jigsaw.html">
       <link rel="prefetch" href="labs/jigsaw-solitaire.html">
-      <link rel="prefetch" href="labs/offline-leaderboard.html">
+      <link rel="prefetch" href="labs/calm-arrow.html">
       <link rel="prefetch" href="labs/native-image-bridge.html">
+      <link rel="prefetch" href="labs/offline-leaderboard.html">
       <link rel="prefetch" href="labs/asset-organizer.html">
       <link rel="prefetch" href="labs/argos-localization.html">
 
-      <!-- Unity Lab Full-Window Workstation Wrapper (Can enter 100% Monitor Fullscreen WITH Top Switcher Bar intact!) -->
+      <!-- Unity Lab Full-Window Workstation Wrapper -->
       <div id="unity-lab-workstation" class="unity-window overflow-hidden flex flex-col bg-[#0d1117] border border-[#30363d] rounded-2xl shadow-2xl h-[86vh] min-h-[680px] max-h-[960px] transition-all">
 
-        <!-- TOP BAR: 7 DEMO SWITCHER TABS (LEFT) + DUAL-RUNTIME TOGGLE & VIEWPORT CONTROLS (RIGHT) -->
+        <!-- TOP BAR: 8 DEMO SWITCHER TABS (LEFT) + DUAL-RUNTIME TOGGLE & VIEWPORT CONTROLS (RIGHT) -->
         <div class="shrink-0 bg-[#161b22] border-b border-[#30363d] px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-2.5 z-20">
           
-          <!-- Left: Window Dots + 7 Project Switcher Buttons -->
+          <!-- Left: Window Dots + 8 Project Switcher Buttons (Ordered to match Systems Catalog) -->
           <div class="flex items-center gap-1.5 flex-wrap">
             <div class="flex items-center space-x-1.5 pr-2.5 border-r border-[#30363d]">
               <span class="w-3 h-3 rounded-full bg-[#ff5f56] inline-block"></span>
@@ -362,20 +355,20 @@
               <button type="button" data-lab-demo="meowsweeper" class="lab-tab-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 bg-sky-500/20 text-sky-300 border border-sky-500/40 shadow-sm">
                 <img src="assets/games/meowsweeper-icon.png" alt="" class="w-4 h-4 rounded-sm object-cover shrink-0"> <span>MeowSweeper</span>
               </button>
-              <button type="button" data-lab-demo="calm-arrow" class="lab-tab-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 bg-[#21262d] text-slate-300 hover:text-white border border-transparent hover:border-slate-700">
-                <span>🏹</span> <span>Calm Arrow</span>
-              </button>
               <button type="button" data-lab-demo="calm-jigsaw" class="lab-tab-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 bg-[#21262d] text-slate-300 hover:text-white border border-transparent hover:border-slate-700">
                 <img src="assets/games/calm-jigsaw-icon.png" alt="" class="w-4 h-4 rounded-sm object-cover shrink-0"> <span>Calm Jigsaw</span>
               </button>
               <button type="button" data-lab-demo="jigsaw-solitaire" class="lab-tab-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 bg-[#21262d] text-slate-300 hover:text-white border border-transparent hover:border-slate-700">
                 <img src="assets/games/calm-jigsaw-solitaire-icon.png" alt="" class="w-4 h-4 rounded-sm object-cover shrink-0"> <span>Jigsaw Solitaire</span>
               </button>
-              <button type="button" data-lab-demo="offline-leaderboard" class="lab-tab-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 bg-[#21262d] text-slate-300 hover:text-white border border-transparent hover:border-slate-700">
-                <span>🏆</span> <span>Offline Leaderboard</span>
+              <button type="button" data-lab-demo="calm-arrow" class="lab-tab-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 bg-[#21262d] text-slate-300 hover:text-white border border-transparent hover:border-slate-700">
+                <span>🏹</span> <span>Arrow Strike</span>
               </button>
               <button type="button" data-lab-demo="native-image-bridge" class="lab-tab-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 bg-[#21262d] text-slate-300 hover:text-white border border-transparent hover:border-slate-700">
                 <span>🖼️</span> <span>Native Image Bridge</span>
+              </button>
+              <button type="button" data-lab-demo="offline-leaderboard" class="lab-tab-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 bg-[#21262d] text-slate-300 hover:text-white border border-transparent hover:border-slate-700">
+                <span>🏆</span> <span>Offline Leaderboard</span>
               </button>
               <button type="button" data-lab-demo="asset-organizer" class="lab-tab-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 bg-[#21262d] text-slate-300 hover:text-white border border-transparent hover:border-slate-700">
                 <span>🗂️</span> <span>Asset Organizer</span>
@@ -439,7 +432,7 @@
             <div id="lab-loader-sub" class="text-xs font-mono text-slate-400">Unloading previous DOM &bull; Mounting single active instance...</div>
           </div>
 
-          <!-- Reusable Unity WebGL Diagnostic / Fallback Screen (Used when any WebGL build fails to load or is unavailable for a solo product) -->
+          <!-- Reusable Unity WebGL Diagnostic / Fallback Screen -->
           <div id="lab-webgl-panel" class="hidden absolute inset-0 bg-[#0d1117]/95 backdrop-blur-md z-20 flex-col items-center justify-center p-6 text-center select-none">
             <div class="max-w-lg w-full bg-[#161b22] border border-rose-500/40 rounded-2xl p-6 shadow-2xl space-y-4">
               <div class="w-14 h-14 mx-auto rounded-2xl bg-rose-500/15 border border-rose-500/40 flex items-center justify-center text-2xl shadow-inner" id="webgl-card-icon">
@@ -473,7 +466,7 @@
             </div>
           </div>
 
-          <!-- THE SINGLE ACTIVE IFRAME (100% CSS/JS/VH Isolated; Only 1 Demo Loaded at Any Time) -->
+          <!-- THE SINGLE ACTIVE IFRAME -->
           <iframe
             id="unity-lab-frame"
             src="labs/meowsweeper.html"
@@ -485,8 +478,8 @@
 
         </div>
 
-        <!-- BOTTOM STATUS & TELEMETRY BAR -->
-        <div class="shrink-0 bg-[#161b22] border-t border-[#30363d] px-4 py-2 flex flex-wrap items-center justify-between gap-2 text-xs font-mono text-slate-400">
+        <!-- BOTTOM STATUS & TELEMETRY BAR (Hidden per user request) -->
+        <div class="hidden shrink-0 bg-[#161b22] border-t border-[#30363d] px-4 py-2 items-center justify-between gap-2 text-xs font-mono text-slate-400">
           <div class="flex items-center gap-2.5 flex-wrap">
             <span class="flex items-center gap-1.5 text-emerald-400 font-semibold">
               <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
@@ -515,8 +508,7 @@
         <div class="text-xs font-mono text-sky-400 uppercase tracking-wider flex items-center gap-2">
           <i data-lucide="layers" class="w-4 h-4"></i> Production Architecture
         </div>
-        <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight mt-1">Blueprints/BlackBox: 9 Architecture Subsystems</h2>
-        <p class="text-xs sm:text-sm text-slate-400 mt-1">Interactive Split-View CAD Terminal featuring clean system boundary flowcharts and the Cut-Line framework</p>
+        <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight mt-1">Blueprints/BlackBox: 10 Architecture Subsystems</h2>
       </div>
 
       <style>
@@ -527,6 +519,50 @@
             max-width: 230px !important;
             flex: 0 0 230px !important;
           }
+        }
+        /* Eye-friendly low-glare Mermaid Flowchart typography & hierarchy */
+        #bp-stage-mermaid .nodeLabel,
+        #lightbox-mermaid .nodeLabel {
+          color: #cbd5e1 !important;
+          font-weight: 500 !important;
+          line-height: 1.38 !important;
+          letter-spacing: 0.01em !important;
+        }
+        #bp-stage-mermaid .nodeLabel .bp-sub,
+        #lightbox-mermaid .nodeLabel .bp-sub {
+          color: #64748b !important;
+          font-weight: 400 !important;
+          font-size: 0.86em !important;
+          display: inline-block;
+          margin-top: 2px;
+        }
+        #bp-stage-mermaid .cluster-label .nodeLabel,
+        #lightbox-mermaid .cluster-label .nodeLabel {
+          color: #64748b !important;
+          font-weight: 600 !important;
+          font-size: 11px !important;
+          letter-spacing: 0.06em !important;
+        }
+        #bp-stage-mermaid .edgeLabel,
+        #lightbox-mermaid .edgeLabel {
+          background-color: #0c101a !important;
+          color: #64748b !important;
+          font-size: 11px !important;
+          font-weight: 400 !important;
+          padding: 1px 5px !important;
+          border-radius: 4px !important;
+        }
+        #bp-stage-mermaid .edgeLabel span,
+        #bp-stage-mermaid .edgeLabel p,
+        #lightbox-mermaid .edgeLabel span,
+        #lightbox-mermaid .edgeLabel p {
+          color: #64748b !important;
+          background-color: #0c101a !important;
+        }
+        #bp-stage-mermaid .flowchart-link,
+        #lightbox-mermaid .flowchart-link {
+          stroke: #475569 !important;
+          stroke-width: 1.25px !important;
         }
       </style>
       <!-- Split-View CAD Terminal Container -->
@@ -549,7 +585,7 @@
           
           <!-- Single Compact Row: Title on Left + Expand on Right -->
           <div class="flex items-center justify-between gap-2 px-4 py-2.5 border-b border-slate-800/80 bg-[#0d121c] shrink-0">
-            <h3 id="bp-stage-title" class="text-sm sm:text-base font-bold text-white tracking-tight">MeowSweeper &amp; Level Generator</h3>
+            <h3 id="bp-stage-title" class="text-sm sm:text-base font-bold text-slate-200 tracking-tight">MeowSweeper &amp; Level Generator</h3>
 
             <button id="btn-zoom-blueprint" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-mono text-xs flex items-center gap-1.5 transition-all cursor-pointer">
               <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i> Expand
@@ -557,7 +593,7 @@
           </div>
 
           <!-- Diagram Illustration Box with small top/bottom padding -->
-          <div id="bp-canvas-viewport" class="relative flex-1 w-full h-full overflow-hidden bg-[#0c101a] flex items-center justify-center px-2.5 py-2.5" style="background-image: radial-gradient(rgba(56, 189, 248, 0.08) 1px, transparent 1px); background-size: 20px 20px;">
+          <div id="bp-canvas-viewport" class="relative flex-1 w-full h-full overflow-hidden bg-[#0c101a] flex items-center justify-center px-2.5 py-2.5" style="background-image: radial-gradient(rgba(56, 189, 248, 0.05) 1px, transparent 1px); background-size: 20px 20px;">
             <div id="bp-stage-mermaid" class="w-full h-full flex items-center justify-center"></div>
           </div>
 
@@ -567,51 +603,123 @@
 
     <!-- ================= SCREEN 4: STUDIO EXPERIENCE (ZONE 4: STUDIO WALKTHROUGH) ================= -->
     <section id="experience" class="space-y-6 scroll-mt-24">
-      <div>
-        <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">Studio Walkthrough & Track Record</h2>
-        <p class="text-xs sm:text-sm text-slate-400 mt-1">Professional game development history and systems engineering</p>
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+        <div>
+          <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">Studio Walkthrough &amp; Track Record</h2>
+          <p class="text-xs sm:text-sm text-slate-400 mt-1">Commercial Production Roles &amp; Engineered Unity Systems</p>
+        </div>
       </div>
 
-      <div class="space-y-4">
-        <!-- Vasundhara Infotech -->
-        <div class="bg-[#111622] rounded-xl border border-slate-800 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-lg hover:border-slate-700 transition-all">
-          <div class="space-y-1">
-            <div class="text-base font-bold text-white">Senior Unity Developer</div>
-            <div class="text-xs font-mono text-sky-400">Vasundhara Infotech / Vasundhara Games &bull; Surat, GJ</div>
-            <p class="text-xs text-slate-300 max-w-2xl pt-1 leading-relaxed">
-              Architected core puzzle mechanics, procedural jigsaw renderers, offline bot-simulated leaderboards, and native image caching pipelines across top-ranking commercial titles on Google Play (MeowSweeper, Calm Jigsaw, Calm Jigsaw Solitaire).
-            </p>
+      <div class="space-y-5">
+        <!-- Role 1: Vasundhara Game Studio -->
+        <div class="bg-[#111622] rounded-2xl border border-sky-500/30 p-6 shadow-xl space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3.5 border-b border-slate-800 gap-2">
+            <div class="space-y-1">
+              <div class="flex items-center gap-2.5 flex-wrap">
+                <span class="text-lg font-extrabold text-white">Vasundhara Game Studio</span>
+                <span class="text-slate-600">|</span>
+                <span class="text-sm sm:text-base font-bold text-sky-400">AI Product Developer — Unity Systems &amp; Gameplay</span>
+              </div>
+              <div class="flex items-center gap-2 text-xs text-slate-400 font-mono">
+                <span>Surat, GJ</span>
+                <span>&bull;</span>
+                <span>Dec 2024 – Jan 2025 &amp; Dec 2025 – Present</span>
+              </div>
+            </div>
+            <span class="self-start sm:self-center text-[11px] font-mono font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-md whitespace-nowrap">
+              Current
+            </span>
           </div>
-          <div class="text-xs font-mono text-slate-400 whitespace-nowrap bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800">
-            Dec 2023 – Feb 2024 &bull; Dec 2025 – Present
+
+          <div class="space-y-2.5 text-xs sm:text-sm leading-relaxed text-slate-300">
+            <div class="flex items-start gap-2.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-sky-400 mt-2 shrink-0"></span>
+              <div><strong class="text-white font-semibold">Procedural Jigsaw &amp; Shader Mask (Calm Jigsaw):</strong> Architected N×N Bezier puzzle generator using 9 mathematical edge signatures, dynamic UV quad mesh generation, and custom <strong class="text-slate-200">URP/HLSL shader masking</strong> with zero pre-sliced art.</div>
+            </div>
+            <div class="flex items-start gap-2.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-sky-400 mt-2 shrink-0"></span>
+              <div><strong class="text-white font-semibold">Native Image Bridge &amp; OTA Sync:</strong> Engineered C# bridge over native <strong class="text-slate-200">Android (JNI) / iOS (Obj-C)</strong> APIs for 3-tier RAM LRU and disk caching, texture downsampling, and non-blocking OTA manifest level delivery.</div>
+            </div>
+            <div class="flex items-start gap-2.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-sky-400 mt-2 shrink-0"></span>
+              <div><strong class="text-white font-semibold">Hybrid Logic &amp; Hint-Cascade Solver (MeowSweeper):</strong> Built hybrid Sudoku/Minesweeper/Star-Battle puzzle engine with backtracking hint-cascade solver FSM, discrete multi-touch locks, and persistent IAP powerup wallet.</div>
+            </div>
+            <div class="flex items-start gap-2.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-sky-400 mt-2 shrink-0"></span>
+              <div><strong class="text-white font-semibold">Card Seam Merging &amp; Arrow Mechanics (Calm Solitaire &amp; Arrow):</strong> Engineered rectangular card-grid 0px seam merging, displacement swapping, procedural flame noise shaders, and outside-in peeling arrow escape mechanics.</div>
+            </div>
+            <div class="flex items-start gap-2.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-sky-400 mt-2 shrink-0"></span>
+              <div><strong class="text-white font-semibold">Offline Leaderboard, IAP &amp; Editor Tooling:</strong> Built zero-server bot-paced seasonal leaderboards with anti-rollback clamping, <strong class="text-slate-200">Google/Apple IAP</strong> state machines, Asset Organizer EditorWindow, and Argos IPC localization.</div>
+            </div>
           </div>
         </div>
 
-        <!-- Studio Krew -->
-        <div class="bg-[#111622] rounded-xl border border-slate-800 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-lg hover:border-slate-700 transition-all">
-          <div class="space-y-1">
-            <div class="text-base font-bold text-white">Game Developer</div>
-            <div class="text-xs font-mono text-sky-400">Studio Krew &bull; Delhi (Remote)</div>
-            <p class="text-xs text-slate-300 max-w-2xl pt-1 leading-relaxed">
-              Engineered real-time multiplayer card engines, tournament lobby state validation, in-app purchases, and responsive mobile UI across production titles.
-            </p>
+        <!-- Role 2: Appzia -->
+        <div class="bg-[#111622] rounded-2xl border border-indigo-500/30 p-6 shadow-xl space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3.5 border-b border-slate-800 gap-2">
+            <div class="space-y-1">
+              <div class="flex items-center gap-2.5 flex-wrap">
+                <span class="text-lg font-extrabold text-white">Appzia</span>
+                <span class="text-slate-600">|</span>
+                <span class="text-sm sm:text-base font-bold text-indigo-400">Unity3D Systems &amp; Gameplay Developer</span>
+              </div>
+              <div class="flex items-center gap-2 text-xs text-slate-400 font-mono">
+                <span>Pune, India</span>
+                <span>&bull;</span>
+                <span>June 2024 – July 2025</span>
+              </div>
+            </div>
+            <span class="self-start sm:self-center text-xs font-mono text-slate-300 bg-slate-900 px-3 py-1 rounded-lg border border-slate-800 whitespace-nowrap">
+              June 2024 – July 2025
+            </span>
           </div>
-          <div class="text-xs font-mono text-slate-400 whitespace-nowrap bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800">
-            Mar 2024 – May 2024
+
+          <div class="space-y-2.5 text-xs sm:text-sm leading-relaxed text-slate-300">
+            <div class="flex items-start gap-2.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-2 shrink-0"></span>
+              <div><strong class="text-white font-semibold">Stockfish AI &amp; Real-Time Chess (Bullet Chess):</strong> Architected multiplayer chess engine using <strong class="text-slate-200">Photon (PUN 2)</strong> and <strong class="text-slate-200">Stockfish API</strong> for live move evaluation, client-side board validation, clock sync, and tournament brackets.</div>
+            </div>
+            <div class="flex items-start gap-2.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-2 shrink-0"></span>
+              <div><strong class="text-white font-semibold">Arcade Simulation &amp; Economy Systems (Pinnacle):</strong> Led development of <em>Pinnacle</em> arcade simulation replicating physical machines, implementing deterministic FSMs, secure <strong class="text-slate-200">Apple/Google IAP</strong>, and <strong class="text-slate-200">Zero-GC object pooling</strong> at <strong class="text-slate-200">60 FPS</strong>.</div>
+            </div>
           </div>
         </div>
 
-        <!-- Appzia Technologies -->
-        <div class="bg-[#111622] rounded-xl border border-slate-800 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-lg hover:border-slate-700 transition-all">
-          <div class="space-y-1">
-            <div class="text-base font-bold text-white">Unity Game Developer</div>
-            <div class="text-xs font-mono text-sky-400">Appzia Technologies &bull; Pune</div>
-            <p class="text-xs text-slate-300 max-w-2xl pt-1 leading-relaxed">
-              Engineered game loops, Firebase real-time database sync, ad mediation networks, and mobile performance optimization.
-            </p>
+        <!-- Role 3: StudioKrew -->
+        <div class="bg-[#111622] rounded-2xl border border-amber-500/30 p-6 shadow-xl space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3.5 border-b border-slate-800 gap-2">
+            <div class="space-y-1">
+              <div class="flex items-center gap-2.5 flex-wrap">
+                <span class="text-lg font-extrabold text-white">StudioKrew</span>
+                <span class="text-slate-600">|</span>
+                <span class="text-sm sm:text-base font-bold text-amber-400">Unity Game Developer (Remote)</span>
+              </div>
+              <div class="flex items-center gap-2 text-xs text-slate-400 font-mono">
+                <span>Delhi, India (Remote)</span>
+                <span>&bull;</span>
+                <span>March 2024 – May 2024</span>
+              </div>
+            </div>
+            <span class="self-start sm:self-center text-xs font-mono text-slate-300 bg-slate-900 px-3 py-1 rounded-lg border border-slate-800 whitespace-nowrap">
+              March 2024 – May 2024
+            </span>
           </div>
-          <div class="text-xs font-mono text-slate-400 whitespace-nowrap bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800">
-            Studio Track Record
+
+          <div class="space-y-2.5 text-xs sm:text-sm leading-relaxed text-slate-300">
+            <div class="flex items-start gap-2.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-400 mt-2 shrink-0"></span>
+              <div><strong class="text-white font-semibold">Solo Card Game Architecture (FreeCell &amp; Solitaire):</strong> Delivered complete end-to-end development independently, architecting deterministic card stack rules, memento-based undo/redo state history, and responsive touch controls.</div>
+            </div>
+            <div class="flex items-start gap-2.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-400 mt-2 shrink-0"></span>
+              <div><strong class="text-white font-semibold">Dice Physics &amp; Scoring State Machine (Yahtzee):</strong> Engineered probabilistic dice-rolling physics, category score validation state machines, and turn-based round flow with fluid particle animations.</div>
+            </div>
+            <div class="flex items-start gap-2.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-400 mt-2 shrink-0"></span>
+              <div><strong class="text-white font-semibold">Grid Puzzle Engine &amp; Serialization (BrokenTiles):</strong> Developed reactive grid-matching algorithms with cascading tile clearing, implementing lightweight JSON save serialization for instant session recovery.</div>
+            </div>
           </div>
         </div>
       </div>
@@ -627,14 +735,37 @@
       </div>
 
       <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
+        <!-- Email -->
         <a href="mailto:arpitjaiswal071@gmail.com" class="px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-xs transition-all flex items-center gap-2 shadow-lg shadow-sky-500/20">
-          <i data-lucide="mail" class="w-4 h-4"></i> arpitjaiswal071@gmail.com
+          <svg class="w-4 h-4 shrink-0 fill-none stroke-current" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+          </svg>
+          <span>arpitjaiswal071@gmail.com</span>
         </a>
-        <a href="https://github.com/ArpitJaiswal7" target="_blank" rel="noopener" class="px-5 py-2.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium transition-all flex items-center gap-2">
-          <i data-lucide="github" class="w-4 h-4"></i> GitHub Profile
+
+        <!-- LinkedIn -->
+        <a href="http://www.linkedin.com/in/arpit-jaiswal-4708a523b" target="_blank" rel="noopener noreferrer" class="px-5 py-2.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium transition-all flex items-center gap-2">
+          <svg class="w-4 h-4 shrink-0 fill-current text-sky-400" viewBox="0 0 24 24">
+            <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/>
+          </svg>
+          <span>LinkedIn Profile</span>
         </a>
-        <a href="https://gitlab.com/work1134611" target="_blank" rel="noopener" class="px-5 py-2.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium transition-all flex items-center gap-2">
-          <i data-lucide="git-branch" class="w-4 h-4"></i> GitLab Profile
+
+        <!-- GitHub -->
+        <a href="https://github.com/ArpitJaiswal7/github-gamedev.io" target="_blank" rel="noopener noreferrer" class="px-5 py-2.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium transition-all flex items-center gap-2">
+          <svg class="w-4 h-4 shrink-0 fill-current text-slate-200" viewBox="0 0 16 16">
+            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+          </svg>
+          <span>GitHub Profile</span>
+        </a>
+
+        <!-- GitLab -->
+        <a href="https://gitlab.com/unity8984322" target="_blank" rel="noopener noreferrer" class="px-5 py-2.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium transition-all flex items-center gap-2">
+          <svg class="w-4 h-4 shrink-0 fill-current text-orange-400" viewBox="0 0 24 24">
+            <path d="m22.65 14.39-9.65 7.01-9.65-7.01a.72.72 0 0 1-.26-.81l1.15-3.54 2.28-7.01a.38.38 0 0 1 .72 0l2.28 7.01h4.96l2.28-7.01a.38.38 0 0 1 .72 0l2.28 7.01 1.15 3.54a.72.72 0 0 1-.26.81z"/>
+          </svg>
+          <span>GitLab Profile</span>
         </a>
       </div>
 
@@ -662,7 +793,7 @@
     </div>
   </div>
 
-  <script src="script.js?v=mermaid-short-fc-12"></script>
+  <script src="script.js?v=mermaid-short-fc-13"></script>
   <script>
     lucide.createIcons();
   </script>
