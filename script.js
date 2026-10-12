@@ -285,8 +285,9 @@ const UNITY_LAB_MANIFEST = {
     title: 'Offline Leaderboard',
     scene: 'OfflineLeaderboard_LiveOps.unity',
     htmlUrl: 'labs/offline-leaderboard.html',
-    webglUrl: 'webgl/offline-leaderboard/index.html',
-    hasWebgl: true,
+    webglUrl: 'labs/offline-leaderboard.html?mode=webgl',
+    hasWebgl: false,
+    isSoloProduct: true,
     unitySpecs: 'Unity 2022.3 LTS (Sheet 06 Bot Convergence & Anti-Rollback Engine)',
     desc: 'Zero-Server Bot Pacing, League Overtakes & Time-Travel Clamping Simulator'
   },
@@ -295,8 +296,9 @@ const UNITY_LAB_MANIFEST = {
     title: 'Native Image Bridge',
     scene: 'NativeImagePipeline_Sim.unity',
     htmlUrl: 'labs/native-image-bridge.html',
-    webglUrl: 'webgl/native-image-bridge/index.html',
-    hasWebgl: true,
+    webglUrl: 'labs/native-image-bridge.html?mode=webgl',
+    hasWebgl: false,
+    isSoloProduct: true,
     unitySpecs: 'Unity 2022.3 LTS (3-Tier RAM LRU + Native Disk Cache + OTA Queue)',
     desc: '3-Tier Memory LRU + Native Disk I/O + 100+ Gallery Viewport Priority Queue'
   },
@@ -305,8 +307,9 @@ const UNITY_LAB_MANIFEST = {
     title: 'Asset Organizer Tool',
     scene: 'AssetOrganizer_EditorWindow.unity',
     htmlUrl: 'labs/asset-organizer.html',
-    webglUrl: null,
+    webglUrl: 'labs/asset-organizer.html?mode=webgl',
     hasWebgl: false,
+    isSoloProduct: true,
     unitySpecs: 'Unity EditorWindow API (com.arrowstrike.asset-organizer • AssetDatabase)',
     desc: 'Unity Editor Project Window Badges, C/R Hover Tags & Multi-Asset Explorer Reveal'
   },
@@ -337,6 +340,22 @@ function initUnityLab() {
   const btnWebglTryBoot = document.getElementById('webgl-btn-try-boot');
   const workstation = document.getElementById('unity-lab-workstation');
 
+  // Listen for postMessage from embedded lab pages (e.g., dismissing the WebGL fallback screen)
+  window.addEventListener('message', (e) => {
+    if (!e.data || typeof e.data !== 'object') return;
+    if (e.data.type === 'WEBGL_FALLBACK_SWITCH_HTML') {
+      activeLabRuntime = 'html';
+      const webglPanel = document.getElementById('lab-webgl-panel');
+      if (webglPanel) {
+        webglPanel.classList.add('hidden');
+        webglPanel.classList.remove('flex');
+      }
+      updateLabUIState();
+    } else if (e.data.type === 'WEBGL_LOAD_ERROR') {
+      showLabWebglFailurePanel(activeLabDemo, 'load_failed');
+    }
+  });
+
   // Tab Click Listeners
   tabButtons.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -355,11 +374,16 @@ function initUnityLab() {
   }
   if (btnRuntimeWebgl) {
     btnRuntimeWebgl.addEventListener('click', () => {
+      const currentItem = UNITY_LAB_MANIFEST[activeLabDemo];
+      // Non-interactable for solo products without standalone WebGL builds
+      if (currentItem && !currentItem.hasWebgl) return;
       switchLabDemo(activeLabDemo, 'webgl');
     });
   }
   if (btnFooterRuntime) {
     btnFooterRuntime.addEventListener('click', () => {
+      const currentItem = UNITY_LAB_MANIFEST[activeLabDemo];
+      if (activeLabRuntime === 'html' && currentItem && !currentItem.hasWebgl) return;
       const nextRuntime = activeLabRuntime === 'html' ? 'webgl' : 'html';
       switchLabDemo(activeLabDemo, nextRuntime);
     });
@@ -371,7 +395,7 @@ function initUnityLab() {
   }
   if (btnWebglTryBoot) {
     btnWebglTryBoot.addEventListener('click', () => {
-      bootWebglInIframe(activeLabDemo);
+      bootWebglInIframe(activeLabDemo, true);
     });
   }
 
@@ -408,8 +432,9 @@ function initUnityLab() {
   // Check URL query/hash on initial load (e.g., ?lab=calm-jigsaw)
   const params = new URLSearchParams(window.location.search);
   const requestedLab = params.get('lab');
+  const requestedRuntime = params.get('runtime') === 'webgl' ? 'webgl' : 'html';
   if (requestedLab && UNITY_LAB_MANIFEST[requestedLab]) {
-    switchLabDemo(requestedLab, 'html');
+    switchLabDemo(requestedLab, requestedRuntime);
   } else {
     updateLabUIState();
   }
@@ -434,7 +459,7 @@ function updateLabUIState() {
   const item = UNITY_LAB_MANIFEST[activeLabDemo];
   if (!item) return;
 
-  // Update 6 Demo Tab Pill Styles
+  // Update 7 Demo Tab Pill Styles
   document.querySelectorAll('.lab-tab-btn').forEach(btn => {
     const key = btn.getAttribute('data-lab-demo');
     if (key === activeLabDemo) {
@@ -448,18 +473,40 @@ function updateLabUIState() {
   const btnHtml = document.getElementById('lab-runtime-html');
   const btnWebgl = document.getElementById('lab-runtime-webgl');
   const dot = document.getElementById('lab-webgl-dot');
+  const btnFooterRuntime = document.getElementById('lab-footer-runtime-switch');
 
   if (dot) {
-    dot.className = item.hasWebgl ? 'w-2 h-2 rounded-full bg-emerald-400' : 'w-2 h-2 rounded-full bg-amber-400';
+    dot.className = item.hasWebgl ? 'w-2 h-2 rounded-full bg-emerald-400' : 'w-2 h-2 rounded-full bg-rose-500';
+    dot.title = item.hasWebgl ? 'Unity WebGL Runtime Mode Available' : 'WebGL Build Not Available for this Solo Product';
   }
 
   if (btnHtml && btnWebgl) {
-    if (activeLabRuntime === 'html') {
-      btnHtml.className = 'px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 bg-sky-500 text-slate-950 shadow';
-      btnWebgl.className = 'px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 text-slate-400 hover:text-white';
+    if (!item.hasWebgl) {
+      // Make WebGL button non-interactable for solo products (Offline Leaderboard, Native Image Bridge, Asset Organizer)
+      btnWebgl.disabled = true;
+      btnWebgl.setAttribute('aria-disabled', 'true');
+      btnWebgl.title = 'WebGL Build Not Available for this Solo Product';
+
+      if (activeLabRuntime === 'html') {
+        btnHtml.className = 'px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 bg-sky-500 text-slate-950 shadow';
+        btnWebgl.className = 'px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 text-slate-600 opacity-45 cursor-not-allowed pointer-events-none select-none';
+      } else {
+        // Selected by default from previous tab while switching to this solo product
+        btnHtml.className = 'px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 text-sky-300 hover:text-white bg-sky-500/15 border border-sky-500/30';
+        btnWebgl.className = 'px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 bg-rose-500/20 text-rose-300 border border-rose-500/40 opacity-85 cursor-not-allowed pointer-events-none select-none';
+      }
     } else {
-      btnHtml.className = 'px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 text-slate-400 hover:text-white';
-      btnWebgl.className = 'px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 bg-purple-500 text-white shadow';
+      btnWebgl.disabled = false;
+      btnWebgl.removeAttribute('aria-disabled');
+      btnWebgl.title = 'Switch to Compiled Unity WebGL Runtime';
+
+      if (activeLabRuntime === 'html') {
+        btnHtml.className = 'px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 bg-sky-500 text-slate-950 shadow';
+        btnWebgl.className = 'px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 text-slate-400 hover:text-white';
+      } else {
+        btnHtml.className = 'px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 text-slate-400 hover:text-white';
+        btnWebgl.className = 'px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 bg-purple-500 text-white shadow';
+      }
     }
   }
 
@@ -473,7 +520,10 @@ function updateLabUIState() {
   const activeSourceUrl = (activeLabRuntime === 'webgl' && item.webglUrl) ? item.webglUrl : item.htmlUrl;
 
   if (activeBadge) {
-    activeBadge.textContent = `Active Scene: ${item.scene} (${activeLabRuntime === 'webgl' ? 'Unity WebGL' : 'HTML Sim'})`;
+    const modeLabel = activeLabRuntime === 'webgl'
+      ? (item.hasWebgl ? 'Unity WebGL' : 'WebGL N/A • Solo Product')
+      : 'HTML Sim';
+    activeBadge.textContent = `Active Scene: ${item.scene} (${modeLabel})`;
   }
   if (newTabLink) {
     newTabLink.href = activeSourceUrl;
@@ -484,10 +534,64 @@ function updateLabUIState() {
   if (footerDesc) {
     footerDesc.textContent = item.desc;
   }
-  if (footerRuntimeText) {
-    footerRuntimeText.textContent = activeLabRuntime === 'html'
-      ? 'Switch to Unity WebGL Build →'
-      : '⚡ Back to Instant HTML Sim (0.2s) →';
+
+  if (btnFooterRuntime && footerRuntimeText) {
+    if (!item.hasWebgl && activeLabRuntime === 'html') {
+      btnFooterRuntime.disabled = true;
+      btnFooterRuntime.className = 'px-2.5 py-0.5 rounded-md bg-slate-800/40 text-slate-500 border border-slate-700/40 text-xs font-sans font-semibold flex items-center gap-1.5 opacity-60 cursor-not-allowed pointer-events-none select-none';
+      footerRuntimeText.textContent = '🔒 WebGL Build N/A (Solo Product)';
+    } else if (activeLabRuntime === 'webgl') {
+      btnFooterRuntime.disabled = false;
+      btnFooterRuntime.className = 'px-2.5 py-0.5 rounded-md bg-sky-500/15 hover:bg-sky-500/25 text-sky-300 border border-sky-500/30 text-xs font-sans font-semibold cursor-pointer transition flex items-center gap-1.5';
+      footerRuntimeText.textContent = '⚡ Back to Instant HTML Sim (0.2s) →';
+    } else {
+      btnFooterRuntime.disabled = false;
+      btnFooterRuntime.className = 'px-2.5 py-0.5 rounded-md bg-purple-500/15 hover:bg-purple-500/25 text-purple-300 border border-purple-500/30 text-xs font-sans font-semibold cursor-pointer transition flex items-center gap-1.5';
+      footerRuntimeText.textContent = 'Switch to Unity WebGL Build →';
+    }
+  }
+}
+
+function showLabWebglFailurePanel(demoKey, reason = 'solo_product') {
+  const item = UNITY_LAB_MANIFEST[demoKey] || UNITY_LAB_MANIFEST[activeLabDemo];
+  if (!item) return;
+
+  const webglPanel = document.getElementById('lab-webgl-panel');
+  const cardIcon = document.getElementById('webgl-card-icon');
+  const cardBadge = document.getElementById('webgl-card-badge');
+  const cardTitle = document.getElementById('webgl-card-title');
+  const cardDesc = document.getElementById('webgl-card-desc');
+  const specTag = document.getElementById('webgl-spec-tag');
+  const spec1 = document.getElementById('webgl-spec-line1');
+  const btnTryBoot = document.getElementById('webgl-btn-try-boot');
+
+  if (cardIcon) cardIcon.textContent = '⚠️';
+  if (specTag) specTag.textContent = item.title;
+  if (spec1) {
+    spec1.innerHTML = reason === 'load_failed'
+      ? '&bull; Status: <span class="text-rose-400">Failed to Load WebGL Mechanics Binary (HTTP 404 / WASM Mount Error)</span>'
+      : '&bull; Status: <span class="text-rose-400">WebGL Mechanics Build Not Available for This Solo Product</span>';
+  }
+  if (cardBadge) {
+    cardBadge.textContent = reason === 'load_failed'
+      ? 'ERR_WEBGL_WASM_LOAD_FAILED • DIAGNOSTIC FALLBACK'
+      : 'WEBGL BUILD UNAVAILABLE • SOLO PRODUCT';
+  }
+  if (cardTitle) {
+    cardTitle.textContent = 'Failed to Load Mechanics — Not Available for This Solo Product';
+  }
+  if (cardDesc) {
+    cardDesc.innerHTML = reason === 'load_failed'
+      ? `The compiled Unity WebGL build for <strong class="text-white">${item.title}</strong> failed to load or is currently unavailable. You can switch to the <strong class="text-sky-300">⚡ Instant Lab Sim</strong> to inspect and test the live interactive architecture immediately.`
+      : `<strong class="text-white">${item.title}</strong> is a standalone architecture subsystem / solo product (${item.unitySpecs}) rather than a standalone compiled WebGL game binary. Its full interactive simulation runs in the <strong class="text-sky-300">⚡ Instant Lab Sim</strong> tab.`;
+  }
+  if (btnTryBoot) {
+    btnTryBoot.classList.toggle('hidden', !item.hasWebgl);
+  }
+
+  if (webglPanel) {
+    webglPanel.classList.remove('hidden');
+    webglPanel.classList.add('flex');
   }
 }
 
@@ -495,7 +599,10 @@ function switchLabDemo(demoKey, runtimeMode = 'html', forceReload = false) {
   const item = UNITY_LAB_MANIFEST[demoKey];
   if (!item) return;
 
-  const isSame = (activeLabDemo === demoKey && activeLabRuntime === runtimeMode && !forceReload);
+  const prevDemo = activeLabDemo;
+  const prevRuntime = activeLabRuntime;
+  const isSame = (prevDemo === demoKey && prevRuntime === runtimeMode && !forceReload);
+
   activeLabDemo = demoKey;
   activeLabRuntime = runtimeMode;
 
@@ -513,33 +620,29 @@ function switchLabDemo(demoKey, runtimeMode = 'html', forceReload = false) {
 
   clearTimeout(labLoaderTimer);
 
+  // If switching from WebGL fallback overlay back to HTML Sim on the same solo product page, dismiss overlay directly
+  if (prevDemo === demoKey && prevRuntime === 'webgl' && runtimeMode === 'html' && !item.hasWebgl && !forceReload) {
+    if (webglPanel) {
+      webglPanel.classList.add('hidden');
+      webglPanel.classList.remove('flex');
+    }
+    try {
+      if (frame.contentWindow) {
+        frame.contentWindow.postMessage({ type: 'DISMISS_WEBGL_FALLBACK' }, '*');
+        frame.contentWindow.focus();
+        return;
+      }
+    } catch (_) {}
+  }
+
   if (runtimeMode === 'webgl') {
-    if (item.hasWebgl && item.webglUrl) {
+    // If this demo has a WebGL URL (either real WebGL build or solo product ?mode=webgl fallback page inside iframe)
+    if (item.webglUrl) {
       bootWebglInIframe(demoKey, forceReload);
       return;
     }
 
-    // Fallback card only if demo is an Editor-only tool without a WebGL build
-    const cardIcon = document.getElementById('webgl-card-icon');
-    const cardBadge = document.getElementById('webgl-card-badge');
-    const cardTitle = document.getElementById('webgl-card-title');
-    const cardDesc = document.getElementById('webgl-card-desc');
-    const spec1 = document.getElementById('webgl-spec-line1');
-    const btnTryBoot = document.getElementById('webgl-btn-try-boot');
-
-    if (cardIcon) cardIcon.textContent = item.icon;
-    if (spec1) spec1.textContent = `• Target: ${item.unitySpecs}`;
-    if (cardBadge) cardBadge.textContent = 'UNITY EDITORWINDOW TOOL';
-    if (cardTitle) cardTitle.textContent = `${item.title} — Unity Editor API Simulator`;
-    if (cardDesc) {
-      cardDesc.innerHTML = `Because <strong class="text-white">${item.title}</strong> is a Unity Editor extension (<code class="text-sky-300 font-mono">UnityEditor.AssetDatabase</code>), its full interactive experience runs in the <strong class="text-sky-300">⚡ Instant Lab Sim</strong> tab (which also includes the downloadable <code class="text-emerald-300 font-mono">.unitypackage</code>!).`;
-    }
-    if (btnTryBoot) btnTryBoot.classList.add('hidden');
-
-    if (webglPanel) {
-      webglPanel.classList.remove('hidden');
-      webglPanel.classList.add('flex');
-    }
+    showLabWebglFailurePanel(demoKey, 'solo_product');
     return;
   }
 
@@ -579,9 +682,12 @@ function switchLabDemo(demoKey, runtimeMode = 'html', forceReload = false) {
     : item.htmlUrl;
 }
 
-function bootWebglInIframe(demoKey, forceReload = false) {
+async function bootWebglInIframe(demoKey, forceReload = false) {
   const item = UNITY_LAB_MANIFEST[demoKey];
-  if (!item || !item.webglUrl) return;
+  if (!item || !item.webglUrl) {
+    showLabWebglFailurePanel(demoKey, 'solo_product');
+    return;
+  }
 
   const frame = document.getElementById('unity-lab-frame');
   const webglPanel = document.getElementById('lab-webgl-panel');
@@ -596,14 +702,38 @@ function bootWebglInIframe(demoKey, forceReload = false) {
   }
 
   if (loader) {
-    if (loaderIcon) loaderIcon.textContent = '🎮';
+    if (loaderIcon) loaderIcon.textContent = item.hasWebgl ? '🎮' : '⚠️';
     if (loaderTitle) {
-      loaderTitle.innerHTML = `createUnityInstance("<span class="text-purple-400">${item.webglUrl}</span>")`;
+      loaderTitle.innerHTML = item.hasWebgl
+        ? `createUnityInstance("<span class="text-purple-400">${item.webglUrl}</span>")`
+        : `SceneManager.LoadSceneAsync("<span class="text-rose-400">${item.scene}</span>")`;
     }
     if (loaderSub) {
-      loaderSub.textContent = 'Booting Unity WebGL 2.0 WASM Binary • Single-Iframe Auto GC';
+      loaderSub.textContent = item.hasWebgl
+        ? 'Booting Unity WebGL 2.0 WASM Binary • Single-Iframe Auto GC'
+        : 'Checking WebGL build target availability for solo product...';
     }
     loader.classList.remove('hidden');
+  }
+
+  const sep = item.webglUrl.includes('?') ? '&' : '?';
+  const targetUrl = forceReload ? `${item.webglUrl}${sep}t=${Date.now()}` : item.webglUrl;
+
+  // Pre-flight check when running over HTTP/HTTPS so broken/missing WebGL builds never render a 404 page
+  if (item.hasWebgl && window.location.protocol.startsWith('http')) {
+    try {
+      const checkUrl = item.webglUrl.split('?')[0];
+      const res = await fetch(checkUrl, { method: 'HEAD' });
+      if (!res.ok) {
+        if (loader) loader.classList.add('hidden');
+        showLabWebglFailurePanel(demoKey, 'load_failed');
+        return;
+      }
+    } catch (_) {
+      if (loader) loader.classList.add('hidden');
+      showLabWebglFailurePanel(demoKey, 'load_failed');
+      return;
+    }
   }
 
   if (frame) {
@@ -615,8 +745,7 @@ function bootWebglInIframe(demoKey, forceReload = false) {
     };
     frame.onload = hideWebglLoader;
     setTimeout(hideWebglLoader, 450);
-    const sep = item.webglUrl.includes('?') ? '&' : '?';
-    frame.src = forceReload ? `${item.webglUrl}${sep}t=${Date.now()}` : item.webglUrl;
+    frame.src = targetUrl;
   }
 }
 
@@ -624,6 +753,7 @@ function bootWebglInIframe(demoKey, forceReload = false) {
 window.openLabDemo = function(demoKey, runtimeMode = 'html') {
   switchLabDemo(demoKey, runtimeMode);
 };
+window.showLabWebglFailurePanel = showLabWebglFailurePanel;
 
 // --------------------------------------------------------
 // 4. Blueprint Split-View Terminal (Zone 3)

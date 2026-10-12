@@ -1125,8 +1125,111 @@ window.OfflineLeaderboard.submitScore("meowsweeper", 38400);</pre>
         },
         getState: () => controller.state
       };
+
+      initWebglFallbackScreen();
     });
+
+    // Reusable WebGL Build Diagnostic / Solo Product Fallback Screen
+    function initWebglFallbackScreen() {
+      const params = new URLSearchParams(window.location.search);
+      const mode = params.get('mode') || params.get('runtime');
+      const webglError = params.get('webgl_error');
+
+      if (mode === 'webgl' || webglError === '1') {
+        showWebglFallbackScreen({
+          reason: webglError === '1' ? 'load_failed' : 'solo_product'
+        });
+      }
+
+      window.addEventListener('message', (e) => {
+        if (!e.data || typeof e.data !== 'object') return;
+        if (e.data.type === 'DISMISS_WEBGL_FALLBACK') {
+          hideWebglFallbackScreen(false);
+        } else if (e.data.type === 'SHOW_WEBGL_FALLBACK') {
+          showWebglFallbackScreen(e.data);
+        }
+      });
+    }
+
+    function showWebglFallbackScreen(opts = {}) {
+      const panel = document.getElementById('webgl-fallback-screen');
+      if (!panel) return;
+
+      const titleEl = document.getElementById('webgl-fallback-title');
+      const descEl = document.getElementById('webgl-fallback-desc');
+      const codeEl = document.getElementById('webgl-fallback-code');
+
+      if (opts.title && titleEl) titleEl.textContent = opts.title;
+      if (opts.desc && descEl) descEl.innerHTML = opts.desc;
+      if (opts.reason === 'load_failed' && codeEl) {
+        codeEl.textContent = 'ERR_WEBGL_WASM_LOAD_FAILED • Fallback Simulator Active';
+      }
+
+      panel.classList.remove('hidden');
+      panel.classList.add('flex');
+    }
+
+    function hideWebglFallbackScreen(notifyParent = true) {
+      const panel = document.getElementById('webgl-fallback-screen');
+      if (panel) {
+        panel.classList.add('hidden');
+        panel.classList.remove('flex');
+      }
+      if (window.history && window.history.replaceState) {
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+      }
+      if (notifyParent && window.parent && window.parent !== window) {
+        try {
+          window.parent.postMessage({
+            type: 'WEBGL_FALLBACK_SWITCH_HTML',
+            demo: 'offline-leaderboard'
+          }, '*');
+        } catch (_) {}
+      }
+    }
+
+    window.showWebglFallbackScreen = showWebglFallbackScreen;
+    window.hideWebglFallbackScreen = hideWebglFallbackScreen;
   </script>
+
+  <!-- Reusable WebGL Build Unavailable / Failed to Load Mechanics Overlay Screen -->
+  <div id="webgl-fallback-screen" class="hidden fixed inset-0 z-[100] bg-[#0d1117]/95 backdrop-blur-md flex-col items-center justify-center p-6 text-center select-none">
+    <div class="max-w-lg w-full bg-[#161b22] border border-rose-500/40 rounded-2xl p-6 shadow-2xl space-y-4">
+      <div class="w-14 h-14 mx-auto rounded-2xl bg-rose-500/15 border border-rose-500/40 flex items-center justify-center text-2xl shadow-inner">
+        ⚠️
+      </div>
+
+      <div class="space-y-2">
+        <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-500/15 text-rose-300 border border-rose-500/30 text-[11px] font-mono font-bold uppercase tracking-wider" id="webgl-fallback-code">
+          WEBGL BUILD UNAVAILABLE &bull; SOLO PRODUCT
+        </div>
+        <h2 class="text-lg sm:text-xl font-bold text-white tracking-tight" id="webgl-fallback-title">
+          Failed to Load Mechanics &mdash; Not Available for This Solo Product
+        </h2>
+        <p class="text-xs text-[#8b949e] leading-relaxed" id="webgl-fallback-desc">
+          <strong class="text-[#e6edf3]">Offline Leaderboard (Sheet 06)</strong> is a standalone LiveOps &amp; bot-convergence architecture subsystem rather than a standalone compiled Unity WebGL game binary. This diagnostic screen is also displayed whenever a WebGL build fails to mount.
+        </p>
+      </div>
+
+      <div class="bg-[#0d1117] border border-[#30363d] rounded-xl p-3.5 text-left text-xs font-mono text-[#8b949e] space-y-1.5">
+        <div class="text-[#e6edf3] font-bold flex items-center justify-between">
+          <span>Runtime Diagnostic Telemetry:</span>
+          <span class="text-amber-400">Sheet 06 &bull; LiveOps</span>
+        </div>
+        <div>&bull; Status: <span class="text-rose-400">WebGL Mechanics Build Not Available / Failed to Load</span></div>
+        <div>&bull; Scope: <span class="text-[#e6edf3]">Solo Architecture Product (Non-Standalone WebGL)</span></div>
+        <div>&bull; Active Runtime: <span class="text-emerald-400">Instant HTML5 Architecture Simulator Ready</span></div>
+      </div>
+
+      <div class="flex flex-wrap items-center justify-center gap-2.5 pt-1">
+        <button type="button" onclick="hideWebglFallbackScreen(true)" class="px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-bold cursor-pointer transition flex items-center gap-1.5 shadow-lg shadow-sky-500/20">
+          <span>⚡</span>
+          <span>Open Interactive Offline Leaderboard Sim</span>
+        </button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
 

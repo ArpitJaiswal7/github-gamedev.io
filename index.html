@@ -433,32 +433,35 @@
             <div id="lab-loader-sub" class="text-xs font-mono text-slate-400">Unloading previous DOM &bull; Mounting single active instance...</div>
           </div>
 
-          <!-- Unity WebGL Build Launcher / Fallback View (Shown when user selects 🎮 Unity WebGL mode if WebGL build folder isn't dropped into webgl/<demo>/ yet, or boots the WebGL iframe directly if present) -->
-          <div id="lab-webgl-panel" class="hidden absolute inset-0 bg-[#0a0d14] z-20 flex-col items-center justify-center p-6 text-center">
-            <div class="max-w-lg w-full bg-[#161b22] border border-purple-500/40 rounded-2xl p-6 shadow-2xl space-y-4">
-              <div class="w-14 h-14 mx-auto rounded-2xl bg-purple-500/20 border border-purple-400/50 flex items-center justify-center text-2xl" id="webgl-card-icon">
-                🎮
+          <!-- Reusable Unity WebGL Diagnostic / Fallback Screen (Used when any WebGL build fails to load or is unavailable for a solo product) -->
+          <div id="lab-webgl-panel" class="hidden absolute inset-0 bg-[#0d1117]/95 backdrop-blur-md z-20 flex-col items-center justify-center p-6 text-center select-none">
+            <div class="max-w-lg w-full bg-[#161b22] border border-rose-500/40 rounded-2xl p-6 shadow-2xl space-y-4">
+              <div class="w-14 h-14 mx-auto rounded-2xl bg-rose-500/15 border border-rose-500/40 flex items-center justify-center text-2xl shadow-inner" id="webgl-card-icon">
+                ⚠️
               </div>
-              <div class="space-y-1.5">
-                <span class="px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40 text-xs font-mono font-bold" id="webgl-card-badge">
-                  UNITY WEBGL 2.0 WASM SLOT
+              <div class="space-y-2">
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-500/15 text-rose-300 border border-rose-500/30 text-[11px] font-mono font-bold uppercase tracking-wider" id="webgl-card-badge">
+                  WEBGL BUILD UNAVAILABLE &bull; SOLO PRODUCT
                 </span>
-                <h3 class="text-lg font-bold text-white" id="webgl-card-title">MeowSweeper — Compiled Unity WebGL Runtime</h3>
-                <p class="text-xs text-slate-300 leading-relaxed" id="webgl-card-desc">
-                  Ready to stream compiled C# / IL2CPP WebAssembly build from <code class="text-purple-300 font-mono" id="webgl-card-path">webgl/meowsweeper/index.html</code>.
+                <h3 class="text-lg sm:text-xl font-bold text-white tracking-tight" id="webgl-card-title">Failed to Load Mechanics &mdash; Not Available for This Solo Product</h3>
+                <p class="text-xs text-[#8b949e] leading-relaxed" id="webgl-card-desc">
+                  This standalone architecture subsystem does not package a separate compiled Unity WebGL game binary, or the WebGL build failed to mount. Its full interactive simulation runs in the Instant Lab Simulator.
                 </p>
               </div>
-              <div class="bg-[#0d1117] border border-[#30363d] rounded-xl p-3 text-left text-xs font-mono text-slate-400 space-y-1">
-                <div class="text-slate-200 font-bold">Engine Build Target Specs:</div>
-                <div id="webgl-spec-line1">&bull; Target: Unity 2022.3 LTS (IL2CPP / WebGL 2.0)</div>
-                <div id="webgl-spec-line2">&bull; Memory: Single-Iframe Auto GC on Tab Switch</div>
+              <div class="bg-[#0d1117] border border-[#30363d] rounded-xl p-3.5 text-left text-xs font-mono text-[#8b949e] space-y-1.5">
+                <div class="text-slate-200 font-bold flex items-center justify-between">
+                  <span>Runtime Diagnostic Telemetry:</span>
+                  <span class="text-amber-400" id="webgl-spec-tag">Diagnostic Fallback</span>
+                </div>
+                <div id="webgl-spec-line1">&bull; Status: <span class="text-rose-400">WebGL Mechanics Build Not Available / Failed to Load</span></div>
+                <div id="webgl-spec-line2">&bull; Active Runtime: <span class="text-emerald-400">Instant HTML5 Architecture Simulator Ready</span></div>
               </div>
               <div class="flex flex-wrap items-center justify-center gap-2.5 pt-1">
-                <button type="button" id="webgl-btn-try-boot" class="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold cursor-pointer transition flex items-center gap-1.5 shadow-lg shadow-purple-500/20">
-                  <span>▶</span> <span>Mount WebGL Build in Iframe</span>
+                <button type="button" id="webgl-btn-try-boot" class="hidden px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold cursor-pointer transition flex items-center gap-1.5 shadow-lg shadow-purple-500/20">
+                  <span>▶</span> <span>Retry WebGL Build</span>
                 </button>
-                <button type="button" id="webgl-btn-back-html" class="px-4 py-2 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-sky-300 border border-sky-500/40 text-xs font-bold cursor-pointer transition flex items-center gap-1.5">
-                  <span>⚡</span> <span>Back to Instant HTML Sim (0.2s)</span>
+                <button type="button" id="webgl-btn-back-html" class="px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-bold cursor-pointer transition flex items-center gap-1.5 shadow-lg shadow-sky-500/20">
+                  <span>⚡</span> <span>Switch to Instant Lab Sim (0.2s)</span>
                 </button>
               </div>
             </div>
@@ -661,7 +664,7 @@
     </div>
   </div>
 
-  <script src="script.js?v=00f06be"></script>
+  <script src="script.js?v=12ed8fc"></script>
   <script>
     lucide.createIcons();
   </script>
