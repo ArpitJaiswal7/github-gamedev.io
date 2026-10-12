@@ -776,84 +776,40 @@ const blueprintsData = [
     domain: 'Core Gameplay Logic',
     engine: 'Unity 6000.3.14f1 (WebGL WASM)',
     labDemo: 'meowsweeper',
-    mermaidFlowchart: `flowchart TD
-  L1["LevelSyncService.cs<br/>FetchManifestCoroutine()<br/>DownloadLevelCoroutine()"]
-  R1["MeowGameUI.cs (OnGUI / Update)<br/>CreateCatTexture() & RegionColors[12]<br/>DOUBLE_TAP_WINDOW (0.34s)"]
+    mermaidFlowchart: `flowchart TB
+  subgraph Inputs["INPUT & LEVEL GENERATOR"]
+    direction LR
+    Input["MeowGameUI Input<br/>(Tap X / Swipe / DblTap Cat)"]
+    Sync["LevelSyncService<br/>(65 CDN Levels + JSON)"]
+    Gen["GenerateChainedLevel(N)<br/>(N-Queens + Region Growth)"]
+  end
 
-  L2["GenerateChainedLevel(N)<br/>GenerateValidCatSolution(N)<br/>IsEliminatedByEarlier() + 50% 1-Cell"]
-  R2["Pointer & Touch Input Router<br/>SingleTapCross(r,c) & uSwipeTarget<br/>DoubleTapCat(r,c)"]
+  subgraph Core["CORE MODULE — MEOWSWEEPER ENGINE"]
+    Mgr["MeowGameManager.cs<br/>(SetupBoard & boardState[N,N])"]
+  end
 
-  L3["MeowLevelData.cs<br/>FromJson() & Parse2DArray()<br/>regionsFlat[N*N] / solutionFlat[N*N]"]
-  R3["MeowGameManager.cs<br/>SetupBoard() & defaultCatCoord<br/>boardState[N,N] (0:Empty 1:X 2:Cat)"]
+  subgraph Runtime["RUNTIME & INTERNAL SUBSYSTEMS"]
+    direction LR
+    Powers["Power-Up Cascade<br/>(SmartHint / Reveal / Mouse)"]
+    Lives["5-Lives & Win Check<br/>(remainingHearts & Flash)"]
+    LB["OfflineLeaderboardService<br/>(29 Bots & Season Rank)"]
+  end
 
-  L4["Power-Ups & 5-Lives Engine<br/>UseSmartHint() / UseCatReveal()<br/>UseMouseHelper() / remainingHearts"]
-  R4["OfflineLeaderboardService.cs<br/>CheckWinCondition() -> SubmitRun()<br/>SyncAndCalculate() (29 BotState)"]
+  Input -->|"cell action"| Mgr
+  Sync -->|"MeowLevelData"| Mgr
+  Gen -->|"regionsFlat / solutionFlat"| Mgr
 
-  L1 -->|"offline / shuffle"| L2
-  L1 -->|"remote JSON"| L3
-  R1 -->|"screen to (r,c)"| R2
-  L2 -->|"perm[regions]"| L3
-  R2 -->|"mutate cell"| R3
-  L3 -->|"HasCat / GetRegion"| L4
-  R3 -->|"power-up / strike"| L4
-  R3 -->|"placedCats == N"| R4
+  Mgr <-->|"3-step hint / reveal"| Powers
+  Mgr -->|"validate Cat"| Lives
+  Mgr -.->|"SubmitRun()"| LB
 
   classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
   classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
   classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1.5px,stroke-dasharray: 5 5,color:#cbd5e1
 
-  class L2,R3 coreNode
-  class L1,R1,L3,R2 adjNode
-  class L4,R4 intNode`,
-    mermaidEr: `erDiagram
-  LEVEL_SYNC_SERVICE ||--|{ MEOW_LEVEL_DATA : "GenerateChainedLevel(N)"
-  MEOW_GAME_UI ||--|| MEOW_GAME_MANAGER : "SingleTap / DoubleTapCat"
-  LEVEL_SYNC_SERVICE ||--|| MEOW_GAME_MANAGER : "DownloadLevelCoroutine"
-  MEOW_LEVEL_DATA ||--o{ MODE_SEASON_STATE : "gridSize / tier"
-  MEOW_GAME_MANAGER ||--|| OFFLINE_LEADERBOARD_SERVICE : "SubmitRun(elapsedMs)"
-
-  LEVEL_SYNC_SERVICE {
-    string LIVE_REPO_BASE_URL
-    List_string AvailableLevelIds
-    Dict_int_List LevelsBySize
-    bool levelToggle50Percent
-  }
-  MEOW_GAME_UI {
-    Rect currentBoardRect
-    Texture2D_array regionTextures
-    int uSwipeTarget
-    float DOUBLE_TAP_WINDOW
-  }
-  MEOW_LEVEL_DATA {
-    string levelId
-    int gridSize
-    bool hasSingleCellColor
-    Vector2Int defaultCatCoord
-    int_array regionsFlat
-    int_array solutionFlat
-  }
-  MEOW_GAME_MANAGER {
-    int_matrix boardState
-    bool_matrix isHighlightedCell
-    bool_matrix hasMouseBadge
-    int remainingHearts
-    int powerCatReveal_Hint_Mouse
-    float currentRunTimer
-  }
-  MODE_SEASON_STATE {
-    string seasonId
-    string modeId
-    bool isCumulative
-    int playerScore
-    int currentRank
-    List_BotState bots_29
-  }
-  OFFLINE_LEADERBOARD_SERVICE {
-    string ActiveMode
-    string PREF_WALLET
-    string PREF_BEST_MS
-    string PREF_LEAGUE_PTS
-  }`
+  class Mgr coreNode
+  class Input,Sync,Gen,Powers,Lives adjNode
+  class LB intNode`
   },
   {
     id: 'sheet-02',
@@ -862,64 +818,40 @@ const blueprintsData = [
     domain: 'Platform Services',
     engine: 'Unity (Android + iOS)',
     labDemo: 'native-image-bridge',
-    mermaidFlowchart: `flowchart TD
-  L1["Level Select & Avatar UI<br/>LoadImageAsync(url, size)"]
-  R1["Jigsaw Board TextureLoader<br/>HD Puzzle Source Request"]
+    mermaidFlowchart: `flowchart TB
+  subgraph Callers["GAMEPLAY & UI CALLERS"]
+    direction LR
+    LevelThumb["Level Select Grid<br/>(Thumbnail Batch)"]
+    JigsawTex["Jigsaw TextureLoader<br/>(HD Board Artwork)"]
+    AvatarUI["Leaderboard UI<br/>(Avatar Sprites)"]
+  end
 
-  L2["In-Flight Request Deduplicator<br/>Coalesces Concurrent Callbacks"]
-  R2["NativeImagePipeline.cs<br/>Shared Async C# API Surface"]
+  subgraph Core["CORE MODULE — NATIVE IMAGE BRIDGE"]
+    Facade["NativeImagePipeline.cs<br/>(Shared Async API + Deduplicator)"]
+  end
 
-  L3["Android JNI Bridge<br/>Glide + OkHttp3 Thread Pool"]
-  R3["iOS ObjC / Editor Fallback<br/>NSURLSession + UnityWebRequest"]
+  subgraph Backends["PLATFORM BRIDGES & CACHE"]
+    direction LR
+    Android["Android JNI Bridge<br/>(Glide + OkHttp3)"]
+    iOS["iOS ObjC Bridge<br/>(NSURLSession + vImage)"]
+    Cache["L1 RAM LRU Pool<br/>& L2 SHA-256 Disk Cache"]
+  end
 
-  L4["L1 RAM LRU Texture2D Pool<br/>& L2 SHA-256 Disk Cache"]
-  R4["Hardware InSampleSize<br/>Off-Thread Bitmap Decoder"]
+  LevelThumb -->|"LoadImageAsync"| Facade
+  JigsawTex -->|"LoadImageAsync"| Facade
+  AvatarUI -->|"LoadImageAsync"| Facade
 
-  L1 -->|"request"| L2
-  R1 -->|"request"| R2
-  L2 -->|"deduped"| L3
-  R2 -->|"dispatch"| R3
-  L3 -->|"cache write"| L4
-  R3 -->|"decode"| R4
+  Facade -->|"AndroidJNI"| Android
+  Facade -->|"DllImport"| iOS
+  Facade -.->|"LRU / SHA-256"| Cache
 
   classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
   classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
   classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1.5px,stroke-dasharray: 5 5,color:#cbd5e1
 
-  class L2,R2 coreNode
-  class L1,R1,L3,R3 adjNode
-  class L4,R4 intNode`,
-    mermaidEr: `erDiagram
-  IMAGE_REQUEST ||--o| MEMORY_LRU_ENTRY : "checks L1"
-  DEDUP_CALLBACK_GROUP ||--|| NATIVE_DECODE_JOB : "dispatches"
-  MEMORY_LRU_ENTRY ||--o| DISK_CACHE_RECORD : "falls back L2"
-  NATIVE_DECODE_JOB ||--|| TEXTURE2D_HANDLE : "uploads GPU"
-
-  IMAGE_REQUEST {
-    string urlHashSha256
-    string sourceUrl
-    int targetWidth_Height
-  }
-  DEDUP_CALLBACK_GROUP {
-    string urlHashSha256
-    int subscriberCount
-  }
-  MEMORY_LRU_ENTRY {
-    int textureInstanceId
-    int byteFootprint
-  }
-  NATIVE_DECODE_JOB {
-    string platformBackend
-    int sampleFactor
-  }
-  DISK_CACHE_RECORD {
-    string filePath
-    string etagHeader
-  }
-  TEXTURE2D_HANDLE {
-    int width_height
-    string format_RGBA32
-  }`
+  class Facade coreNode
+  class LevelThumb,JigsawTex,AvatarUI,Android,iOS adjNode
+  class Cache intNode`
   },
   {
     id: 'sheet-09',
@@ -928,66 +860,40 @@ const blueprintsData = [
     domain: 'Core Gameplay Logic',
     engine: 'Unity',
     labDemo: 'calm-jigsaw',
-    mermaidFlowchart: `flowchart TD
-  L1["Grid Preset (3x3..10x10)<br/>& Pointer Drag Input"]
-  R1["HD Source Texture2D<br/>Single Shared Material Atlas"]
+    mermaidFlowchart: `flowchart TB
+  subgraph Inputs["PUZZLE CONFIG & ARTWORK"]
+    direction LR
+    GridCfg["Grid Preset<br/>(3x3 up to 10x10)"]
+    SourceArt["HD Source Texture2D<br/>(Single Shared Atlas)"]
+    TouchDrag["Multi-Touch Drag<br/>(Piece Pointer Input)"]
+  end
 
-  L2["Complementary Edge Solver<br/>(Flat=0 / Tab=+1 / Blank=-1)"]
-  R2["ProceduralBoardGenerator.cs<br/>N x N Piece Spawner & UV Mapper"]
+  subgraph Core["CORE MODULE — JIGSAW BOARD RENDERER"]
+    Generator["ProceduralBoardGenerator.cs<br/>(Edge Signature Matrix + UV Mapper)"]
+  end
 
-  L3["PieceMaskShader.shader<br/>9-Slice Bevel & Alpha Cutout"]
-  R3["Union-Find Cluster Merger<br/>Magnetic Neighbor Snap Check"]
+  subgraph Runtime["SHADER & SNAP SUBSYSTEMS"]
+    direction LR
+    Shader["PieceMaskShader<br/>(9-Slice Bevel + Alpha)"]
+    SnapGroup["Union-Find Cluster<br/>(Magnetic Neighbor Snap)"]
+    UVRect["Oversized UV Quad (+28%)<br/>& Dynamic Z-Order Stack"]
+  end
 
-  L4["Oversized UV Quad (+28%)<br/>Prevents Tab Bleed Clipping"]
-  R4["Dynamic SortingGroup Stack<br/>& Scrollable Piece Tray"]
+  GridCfg -->|"N x N size"| Generator
+  SourceArt -->|"shared atlas"| Generator
+  TouchDrag -->|"transform"| Generator
 
-  L1 -->|"dimensions"| L2
-  R1 -->|"shared atlas"| R2
-  L2 -->|"edge IDs"| L3
-  R2 -->|"piece transform"| R3
-  L3 -->|"UV offset"| L4
-  R3 -->|"z-order & tray"| R4
+  Generator -->|"UV + mask ID"| Shader
+  Generator <-->|"snap check"| SnapGroup
+  Generator -.->|"tab bleed margin"| UVRect
 
   classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
   classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
   classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1.5px,stroke-dasharray: 5 5,color:#cbd5e1
 
-  class L2,R2 coreNode
-  class L1,R1,L3,R3 adjNode
-  class L4,R4 intNode`,
-    mermaidEr: `erDiagram
-  JIGSAW_BOARD ||--|{ JIGSAW_PIECE : "generates N x N"
-  UNION_CLUSTER ||--|{ EDGE_SIGNATURE : "validates snap"
-  JIGSAW_PIECE ||--|| SHADER_UV_BLOCK : "projects"
-  EDGE_SIGNATURE ||--|| TRAY_SAVE_STATE : "serializes"
-
-  JIGSAW_BOARD {
-    string puzzleId
-    int rows_cols
-    float snapRadiusPx
-  }
-  UNION_CLUSTER {
-    int clusterRootId
-    int_array memberIds
-    boolean isLocked
-  }
-  JIGSAW_PIECE {
-    int pieceIndex
-    int gridRow_Col
-    float worldX_Y
-  }
-  EDGE_SIGNATURE {
-    int top_right
-    int bottom_left
-  }
-  SHADER_UV_BLOCK {
-    float4 uvScaleOffset
-    int maskAtlasId
-  }
-  TRAY_SAVE_STATE {
-    int lockedCount
-    float elapsedSec
-  }`
+  class Generator coreNode
+  class GridCfg,SourceArt,TouchDrag,Shader,SnapGroup adjNode
+  class UVRect intNode`
   },
   {
     id: 'sheet-06',
@@ -996,68 +902,40 @@ const blueprintsData = [
     domain: 'LiveOps / Retention',
     engine: 'Unity',
     labDemo: 'offline-leaderboard',
-    mermaidFlowchart: `flowchart TD
-  L1["Level Win (+Score / BestMs)<br/>SubmitRun(modeId, rawScore)"]
-  R1["System Realtime Clock<br/>NowSec() & AdvanceTimeHours()"]
+    mermaidFlowchart: `flowchart TB
+  subgraph Events["SCORE & CLOCK INPUTS"]
+    direction LR
+    GameWin["Level Complete<br/>(SubmitRun Score / Ms)"]
+    BootClock["System Realtime Clock<br/>(NowSec Elapsed Delta)"]
+    ModeCfg["Season Mode Config<br/>(Best Time vs League Pts)"]
+  end
 
-  L2["ModeSeasonState Manager<br/>GetOrCreateSeason(modeId)"]
-  R2["OfflineLeaderboardService.cs<br/>SyncAndCalculate(modeId)"]
+  subgraph Core["CORE MODULE — OFFLINE LEADERBOARD"]
+    SimEngine["OfflineLeaderboardService.cs<br/>(SyncAndCalculate & ModeSeasonState)"]
+  end
 
-  L3["29 Seeded BotState Sim<br/>(elite / rival / steady / casual)"]
-  R3["Monotonic Timestamp Clamp<br/>Anti-Rollback Clock Guard"]
+  subgraph Runtime["STANDINGS & ANTI-ROLLBACK"]
+    direction LR
+    LeagueUI["Windowed Standings UI<br/>(Top 3 + Neighborhood)"]
+    RewardBox["ClaimSeasonReward<br/>(PlayerPrefs Coin Grant)"]
+    AntiCheat["29 Seeded BotState Sim<br/>& Anti-Rollback Clamp"]
+  end
 
-  L4["Windowed Standings Builder<br/>Top 3 + Player Neighborhood"]
-  R4["ClaimSeasonReward() & Wallet<br/>PlayerPrefs Persistence"]
+  GameWin -->|"rawScore"| SimEngine
+  BootClock -->|"dtSec"| SimEngine
+  ModeCfg -->|"modeId"| SimEngine
 
-  L1 -->|"score delta"| L2
-  R1 -->|"dtSec"| R2
-  L2 -->|"bot curves"| L3
-  R2 -->|"lastSeenSec"| R3
-  L3 -->|"sorted ranks"| L4
-  R3 -->|"reward tier"| R4
+  SimEngine -->|"rank delta"| LeagueUI
+  SimEngine -->|"tier chest"| RewardBox
+  SimEngine -.->|"lastSeenSec clamp"| AntiCheat
 
   classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
   classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
   classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1.5px,stroke-dasharray: 5 5,color:#cbd5e1
 
-  class L2,R2 coreNode
-  class L1,R1,L3,R3 adjNode
-  class L4,R4 intNode`,
-    mermaidEr: `erDiagram
-  MODE_SEASON_STATE ||--|{ BOT_STATE : "simulates 29 bots"
-  OFFLINE_LEADERBOARD_SVC ||--|| SYNC_RESULT : "computes"
-  BOT_STATE ||--|| ROW_VIEW : "formats row"
-  SYNC_RESULT ||--|| PLAYER_PREFS_WALLET : "grants coins"
-
-  MODE_SEASON_STATE {
-    string seasonId
-    string modeId
-    bool isCumulative
-    double endTimeSec
-  }
-  OFFLINE_LEADERBOARD_SVC {
-    string ActiveMode
-    double simOffsetSec
-  }
-  BOT_STATE {
-    string botId
-    string archetype
-    int score_targetEnd
-  }
-  SYNC_RESULT {
-    int playerRank
-    int rankDelta
-    string phaseText
-  }
-  ROW_VIEW {
-    int rank
-    string formattedScore
-    string rewardLabel
-  }
-  PLAYER_PREFS_WALLET {
-    int MeowWebGL_WalletCoins
-    int MeowWebGL_BestTimeMs
-  }`
+  class SimEngine coreNode
+  class GameWin,BootClock,ModeCfg,LeagueUI,RewardBox adjNode
+  class AntiCheat intNode`
   },
   {
     id: 'sheet-08',
@@ -1066,64 +944,40 @@ const blueprintsData = [
     domain: 'Platform Services',
     engine: 'Unity',
     labDemo: 'native-image-bridge',
-    mermaidFlowchart: `flowchart TD
-  L1["Cold Boot Sequence<br/>Zero-Block Instant Mount"]
-  R1["Remote GitHub Pages CDN<br/>manifest.json + levels/*.json"]
+    mermaidFlowchart: `flowchart TB
+  subgraph Triggers["BOOT & CDN ENDPOINTS"]
+    direction LR
+    AppBoot["Game Cold Boot<br/>(Zero-Block Start)"]
+    RemoteCDN["GitHub Pages CDN<br/>(manifest.json + levels)"]
+    Fallback["Offline Fallback<br/>(65 Linked-Chain Levels)"]
+  end
 
-  L2["Active Level Registry<br/>AvailableLevelIds & LevelsBySize"]
-  R2["LevelSyncService.cs<br/>FetchManifestCoroutine()"]
+  subgraph Core["CORE MODULE — OTA LEVEL SYNCHRONIZER"]
+    SyncMgr["LevelSyncService.cs<br/>(FetchManifest & DownloadLevelCoroutine)"]
+  end
 
-  L3["Manifest Parser & Differ<br/>ParseManifestLevels(json)"]
-  R3["DownloadLevelCoroutine(id)<br/>UnityWebRequest Async Fetch"]
+  subgraph Runtime["PARSING & REGISTRY"]
+    direction LR
+    ActiveDB["AvailableLevelIds<br/>& LevelsBySize Registry"]
+    JsonParser["MeowLevelData.FromJson<br/>(Parse2DArray Flat)"]
+    HashDiff["Timeout Guard (5s)<br/>& Chained Level Fallback"]
+  end
 
-  L4["Offline 65-Level Catalog<br/>& GenerateValidPuzzle(N)"]
-  R4["MeowLevelData.FromJson()<br/>Zero-Allocation Array Parser"]
+  AppBoot -->|"init coroutine"| SyncMgr
+  RemoteCDN -->|"UnityWebRequest"| SyncMgr
+  Fallback -->|"seed catalog"| SyncMgr
 
-  L1 -->|"mount"| L2
-  R1 -->|"HTTP GET"| R2
-  L2 -->|"index"| L3
-  R2 -->|"fetch level"| R3
-  L3 -->|"fallback"| L4
-  R3 -->|"deserialize"| R4
+  SyncMgr -->|"index levels"| ActiveDB
+  SyncMgr -->|"deserialize"| JsonParser
+  SyncMgr -.->|"on offline"| HashDiff
 
   classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
   classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
   classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1.5px,stroke-dasharray: 5 5,color:#cbd5e1
 
-  class L2,R2 coreNode
-  class L1,R1,L3,R3 adjNode
-  class L4,R4 intNode`,
-    mermaidEr: `erDiagram
-  REMOTE_MANIFEST ||--|{ LEVEL_MANIFEST_META : "indexes"
-  LEVEL_SYNC_SERVICE ||--|{ DOWNLOAD_COROUTINE : "runs"
-  LEVEL_MANIFEST_META ||--|| MEOW_LEVEL_DATA : "maps to"
-  DOWNLOAD_COROUTINE ||--|| CHAINED_FALLBACK : "triggers on timeout"
-
-  REMOTE_MANIFEST {
-    string LIVE_REPO_BASE_URL
-    int totalLevels_65
-  }
-  LEVEL_SYNC_SERVICE {
-    List_string AvailableLevelIds
-    Dict_int_List LevelsBySize
-  }
-  LEVEL_MANIFEST_META {
-    string levelId
-    int gridSize
-    string tier_hash
-  }
-  DOWNLOAD_COROUTINE {
-    string url
-    int timeoutSec_5
-  }
-  MEOW_LEVEL_DATA {
-    int_array regionsFlat
-    int_array solutionFlat
-  }
-  CHAINED_FALLBACK {
-    int gridSize_N
-    bool useSingleCellColor
-  }`
+  class SyncMgr coreNode
+  class AppBoot,RemoteCDN,Fallback,ActiveDB,JsonParser adjNode
+  class HashDiff intNode`
   },
   {
     id: 'sheet-04',
@@ -1132,64 +986,40 @@ const blueprintsData = [
     domain: 'Monetization',
     engine: 'Unity (Android + iOS)',
     labDemo: null,
-    mermaidFlowchart: `flowchart TD
-  L1["Store UI Purchase Button<br/>Purchase(productId)"]
-  R1["Unified SKU Catalog<br/>Real Money & Soft Coins"]
+    mermaidFlowchart: `flowchart TB
+  subgraph StoreUI["STOREFRONT & CATALOG"]
+    direction LR
+    ShopBtn["Store Purchase UI<br/>(Purchase SKU)"]
+    Catalog["Unified SKU Catalog<br/>(IAP + Soft Coins)"]
+    Restore["Restore Purchases<br/>(Sync Entitlements)"]
+  end
 
-  L2["Transaction Guard & Router<br/>Validates Active SKU State"]
-  R2["IAPStoreGateway.cs<br/>Dual-Currency Store Controller"]
+  subgraph Core["CORE MODULE — IAP SYSTEM GATEWAY"]
+    Gateway["IAPStoreGateway.cs<br/>(Dual-Currency Router & Guard)"]
+  end
 
-  L3["Google Play Billing<br/>& Apple StoreKit 2 Bridge"]
-  R3["Grant-Then-Confirm Flow<br/>Crash-Safe Entitlement Write"]
+  subgraph Providers["BILLING & CRASH RECOVERY"]
+    direction LR
+    StoreSDK["Google Play Billing<br/>& Apple StoreKit 2"]
+    Inventory["Player Entitlement DB<br/>& Coin Wallet Ledger"]
+    GrantFirst["Grant-Then-Confirm Log<br/>& Receipt ID Dedup"]
+  end
 
-  L4["Receipt Signature Validator<br/>& Transaction ID Dedup"]
-  R4["Player Entitlement DB<br/>& Local Coin Ledger"]
+  ShopBtn -->|"productId"| Gateway
+  Catalog -->|"SKU config"| Gateway
+  Restore -->|"re-verify"| Gateway
 
-  L1 -->|"initiate"| L2
-  R1 -->|"metadata"| R2
-  L2 -->|"platform SDK"| L3
-  R2 -->|"1. grant"| R3
-  L3 -->|"2. verify"| L4
-  R3 -->|"persist"| R4
+  Gateway <-->|"store tx"| StoreSDK
+  Gateway -->|"1. grant save"| Inventory
+  Gateway -.->|"2. confirm"| GrantFirst
 
   classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
   classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
   classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1.5px,stroke-dasharray: 5 5,color:#cbd5e1
 
-  class L2,R2 coreNode
-  class L1,R1,L3,R3 adjNode
-  class L4,R4 intNode`,
-    mermaidEr: `erDiagram
-  STORE_CATALOG ||--|{ PRODUCT_SKU : "defines"
-  IAP_GATEWAY ||--|{ PURCHASE_TX : "processes"
-  PRODUCT_SKU ||--|| ENTITLEMENT_GRANT : "unlocks"
-  PURCHASE_TX ||--|| RECEIPT_LEDGER : "confirms"
-
-  STORE_CATALOG {
-    string catalogVersion
-    int skuCount
-  }
-  IAP_GATEWAY {
-    bool isInitialized
-    string activeStore
-  }
-  PRODUCT_SKU {
-    string productId
-    string currencyType
-    float priceAmount
-  }
-  PURCHASE_TX {
-    string transactionId
-    string status
-  }
-  ENTITLEMENT_GRANT {
-    string rewardType
-    int quantity
-  }
-  RECEIPT_LEDGER {
-    string signatureHash
-    boolean storeConfirmed
-  }`
+  class Gateway coreNode
+  class ShopBtn,Catalog,Restore,StoreSDK,Inventory adjNode
+  class GrantFirst intNode`
   },
   {
     id: 'sheet-13',
@@ -1198,63 +1028,40 @@ const blueprintsData = [
     domain: 'Editor Tooling / IPC',
     engine: 'Unity + Python (offline)',
     labDemo: 'argos-localization',
-    mermaidFlowchart: `flowchart TD
-  L1["Unity Localization Table<br/>CSV & ScriptableObject Rows"]
-  R1["Target Locale Batcher<br/>(EN to ES / FR / DE / JA / HI)"]
+    mermaidFlowchart: `flowchart TB
+  subgraph EditorUI["UNITY EDITOR LOCALIZATION"]
+    direction LR
+    StringTable["Localization String Table<br/>(CSV / ScriptableObject)"]
+    LangSelect["Target Locale Batch<br/>(EN to ES/FR/DE/JA/HI)"]
+    TokenMask["Token Freezer (__TK0__)<br/>(Protects {0} & Tags)"]
+  end
 
-  L2["Token Masker (__TK0__)<br/>Freezes {0} & RichText Tags"]
-  R2["ArgosIPCProcessRunner.cs<br/>Persistent Subprocess & Pipe"]
+  subgraph Core["CORE MODULE — ARGOS IPC BRIDGE"]
+    IPCController["ArgosIPCProcessRunner.cs<br/>(Persistent Subprocess + JSON Pipe)"]
+  end
 
-  L3["argos_worker.py<br/>UTF-8 stdin / stdout JSONL"]
-  R3["Argos + CTranslate2<br/>Offline Neural Translation"]
+  subgraph PythonWorker["OFFLINE PYTHON WORKER"]
+    direction LR
+    WorkerLoop["argos_worker.py<br/>(UTF-8 stdin / stdout)"]
+    CTranslate["Argos + CTranslate2<br/>(Offline Neural Engine)"]
+    Watchdog["Warm Model Cache<br/>& Pipe Watchdog"]
+  end
 
-  L4["Token Unmasker & Validator<br/>Restores Protected Markup"]
-  R4["Warm Model Memory Cache<br/>& Pipe Timeout Watchdog"]
+  StringTable -->|"source rows"| IPCController
+  LangSelect -->|"locale codes"| IPCController
+  TokenMask -->|"masked text"| IPCController
 
-  L1 -->|"source text"| L2
-  R1 -->|"locale codes"| R2
-  L2 -->|"masked JSONL"| L3
-  R2 -->|"stdin pipe"| R3
-  L3 -->|"unmask"| L4
-  R3 -->|"stdout JSONL"| R4
+  IPCController <-->|"JSONL stdio"| WorkerLoop
+  WorkerLoop <-->|"batch inference"| CTranslate
+  IPCController -.->|"keep-alive"| Watchdog
 
   classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
   classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
   classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1.5px,stroke-dasharray: 5 5,color:#cbd5e1
 
-  class L2,R2 coreNode
-  class L1,R1,L3,R3 adjNode
-  class L4,R4 intNode`,
-    mermaidEr: `erDiagram
-  LOCALIZATION_TABLE ||--|{ STRING_ROW : "contains"
-  ARGOS_IPC_RUNNER ||--|{ IPC_BATCH_JOB : "streams stdio"
-  STRING_ROW ||--|| TOKEN_MASK_MAP : "freezes tags"
-  IPC_BATCH_JOB ||--|| WORKER_RESPONSE : "returns JSONL"
-
-  LOCALIZATION_TABLE {
-    string tableAssetGuid
-    string sourceLocale
-  }
-  ARGOS_IPC_RUNNER {
-    int pythonPid
-    bool isModelWarm
-  }
-  STRING_ROW {
-    string entryKey
-    string sourceText
-  }
-  IPC_BATCH_JOB {
-    string requestId
-    string targetLang
-  }
-  TOKEN_MASK_MAP {
-    string tokenKey
-    string rawMarkup
-  }
-  WORKER_RESPONSE {
-    string status
-    int inferenceMs
-  }`
+  class IPCController coreNode
+  class StringTable,LangSelect,TokenMask,WorkerLoop,CTranslate adjNode
+  class Watchdog intNode`
   },
   {
     id: 'sheet-11',
@@ -1263,63 +1070,40 @@ const blueprintsData = [
     domain: 'Unity Editor DX',
     engine: 'Unity Editor',
     labDemo: 'asset-organizer',
-    mermaidFlowchart: `flowchart TD
-  L1["projectWindowItemOnGUI<br/>Row Rect & GUID Callback"]
-  R1["AssetPostprocessor<br/>Import & Move Watcher"]
+    mermaidFlowchart: `flowchart TB
+  subgraph EditorHooks["UNITY EDITOR HOOKS"]
+    direction LR
+    ProjectGUI["projectWindowItemOnGUI<br/>(Row Rect & GUID)"]
+    Postproc["AssetPostprocessor<br/>(Import & Move Watcher)"]
+    Shortcut["Quick-Pin Dock<br/>& Filter Toolbar"]
+  end
 
-  L2["O(1) GUID Hash Registry<br/>Rename & Move Resilient"]
-  R2["AssetOrganizerController.cs<br/>EditorWindow & Rule Engine"]
+  subgraph Core["CORE MODULE — ASSET ORGANIZER"]
+    Organizer["AssetOrganizerController.cs<br/>(GUID Registry + Rule Matcher)"]
+  end
 
-  L3["Custom Category Badges<br/>& Quick-Pin Favorites Bar"]
-  R3["One-Click Folder Audit<br/>& Auto-Route Mover"]
+  subgraph Subsystems["EDITOR UX & METADATA"]
+    direction LR
+    BadgeDrawer["Custom Category Badges<br/>& Color Row Stripes"]
+    RuleScanner["One-Click Folder Audit<br/>& Auto-Mover"]
+    GuidMap["O(1) GUID Hash Cache<br/>(Zero Runtime Overhead)"]
+  end
 
-  L4["ScriptableObject Metadata<br/>& EditorPrefs Persistence"]
-  R4["Editor-Only Assembly Def<br/>Zero Runtime Build Overhead"]
+  ProjectGUI -->|"visible GUID"| Organizer
+  Postproc -->|"asset delta"| Organizer
+  Shortcut -->|"pin query"| Organizer
 
-  L1 -->|"row GUID"| L2
-  R1 -->|"moved paths"| R2
-  L2 -->|"draw badge"| L3
-  R2 -->|"route rule"| R3
-  L3 -->|"save pin"| L4
-  R3 -->|"batch edit"| R4
+  Organizer -->|"draw overlay"| BadgeDrawer
+  Organizer -->|"route folders"| RuleScanner
+  Organizer -.->|"GUID lookup"| GuidMap
 
   classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
   classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
   classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1.5px,stroke-dasharray: 5 5,color:#cbd5e1
 
-  class L2,R2 coreNode
-  class L1,R1,L3,R3 adjNode
-  class L4,R4 intNode`,
-    mermaidEr: `erDiagram
-  ORGANIZER_DB ||--|{ ASSET_GUID_NODE : "indexes"
-  EDITOR_WINDOW_UI ||--|{ CATEGORY_BADGE : "renders"
-  ASSET_GUID_NODE ||--|| ROUTING_RULE : "matches"
-  CATEGORY_BADGE ||--|| PINNED_FAVORITE : "bookmarks"
-
-  ORGANIZER_DB {
-    string projectVersion
-    int trackedCount
-  }
-  EDITOR_WINDOW_UI {
-    string searchFilter
-    int activeTab
-  }
-  ASSET_GUID_NODE {
-    string assetGuidHex
-    string cachedPath
-  }
-  CATEGORY_BADGE {
-    string badgeLabel
-    string hexColor
-  }
-  ROUTING_RULE {
-    string extPattern
-    string targetFolder
-  }
-  PINNED_FAVORITE {
-    int sortOrder
-    long pinnedUtc
-  }`
+  class Organizer coreNode
+  class ProjectGUI,Postproc,Shortcut,BadgeDrawer,RuleScanner adjNode
+  class GuidMap intNode`
   },
   {
     id: 'sheet-12',
@@ -1328,76 +1112,49 @@ const blueprintsData = [
     domain: 'Tech Art & Shaders',
     engine: 'Unity',
     labDemo: 'jigsaw-solitaire',
-    mermaidFlowchart: `flowchart TD
-  L1["UnityEngine.UI.Image<br/>or SpriteRenderer Target"]
-  R1["Flicker Profile Preset<br/>(Hearth / Torch / Candle)"]
+    mermaidFlowchart: `flowchart TB
+  subgraph SceneInputs["UI CANVAS & PRESETS"]
+    direction LR
+    CanvasImg["UnityEngine.UI.Image<br/>(Target UI Graphic)"]
+    PresetCfg["Flicker Profile Preset<br/>(Hearth / Torch / Candle)"]
+    LightSync["2D Ambient Glow<br/>(Warmth Synchronizer)"]
+  end
 
-  L2["FlameFlickerDriver.cs<br/>Per-Frame C# Uniform Driver"]
-  R2["ProceduralFlame.shader<br/>Custom UI Fragment Shader"]
+  subgraph Core["CORE MODULE — FLAME FLICKER DRIVER"]
+    Driver["FlameFlickerDriver.cs<br/>+ ProceduralFlame.shader"]
+  end
 
-  L3["MaterialPropertyBlock<br/>(_Phase, _Wind, _Intensity)"]
-  R3["2-Octave Simplex FBM<br/>UV Domain Warping"]
+  subgraph ShaderPass["GPU UNIFORMS & FRAGMENT MATH"]
+    direction LR
+    MatBlock["MaterialPropertyBlock<br/>(_Phase, _Wind, _Intensity)"]
+    FBM["2-Octave Simplex FBM<br/>(UV Domain Warp)"]
+    SDF["Teardrop SDF Mask<br/>(Zero Particle GC)"]
+  end
 
-  L4["Synchronized 2D Glow<br/>& Thermal FPS Throttler"]
-  R4["Teardrop SDF Core Mask<br/>Zero Particle GC Allocations"]
+  CanvasImg -->|"graphic ref"| Driver
+  PresetCfg -->|"turbulence"| Driver
+  LightSync <-->|"luminance"| Driver
 
-  L1 -->|"graphic ref"| L2
-  R1 -->|"palette"| R2
-  L2 -->|"set uniforms"| L3
-  R2 -->|"sample noise"| R3
-  L3 -->|"pulse light"| L4
-  R3 -->|"alpha mask"| R4
+  Driver -->|"per-frame"| MatBlock
+  Driver -->|"noise UV"| FBM
+  Driver -.->|"fragment math"| SDF
 
   classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
   classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
   classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1.5px,stroke-dasharray: 5 5,color:#cbd5e1
 
-  class L2,R2 coreNode
-  class L1,R1,L3,R3 adjNode
-  class L4,R4 intNode`,
-    mermaidEr: `erDiagram
-  FLAME_PRESET ||--|| COLOR_RAMP : "blends"
-  FLAME_DRIVER_CS ||--|{ SHADER_UNIFORM : "updates"
-  COLOR_RAMP ||--|| FRAGMENT_SDF_PASS : "tints"
-  SHADER_UNIFORM ||--|| GLOW_SYNCHRONIZER : "pulses"
-
-  FLAME_PRESET {
-    string presetId
-    float scrollSpeed
-    float turbulence
-  }
-  FLAME_DRIVER_CS {
-    int targetFpsCap
-    bool usePropBlock
-  }
-  COLOR_RAMP {
-    string coreHex
-    string midFlameHex
-  }
-  SHADER_UNIFORM {
-    float timePhase
-    float2 uvWarpOffset
-  }
-  FRAGMENT_SDF_PASS {
-    int noiseOctaves_2
-    int gcAlloc_0
-  }
-  GLOW_SYNCHRONIZER {
-    float baseAlpha
-    float pulseRadius
-  }`
+  class Driver coreNode
+  class CanvasImg,PresetCfg,LightSync,MatBlock,FBM adjNode
+  class SDF intNode`
   }
 ];
 
 let activeBlueprintIdx = 0;
-let activeBlueprintDiagramMode = 'flowchart'; // 'flowchart' | 'er'
 
 function initBlueprintTerminal() {
   const navContainer = document.getElementById('blueprint-nav-list');
   const stageMermaid = document.getElementById('bp-stage-mermaid');
   const stageTitle = document.getElementById('bp-stage-title');
-  const btnModeFlowchart = document.getElementById('bp-mode-flowchart');
-  const btnModeEr = document.getElementById('bp-mode-er');
   const zoomBtn = document.getElementById('btn-zoom-blueprint');
 
   if (!navContainer) return;
@@ -1411,16 +1168,9 @@ function initBlueprintTerminal() {
       flowchart: {
         htmlLabels: true,
         curve: 'basis',
-        nodeSpacing: 22,
-        rankSpacing: 28,
-        padding: 8,
-        useMaxWidth: false
-      },
-      er: {
-        layoutDirection: 'TB',
-        minEntityWidth: 90,
-        minEntityHeight: 55,
-        entityPadding: 8,
+        nodeSpacing: 24,
+        rankSpacing: 32,
+        padding: 10,
         useMaxWidth: false
       },
       themeVariables: {
@@ -1438,35 +1188,18 @@ function initBlueprintTerminal() {
     });
   }
 
-  function updateDiagramModeButtons() {
-    const inactiveClass = 'px-3 py-1 rounded-md font-semibold transition-all cursor-pointer flex items-center gap-1.5 text-slate-400 hover:text-white';
-    if (btnModeFlowchart) {
-      btnModeFlowchart.className = activeBlueprintDiagramMode === 'flowchart'
-        ? 'px-3 py-1 rounded-md font-bold transition-all cursor-pointer flex items-center gap-1.5 bg-sky-500 text-slate-950 shadow'
-        : inactiveClass;
-    }
-    if (btnModeEr) {
-      btnModeEr.className = activeBlueprintDiagramMode === 'er'
-        ? 'px-3 py-1 rounded-md font-bold transition-all cursor-pointer flex items-center gap-1.5 bg-amber-500 text-slate-950 shadow'
-        : inactiveClass;
-    }
-  }
-
   async function renderBlueprintStage(bp) {
     if (!bp) return;
 
     if (stageTitle) {
       stageTitle.textContent = bp.title;
     }
-    updateDiagramModeButtons();
 
-    const definition = activeBlueprintDiagramMode === 'er' && bp.mermaidEr
-      ? bp.mermaidEr
-      : bp.mermaidFlowchart;
+    const definition = bp.mermaidFlowchart;
 
     if (stageMermaid && window.mermaid) {
       try {
-        const renderId = `mermaid-bp-${bp.id}-${activeBlueprintDiagramMode}-${Date.now()}`;
+        const renderId = `mermaid-bp-${bp.id}-${Date.now()}`;
         const { svg } = await window.mermaid.render(renderId, definition);
         stageMermaid.innerHTML = svg;
         const svgEl = stageMermaid.querySelector('svg');
@@ -1485,20 +1218,6 @@ function initBlueprintTerminal() {
         stageMermaid.innerHTML = `<pre class="text-xs text-rose-400 font-mono p-4">${definition}</pre>`;
       }
     }
-  }
-
-  if (btnModeFlowchart) {
-    btnModeFlowchart.addEventListener('click', () => {
-      activeBlueprintDiagramMode = 'flowchart';
-      renderBlueprintStage(blueprintsData[activeBlueprintIdx]);
-    });
-  }
-
-  if (btnModeEr) {
-    btnModeEr.addEventListener('click', () => {
-      activeBlueprintDiagramMode = 'er';
-      renderBlueprintStage(blueprintsData[activeBlueprintIdx]);
-    });
   }
 
   blueprintsData.forEach((bp, idx) => {
@@ -1543,7 +1262,7 @@ function initBlueprintTerminal() {
       if (!modal || !currentBp) return;
 
       if (modalTitle) {
-        modalTitle.textContent = `${currentBp.title} — ${activeBlueprintDiagramMode === 'er' ? 'E-R Data Schema' : 'Architecture Flowchart'}`;
+        modalTitle.textContent = `${currentBp.title} — Architecture Flowchart`;
       }
 
       if (modalMermaid && stageMermaid) {
