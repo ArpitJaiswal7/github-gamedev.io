@@ -776,7 +776,6 @@ const blueprintsData = [
     domain: 'Core Gameplay Logic',
     engine: 'Unity 6000.3 + Live CDN',
     desc: 'Multi-touch gesture router with input locks during animations, 5-tier deterministic hint cascade, and cross-level powerup wallet.',
-    img: 'assets/blueprints/sheet-10-meowdoku.png',
     labDemo: 'meowsweeper',
     mermaidFlowchart: `flowchart TB
   subgraph Inputs["INPUT & CONTENT LAYER"]
@@ -880,104 +879,807 @@ const blueprintsData = [
   },
   {
     id: 'sheet-02',
-    sheetNum: 'Sheet 02 — Surface Cut',
+    sheetNum: 'Sheet 02 — Live Mermaid',
     title: 'Native Image Pipeline',
     domain: 'Platform Services',
     engine: 'Unity (Android + iOS)',
     desc: 'Fetches, resizes, and caches remote images across Android, iOS, and Unity Editor through one shared C# API surface.',
-    img: 'assets/blueprints/sheet-02-native-image-pipeline.png',
-    labDemo: 'native-image-bridge'
+    labDemo: 'native-image-bridge',
+    mermaidFlowchart: `flowchart TB
+  subgraph Callers["GAMEPLAY & UI CALLERS"]
+    direction LR
+    LevelThumb["Level Select Grid"]
+    JigsawTex["Jigsaw Board TextureLoader"]
+    AvatarUI["Leaderboard Avatar UI"]
+  end
+
+  subgraph Core["CORE MODULE — NATIVE IMAGE BRIDGE"]
+    Facade["NativeImagePipeline (Shared C# Async API + Request Deduplicator)"]
+  end
+
+  subgraph Bridges["PLATFORM JNI / OBJC BRIDGES"]
+    direction LR
+    Android["Android Bridge (Glide + OkHttp3 Pool)"]
+    iOS["iOS Bridge (NSURLSession + vImage)"]
+    Editor["UnityWebRequest Fallback (Editor / WebGL)"]
+  end
+
+  subgraph Internal["INTERNAL ENGINE SUBSYSTEMS (BELOW CUT-LINE)"]
+    direction LR
+    L1Cache["L1 Memory LRU Cache (Texture2D Pool)"]
+    L2Disk["L2 Disk SHA-256 Cache (Application.temporaryCachePath)"]
+    Downsample["InSampleSize / Hardware Downsampler"]
+  end
+
+  LevelThumb -->|"LoadImageAsync(url, size)"| Facade
+  JigsawTex -->|"LoadImageAsync(url, size)"| Facade
+  AvatarUI -->|"LoadImageAsync(url, size)"| Facade
+
+  Facade -->|"AndroidJNI"| Android
+  Facade -->|"DllImport(__Internal)"| iOS
+  Facade -->|"Editor / Fallback"| Editor
+
+  Facade -.-> L1Cache
+  Facade -.-> L2Disk
+  Facade -.-> Downsample
+
+  classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
+  classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
+  classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1px,stroke-dasharray: 5 5,color:#94a3b8
+
+  class Facade coreNode
+  class LevelThumb,JigsawTex,AvatarUI,Android,iOS,Editor adjNode
+  class L1Cache,L2Disk,Downsample intNode`,
+    mermaidEr: `erDiagram
+  IMAGE_REQUEST ||--o| INFLIGHT_DEDUP_GROUP : "coalesces callbacks"
+  IMAGE_REQUEST ||--o| MEMORY_LRU_ENTRY : "checks L1 first"
+  IMAGE_REQUEST ||--o| DISK_CACHE_RECORD : "checks L2 second"
+  DISK_CACHE_RECORD ||--|| NATIVE_DECODE_JOB : "decodes off-thread"
+
+  IMAGE_REQUEST {
+    string urlHashSha256
+    string sourceUrl
+    int targetWidth
+    int targetHeight
+    boolean generateMipmaps
+  }
+  MEMORY_LRU_ENTRY {
+    string urlHashSha256
+    int textureInstanceId
+    int byteFootprint
+    long lastAccessTick
+  }
+  DISK_CACHE_RECORD {
+    string urlHashSha256
+    string filePath
+    long fileSizeBytes
+    string etagHeader
+  }
+  NATIVE_DECODE_JOB {
+    string platformBackend "GLIDE_NSURL_UWR"
+    int sampleFactor
+    int decodeDurationMs
+  }`
   },
   {
     id: 'sheet-09',
-    sheetNum: 'Sheet 09 — Surface Cut',
+    sheetNum: 'Sheet 09 — Live Mermaid',
     title: 'Jigsaw Board Renderer',
     domain: 'Core Gameplay Logic',
     engine: 'Unity',
     desc: 'Dynamic procedural N×N board generator using 9 tab/blank edge signatures with custom shader UV quad projections.',
-    img: 'assets/blueprints/sheet-09-jigsaw-board-renderer.png',
-    labDemo: 'calm-jigsaw'
+    labDemo: 'calm-jigsaw',
+    mermaidFlowchart: `flowchart TB
+  subgraph Inputs["PUZZLE CONFIG & TEXTURE INPUT"]
+    direction LR
+    GridCfg["Grid Preset (3x3 up to 10x10)"]
+    SourceArt["HD Artwork Texture2D"]
+    TouchDrag["Pointer / Multi-Touch Drag"]
+  end
+
+  subgraph Core["CORE MODULE — JIGSAW BOARD RENDERER"]
+    Generator["ProceduralBoardGenerator (Edge Signature Matrix + UV Mapper)"]
+  end
+
+  subgraph Runtime["ADJACENT RUNTIME SYSTEMS"]
+    direction LR
+    Shader["PieceMaskShader (9-Slice Bevel + Alpha Mask)"]
+    SnapGroup["Union-Find Cluster Merger (Magnetic Neighbor Snap)"]
+    Tray["Scrollable Piece Tray & Board Save State"]
+  end
+
+  subgraph Internal["INTERNAL ENGINE SUBSYSTEMS (BELOW CUT-LINE)"]
+    direction LR
+    EdgeRng["Complementary Edge Solver (Flat=0 / Tab=+1 / Blank=-1)"]
+    UVRect["Oversized UV Quad Offset (+28% Tab Bleed Margin)"]
+    ZSort["Dynamic SortingGroup Z-Order Stack"]
+  end
+
+  GridCfg -->|"N x N dimensions"| Generator
+  SourceArt -->|"shared material atlas"| Generator
+  TouchDrag -->|"piece transform"| Generator
+
+  Generator -->|"per-piece UV + mask IDs"| Shader
+  Generator <-->|"neighbor tolerance check"| SnapGroup
+  Generator -->|"serialize placed state"| Tray
+
+  Generator -.-> EdgeRng
+  Generator -.-> UVRect
+  Generator -.-> ZSort
+
+  classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
+  classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
+  classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1px,stroke-dasharray: 5 5,color:#94a3b8
+
+  class Generator coreNode
+  class GridCfg,SourceArt,TouchDrag,Shader,SnapGroup,Tray adjNode
+  class EdgeRng,UVRect,ZSort intNode`,
+    mermaidEr: `erDiagram
+  JIGSAW_BOARD ||--|{ JIGSAW_PIECE : "generates N x N"
+  JIGSAW_PIECE }|--|| UNION_CLUSTER : "merges into"
+  JIGSAW_PIECE ||--|| EDGE_SIGNATURE : "has 4 edges"
+  JIGSAW_PIECE ||--|| SHADER_UV_BLOCK : "projects"
+
+  JIGSAW_BOARD {
+    string puzzleId
+    int rows
+    int cols
+    float snapRadiusPx
+    int lockedCount
+  }
+  JIGSAW_PIECE {
+    int pieceIndex
+    int gridRow
+    int gridCol
+    float worldX
+    float worldY
+    boolean isPlacedOnBoard
+  }
+  EDGE_SIGNATURE {
+    int topEdge "0_FLAT_1_TAB_MINUS1_BLANK"
+    int rightEdge
+    int bottomEdge
+    int leftEdge
+  }
+  UNION_CLUSTER {
+    int clusterRootId
+    int_array memberPieceIds
+    boolean isLockedToGrid
+  }
+  SHADER_UV_BLOCK {
+    float4 uvScaleOffset
+    int maskAtlasIndex
+  }`
   },
   {
     id: 'sheet-06',
-    sheetNum: 'Sheet 06 — Surface Cut',
+    sheetNum: 'Sheet 06 — Live Mermaid',
     title: 'Offline Leaderboard',
     domain: 'LiveOps / Retention',
     engine: 'Unity',
     desc: 'Zero-server-cost bot simulation engine generating dynamic seasonal leagues, rank advancement, and anti-rollback clamping.',
-    img: 'assets/blueprints/sheet-06-offline-leaderboard.png',
-    labDemo: 'offline-leaderboard'
+    labDemo: 'offline-leaderboard',
+    mermaidFlowchart: `flowchart TB
+  subgraph Events["GAMEPLAY SCORE & CLOCK INPUTS"]
+    direction LR
+    GameWin["Level Complete (+Score / +Trophies)"]
+    BootClock["App Launch / System UTC Clock"]
+    GamePreset["Game Profile (MeowSweeper / Calm Jigsaw / Solitaire)"]
+  end
+
+  subgraph Core["CORE MODULE — OFFLINE LEADERBOARD ENGINE"]
+    SimEngine["LeaderboardSimulator (Deterministic Bot Curve + League State)"]
+  end
+
+  subgraph Adjacent["ADJACENT RUNTIME SYSTEMS"]
+    direction LR
+    LeagueUI["Animated Rank-Up & Division Table UI"]
+    RewardBox["Season End Promotion & Chest Grant"]
+    SaveStore["Local Encrypted JSON Persistence"]
+  end
+
+  subgraph Internal["INTERNAL ENGINE SUBSYSTEMS (BELOW CUT-LINE)"]
+    direction LR
+    AntiCheat["Monotonic High-Water Timestamp Clamp (Anti-Rollback)"]
+    BotArchetype["Seeded Bot Archetypes (Sprinter / Grinder / Casual)"]
+    Rubberband["Dynamic Player-Pacing Rubberband Curve"]
+  end
+
+  GameWin -->|"AddPlayerScore(delta)"| SimEngine
+  BootClock -->|"SimulateElapsedHours(dt)"| SimEngine
+  GamePreset -->|"load division config"| SimEngine
+
+  SimEngine -->|"sorted standings + delta"| LeagueUI
+  SimEngine -->|"top-3 promotion"| RewardBox
+  SimEngine <-->|"read / write snapshot"| SaveStore
+
+  SimEngine -.-> AntiCheat
+  SimEngine -.-> BotArchetype
+  SimEngine -.-> Rubberband
+
+  classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
+  classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
+  classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1px,stroke-dasharray: 5 5,color:#94a3b8
+
+  class SimEngine coreNode
+  class GameWin,BootClock,GamePreset,LeagueUI,RewardBox,SaveStore adjNode
+  class AntiCheat,BotArchetype,Rubberband intNode`,
+    mermaidEr: `erDiagram
+  SEASON_LEAGUE ||--|{ BOT_COMPETITOR : "simulates 29 bots"
+  SEASON_LEAGUE ||--|| PLAYER_STANDING : "tracks user"
+  SEASON_LEAGUE ||--|| CLOCK_GUARD : "enforces anti-rollback"
+  SEASON_LEAGUE ||--o| REWARD_TIER : "awards on expiry"
+
+  SEASON_LEAGUE {
+    string leagueId
+    string division "BRONZE_SILVER_GOLD_DIAMOND"
+    long seasonStartUtc
+    long seasonEndUtc
+    int promotionCutoffRank
+  }
+  PLAYER_STANDING {
+    string displayName
+    int currentScore
+    int previousRank
+    int currentRank
+  }
+  BOT_COMPETITOR {
+    int botSeedId
+    string handle
+    string archetype "SPRINTER_STEADY_CASUAL"
+    float skillMultiplier
+    int simulatedScore
+  }
+  CLOCK_GUARD {
+    long lastVerifiedUtcMs
+    long monotonicUptimeDelta
+    boolean rollbackDetected
+  }
+  REWARD_TIER {
+    int minRank
+    int maxRank
+    int coinsReward
+  }`
   },
   {
     id: 'sheet-08',
-    sheetNum: 'Sheet 08 — Surface Cut',
+    sheetNum: 'Sheet 08 — Live Mermaid',
     title: 'Level Sync (OTA Content)',
     domain: 'Platform Services',
     engine: 'Unity',
     desc: 'Background manifest-diffing synchronizer that never blocks game boot sequence, applying content cleanly on subsequent launch.',
-    img: 'assets/blueprints/sheet-08-level-sync.png',
-    labDemo: 'native-image-bridge'
+    labDemo: 'native-image-bridge',
+    mermaidFlowchart: `flowchart TB
+  subgraph Triggers["APP LIFECYCLE & CDN ENDPOINTS"]
+    direction LR
+    AppBoot["Game Boot (Zero-Block Instant Start)"]
+    RemoteCDN["Remote CDN (manifest_v2.json + level packs)"]
+  end
+
+  subgraph Core["CORE MODULE — OTA LEVEL SYNCHRONIZER"]
+    SyncMgr["LevelSyncManager (Non-Blocking Background Diff & Stage)"]
+  end
+
+  subgraph Adjacent["ADJACENT RUNTIME SYSTEMS"]
+    direction LR
+    ActiveDB["Active Runtime Level Registry (Read-Only During Session)"]
+    StagingDir["Persistent Staging Directory (.tmp -> Atomic Swap)"]
+    Streaming["StreamingAssets Fallback Bundle"]
+  end
+
+  subgraph Internal["INTERNAL ENGINE SUBSYSTEMS (BELOW CUT-LINE)"]
+    direction LR
+    HashDiff["SHA-256 / Version Manifest Differ"]
+    AtomicCommit["Next-Boot Atomic Directory Promotion"]
+    RetryQueue["Exponential Backoff & Partial Resume"]
+  end
+
+  AppBoot -->|"1. Mount immediately"| ActiveDB
+  AppBoot -->|"2. Spawn low-priority task"| SyncMgr
+  RemoteCDN -->|"3. Fetch remote manifest"| SyncMgr
+
+  SyncMgr -->|"download changed JSONs"| StagingDir
+  StagingDir -->|"promote on next cold boot"| ActiveDB
+  Streaming -->|"seed initial install"| ActiveDB
+
+  SyncMgr -.-> HashDiff
+  SyncMgr -.-> AtomicCommit
+  SyncMgr -.-> RetryQueue
+
+  classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
+  classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
+  classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1px,stroke-dasharray: 5 5,color:#94a3b8
+
+  class SyncMgr coreNode
+  class AppBoot,RemoteCDN,ActiveDB,StagingDir,Streaming adjNode
+  class HashDiff,AtomicCommit,RetryQueue intNode`,
+    mermaidEr: `erDiagram
+  REMOTE_MANIFEST ||--|{ LEVEL_ASSET_ENTRY : "declares"
+  LOCAL_MANIFEST ||--|{ LEVEL_ASSET_ENTRY : "tracks installed"
+  SYNC_DIFF_PLAN ||--o{ STAGED_FILE : "downloads to .tmp"
+  STAGED_FILE ||--|| ACTIVE_LEVEL_CACHE : "commits on next boot"
+
+  REMOTE_MANIFEST {
+    int manifestVersion
+    string cdnBaseUrl
+    long publishedUtc
+  }
+  LEVEL_ASSET_ENTRY {
+    string levelKey
+    int contentRevision
+    string sha256Checksum
+    int byteSize
+  }
+  SYNC_DIFF_PLAN {
+    string_array addedKeys
+    string_array modifiedKeys
+    int totalDownloadBytes
+  }
+  STAGED_FILE {
+    string tempFilePath
+    boolean checksumVerified
+    boolean readyForSwap
+  }
+  ACTIVE_LEVEL_CACHE {
+    int activeManifestVersion
+    string mountedDirectory
+  }`
   },
   {
     id: 'sheet-04',
-    sheetNum: 'Sheet 04 — Surface Cut',
+    sheetNum: 'Sheet 04 — Live Mermaid',
     title: 'IAP System Gateway',
     domain: 'Monetization',
     engine: 'Unity (Android + iOS)',
     desc: 'Dual-currency store gateway (real money vs soft currency) with strict grant-then-confirm verification.',
-    img: 'assets/blueprints/sheet-04-iap-system.png',
-    labDemo: null
+    labDemo: null,
+    mermaidFlowchart: `flowchart TB
+  subgraph StoreUI["STOREFRONT & CATALOG CALLERS"]
+    direction LR
+    ShopBtn["Store UI Purchase Button"]
+    Catalog["Unified Product Catalog (IAP + Coin Packs)"]
+    RestoreBtn["Restore Purchases Flow"]
+  end
+
+  subgraph Core["CORE MODULE — IAP SYSTEM GATEWAY"]
+    Gateway["IAPStoreGateway (Dual-Currency Router & Transaction Guard)"]
+  end
+
+  subgraph Providers["BILLING & ECONOMY BACKENDS"]
+    direction LR
+    PlatformStore["Google Play Billing / Apple StoreKit 2"]
+    SoftWallet["Local Coin / Gem Economy Ledger"]
+    Inventory["Player Entitlement & Powerup Inventory"]
+  end
+
+  subgraph Internal["INTERNAL ENGINE SUBSYSTEMS (BELOW CUT-LINE)"]
+    direction LR
+    GrantFirst["Grant-Then-Confirm Crash Recovery Log"]
+    ReceiptVal["Local Signature & Receipt Sanitizer"]
+    Idempotency["Processed Transaction ID Dedup Set"]
+  end
+
+  ShopBtn -->|"Purchase(productId)"| Gateway
+  Catalog -->|"SKU metadata"| Gateway
+  RestoreBtn -->|"SyncEntitlements()"| Gateway
+
+  Gateway <-->|"Real-Money SKU"| PlatformStore
+  Gateway <-->|"Soft-Currency SKU"| SoftWallet
+  Gateway -->|"1. Grant reward + save"| Inventory
+  Gateway -->|"2. ConfirmPendingPurchase"| PlatformStore
+
+  Gateway -.-> GrantFirst
+  Gateway -.-> ReceiptVal
+  Gateway -.-> Idempotency
+
+  classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
+  classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
+  classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1px,stroke-dasharray: 5 5,color:#94a3b8
+
+  class Gateway coreNode
+  class ShopBtn,Catalog,RestoreBtn,PlatformStore,SoftWallet,Inventory adjNode
+  class GrantFirst,ReceiptVal,Idempotency intNode`,
+    mermaidEr: `erDiagram
+  STORE_CATALOG ||--|{ PRODUCT_SKU : "defines"
+  PRODUCT_SKU ||--o{ PURCHASE_TRANSACTION : "initiates"
+  PURCHASE_TRANSACTION ||--|| ENTITLEMENT_GRANT : "unlocks"
+  PURCHASE_TRANSACTION ||--|| RECEIPT_LEDGER : "records idempotently"
+
+  STORE_CATALOG {
+    string catalogVersion
+    int skuCount
+  }
+  PRODUCT_SKU {
+    string productId
+    string storeType "CONSUMABLE_NONCONSUMABLE"
+    string currencyType "REAL_MONEY_OR_COINS"
+    float priceAmount
+  }
+  PURCHASE_TRANSACTION {
+    string transactionId
+    string productId
+    string status "PENDING_GRANTED_CONFIRMED"
+    long timestampUtc
+  }
+  ENTITLEMENT_GRANT {
+    string grantId
+    string rewardType "NO_ADS_COINS_HINTS"
+    int quantity
+    boolean persistedToDisk
+  }
+  RECEIPT_LEDGER {
+    string transactionId
+    string platformSignature
+    boolean acknowledgedWithStore
+  }`
   },
   {
     id: 'sheet-13',
-    sheetNum: 'Sheet 13 — Surface Cut',
+    sheetNum: 'Sheet 13 — Live Mermaid',
     title: 'Argos Localization IPC',
     domain: 'Editor Tooling / IPC',
     engine: 'Unity + Python (offline)',
     desc: 'Cross-process communication tool linking Unity C# to an offline Python translation subprocess over stdin/stdout JSON codecs.',
-    img: 'assets/blueprints/sheet-13-argos-localization.png',
-    labDemo: 'argos-localization'
+    labDemo: 'argos-localization',
+    mermaidFlowchart: `flowchart TB
+  subgraph EditorUI["UNITY EDITOR LOCALIZATION WINDOW"]
+    direction LR
+    StringTable["Localization String Table (CSV / ScriptableObject)"]
+    LangSelect["Target Locale Batch Selector (EN to ES/FR/DE/JA/HI)"]
+  end
+
+  subgraph Core["CORE MODULE — ARGOS IPC BRIDGE (C# TO PYTHON)"]
+    IPCController["ArgosIPCProcessRunner (Persistent Subprocess + JSON Pipe)"]
+  end
+
+  subgraph PythonWorker["OFFLINE PYTHON SUBPROCESS"]
+    direction LR
+    WorkerLoop["argos_worker.py (UTF-8 stdin/stdout Loop)"]
+    CTranslate["Argos Translate + CTranslate2 Neural Engine"]
+    Glossary["Protected Token & Format-Tag Freezer"]
+  end
+
+  subgraph Internal["INTERNAL ENGINE SUBSYSTEMS (BELOW CUT-LINE)"]
+    direction LR
+    TokenMask["Placeholder Masker ({0}, RichText Tags, %d to __TK0__)"]
+    WarmModel["Single Cold-Boot Model Load (Zero Per-Row Spawn)"]
+    TimeoutGuard["Async Cancellation & Pipe Deadlock Watchdog"]
+  end
+
+  StringTable -->|"source keys + strings"| IPCController
+  LangSelect -->|"target lang codes"| IPCController
+
+  IPCController -->|"JSON Line Request (stdin)"| WorkerLoop
+  WorkerLoop <-->|"batch inference"| CTranslate
+  WorkerLoop <-->|"freeze/restore tags"| Glossary
+  WorkerLoop -->|"JSON Line Response (stdout)"| IPCController
+  IPCController -->|"write translated table"| StringTable
+
+  IPCController -.-> TokenMask
+  IPCController -.-> WarmModel
+  IPCController -.-> TimeoutGuard
+
+  classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
+  classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
+  classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1px,stroke-dasharray: 5 5,color:#94a3b8
+
+  class IPCController coreNode
+  class StringTable,LangSelect,WorkerLoop,CTranslate,Glossary adjNode
+  class TokenMask,WarmModel,TimeoutGuard intNode`,
+    mermaidEr: `erDiagram
+  LOCALIZATION_TABLE ||--|{ STRING_ROW : "contains"
+  STRING_ROW ||--o{ IPC_BATCH_REQUEST : "batches into"
+  IPC_BATCH_REQUEST ||--|| TOKEN_MASK_MAP : "protects tags"
+  IPC_BATCH_REQUEST ||--|| IPC_BATCH_RESPONSE : "returns over stdout"
+
+  LOCALIZATION_TABLE {
+    string tableAssetGuid
+    string sourceLocale "en"
+    string_array targetLocales
+  }
+  STRING_ROW {
+    string entryKey
+    string sourceText
+    string_map localizedValues
+  }
+  IPC_BATCH_REQUEST {
+    string requestId
+    string fromLang
+    string toLang
+    string_array maskedPayloads
+  }
+  TOKEN_MASK_MAP {
+    string placeholderToken "__TK_0__"
+    string originalMarkup "{0}_or_color_tag"
+  }
+  IPC_BATCH_RESPONSE {
+    string requestId
+    string status "OK_OR_ERR"
+    string_array translatedPayloads
+    int inferenceMs
+  }`
   },
   {
     id: 'sheet-11',
-    sheetNum: 'Sheet 11 — Surface Cut',
+    sheetNum: 'Sheet 11 — Live Mermaid',
     title: 'Asset Organizer Tool',
     domain: 'Unity Editor DX',
     engine: 'Unity Editor',
     desc: 'Developer productivity tool adding project window asset pinning, custom category badges, and asset movement watchers.',
-    img: 'assets/blueprints/sheet-11-asset-organizer-tool.png',
-    labDemo: 'asset-organizer'
+    labDemo: 'asset-organizer',
+    mermaidFlowchart: `flowchart TB
+  subgraph EditorHooks["UNITY EDITOR CALLBACK HOOKS"]
+    direction LR
+    ProjectGUI["EditorApplication.projectWindowItemOnGUI"]
+    Postproc["AssetPostprocessor (OnPostprocessAllAssets)"]
+    Shortcut["Quick-Pin Dock & Filter Toolbar"]
+  end
+
+  subgraph Core["CORE MODULE — ASSET ORGANIZER ENGINE"]
+    Organizer["AssetOrganizerController (GUID Registry + Rule Matcher)"]
+  end
+
+  subgraph Adjacent["ADJACENT EDITOR SUBSYSTEMS"]
+    direction LR
+    BadgeDrawer["Custom Row Badge & Color Stripe Renderer"]
+    RuleScanner["One-Click Folder Audit & Auto-Mover"]
+    MetaStore["EditorPrefs / ScriptableObject Metadata DB"]
+  end
+
+  subgraph Internal["INTERNAL ENGINE SUBSYSTEMS (BELOW CUT-LINE)"]
+    direction LR
+    GuidMap["O(1) GUID-to-Category Lookup Cache (Path-Move Resilient)"]
+    ZeroRuntime["Editor-Only Assembly Definition (Zero Build Size Overhead)"]
+    BatchMove["AssetDatabase.StartAssetEditing Batch Transaction"]
+  end
+
+  ProjectGUI -->|"visible row GUID"| Organizer
+  Postproc -->|"moved/imported paths"| Organizer
+  Shortcut -->|"pin / filter query"| Organizer
+
+  Organizer -->|"draw tag + icon"| BadgeDrawer
+  Organizer -->|"fix misplaced assets"| RuleScanner
+  Organizer <-->|"persist GUID tags"| MetaStore
+
+  Organizer -.-> GuidMap
+  Organizer -.-> ZeroRuntime
+  Organizer -.-> BatchMove
+
+  classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
+  classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
+  classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1px,stroke-dasharray: 5 5,color:#94a3b8
+
+  class Organizer coreNode
+  class ProjectGUI,Postproc,Shortcut,BadgeDrawer,RuleScanner,MetaStore adjNode
+  class GuidMap,ZeroRuntime,BatchMove intNode`,
+    mermaidEr: `erDiagram
+  ORGANIZER_DATABASE ||--|{ ASSET_GUID_RECORD : "indexes by GUID"
+  ORGANIZER_DATABASE ||--|{ CATEGORY_TAG : "defines"
+  ORGANIZER_DATABASE ||--|{ FOLDER_ROUTING_RULE : "enforces"
+  ASSET_GUID_RECORD }|--|| CATEGORY_TAG : "assigned to"
+
+  ORGANIZER_DATABASE {
+    string projectVersion
+    int pinnedCount
+    int trackedGuidCount
+  }
+  ASSET_GUID_RECORD {
+    string assetGuid "32_char_hex_immutable"
+    string cachedAssetPath
+    boolean isPinnedFavorite
+    long lastModifiedUtc
+  }
+  CATEGORY_TAG {
+    string tagId
+    string label "CORE_UI_SHADER_AUDIO"
+    string hexColor "#38bdf8"
+  }
+  FOLDER_ROUTING_RULE {
+    string fileExtensionPattern "*.shader_*.prefab"
+    string targetFolderPath "Assets/Shaders"
+    boolean autoMoveOnImport
+  }`
   },
   {
     id: 'sheet-12',
-    sheetNum: 'Sheet 12 — Surface Cut',
+    sheetNum: 'Sheet 12 — Live Mermaid',
     title: 'Flame Flicker Effect',
     domain: 'Tech Art & Shaders',
     engine: 'Unity',
     desc: 'Lightweight 2-file procedural noise shader and C# driver creating dynamic ambient fire visuals on UI canvases.',
-    img: 'assets/blueprints/sheet-12-flame-flicker-effect.png',
-    labDemo: 'jigsaw-solitaire'
+    labDemo: 'jigsaw-solitaire',
+    mermaidFlowchart: `flowchart TB
+  subgraph SceneInputs["UI CANVAS & AMBIENT PRESETS"]
+    direction LR
+    CanvasImg["UnityEngine.UI.Image / SpriteRenderer"]
+    PresetCfg["Flicker Preset (Hearth / Torch / Candle / Campfire)"]
+  end
+
+  subgraph Core["CORE MODULE — FLAME FLICKER DRIVER & SHADER"]
+    Driver["FlameFlickerDriver.cs + ProceduralFlame.shader"]
+  end
+
+  subgraph Adjacent["ADJACENT VISUAL SUBSYSTEMS"]
+    direction LR
+    MatInstance["Per-Widget MaterialPropertyBlock / Dynamic Material"]
+    LightSync["2D Ambient Glow & Vignette Warmth Pulser"]
+    SaveBattery["60fps / 30fps Low-Power Thermal Throttler"]
+  end
+
+  subgraph Internal["INTERNAL ENGINE SUBSYSTEMS (BELOW CUT-LINE)"]
+    direction LR
+    FBM["2-Octave Simplex / Value Noise UV Warp"]
+    TeardropSDF["Signed Distance Teardrop Core & Outer Halo"]
+    ZeroTex["Zero Particle-Spawn GC (100% Fragment Math)"]
+  end
+
+  CanvasImg -->|"target graphic"| Driver
+  PresetCfg -->|"turbulence + palette"| Driver
+
+  Driver -->|"set _Phase, _Wind, _Intensity"| MatInstance
+  Driver -->|"synchronized luminance"| LightSync
+  Driver <-->|"frame budget scale"| SaveBattery
+
+  Driver -.-> FBM
+  Driver -.-> TeardropSDF
+  Driver -.-> ZeroTex
+
+  classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
+  classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
+  classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1px,stroke-dasharray: 5 5,color:#94a3b8
+
+  class Driver coreNode
+  class CanvasImg,PresetCfg,MatInstance,LightSync,SaveBattery adjNode
+  class FBM,TeardropSDF,ZeroTex intNode`,
+    mermaidEr: `erDiagram
+  FLAME_PRESET ||--|{ SHADER_UNIFORM_FRAME : "drives per frame"
+  FLAME_PRESET ||--|| COLOR_RAMP_PALETTE : "blends"
+  SHADER_UNIFORM_FRAME ||--|| FRAGMENT_SDF_PASS : "evaluates on GPU"
+
+  FLAME_PRESET {
+    string presetId "HEARTH_TORCH_CANDLE"
+    float noiseScrollSpeed
+    float turbulenceAmplitude
+    float windSwayAngle
+  }
+  COLOR_RAMP_PALETTE {
+    string innerCoreHex "#fff7ed"
+    string midFlameHex "#f59e0b"
+    string outerEmberHex "#dc2626"
+  }
+  SHADER_UNIFORM_FRAME {
+    float timePhase
+    float2 uvDistortionOffset
+    float luminancePulse
+  }
+  FRAGMENT_SDF_PASS {
+    int noiseOctaves "2"
+    float teardropSoftEdge
+    int particleAllocations "0_ZERO_GC"
+  }`
   }
 ];
 
 let activeBlueprintIdx = 0;
-let activeBlueprintDiagramMode = 'flowchart'; // 'flowchart' | 'er'
+let activeBlueprintDiagramMode = 'flowchart'; // 'flowchart' | 'er' | 'code'
+let lastMermaidGraphicMode = 'flowchart'; // remembers 'flowchart' or 'er' when viewing 'code'
+
+function buildMermaidLiveUrl(definition) {
+  try {
+    const state = {
+      code: definition,
+      mermaid: JSON.stringify({ theme: 'dark' }),
+      autoSync: true,
+      updateDiagram: true
+    };
+    const json = JSON.stringify(state);
+    const base64 = window.btoa(unescape(encodeURIComponent(json)));
+    return `https://mermaid.live/edit#base64:${base64}`;
+  } catch (_) {
+    return 'https://mermaid.live/';
+  }
+}
 
 function initBlueprintTerminal() {
   const navContainer = document.getElementById('blueprint-nav-list');
-  const stageImg = document.getElementById('bp-stage-img');
+  const canvasViewport = document.getElementById('bp-canvas-viewport');
   const stageMermaid = document.getElementById('bp-stage-mermaid');
+  const stageCode = document.getElementById('bp-stage-code');
+  const stageCodePre = document.getElementById('bp-stage-code-pre');
+  const codeHeaderLabel = document.getElementById('bp-code-header-label');
+  const copyCodeBtn = document.getElementById('btn-copy-mermaid-code');
+  const panzoomToolbar = document.getElementById('bp-panzoom-toolbar');
+  const btnZoomIn = document.getElementById('bp-zoom-in');
+  const btnZoomOut = document.getElementById('bp-zoom-out');
+  const btnZoomReset = document.getElementById('bp-zoom-reset');
+  const btnOpenMermaidLive = document.getElementById('btn-open-mermaid-live');
   const stageTitle = document.getElementById('bp-stage-title');
   const stageDomain = document.getElementById('bp-stage-domain');
   const stageDesc = document.getElementById('bp-stage-desc');
   const footerBadge = document.getElementById('bp-stage-footer-badge');
-  const modeToggleContainer = document.getElementById('bp-diagram-mode-toggle');
   const btnModeFlowchart = document.getElementById('bp-mode-flowchart');
   const btnModeEr = document.getElementById('bp-mode-er');
+  const btnModeCode = document.getElementById('bp-mode-code');
   const zoomBtn = document.getElementById('btn-zoom-blueprint');
   const launchLabBtn = document.getElementById('btn-launch-blueprint-lab');
 
   if (!navContainer) return;
+
+  // Pan & Zoom state (like mermaid.live)
+  let zoomScale = 1;
+  let panX = 0;
+  let panY = 0;
+  let isDragging = false;
+  let dragStartX = 0;
+  let dragStartY = 0;
+
+  function applyPanZoomTransform() {
+    if (stageMermaid) {
+      stageMermaid.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomScale})`;
+    }
+    if (btnZoomReset) {
+      btnZoomReset.textContent = `${Math.round(zoomScale * 100)}%`;
+    }
+  }
+
+  function resetPanZoom() {
+    zoomScale = 1;
+    panX = 0;
+    panY = 0;
+    applyPanZoomTransform();
+  }
+
+  if (btnZoomIn) {
+    btnZoomIn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      zoomScale = Math.min(2.6, +(zoomScale + 0.2).toFixed(2));
+      applyPanZoomTransform();
+    });
+  }
+
+  if (btnZoomOut) {
+    btnZoomOut.addEventListener('click', (e) => {
+      e.stopPropagation();
+      zoomScale = Math.max(0.5, +(zoomScale - 0.2).toFixed(2));
+      applyPanZoomTransform();
+    });
+  }
+
+  if (btnZoomReset) {
+    btnZoomReset.addEventListener('click', (e) => {
+      e.stopPropagation();
+      resetPanZoom();
+    });
+  }
+
+  if (canvasViewport) {
+    canvasViewport.addEventListener('wheel', (e) => {
+      if (activeBlueprintDiagramMode === 'code') return;
+      e.preventDefault();
+      const delta = e.deltaY < 0 ? 0.12 : -0.12;
+      zoomScale = Math.min(2.6, Math.max(0.5, +(zoomScale + delta).toFixed(2)));
+      applyPanZoomTransform();
+    }, { passive: false });
+
+    canvasViewport.addEventListener('mousedown', (e) => {
+      if (activeBlueprintDiagramMode === 'code') return;
+      if (e.target.closest('#bp-panzoom-toolbar')) return;
+      isDragging = true;
+      dragStartX = e.clientX - panX;
+      dragStartY = e.clientY - panY;
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      panX = e.clientX - dragStartX;
+      panY = e.clientY - dragStartY;
+      applyPanZoomTransform();
+    });
+
+    window.addEventListener('mouseup', () => {
+      isDragging = false;
+    });
+  }
 
   if (window.mermaid) {
     window.mermaid.initialize({
@@ -1015,14 +1717,27 @@ function initBlueprintTerminal() {
   }
 
   function updateDiagramModeButtons() {
-    if (!btnModeFlowchart || !btnModeEr) return;
-    if (activeBlueprintDiagramMode === 'flowchart') {
-      btnModeFlowchart.className = 'px-2.5 py-1 rounded-md font-bold transition-all cursor-pointer flex items-center gap-1.5 bg-sky-500 text-slate-950 shadow';
-      btnModeEr.className = 'px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer flex items-center gap-1.5 text-slate-400 hover:text-white';
-    } else {
-      btnModeFlowchart.className = 'px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer flex items-center gap-1.5 text-slate-400 hover:text-white';
-      btnModeEr.className = 'px-2.5 py-1 rounded-md font-bold transition-all cursor-pointer flex items-center gap-1.5 bg-amber-500 text-slate-950 shadow';
+    const inactiveClass = 'px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer flex items-center gap-1.5 text-slate-400 hover:text-white';
+    if (btnModeFlowchart) {
+      btnModeFlowchart.className = activeBlueprintDiagramMode === 'flowchart'
+        ? 'px-2.5 py-1 rounded-md font-bold transition-all cursor-pointer flex items-center gap-1.5 bg-sky-500 text-slate-950 shadow'
+        : inactiveClass;
     }
+    if (btnModeEr) {
+      btnModeEr.className = activeBlueprintDiagramMode === 'er'
+        ? 'px-2.5 py-1 rounded-md font-bold transition-all cursor-pointer flex items-center gap-1.5 bg-amber-500 text-slate-950 shadow'
+        : inactiveClass;
+    }
+    if (btnModeCode) {
+      btnModeCode.className = activeBlueprintDiagramMode === 'code'
+        ? 'px-2.5 py-1 rounded-md font-bold transition-all cursor-pointer flex items-center gap-1.5 bg-emerald-500 text-slate-950 shadow'
+        : inactiveClass;
+    }
+  }
+
+  function getActiveDefinition(bp) {
+    const mode = activeBlueprintDiagramMode === 'code' ? lastMermaidGraphicMode : activeBlueprintDiagramMode;
+    return mode === 'er' && bp.mermaidEr ? bp.mermaidEr : bp.mermaidFlowchart;
   }
 
   async function renderBlueprintStage(bp) {
@@ -1032,29 +1747,42 @@ function initBlueprintTerminal() {
     stageDomain.textContent = `INDEPENDENT SYSTEM — ${bp.domain.toUpperCase()}`;
     stageDesc.textContent = bp.desc;
     syncLaunchLabButton(bp);
+    updateDiagramModeButtons();
+    resetPanZoom();
 
-    const hasMermaid = Boolean(bp.mermaidFlowchart || bp.mermaidEr);
+    const definition = getActiveDefinition(bp);
 
-    if (modeToggleContainer) {
-      modeToggleContainer.classList.toggle('hidden', !hasMermaid);
-      modeToggleContainer.classList.toggle('flex', hasMermaid);
+    if (btnOpenMermaidLive) {
+      btnOpenMermaidLive.href = buildMermaidLiveUrl(definition);
     }
 
-    if (hasMermaid && stageMermaid && window.mermaid) {
-      updateDiagramModeButtons();
-      stageImg.classList.add('hidden');
-      stageMermaid.classList.remove('hidden');
-      if (footerBadge) {
-        footerBadge.textContent = activeBlueprintDiagramMode === 'flowchart'
-          ? 'Live Mermaid SVG • Architecture Flowchart (Cut-Line Framework)'
-          : 'Live Mermaid SVG • Entity-Relationship (E-R) Data Schema';
-        footerBadge.className = 'text-sky-400';
+    if (activeBlueprintDiagramMode === 'code') {
+      if (stageMermaid) stageMermaid.classList.add('hidden');
+      if (panzoomToolbar) panzoomToolbar.classList.add('hidden');
+      if (stageCode) stageCode.classList.remove('hidden');
+      if (stageCodePre) stageCodePre.textContent = definition;
+      if (codeHeaderLabel) {
+        codeHeaderLabel.textContent = `Mermaid.js Source (${lastMermaidGraphicMode === 'er' ? 'erDiagram' : 'flowchart TB'}) — ${bp.title}`;
       }
+      if (footerBadge) {
+        footerBadge.textContent = 'Mermaid.js v10 DSL Source • Click "mermaid.live ↗" to edit interactively';
+        footerBadge.className = 'text-emerald-400';
+      }
+      return;
+    }
 
-      const definition = activeBlueprintDiagramMode === 'er' && bp.mermaidEr
-        ? bp.mermaidEr
-        : bp.mermaidFlowchart;
+    if (stageCode) stageCode.classList.add('hidden');
+    if (panzoomToolbar) panzoomToolbar.classList.remove('hidden');
+    if (stageMermaid) stageMermaid.classList.remove('hidden');
 
+    if (footerBadge) {
+      footerBadge.textContent = activeBlueprintDiagramMode === 'flowchart'
+        ? 'Live Mermaid.js DOM SVG • Architecture Flowchart (Drag to Pan / Scroll to Zoom)'
+        : 'Live Mermaid.js DOM SVG • Entity-Relationship (E-R) Data Schema (Drag to Pan / Scroll to Zoom)';
+      footerBadge.className = 'text-sky-400';
+    }
+
+    if (stageMermaid && window.mermaid) {
       try {
         const renderId = `mermaid-bp-${bp.id}-${activeBlueprintDiagramMode}-${Date.now()}`;
         const { svg } = await window.mermaid.render(renderId, definition);
@@ -1062,31 +1790,34 @@ function initBlueprintTerminal() {
         const svgEl = stageMermaid.querySelector('svg');
         if (svgEl) {
           svgEl.style.maxWidth = '100%';
-          svgEl.style.maxHeight = '440px';
+          svgEl.style.maxHeight = '430px';
           svgEl.style.height = 'auto';
         }
       } catch (err) {
         console.error('Mermaid render error:', err);
-        stageMermaid.classList.add('hidden');
-        stageImg.classList.remove('hidden');
-        stageImg.src = bp.img;
-      }
-    } else {
-      if (stageMermaid) stageMermaid.classList.add('hidden');
-      if (stageImg) {
-        stageImg.classList.remove('hidden');
-        stageImg.src = bp.img;
-      }
-      if (footerBadge) {
-        footerBadge.textContent = 'Portfolio Reference • Diagrams Only • NDA Compliant';
-        footerBadge.className = 'text-slate-500';
+        stageMermaid.innerHTML = `<pre class="text-xs text-rose-400 font-mono p-4">${definition}</pre>`;
       }
     }
+  }
+
+  if (copyCodeBtn) {
+    copyCodeBtn.addEventListener('click', () => {
+      const bp = blueprintsData[activeBlueprintIdx];
+      if (!bp) return;
+      const def = getActiveDefinition(bp);
+      navigator.clipboard.writeText(def).then(() => {
+        copyCodeBtn.textContent = '✅ Copied to Clipboard!';
+        setTimeout(() => {
+          copyCodeBtn.textContent = '📋 Copy Mermaid Code';
+        }, 1600);
+      });
+    });
   }
 
   if (btnModeFlowchart) {
     btnModeFlowchart.addEventListener('click', () => {
       activeBlueprintDiagramMode = 'flowchart';
+      lastMermaidGraphicMode = 'flowchart';
       renderBlueprintStage(blueprintsData[activeBlueprintIdx]);
     });
   }
@@ -1094,6 +1825,14 @@ function initBlueprintTerminal() {
   if (btnModeEr) {
     btnModeEr.addEventListener('click', () => {
       activeBlueprintDiagramMode = 'er';
+      lastMermaidGraphicMode = 'er';
+      renderBlueprintStage(blueprintsData[activeBlueprintIdx]);
+    });
+  }
+
+  if (btnModeCode) {
+    btnModeCode.addEventListener('click', () => {
+      activeBlueprintDiagramMode = 'code';
       renderBlueprintStage(blueprintsData[activeBlueprintIdx]);
     });
   }
@@ -1103,12 +1842,11 @@ function initBlueprintTerminal() {
     item.className = `w-full text-left p-2.5 rounded-lg border transition-all flex items-center justify-between cursor-pointer ${idx === 0 ? 'bg-[#1a2333] border-sky-500/50 text-white' : 'bg-[#0f141f] border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-[#161c28]'}`;
     item.setAttribute('data-index', idx);
 
-    const hasMermaidBadge = Boolean(bp.mermaidFlowchart || bp.mermaidEr);
     item.innerHTML = `
       <div>
         <div class="font-bold text-xs flex items-center gap-1.5">
           <span>${bp.title}</span>
-          ${hasMermaidBadge ? '<span class="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[9px] font-mono">MERMAID</span>' : ''}
+          <span class="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[9px] font-mono">MERMAID</span>
         </div>
         <div class="text-[10px] text-slate-500 font-mono">${bp.domain}</div>
       </div>
@@ -1141,15 +1879,12 @@ function initBlueprintTerminal() {
 
       if (!modal || !currentBp) return;
 
-      const hasMermaid = Boolean(currentBp.mermaidFlowchart || currentBp.mermaidEr);
       if (modalTitle) {
-        modalTitle.textContent = hasMermaid
-          ? `${currentBp.title} — ${activeBlueprintDiagramMode === 'er' ? 'E-R Data Schema' : 'Architecture Flowchart'}`
-          : currentBp.title;
+        modalTitle.textContent = `${currentBp.title} — ${lastMermaidGraphicMode === 'er' ? 'E-R Data Schema' : 'Architecture Flowchart'}`;
       }
 
-      if (hasMermaid && modalMermaid && stageMermaid) {
-        modalImg.classList.add('hidden');
+      if (modalMermaid && stageMermaid) {
+        if (modalImg) modalImg.classList.add('hidden');
         modalMermaid.classList.remove('hidden');
         modalMermaid.innerHTML = stageMermaid.innerHTML;
         const svgEl = modalMermaid.querySelector('svg');
@@ -1157,10 +1892,6 @@ function initBlueprintTerminal() {
           svgEl.style.maxHeight = '80vh';
           svgEl.style.width = '100%';
         }
-      } else if (modalImg && stageImg) {
-        if (modalMermaid) modalMermaid.classList.add('hidden');
-        modalImg.classList.remove('hidden');
-        modalImg.src = stageImg.src;
       }
 
       modal.classList.remove('hidden');
