@@ -898,6 +898,50 @@ const blueprintsData = [
   class LB intNode`
   },
   {
+    id: 'sheet-07',
+    sheetNum: 'Sheet 07 — Live Mermaid',
+    title: 'Jigsaw Solitaire & Card Merger',
+    domain: 'Core Gameplay Logic',
+    engine: 'Unity 6000.3.14f1 (WebGL WASM)',
+    labDemo: 'jigsaw-solitaire',
+    mermaidFlowchart: `flowchart TB
+  subgraph Inputs["CARD SLICER, SCRAMBLER & DRAG INPUT"]
+    direction LR
+    UIInput["JigsawSolitaireGameUI.cs<br/>(draggingCluster Slot Drop)"]
+    Scrambler["InitPuzzle & BakeCardTexture<br/>(Zero-Match + 22% Mystery Flip)"]
+    Bridge["JigsawSolitaireServerBridge.cs<br/>(NIP_WebGL + 0.80f Aspect Art)"]
+  end
+
+  subgraph Core["CORE MODULE — SOLITAIRE SWAP & MERGE ENGINE"]
+    direction LR
+    SwapEngine["ExecuteClusterDrop(lead, R, C)<br/>(vacatedSlots Displacement Swap)"]
+    MergeEngine["EvaluateBoardMerges()<br/>(dBoard == dTrue Union & Flip)"]
+  end
+
+  subgraph Runtime["POWER-UPS, SEAM VFX & LIVEOPS"]
+    direction LR
+    Powers["TriggerHint / Magnet / Shuffle<br/>(CardFlightAnim & Seam Sparkles)"]
+    WinLB["RegisterWin() & LbSubmitRun()<br/>(SolitaireLeague + UnifiedLeague)"]
+  end
+
+  UIInput -->|"targetLeadRow / Col"| SwapEngine
+  Scrambler -->|"SolitaireCard[R,C]"| SwapEngine
+  Scrambler -->|"faceDown & groupId"| MergeEngine
+  Bridge -->|"fullBoardTexture"| MergeEngine
+
+  SwapEngine <-->|"displaced flights"| Powers
+  MergeEngine <-->|"re-evaluate merges"| Powers
+  MergeEngine -.->|"single groupId win"| WinLB
+
+  classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
+  classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
+  classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1.5px,stroke-dasharray: 5 5,color:#cbd5e1
+
+  class SwapEngine,MergeEngine coreNode
+  class UIInput,Scrambler,Bridge,Powers adjNode
+  class WinLB intNode`
+  },
+  {
     id: 'sheet-06',
     sheetNum: 'Sheet 06 — Live Mermaid',
     title: 'Offline Leaderboard',
@@ -1232,7 +1276,7 @@ function initBlueprintTerminal() {
 
   blueprintsData.forEach((bp, idx) => {
     const item = document.createElement('button');
-    item.className = `w-full flex-1 text-left px-2.5 py-2 rounded-lg border transition-all flex items-center justify-between gap-1.5 cursor-pointer ${idx === 0 ? 'bg-[#1a2333] border-sky-500/50 text-white' : 'bg-[#0f141f] border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-[#161c28]'}`;
+    item.className = `w-full flex-1 text-left px-2.5 py-1.5 rounded-lg border transition-all flex items-center justify-between gap-1.5 cursor-pointer ${idx === 0 ? 'bg-[#1a2333] border-sky-500/50 text-white' : 'bg-[#0f141f] border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-[#161c28]'}`;
     item.setAttribute('data-index', idx);
 
     item.innerHTML = `
@@ -1248,9 +1292,9 @@ function initBlueprintTerminal() {
     item.addEventListener('click', () => {
       activeBlueprintIdx = idx;
       document.querySelectorAll('#blueprint-nav-list button').forEach(b => {
-        b.className = 'w-full flex-1 text-left px-2.5 py-2 rounded-lg border transition-all flex items-center justify-between gap-1.5 cursor-pointer bg-[#0f141f] border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-[#161c28]';
+        b.className = 'w-full flex-1 text-left px-2.5 py-1.5 rounded-lg border transition-all flex items-center justify-between gap-1.5 cursor-pointer bg-[#0f141f] border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-[#161c28]';
       });
-      item.className = 'w-full flex-1 text-left px-2.5 py-2 rounded-lg border transition-all flex items-center justify-between gap-1.5 cursor-pointer bg-[#1a2333] border-sky-500/50 text-white';
+      item.className = 'w-full flex-1 text-left px-2.5 py-1.5 rounded-lg border transition-all flex items-center justify-between gap-1.5 cursor-pointer bg-[#1a2333] border-sky-500/50 text-white';
 
       renderBlueprintStage(bp);
     });
