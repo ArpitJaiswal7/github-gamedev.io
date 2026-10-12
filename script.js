@@ -1168,9 +1168,10 @@ function initBlueprintTerminal() {
       flowchart: {
         htmlLabels: true,
         curve: 'basis',
-        nodeSpacing: 24,
-        rankSpacing: 32,
-        padding: 10,
+        nodeSpacing: 26,
+        rankSpacing: 34,
+        padding: 16,
+        subGraphTitleMargin: { top: 8, bottom: 12 },
         useMaxWidth: false
       },
       themeVariables: {
@@ -1210,7 +1211,7 @@ function initBlueprintTerminal() {
           svgEl.setAttribute('preserveAspectRatio', 'xMidYMid meet');
           svgEl.style.width = '100%';
           svgEl.style.height = '100%';
-          svgEl.style.maxHeight = '525px';
+          svgEl.style.maxHeight = '545px';
           svgEl.style.maxWidth = '100%';
         }
       } catch (err) {
@@ -1222,25 +1223,25 @@ function initBlueprintTerminal() {
 
   blueprintsData.forEach((bp, idx) => {
     const item = document.createElement('button');
-    item.className = `w-full text-left p-2.5 rounded-lg border transition-all flex items-center justify-between cursor-pointer ${idx === 0 ? 'bg-[#1a2333] border-sky-500/50 text-white' : 'bg-[#0f141f] border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-[#161c28]'}`;
+    item.className = `w-full text-left px-2.5 py-2 rounded-lg border transition-all flex items-center justify-between gap-2 cursor-pointer ${idx === 0 ? 'bg-[#1a2333] border-sky-500/50 text-white' : 'bg-[#0f141f] border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-[#161c28]'}`;
     item.setAttribute('data-index', idx);
 
     item.innerHTML = `
-      <div>
-        <div class="font-bold text-xs flex items-center gap-1.5">
-          <span>${bp.title}</span>
+      <div class="min-w-0">
+        <div class="font-bold text-[11px] leading-snug truncate">
+          ${bp.title}
         </div>
-        <div class="text-[10px] text-slate-500 font-mono">${bp.domain}</div>
+        <div class="text-[9.5px] text-slate-500 font-mono truncate">${bp.domain}</div>
       </div>
-      <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-sky-400 font-mono">${bp.sheetNum.split(' ')[1]}</span>
+      <span class="text-[9.5px] px-1.5 py-0.5 rounded bg-slate-800 text-sky-400 font-mono shrink-0">${bp.sheetNum.split(' ')[1]}</span>
     `;
 
     item.addEventListener('click', () => {
       activeBlueprintIdx = idx;
       document.querySelectorAll('#blueprint-nav-list button').forEach(b => {
-        b.className = 'w-full text-left p-2.5 rounded-lg border transition-all flex items-center justify-between cursor-pointer bg-[#0f141f] border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-[#161c28]';
+        b.className = 'w-full text-left px-2.5 py-2 rounded-lg border transition-all flex items-center justify-between gap-2 cursor-pointer bg-[#0f141f] border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-[#161c28]';
       });
-      item.className = 'w-full text-left p-2.5 rounded-lg border transition-all flex items-center justify-between cursor-pointer bg-[#1a2333] border-sky-500/50 text-white';
+      item.className = 'w-full text-left px-2.5 py-2 rounded-lg border transition-all flex items-center justify-between gap-2 cursor-pointer bg-[#1a2333] border-sky-500/50 text-white';
 
       renderBlueprintStage(bp);
     });

@@ -520,22 +520,22 @@
       </div>
 
       <!-- Split-View CAD Terminal Container -->
-      <div class="bg-[#111622] rounded-2xl border border-slate-800 overflow-hidden shadow-2xl grid grid-cols-1 lg:grid-cols-12 min-h-[580px]">
+      <div class="bg-[#111622] rounded-2xl border border-slate-800 overflow-hidden shadow-2xl flex flex-col lg:flex-row min-h-[580px]">
         
-        <!-- Left Column: Systems Navigator List -->
-        <div class="lg:col-span-4 bg-[#0d121c] border-r border-slate-800 p-4 space-y-2 font-mono text-xs">
-          <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider pb-2 border-b border-slate-800 flex items-center justify-between">
+        <!-- Left Column: Compact Systems Navigator List -->
+        <div class="w-full lg:w-[250px] xl:w-[260px] shrink-0 bg-[#0d121c] border-b lg:border-b-0 lg:border-r border-slate-800 p-2.5 space-y-1.5 font-mono text-xs">
+          <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-1 pb-2 border-b border-slate-800 flex items-center justify-between">
             <span>Systems Catalog</span>
             <span class="text-sky-400">9 Schematics</span>
           </div>
 
-          <div class="space-y-1 pt-1" id="blueprint-nav-list">
+          <div class="space-y-1 pt-0.5" id="blueprint-nav-list">
             <!-- Populated via script.js -->
           </div>
         </div>
 
-        <!-- Right Column: Maximized Full-Bleed Flowchart / E-R Illustration Stage -->
-        <div class="lg:col-span-8 bg-[#0a0d14] flex flex-col h-full min-h-[580px]">
+        <!-- Right Column: Expanded Full-Bleed Flowchart Illustration Stage -->
+        <div class="flex-1 min-w-0 bg-[#0a0d14] flex flex-col h-full min-h-[580px]">
           
           <!-- Single Compact Row: Title on Left + Expand on Right -->
           <div class="flex items-center justify-between gap-2 px-4 py-2.5 border-b border-slate-800/80 bg-[#0d121c] shrink-0">
@@ -546,8 +546,8 @@
             </button>
           </div>
 
-          <!-- Full-Bleed Square-Proportioned Diagram Illustration Box (Zero outer empty margin) -->
-          <div id="bp-canvas-viewport" class="relative flex-1 w-full h-full overflow-hidden bg-[#0c101a] flex items-center justify-center p-2 min-h-[530px]" style="background-image: radial-gradient(rgba(56, 189, 248, 0.08) 1px, transparent 1px); background-size: 20px 20px;">
+          <!-- Full-Bleed Square-Proportioned Diagram Illustration Box -->
+          <div id="bp-canvas-viewport" class="relative flex-1 w-full h-full overflow-hidden bg-[#0c101a] flex items-center justify-center p-1 sm:p-2 min-h-[535px]" style="background-image: radial-gradient(rgba(56, 189, 248, 0.08) 1px, transparent 1px); background-size: 20px 20px;">
             <div id="bp-stage-mermaid" class="w-full h-full flex items-center justify-center"></div>
           </div>
 
@@ -652,7 +652,7 @@
     </div>
   </div>
 
-  <script src="script.js?v=mermaid-short-fc-3"></script>
+  <script src="script.js?v=mermaid-short-fc-4"></script>
   <script>
     lucide.createIcons();
   </script>
