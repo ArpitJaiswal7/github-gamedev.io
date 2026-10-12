@@ -534,78 +534,30 @@
           </div>
         </div>
 
-        <!-- Right Column: Dedicated Full-Width Flowchart Schematic Stage -->
-        <div class="lg:col-span-8 bg-[#0a0d14] p-6 flex flex-col justify-between space-y-4">
+        <!-- Right Column: Maximized Flowchart / E-R Illustration Stage -->
+        <div class="lg:col-span-8 bg-[#0a0d14] p-3 sm:p-4 flex flex-col gap-2.5 h-full min-h-[560px]">
           
-          <!-- Schematic Header -->
-          <div class="flex flex-wrap items-start justify-between gap-3 pb-3 border-b border-slate-800">
-            <div>
-              <div id="bp-stage-domain" class="text-xs font-mono text-sky-400 uppercase">INDEPENDENT SYSTEM — CORE GAMEPLAY LOGIC</div>
-              <h3 id="bp-stage-title" class="text-xl sm:text-2xl font-bold text-white mt-1">Meowdoku Engine &amp; Solver</h3>
-              <p id="bp-stage-desc" class="text-xs text-slate-400 mt-1 max-w-xl">Multi-touch gesture router with input locks during animations and an ordered hint-technique cascade.</p>
-            </div>
-            <div class="flex flex-wrap items-center gap-2">
-              <!-- Segmented Toggle: Architecture Flowchart vs E-R Schema vs Mermaid DSL -->
-              <div id="bp-diagram-mode-toggle" class="flex items-center bg-[#0d1117] p-0.5 rounded-lg border border-slate-800 font-mono text-xs">
-                <button type="button" id="bp-mode-flowchart" class="px-2.5 py-1 rounded-md font-bold transition-all cursor-pointer flex items-center gap-1.5 bg-sky-500 text-slate-950 shadow">
-                  <span>🔀</span>
-                  <span>Flowchart</span>
-                </button>
-                <button type="button" id="bp-mode-er" class="px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer flex items-center gap-1.5 text-slate-400 hover:text-white">
-                  <span>🗂️</span>
-                  <span>E-R Schema</span>
-                </button>
-                <button type="button" id="bp-mode-code" class="px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer flex items-center gap-1.5 text-slate-400 hover:text-white">
-                  <span>&lt;/&gt;</span>
-                  <span>Mermaid DSL</span>
-                </button>
-              </div>
-
-              <a id="btn-open-mermaid-live" href="https://mermaid.live/" target="_blank" rel="noopener" class="px-3 py-1.5 rounded-lg bg-pink-500/15 hover:bg-pink-500/25 border border-pink-500/40 text-pink-300 font-mono text-xs font-semibold flex items-center gap-1.5 transition-all" title="Open this diagram directly in mermaid.live">
-                <span>🧜‍♀️</span>
-                <span>mermaid.live ↗</span>
-              </a>
-
-              <a id="btn-launch-blueprint-lab" href="#mechanics-lab" class="px-3 py-1.5 rounded-lg bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/40 text-sky-300 font-mono text-xs font-semibold flex items-center gap-1.5 transition-all">
-                <i data-lucide="play" class="w-3.5 h-3.5 fill-current"></i> Launch in Unity Lab
-              </a>
-              <button id="btn-zoom-blueprint" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-mono text-xs flex items-center gap-1.5 transition-all cursor-pointer">
-                <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i> Expand
+          <!-- Single Compact Control Row: ONLY Flowchart / E-R Schema Toggle + Expand Button -->
+          <div class="flex items-center justify-between gap-2 shrink-0">
+            <div id="bp-diagram-mode-toggle" class="flex items-center bg-[#0d1117] p-0.5 rounded-lg border border-slate-800 font-mono text-xs">
+              <button type="button" id="bp-mode-flowchart" class="px-3 py-1.5 rounded-md font-bold transition-all cursor-pointer flex items-center gap-1.5 bg-sky-500 text-slate-950 shadow">
+                <span>🔀</span>
+                <span>Flowchart</span>
+              </button>
+              <button type="button" id="bp-mode-er" class="px-3 py-1.5 rounded-md font-semibold transition-all cursor-pointer flex items-center gap-1.5 text-slate-400 hover:text-white">
+                <span>🗂️</span>
+                <span>E-R Schema</span>
               </button>
             </div>
+
+            <button id="btn-zoom-blueprint" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-mono text-xs flex items-center gap-1.5 transition-all cursor-pointer">
+              <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i> Expand
+            </button>
           </div>
 
-          <!-- The Interactive Mermaid.live-Style Diagram Canvas -->
-          <div id="bp-canvas-viewport" class="relative rounded-xl overflow-hidden bg-[#0c101a] border border-slate-800/80 flex items-center justify-center p-4 min-h-[450px] select-none cursor-grab active:cursor-grabbing" style="background-image: radial-gradient(rgba(56, 189, 248, 0.10) 1px, transparent 1px); background-size: 20px 20px;">
-            <!-- Floating mermaid.live-style Pan & Zoom Controls -->
-            <div id="bp-panzoom-toolbar" class="absolute bottom-3 right-3 z-20 flex items-center gap-1 bg-[#111622]/95 backdrop-blur-md border border-slate-700/80 rounded-lg p-1 shadow-xl font-mono text-[11px]">
-              <span class="px-2 text-slate-400 hidden sm:inline">Drag to Pan • Scroll to Zoom</span>
-              <button type="button" id="bp-zoom-out" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold cursor-pointer transition-colors" title="Zoom Out">−</button>
-              <button type="button" id="bp-zoom-reset" class="px-2 py-1 rounded bg-slate-900 hover:bg-slate-800 text-sky-400 font-bold cursor-pointer transition-colors min-w-[48px] text-center" title="Reset Zoom & Pan">100%</button>
-              <button type="button" id="bp-zoom-in" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold cursor-pointer transition-colors" title="Zoom In">+</button>
-            </div>
-
-            <!-- Live Mermaid SVG Container (Transformable for Pan/Zoom) -->
-            <div id="bp-stage-mermaid" class="w-full h-full flex items-center justify-center transition-transform duration-75 ease-out origin-center"></div>
-
-            <!-- Live Mermaid DSL Code Inspector (Shown when Mermaid DSL mode is selected) -->
-            <div id="bp-stage-code" class="hidden w-full h-[420px] overflow-auto bg-[#070a10] border border-slate-800 rounded-lg p-4 font-mono text-xs text-emerald-300 select-text cursor-auto">
-              <div class="flex items-center justify-between pb-2 mb-3 border-b border-slate-800 text-[11px] text-slate-400">
-                <span id="bp-code-header-label">Mermaid.js Source Definition (v10)</span>
-                <button type="button" id="btn-copy-mermaid-code" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 cursor-pointer transition-colors">📋 Copy Mermaid Code</button>
-              </div>
-              <pre id="bp-stage-code-pre" class="whitespace-pre-wrap leading-relaxed text-[11px] text-sky-200"></pre>
-            </div>
-          </div>
-
-          <!-- Bottom Legend -->
-          <div class="flex flex-wrap items-center justify-between text-[11px] font-mono text-slate-400 pt-2 border-t border-slate-800/80 gap-2">
-            <div class="flex items-center gap-3">
-              <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-amber-500"></span> Core Module</span>
-              <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-sky-500"></span> Adjacent Systems</span>
-              <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm border border-dashed border-slate-400"></span> Internal Engine Code</span>
-            </div>
-            <span id="bp-stage-footer-badge" class="text-sky-400">100% Live Mermaid.js DOM SVG &bull; Zero Static PNGs</span>
+          <!-- Maximized Square-Proportioned Diagram Illustration Box -->
+          <div id="bp-canvas-viewport" class="relative flex-1 w-full h-full rounded-xl overflow-hidden bg-[#0c101a] border border-slate-800/80 flex items-center justify-center p-2 sm:p-3 min-h-[500px]" style="background-image: radial-gradient(rgba(56, 189, 248, 0.08) 1px, transparent 1px); background-size: 20px 20px;">
+            <div id="bp-stage-mermaid" class="w-full h-full flex items-center justify-center"></div>
           </div>
 
         </div>
@@ -710,7 +662,7 @@
     </div>
   </div>
 
-  <script src="script.js?v=mermaid-live-all-9"></script>
+  <script src="script.js?v=mermaid-square-max-1"></script>
   <script>
     lucide.createIcons();
   </script>

@@ -778,103 +778,69 @@ const blueprintsData = [
     desc: 'Multi-touch gesture router with input locks during animations, 5-tier deterministic hint cascade, and cross-level powerup wallet.',
     labDemo: 'meowsweeper',
     mermaidFlowchart: `flowchart TB
-  subgraph Inputs["INPUT & CONTENT LAYER"]
-    direction LR
-    Tap["Single Tap (Mark X)"]
-    DblTap["Double Tap (Place Cat)"]
-    Drag["Drag Gesture (Paint X)"]
-    CDN["Live Level Server (lvl_1..65.json)"]
+  subgraph Top["INPUT & CDN CONTENT"]
+    Gestures["Touch Gesture Router<br/>(Tap X / DblTap Cat / Drag)"]
+    CDN["Live Level CDN<br/>(lvl_1..65.json + Manifest)"]
   end
 
-  subgraph Core["CORE MODULE — MEOWDOKU ENGINE"]
-    Controller["PuzzleController (Input Lock + State Machine)"]
+  Controller["PuzzleController<br/>(State Machine & Input Lock)"]
+
+  subgraph Mid["RUNTIME & VALIDATION"]
+    Solver["Deterministic Solver<br/>(Move Check & 5-Tier Hints)"]
+    Economy["Wallet & 3-Heart Rule<br/>(Coins / Hints / Score Sync)"]
   end
 
-  subgraph Adjacent["ADJACENT RUNTIME SYSTEMS"]
-    direction LR
-    Solver["Deterministic Solver (Validates Moves & Hints)"]
-    Wallet["Powerup Wallet (Hint / Cat Reveal / Coins)"]
-    Score["Score & Save Progress (Offline Leaderboard Sync)"]
-    Penalty["Heart Penalty & Lock (3-Heart Strike Rule)"]
+  subgraph Bot["INTERNAL ENGINE (CUT-LINE)"]
+    Cascade["5-Tier Hint Cascade<br/>(Single-Empty to Elimination)"]
+    UndoHash["Correct-Only Undo Stack<br/>& Save Hash Validator"]
   end
 
-  subgraph Internal["INTERNAL ENGINE SUBSYSTEMS (BELOW CUT-LINE)"]
-    direction LR
-    Cascade["5-Tier Hint Cascade (Single-Empty to Elimination)"]
-    Undo["Correct-Only Undo Stack"]
-    Hash["Save-vs-Level Hash Validation"]
-  end
-
-  Tap -->|"mark cell"| Controller
-  DblTap -->|"place cat"| Controller
-  Drag -->|"batch paint"| Controller
-  CDN -->|"manifest + grid config"| Controller
-
-  Controller <-->|"verify solution"| Solver
-  Controller <-->|"spend / grant"| Wallet
-  Controller -->|"valid placement"| Score
-  Controller -->|"invalid placement"| Penalty
-
-  Controller -.-> Cascade
-  Controller -.-> Undo
-  Controller -.-> Hash
+  Gestures -->|"cell action"| Controller
+  CDN -->|"grid config"| Controller
+  Controller <-->|"validate"| Solver
+  Controller <-->|"state / wallet"| Economy
+  Solver -.-> Cascade
+  Controller -.-> UndoHash
 
   classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
   classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
   classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1px,stroke-dasharray: 5 5,color:#94a3b8
 
   class Controller coreNode
-  class Tap,DblTap,Drag,CDN,Solver,Wallet,Score,Penalty adjNode
-  class Cascade,Undo,Hash intNode`,
+  class Gestures,CDN,Solver,Economy adjNode
+  class Cascade,UndoHash intNode`,
     mermaidEr: `erDiagram
-  LEVEL_MANIFEST ||--o{ LEVEL_DATA : "indexes 65 levels"
   LEVEL_DATA ||--|| BOARD_STATE : "initializes"
+  PLAYER_WALLET ||--o{ BOARD_STATE : "funds"
   BOARD_STATE ||--|{ CELL_NODE : "contains N x N"
-  BOARD_STATE ||--o{ HINT_CASCADE_STEP : "evaluates"
-  PLAYER_PROFILE ||--|| POWERUP_WALLET : "owns"
-  PLAYER_PROFILE ||--o{ BOARD_STATE : "saves progress"
-  BOARD_STATE ||--o| LEADERBOARD_ENTRY : "submits on win"
+  BOARD_STATE ||--o{ HINT_CASCADE : "evaluates"
 
-  LEVEL_MANIFEST {
-    int version
-    int totalLevels
-    string_array levelIds
-  }
   LEVEL_DATA {
     int id
     int gridSize
     int_matrix regions
     int_matrix solutionCats
-    int maxHearts
+  }
+  PLAYER_WALLET {
+    int hintCount
+    int catRevealCount
+    int coinsBalance
   }
   BOARD_STATE {
     int levelId
     string levelHash
     int remainingHearts
     int elapsedMs
-    boolean isInputLocked
   }
   CELL_NODE {
-    int row
-    int col
+    int row_col
     int regionId
-    string state "EMPTY_CROSS_CAT"
-    boolean isLocked
+    string state
   }
-  HINT_CASCADE_STEP {
-    int techniqueTier "1_to_5"
+  HINT_CASCADE {
+    int tier_1_to_5
     string ruleName
     int_array targetCells
-  }
-  POWERUP_WALLET {
-    int hintCount
-    int catRevealCount
-    int coinsBalance
-  }
-  LEADERBOARD_ENTRY {
-    string presetId "meowsweeper"
-    int bestTimeMs
-    int starsEarned
   }`
   },
   {
@@ -887,78 +853,62 @@ const blueprintsData = [
     labDemo: 'native-image-bridge',
     mermaidFlowchart: `flowchart TB
   subgraph Callers["GAMEPLAY & UI CALLERS"]
-    direction LR
-    LevelThumb["Level Select Grid"]
-    JigsawTex["Jigsaw Board TextureLoader"]
-    AvatarUI["Leaderboard Avatar UI"]
+    LevelUI["Level Grid & Avatar UI<br/>LoadImageAsync(url, size)"]
+    BoardTex["Jigsaw Board Loader<br/>HD Texture Request"]
   end
 
-  subgraph Core["CORE MODULE — NATIVE IMAGE BRIDGE"]
-    Facade["NativeImagePipeline (Shared C# Async API + Request Deduplicator)"]
+  Facade["NativeImagePipeline<br/>(Shared C# API & In-Flight Deduplicator)"]
+
+  subgraph Bridges["PLATFORM NATIVE BRIDGES"]
+    Mobile["Android Glide + OkHttp3<br/>& iOS NSURLSession + vImage"]
+    Fallback["UnityWebRequest Fallback<br/>(Editor / WebGL Target)"]
   end
 
-  subgraph Bridges["PLATFORM JNI / OBJC BRIDGES"]
-    direction LR
-    Android["Android Bridge (Glide + OkHttp3 Pool)"]
-    iOS["iOS Bridge (NSURLSession + vImage)"]
-    Editor["UnityWebRequest Fallback (Editor / WebGL)"]
+  subgraph Cache["INTERNAL CACHE & DECODE (CUT-LINE)"]
+    L1L2["L1 Memory LRU Pool<br/>& L2 SHA-256 Disk Cache"]
+    Downsample["Hardware InSampleSize<br/>Off-Thread Downsampler"]
   end
 
-  subgraph Internal["INTERNAL ENGINE SUBSYSTEMS (BELOW CUT-LINE)"]
-    direction LR
-    L1Cache["L1 Memory LRU Cache (Texture2D Pool)"]
-    L2Disk["L2 Disk SHA-256 Cache (Application.temporaryCachePath)"]
-    Downsample["InSampleSize / Hardware Downsampler"]
-  end
-
-  LevelThumb -->|"LoadImageAsync(url, size)"| Facade
-  JigsawTex -->|"LoadImageAsync(url, size)"| Facade
-  AvatarUI -->|"LoadImageAsync(url, size)"| Facade
-
-  Facade -->|"AndroidJNI"| Android
-  Facade -->|"DllImport(__Internal)"| iOS
-  Facade -->|"Editor / Fallback"| Editor
-
-  Facade -.-> L1Cache
-  Facade -.-> L2Disk
-  Facade -.-> Downsample
+  LevelUI -->|"async request"| Facade
+  BoardTex -->|"async request"| Facade
+  Facade -->|"JNI / ObjC"| Mobile
+  Facade -->|"Editor"| Fallback
+  Facade -.-> L1L2
+  Mobile -.-> Downsample
 
   classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
   classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
   classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1px,stroke-dasharray: 5 5,color:#94a3b8
 
   class Facade coreNode
-  class LevelThumb,JigsawTex,AvatarUI,Android,iOS,Editor adjNode
-  class L1Cache,L2Disk,Downsample intNode`,
+  class LevelUI,BoardTex,Mobile,Fallback adjNode
+  class L1L2,Downsample intNode`,
     mermaidEr: `erDiagram
-  IMAGE_REQUEST ||--o| INFLIGHT_DEDUP_GROUP : "coalesces callbacks"
-  IMAGE_REQUEST ||--o| MEMORY_LRU_ENTRY : "checks L1 first"
-  IMAGE_REQUEST ||--o| DISK_CACHE_RECORD : "checks L2 second"
-  DISK_CACHE_RECORD ||--|| NATIVE_DECODE_JOB : "decodes off-thread"
+  IMAGE_REQUEST ||--o| MEMORY_LRU_ENTRY : "checks L1"
+  IMAGE_REQUEST ||--o| DISK_CACHE_RECORD : "checks L2"
+  IMAGE_REQUEST ||--|| NATIVE_DECODE_JOB : "dispatches"
+  DISK_CACHE_RECORD ||--|| NATIVE_DECODE_JOB : "streams bytes"
 
   IMAGE_REQUEST {
     string urlHashSha256
     string sourceUrl
     int targetWidth
     int targetHeight
-    boolean generateMipmaps
   }
   MEMORY_LRU_ENTRY {
     string urlHashSha256
     int textureInstanceId
     int byteFootprint
-    long lastAccessTick
   }
   DISK_CACHE_RECORD {
     string urlHashSha256
     string filePath
-    long fileSizeBytes
     string etagHeader
   }
   NATIVE_DECODE_JOB {
-    string platformBackend "GLIDE_NSURL_UWR"
+    string platformBackend
     int sampleFactor
-    int decodeDurationMs
+    int decodeMs
   }`
   },
   {
@@ -970,85 +920,65 @@ const blueprintsData = [
     desc: 'Dynamic procedural N×N board generator using 9 tab/blank edge signatures with custom shader UV quad projections.',
     labDemo: 'calm-jigsaw',
     mermaidFlowchart: `flowchart TB
-  subgraph Inputs["PUZZLE CONFIG & TEXTURE INPUT"]
-    direction LR
-    GridCfg["Grid Preset (3x3 up to 10x10)"]
-    SourceArt["HD Artwork Texture2D"]
-    TouchDrag["Pointer / Multi-Touch Drag"]
+  subgraph Inputs["BOARD CONFIG & ARTWORK"]
+    Config["Grid Preset (3x3..10x10)<br/>& Pointer Drag Input"]
+    Artwork["HD Source Texture2D<br/>(Single Shared Atlas)"]
   end
 
-  subgraph Core["CORE MODULE — JIGSAW BOARD RENDERER"]
-    Generator["ProceduralBoardGenerator (Edge Signature Matrix + UV Mapper)"]
+  Generator["ProceduralBoardGenerator<br/>(Edge Matrix & UV Projection)"]
+
+  subgraph Runtime["RUNTIME SHADER & CLUSTERS"]
+    Shader["PieceMaskShader<br/>(9-Slice Bevel & Alpha Cut)"]
+    Cluster["Union-Find Snap Group<br/>& Scrollable Piece Tray"]
   end
 
-  subgraph Runtime["ADJACENT RUNTIME SYSTEMS"]
-    direction LR
-    Shader["PieceMaskShader (9-Slice Bevel + Alpha Mask)"]
-    SnapGroup["Union-Find Cluster Merger (Magnetic Neighbor Snap)"]
-    Tray["Scrollable Piece Tray & Board Save State"]
+  subgraph Internal["INTERNAL GEOMETRY (CUT-LINE)"]
+    Edges["Complementary Edge Solver<br/>(Flat=0 / Tab=+1 / Blank=-1)"]
+    UVs["Oversized UV Quad (+28%)<br/>& Dynamic Z-Order Stack"]
   end
 
-  subgraph Internal["INTERNAL ENGINE SUBSYSTEMS (BELOW CUT-LINE)"]
-    direction LR
-    EdgeRng["Complementary Edge Solver (Flat=0 / Tab=+1 / Blank=-1)"]
-    UVRect["Oversized UV Quad Offset (+28% Tab Bleed Margin)"]
-    ZSort["Dynamic SortingGroup Z-Order Stack"]
-  end
-
-  GridCfg -->|"N x N dimensions"| Generator
-  SourceArt -->|"shared material atlas"| Generator
-  TouchDrag -->|"piece transform"| Generator
-
-  Generator -->|"per-piece UV + mask IDs"| Shader
-  Generator <-->|"neighbor tolerance check"| SnapGroup
-  Generator -->|"serialize placed state"| Tray
-
-  Generator -.-> EdgeRng
-  Generator -.-> UVRect
-  Generator -.-> ZSort
+  Config -->|"dimensions"| Generator
+  Artwork -->|"shared atlas"| Generator
+  Generator -->|"UV + mask ID"| Shader
+  Generator <-->|"magnetic snap"| Cluster
+  Generator -.-> Edges
+  Shader -.-> UVs
 
   classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
   classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
   classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1px,stroke-dasharray: 5 5,color:#94a3b8
 
   class Generator coreNode
-  class GridCfg,SourceArt,TouchDrag,Shader,SnapGroup,Tray adjNode
-  class EdgeRng,UVRect,ZSort intNode`,
+  class Config,Artwork,Shader,Cluster adjNode
+  class Edges,UVs intNode`,
     mermaidEr: `erDiagram
   JIGSAW_BOARD ||--|{ JIGSAW_PIECE : "generates N x N"
-  JIGSAW_PIECE }|--|| UNION_CLUSTER : "merges into"
+  UNION_CLUSTER ||--|{ JIGSAW_PIECE : "groups snapped"
   JIGSAW_PIECE ||--|| EDGE_SIGNATURE : "has 4 edges"
   JIGSAW_PIECE ||--|| SHADER_UV_BLOCK : "projects"
 
   JIGSAW_BOARD {
     string puzzleId
-    int rows
-    int cols
+    int rows_cols
     float snapRadiusPx
-    int lockedCount
-  }
-  JIGSAW_PIECE {
-    int pieceIndex
-    int gridRow
-    int gridCol
-    float worldX
-    float worldY
-    boolean isPlacedOnBoard
-  }
-  EDGE_SIGNATURE {
-    int topEdge "0_FLAT_1_TAB_MINUS1_BLANK"
-    int rightEdge
-    int bottomEdge
-    int leftEdge
   }
   UNION_CLUSTER {
     int clusterRootId
-    int_array memberPieceIds
-    boolean isLockedToGrid
+    int_array memberIds
+    boolean isLocked
+  }
+  JIGSAW_PIECE {
+    int pieceIndex
+    int gridRow_Col
+    float worldX_Y
+  }
+  EDGE_SIGNATURE {
+    int top_right
+    int bottom_left
   }
   SHADER_UV_BLOCK {
     float4 uvScaleOffset
-    int maskAtlasIndex
+    int maskAtlasId
   }`
   },
   {
@@ -1060,84 +990,64 @@ const blueprintsData = [
     desc: 'Zero-server-cost bot simulation engine generating dynamic seasonal leagues, rank advancement, and anti-rollback clamping.',
     labDemo: 'offline-leaderboard',
     mermaidFlowchart: `flowchart TB
-  subgraph Events["GAMEPLAY SCORE & CLOCK INPUTS"]
-    direction LR
-    GameWin["Level Complete (+Score / +Trophies)"]
-    BootClock["App Launch / System UTC Clock"]
-    GamePreset["Game Profile (MeowSweeper / Calm Jigsaw / Solitaire)"]
+  subgraph Events["SCORE & CLOCK INPUTS"]
+    WinEvent["Level Win (+Score)<br/>& Game Preset Selector"]
+    Clock["System UTC Clock<br/>(Elapsed Offline Hours)"]
   end
 
-  subgraph Core["CORE MODULE — OFFLINE LEADERBOARD ENGINE"]
-    SimEngine["LeaderboardSimulator (Deterministic Bot Curve + League State)"]
+  SimEngine["LeaderboardSimulator<br/>(Deterministic Bot Curve & League State)"]
+
+  subgraph Outputs["UI & PERSISTENCE"]
+    LeagueUI["Animated Standings UI<br/>& Division Promotion Chest"]
+    Storage["Encrypted Local JSON<br/>Snapshot Persistence"]
   end
 
-  subgraph Adjacent["ADJACENT RUNTIME SYSTEMS"]
-    direction LR
-    LeagueUI["Animated Rank-Up & Division Table UI"]
-    RewardBox["Season End Promotion & Chest Grant"]
-    SaveStore["Local Encrypted JSON Persistence"]
+  subgraph Internal["INTERNAL SIMULATION (CUT-LINE)"]
+    Bots["Seeded Bot Archetypes<br/>(Sprinter / Steady / Casual)"]
+    Clamp["Monotonic Timestamp Clamp<br/>& Player Rubberband Curve"]
   end
 
-  subgraph Internal["INTERNAL ENGINE SUBSYSTEMS (BELOW CUT-LINE)"]
-    direction LR
-    AntiCheat["Monotonic High-Water Timestamp Clamp (Anti-Rollback)"]
-    BotArchetype["Seeded Bot Archetypes (Sprinter / Grinder / Casual)"]
-    Rubberband["Dynamic Player-Pacing Rubberband Curve"]
-  end
-
-  GameWin -->|"AddPlayerScore(delta)"| SimEngine
-  BootClock -->|"SimulateElapsedHours(dt)"| SimEngine
-  GamePreset -->|"load division config"| SimEngine
-
-  SimEngine -->|"sorted standings + delta"| LeagueUI
-  SimEngine -->|"top-3 promotion"| RewardBox
-  SimEngine <-->|"read / write snapshot"| SaveStore
-
-  SimEngine -.-> AntiCheat
-  SimEngine -.-> BotArchetype
-  SimEngine -.-> Rubberband
+  WinEvent -->|"AddScore(delta)"| SimEngine
+  Clock -->|"SimulateDelta(dt)"| SimEngine
+  SimEngine -->|"rank delta"| LeagueUI
+  SimEngine <-->|"save / load"| Storage
+  SimEngine -.-> Bots
+  SimEngine -.-> Clamp
 
   classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
   classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
   classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1px,stroke-dasharray: 5 5,color:#94a3b8
 
   class SimEngine coreNode
-  class GameWin,BootClock,GamePreset,LeagueUI,RewardBox,SaveStore adjNode
-  class AntiCheat,BotArchetype,Rubberband intNode`,
+  class WinEvent,Clock,LeagueUI,Storage adjNode
+  class Bots,Clamp intNode`,
     mermaidEr: `erDiagram
   SEASON_LEAGUE ||--|{ BOT_COMPETITOR : "simulates 29 bots"
   SEASON_LEAGUE ||--|| PLAYER_STANDING : "tracks user"
-  SEASON_LEAGUE ||--|| CLOCK_GUARD : "enforces anti-rollback"
-  SEASON_LEAGUE ||--o| REWARD_TIER : "awards on expiry"
+  SEASON_LEAGUE ||--|| CLOCK_GUARD : "clamps time"
+  SEASON_LEAGUE ||--o| REWARD_TIER : "grants chest"
 
   SEASON_LEAGUE {
     string leagueId
-    string division "BRONZE_SILVER_GOLD_DIAMOND"
-    long seasonStartUtc
+    string divisionName
     long seasonEndUtc
-    int promotionCutoffRank
   }
   PLAYER_STANDING {
     string displayName
     int currentScore
-    int previousRank
     int currentRank
   }
   BOT_COMPETITOR {
     int botSeedId
-    string handle
-    string archetype "SPRINTER_STEADY_CASUAL"
-    float skillMultiplier
+    string archetype
     int simulatedScore
   }
   CLOCK_GUARD {
-    long lastVerifiedUtcMs
-    long monotonicUptimeDelta
-    boolean rollbackDetected
+    long lastVerifiedUtc
+    boolean rollbackFlag
   }
   REWARD_TIER {
-    int minRank
-    int maxRank
+    int cutoffRank
     int coinsReward
   }`
   },
@@ -1150,54 +1060,43 @@ const blueprintsData = [
     desc: 'Background manifest-diffing synchronizer that never blocks game boot sequence, applying content cleanly on subsequent launch.',
     labDemo: 'native-image-bridge',
     mermaidFlowchart: `flowchart TB
-  subgraph Triggers["APP LIFECYCLE & CDN ENDPOINTS"]
-    direction LR
-    AppBoot["Game Boot (Zero-Block Instant Start)"]
-    RemoteCDN["Remote CDN (manifest_v2.json + level packs)"]
+  subgraph Triggers["BOOT & REMOTE CDN"]
+    AppBoot["Cold Boot Sequence<br/>(Zero-Block Instant Mount)"]
+    CDN["Remote OTA Server<br/>(manifest_v2.json + Packs)"]
   end
 
-  subgraph Core["CORE MODULE — OTA LEVEL SYNCHRONIZER"]
-    SyncMgr["LevelSyncManager (Non-Blocking Background Diff & Stage)"]
+  SyncMgr["LevelSyncManager<br/>(Background Manifest Differ & Downloader)"]
+
+  subgraph Storage["RUNTIME & STAGING DIRS"]
+    ActiveDB["Active Level Registry<br/>(Read-Only During Session)"]
+    Staging["Staging Directory (.tmp)<br/>& StreamingAssets Seed"]
   end
 
-  subgraph Adjacent["ADJACENT RUNTIME SYSTEMS"]
-    direction LR
-    ActiveDB["Active Runtime Level Registry (Read-Only During Session)"]
-    StagingDir["Persistent Staging Directory (.tmp -> Atomic Swap)"]
-    Streaming["StreamingAssets Fallback Bundle"]
+  subgraph Internal["INTERNAL SYNC GUARANTEES (CUT-LINE)"]
+    HashDiff["SHA-256 Checksum Differ<br/>& Exponential Retry Queue"]
+    AtomicSwap["Next-Boot Atomic Swap<br/>(Prevents Mid-Game Mutation)"]
   end
 
-  subgraph Internal["INTERNAL ENGINE SUBSYSTEMS (BELOW CUT-LINE)"]
-    direction LR
-    HashDiff["SHA-256 / Version Manifest Differ"]
-    AtomicCommit["Next-Boot Atomic Directory Promotion"]
-    RetryQueue["Exponential Backoff & Partial Resume"]
-  end
-
-  AppBoot -->|"1. Mount immediately"| ActiveDB
-  AppBoot -->|"2. Spawn low-priority task"| SyncMgr
-  RemoteCDN -->|"3. Fetch remote manifest"| SyncMgr
-
-  SyncMgr -->|"download changed JSONs"| StagingDir
-  StagingDir -->|"promote on next cold boot"| ActiveDB
-  Streaming -->|"seed initial install"| ActiveDB
-
+  AppBoot -->|"1. mount active"| ActiveDB
+  AppBoot -->|"2. async check"| SyncMgr
+  CDN -->|"remote manifest"| SyncMgr
+  SyncMgr -->|"write .tmp"| Staging
+  Staging -->|"next boot swap"| ActiveDB
   SyncMgr -.-> HashDiff
-  SyncMgr -.-> AtomicCommit
-  SyncMgr -.-> RetryQueue
+  Staging -.-> AtomicSwap
 
   classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
   classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
   classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1px,stroke-dasharray: 5 5,color:#94a3b8
 
   class SyncMgr coreNode
-  class AppBoot,RemoteCDN,ActiveDB,StagingDir,Streaming adjNode
-  class HashDiff,AtomicCommit,RetryQueue intNode`,
+  class AppBoot,CDN,ActiveDB,Staging adjNode
+  class HashDiff,AtomicSwap intNode`,
     mermaidEr: `erDiagram
   REMOTE_MANIFEST ||--|{ LEVEL_ASSET_ENTRY : "declares"
-  LOCAL_MANIFEST ||--|{ LEVEL_ASSET_ENTRY : "tracks installed"
-  SYNC_DIFF_PLAN ||--o{ STAGED_FILE : "downloads to .tmp"
-  STAGED_FILE ||--|| ACTIVE_LEVEL_CACHE : "commits on next boot"
+  SYNC_DIFF_PLAN ||--|{ LEVEL_ASSET_ENTRY : "compares"
+  SYNC_DIFF_PLAN ||--o{ STAGED_FILE : "downloads .tmp"
+  STAGED_FILE ||--|| ACTIVE_LEVEL_CACHE : "swaps on boot"
 
   REMOTE_MANIFEST {
     int manifestVersion
@@ -1208,21 +1107,18 @@ const blueprintsData = [
     string levelKey
     int contentRevision
     string sha256Checksum
-    int byteSize
   }
   SYNC_DIFF_PLAN {
-    string_array addedKeys
-    string_array modifiedKeys
-    int totalDownloadBytes
+    string_array changedKeys
+    int downloadBytes
   }
   STAGED_FILE {
     string tempFilePath
-    boolean checksumVerified
-    boolean readyForSwap
+    boolean hashVerified
   }
   ACTIVE_LEVEL_CACHE {
-    int activeManifestVersion
-    string mountedDirectory
+    int activeVersion
+    string mountedDir
   }`
   },
   {
@@ -1234,56 +1130,42 @@ const blueprintsData = [
     desc: 'Dual-currency store gateway (real money vs soft currency) with strict grant-then-confirm verification.',
     labDemo: null,
     mermaidFlowchart: `flowchart TB
-  subgraph StoreUI["STOREFRONT & CATALOG CALLERS"]
-    direction LR
-    ShopBtn["Store UI Purchase Button"]
-    Catalog["Unified Product Catalog (IAP + Coin Packs)"]
-    RestoreBtn["Restore Purchases Flow"]
+  subgraph Storefront["STORE UI & CATALOG"]
+    BuyBtn["Store Purchase / Restore UI<br/>Purchase(productId)"]
+    Catalog["Unified SKU Catalog<br/>(Real Money + Soft Coins)"]
   end
 
-  subgraph Core["CORE MODULE — IAP SYSTEM GATEWAY"]
-    Gateway["IAPStoreGateway (Dual-Currency Router & Transaction Guard)"]
+  Gateway["IAPStoreGateway<br/>(Dual-Currency Router & Crash Guard)"]
+
+  subgraph Backends["BILLING & LEDGER BACKENDS"]
+    StoreSDK["Google Play Billing<br/>& Apple StoreKit 2"]
+    Inventory["Player Entitlement DB<br/>& Local Coin Wallet"]
   end
 
-  subgraph Providers["BILLING & ECONOMY BACKENDS"]
-    direction LR
-    PlatformStore["Google Play Billing / Apple StoreKit 2"]
-    SoftWallet["Local Coin / Gem Economy Ledger"]
-    Inventory["Player Entitlement & Powerup Inventory"]
+  subgraph Internal["INTERNAL SAFETY (CUT-LINE)"]
+    GrantFirst["Grant-Then-Confirm Flow<br/>(Zero Lost Purchases)"]
+    Dedup["Receipt Signature Check<br/>& Transaction ID Dedup"]
   end
 
-  subgraph Internal["INTERNAL ENGINE SUBSYSTEMS (BELOW CUT-LINE)"]
-    direction LR
-    GrantFirst["Grant-Then-Confirm Crash Recovery Log"]
-    ReceiptVal["Local Signature & Receipt Sanitizer"]
-    Idempotency["Processed Transaction ID Dedup Set"]
-  end
-
-  ShopBtn -->|"Purchase(productId)"| Gateway
+  BuyBtn -->|"initiate SKU"| Gateway
   Catalog -->|"SKU metadata"| Gateway
-  RestoreBtn -->|"SyncEntitlements()"| Gateway
-
-  Gateway <-->|"Real-Money SKU"| PlatformStore
-  Gateway <-->|"Soft-Currency SKU"| SoftWallet
-  Gateway -->|"1. Grant reward + save"| Inventory
-  Gateway -->|"2. ConfirmPendingPurchase"| PlatformStore
-
+  Gateway <-->|"platform billing"| StoreSDK
+  Gateway -->|"1. grant & save"| Inventory
   Gateway -.-> GrantFirst
-  Gateway -.-> ReceiptVal
-  Gateway -.-> Idempotency
+  Gateway -.-> Dedup
 
   classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
   classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
   classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1px,stroke-dasharray: 5 5,color:#94a3b8
 
   class Gateway coreNode
-  class ShopBtn,Catalog,RestoreBtn,PlatformStore,SoftWallet,Inventory adjNode
-  class GrantFirst,ReceiptVal,Idempotency intNode`,
+  class BuyBtn,Catalog,StoreSDK,Inventory adjNode
+  class GrantFirst,Dedup intNode`,
     mermaidEr: `erDiagram
+  PRODUCT_SKU ||--o{ PURCHASE_TX : "initiates"
+  PURCHASE_TX ||--|| ENTITLEMENT_GRANT : "unlocks"
+  PURCHASE_TX ||--|| RECEIPT_LEDGER : "verifies"
   STORE_CATALOG ||--|{ PRODUCT_SKU : "defines"
-  PRODUCT_SKU ||--o{ PURCHASE_TRANSACTION : "initiates"
-  PURCHASE_TRANSACTION ||--|| ENTITLEMENT_GRANT : "unlocks"
-  PURCHASE_TRANSACTION ||--|| RECEIPT_LEDGER : "records idempotently"
 
   STORE_CATALOG {
     string catalogVersion
@@ -1291,26 +1173,22 @@ const blueprintsData = [
   }
   PRODUCT_SKU {
     string productId
-    string storeType "CONSUMABLE_NONCONSUMABLE"
-    string currencyType "REAL_MONEY_OR_COINS"
+    string currencyType
     float priceAmount
   }
-  PURCHASE_TRANSACTION {
+  PURCHASE_TX {
     string transactionId
-    string productId
-    string status "PENDING_GRANTED_CONFIRMED"
+    string status
     long timestampUtc
   }
   ENTITLEMENT_GRANT {
-    string grantId
-    string rewardType "NO_ADS_COINS_HINTS"
+    string rewardType
     int quantity
-    boolean persistedToDisk
+    boolean savedToDisk
   }
   RECEIPT_LEDGER {
     string transactionId
-    string platformSignature
-    boolean acknowledgedWithStore
+    boolean storeConfirmed
   }`
   },
   {
@@ -1322,80 +1200,63 @@ const blueprintsData = [
     desc: 'Cross-process communication tool linking Unity C# to an offline Python translation subprocess over stdin/stdout JSON codecs.',
     labDemo: 'argos-localization',
     mermaidFlowchart: `flowchart TB
-  subgraph EditorUI["UNITY EDITOR LOCALIZATION WINDOW"]
-    direction LR
-    StringTable["Localization String Table (CSV / ScriptableObject)"]
-    LangSelect["Target Locale Batch Selector (EN to ES/FR/DE/JA/HI)"]
+  subgraph EditorUI["UNITY EDITOR LOCALIZATION"]
+    Table["Localization String Table<br/>(CSV / ScriptableObject)"]
+    Locales["Target Locale Selector<br/>(EN to ES / FR / DE / JA / HI)"]
   end
 
-  subgraph Core["CORE MODULE — ARGOS IPC BRIDGE (C# TO PYTHON)"]
-    IPCController["ArgosIPCProcessRunner (Persistent Subprocess + JSON Pipe)"]
+  IPC["ArgosIPCProcessRunner<br/>(Persistent Subprocess & JSON Pipe)"]
+
+  subgraph Worker["OFFLINE PYTHON WORKER"]
+    PyLoop["argos_worker.py<br/>(UTF-8 stdin / stdout Loop)"]
+    Neural["Argos + CTranslate2<br/>Offline Neural Engine"]
   end
 
-  subgraph PythonWorker["OFFLINE PYTHON SUBPROCESS"]
-    direction LR
-    WorkerLoop["argos_worker.py (UTF-8 stdin/stdout Loop)"]
-    CTranslate["Argos Translate + CTranslate2 Neural Engine"]
-    Glossary["Protected Token & Format-Tag Freezer"]
+  subgraph Internal["INTERNAL IPC SAFEGUARDS (CUT-LINE)"]
+    Masker["Token Masker (__TK0__)<br/>Protects {0} & RichText Tags"]
+    Watchdog["Warm Model Cache<br/>& Pipe Timeout Watchdog"]
   end
 
-  subgraph Internal["INTERNAL ENGINE SUBSYSTEMS (BELOW CUT-LINE)"]
-    direction LR
-    TokenMask["Placeholder Masker ({0}, RichText Tags, %d to __TK0__)"]
-    WarmModel["Single Cold-Boot Model Load (Zero Per-Row Spawn)"]
-    TimeoutGuard["Async Cancellation & Pipe Deadlock Watchdog"]
-  end
-
-  StringTable -->|"source keys + strings"| IPCController
-  LangSelect -->|"target lang codes"| IPCController
-
-  IPCController -->|"JSON Line Request (stdin)"| WorkerLoop
-  WorkerLoop <-->|"batch inference"| CTranslate
-  WorkerLoop <-->|"freeze/restore tags"| Glossary
-  WorkerLoop -->|"JSON Line Response (stdout)"| IPCController
-  IPCController -->|"write translated table"| StringTable
-
-  IPCController -.-> TokenMask
-  IPCController -.-> WarmModel
-  IPCController -.-> TimeoutGuard
+  Table -->|"source rows"| IPC
+  Locales -->|"target codes"| IPC
+  IPC <-->|"JSONL stdio"| PyLoop
+  PyLoop <-->|"batch translate"| Neural
+  IPC -.-> Masker
+  PyLoop -.-> Watchdog
 
   classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
   classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
   classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1px,stroke-dasharray: 5 5,color:#94a3b8
 
-  class IPCController coreNode
-  class StringTable,LangSelect,WorkerLoop,CTranslate,Glossary adjNode
-  class TokenMask,WarmModel,TimeoutGuard intNode`,
+  class IPC coreNode
+  class Table,Locales,PyLoop,Neural adjNode
+  class Masker,Watchdog intNode`,
     mermaidEr: `erDiagram
   LOCALIZATION_TABLE ||--|{ STRING_ROW : "contains"
-  STRING_ROW ||--o{ IPC_BATCH_REQUEST : "batches into"
-  IPC_BATCH_REQUEST ||--|| TOKEN_MASK_MAP : "protects tags"
-  IPC_BATCH_REQUEST ||--|| IPC_BATCH_RESPONSE : "returns over stdout"
+  IPC_BATCH_JOB ||--|{ STRING_ROW : "translates"
+  IPC_BATCH_JOB ||--|| TOKEN_MASK_MAP : "freezes tags"
+  IPC_BATCH_JOB ||--|| WORKER_RESPONSE : "returns JSONL"
 
   LOCALIZATION_TABLE {
     string tableAssetGuid
-    string sourceLocale "en"
+    string sourceLocale
     string_array targetLocales
   }
   STRING_ROW {
     string entryKey
     string sourceText
-    string_map localizedValues
+    string_map localizedMap
   }
-  IPC_BATCH_REQUEST {
+  IPC_BATCH_JOB {
     string requestId
-    string fromLang
-    string toLang
-    string_array maskedPayloads
+    string from_to_lang
   }
   TOKEN_MASK_MAP {
-    string placeholderToken "__TK_0__"
-    string originalMarkup "{0}_or_color_tag"
+    string tokenKey
+    string rawMarkup
   }
-  IPC_BATCH_RESPONSE {
-    string requestId
-    string status "OK_OR_ERR"
-    string_array translatedPayloads
+  WORKER_RESPONSE {
+    string status
     int inferenceMs
   }`
   },
@@ -1408,76 +1269,60 @@ const blueprintsData = [
     desc: 'Developer productivity tool adding project window asset pinning, custom category badges, and asset movement watchers.',
     labDemo: 'asset-organizer',
     mermaidFlowchart: `flowchart TB
-  subgraph EditorHooks["UNITY EDITOR CALLBACK HOOKS"]
-    direction LR
-    ProjectGUI["EditorApplication.projectWindowItemOnGUI"]
-    Postproc["AssetPostprocessor (OnPostprocessAllAssets)"]
-    Shortcut["Quick-Pin Dock & Filter Toolbar"]
+  subgraph Hooks["UNITY EDITOR HOOKS"]
+    GUIHook["projectWindowItemOnGUI<br/>(Row Rect & GUID Callback)"]
+    Postproc["AssetPostprocessor<br/>(Import & Move Watcher)"]
   end
 
-  subgraph Core["CORE MODULE — ASSET ORGANIZER ENGINE"]
-    Organizer["AssetOrganizerController (GUID Registry + Rule Matcher)"]
+  Organizer["AssetOrganizerController<br/>(GUID Registry & Rule Engine)"]
+
+  subgraph EditorUI["EDITOR UX & STORAGE"]
+    Badges["Custom Category Badges<br/>& Quick-Pin Favorites Bar"]
+    RuleFix["One-Click Folder Audit<br/>& ScriptableObject DB"]
   end
 
-  subgraph Adjacent["ADJACENT EDITOR SUBSYSTEMS"]
-    direction LR
-    BadgeDrawer["Custom Row Badge & Color Stripe Renderer"]
-    RuleScanner["One-Click Folder Audit & Auto-Mover"]
-    MetaStore["EditorPrefs / ScriptableObject Metadata DB"]
+  subgraph Internal["INTERNAL DX OPTIMIZATIONS (CUT-LINE)"]
+    GuidCache["O(1) GUID Hash Lookup<br/>(Rename & Move Resilient)"]
+    ZeroBuild["Editor-Only Assembly<br/>(Zero Runtime Build Overhead)"]
   end
 
-  subgraph Internal["INTERNAL ENGINE SUBSYSTEMS (BELOW CUT-LINE)"]
-    direction LR
-    GuidMap["O(1) GUID-to-Category Lookup Cache (Path-Move Resilient)"]
-    ZeroRuntime["Editor-Only Assembly Definition (Zero Build Size Overhead)"]
-    BatchMove["AssetDatabase.StartAssetEditing Batch Transaction"]
-  end
-
-  ProjectGUI -->|"visible row GUID"| Organizer
-  Postproc -->|"moved/imported paths"| Organizer
-  Shortcut -->|"pin / filter query"| Organizer
-
-  Organizer -->|"draw tag + icon"| BadgeDrawer
-  Organizer -->|"fix misplaced assets"| RuleScanner
-  Organizer <-->|"persist GUID tags"| MetaStore
-
-  Organizer -.-> GuidMap
-  Organizer -.-> ZeroRuntime
-  Organizer -.-> BatchMove
+  GUIHook -->|"visible GUID"| Organizer
+  Postproc -->|"asset delta"| Organizer
+  Organizer -->|"render overlay"| Badges
+  Organizer <-->|"audit & persist"| RuleFix
+  Organizer -.-> GuidCache
+  Organizer -.-> ZeroBuild
 
   classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
   classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
   classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1px,stroke-dasharray: 5 5,color:#94a3b8
 
   class Organizer coreNode
-  class ProjectGUI,Postproc,Shortcut,BadgeDrawer,RuleScanner,MetaStore adjNode
-  class GuidMap,ZeroRuntime,BatchMove intNode`,
+  class GUIHook,Postproc,Badges,RuleFix adjNode
+  class GuidCache,ZeroBuild intNode`,
     mermaidEr: `erDiagram
-  ORGANIZER_DATABASE ||--|{ ASSET_GUID_RECORD : "indexes by GUID"
-  ORGANIZER_DATABASE ||--|{ CATEGORY_TAG : "defines"
-  ORGANIZER_DATABASE ||--|{ FOLDER_ROUTING_RULE : "enforces"
-  ASSET_GUID_RECORD }|--|| CATEGORY_TAG : "assigned to"
+  ORGANIZER_DB ||--|{ ASSET_GUID_NODE : "indexes"
+  ORGANIZER_DB ||--|{ CATEGORY_BADGE : "defines"
+  ORGANIZER_DB ||--|{ ROUTING_RULE : "enforces"
+  CATEGORY_BADGE ||--o{ ASSET_GUID_NODE : "tags"
 
-  ORGANIZER_DATABASE {
+  ORGANIZER_DB {
     string projectVersion
     int pinnedCount
-    int trackedGuidCount
   }
-  ASSET_GUID_RECORD {
-    string assetGuid "32_char_hex_immutable"
-    string cachedAssetPath
-    boolean isPinnedFavorite
-    long lastModifiedUtc
+  ASSET_GUID_NODE {
+    string assetGuidHex
+    string cachedPath
+    boolean isPinned
   }
-  CATEGORY_TAG {
+  CATEGORY_BADGE {
     string tagId
-    string label "CORE_UI_SHADER_AUDIO"
-    string hexColor "#38bdf8"
+    string badgeLabel
+    string hexColor
   }
-  FOLDER_ROUTING_RULE {
-    string fileExtensionPattern "*.shader_*.prefab"
-    string targetFolderPath "Assets/Shaders"
-    boolean autoMoveOnImport
+  ROUTING_RULE {
+    string extPattern
+    string targetFolder
   }`
   },
   {
@@ -1489,197 +1334,77 @@ const blueprintsData = [
     desc: 'Lightweight 2-file procedural noise shader and C# driver creating dynamic ambient fire visuals on UI canvases.',
     labDemo: 'jigsaw-solitaire',
     mermaidFlowchart: `flowchart TB
-  subgraph SceneInputs["UI CANVAS & AMBIENT PRESETS"]
-    direction LR
-    CanvasImg["UnityEngine.UI.Image / SpriteRenderer"]
-    PresetCfg["Flicker Preset (Hearth / Torch / Candle / Campfire)"]
+  subgraph Inputs["UI WIDGET & PRESET"]
+    CanvasImg["UnityEngine.UI.Image<br/>or SpriteRenderer Target"]
+    Preset["Flicker Profile Preset<br/>(Hearth / Torch / Candle)"]
   end
 
-  subgraph Core["CORE MODULE — FLAME FLICKER DRIVER & SHADER"]
-    Driver["FlameFlickerDriver.cs + ProceduralFlame.shader"]
+  Driver["FlameFlickerDriver.cs<br/>+ ProceduralFlame.shader"]
+
+  subgraph Visuals["GPU UNIFORMS & LIGHTING"]
+    Uniforms["MaterialPropertyBlock<br/>(_Phase, _Wind, _Intensity)"]
+    Glow["Synchronized 2D Glow<br/>& Thermal FPS Throttler"]
   end
 
-  subgraph Adjacent["ADJACENT VISUAL SUBSYSTEMS"]
-    direction LR
-    MatInstance["Per-Widget MaterialPropertyBlock / Dynamic Material"]
-    LightSync["2D Ambient Glow & Vignette Warmth Pulser"]
-    SaveBattery["60fps / 30fps Low-Power Thermal Throttler"]
+  subgraph Internal["FRAGMENT SHADER MATH (CUT-LINE)"]
+    FBM["2-Octave Simplex FBM<br/>UV Domain Warping"]
+    SDF["Teardrop SDF Mask<br/>(Zero Particle GC Alloc)"]
   end
 
-  subgraph Internal["INTERNAL ENGINE SUBSYSTEMS (BELOW CUT-LINE)"]
-    direction LR
-    FBM["2-Octave Simplex / Value Noise UV Warp"]
-    TeardropSDF["Signed Distance Teardrop Core & Outer Halo"]
-    ZeroTex["Zero Particle-Spawn GC (100% Fragment Math)"]
-  end
-
-  CanvasImg -->|"target graphic"| Driver
-  PresetCfg -->|"turbulence + palette"| Driver
-
-  Driver -->|"set _Phase, _Wind, _Intensity"| MatInstance
-  Driver -->|"synchronized luminance"| LightSync
-  Driver <-->|"frame budget scale"| SaveBattery
-
-  Driver -.-> FBM
-  Driver -.-> TeardropSDF
-  Driver -.-> ZeroTex
+  CanvasImg -->|"graphic ref"| Driver
+  Preset -->|"color + speed"| Driver
+  Driver -->|"per-frame uniforms"| Uniforms
+  Driver -->|"ambient pulse"| Glow
+  Uniforms -.-> FBM
+  Uniforms -.-> SDF
 
   classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
   classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
   classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1px,stroke-dasharray: 5 5,color:#94a3b8
 
   class Driver coreNode
-  class CanvasImg,PresetCfg,MatInstance,LightSync,SaveBattery adjNode
-  class FBM,TeardropSDF,ZeroTex intNode`,
+  class CanvasImg,Preset,Uniforms,Glow adjNode
+  class FBM,SDF intNode`,
     mermaidEr: `erDiagram
-  FLAME_PRESET ||--|{ SHADER_UNIFORM_FRAME : "drives per frame"
-  FLAME_PRESET ||--|| COLOR_RAMP_PALETTE : "blends"
-  SHADER_UNIFORM_FRAME ||--|| FRAGMENT_SDF_PASS : "evaluates on GPU"
+  FLAME_PRESET ||--|| COLOR_RAMP : "blends"
+  FLAME_PRESET ||--|{ SHADER_UNIFORM : "drives"
+  SHADER_UNIFORM ||--|| FRAGMENT_SDF_PASS : "evaluates"
 
   FLAME_PRESET {
-    string presetId "HEARTH_TORCH_CANDLE"
-    float noiseScrollSpeed
-    float turbulenceAmplitude
-    float windSwayAngle
+    string presetId
+    float scrollSpeed
+    float turbulence
+    float windSway
   }
-  COLOR_RAMP_PALETTE {
-    string innerCoreHex "#fff7ed"
-    string midFlameHex "#f59e0b"
-    string outerEmberHex "#dc2626"
+  COLOR_RAMP {
+    string coreHex
+    string midFlameHex
+    string outerEmberHex
   }
-  SHADER_UNIFORM_FRAME {
+  SHADER_UNIFORM {
     float timePhase
-    float2 uvDistortionOffset
-    float luminancePulse
+    float2 uvWarpOffset
+    float glowPulse
   }
   FRAGMENT_SDF_PASS {
-    int noiseOctaves "2"
-    float teardropSoftEdge
-    int particleAllocations "0_ZERO_GC"
+    int noiseOctaves
+    float teardropEdge
+    int gcAllocations
   }`
   }
 ];
 
 let activeBlueprintIdx = 0;
-let activeBlueprintDiagramMode = 'flowchart'; // 'flowchart' | 'er' | 'code'
-let lastMermaidGraphicMode = 'flowchart'; // remembers 'flowchart' or 'er' when viewing 'code'
-
-function buildMermaidLiveUrl(definition) {
-  try {
-    const state = {
-      code: definition,
-      mermaid: JSON.stringify({ theme: 'dark' }),
-      autoSync: true,
-      updateDiagram: true
-    };
-    const json = JSON.stringify(state);
-    const base64 = window.btoa(unescape(encodeURIComponent(json)));
-    return `https://mermaid.live/edit#base64:${base64}`;
-  } catch (_) {
-    return 'https://mermaid.live/';
-  }
-}
+let activeBlueprintDiagramMode = 'flowchart'; // 'flowchart' | 'er'
 
 function initBlueprintTerminal() {
   const navContainer = document.getElementById('blueprint-nav-list');
-  const canvasViewport = document.getElementById('bp-canvas-viewport');
   const stageMermaid = document.getElementById('bp-stage-mermaid');
-  const stageCode = document.getElementById('bp-stage-code');
-  const stageCodePre = document.getElementById('bp-stage-code-pre');
-  const codeHeaderLabel = document.getElementById('bp-code-header-label');
-  const copyCodeBtn = document.getElementById('btn-copy-mermaid-code');
-  const panzoomToolbar = document.getElementById('bp-panzoom-toolbar');
-  const btnZoomIn = document.getElementById('bp-zoom-in');
-  const btnZoomOut = document.getElementById('bp-zoom-out');
-  const btnZoomReset = document.getElementById('bp-zoom-reset');
-  const btnOpenMermaidLive = document.getElementById('btn-open-mermaid-live');
-  const stageTitle = document.getElementById('bp-stage-title');
-  const stageDomain = document.getElementById('bp-stage-domain');
-  const stageDesc = document.getElementById('bp-stage-desc');
-  const footerBadge = document.getElementById('bp-stage-footer-badge');
   const btnModeFlowchart = document.getElementById('bp-mode-flowchart');
   const btnModeEr = document.getElementById('bp-mode-er');
-  const btnModeCode = document.getElementById('bp-mode-code');
   const zoomBtn = document.getElementById('btn-zoom-blueprint');
-  const launchLabBtn = document.getElementById('btn-launch-blueprint-lab');
 
   if (!navContainer) return;
-
-  // Pan & Zoom state (like mermaid.live)
-  let zoomScale = 1;
-  let panX = 0;
-  let panY = 0;
-  let isDragging = false;
-  let dragStartX = 0;
-  let dragStartY = 0;
-
-  function applyPanZoomTransform() {
-    if (stageMermaid) {
-      stageMermaid.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomScale})`;
-    }
-    if (btnZoomReset) {
-      btnZoomReset.textContent = `${Math.round(zoomScale * 100)}%`;
-    }
-  }
-
-  function resetPanZoom() {
-    zoomScale = 1;
-    panX = 0;
-    panY = 0;
-    applyPanZoomTransform();
-  }
-
-  if (btnZoomIn) {
-    btnZoomIn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      zoomScale = Math.min(2.6, +(zoomScale + 0.2).toFixed(2));
-      applyPanZoomTransform();
-    });
-  }
-
-  if (btnZoomOut) {
-    btnZoomOut.addEventListener('click', (e) => {
-      e.stopPropagation();
-      zoomScale = Math.max(0.5, +(zoomScale - 0.2).toFixed(2));
-      applyPanZoomTransform();
-    });
-  }
-
-  if (btnZoomReset) {
-    btnZoomReset.addEventListener('click', (e) => {
-      e.stopPropagation();
-      resetPanZoom();
-    });
-  }
-
-  if (canvasViewport) {
-    canvasViewport.addEventListener('wheel', (e) => {
-      if (activeBlueprintDiagramMode === 'code') return;
-      e.preventDefault();
-      const delta = e.deltaY < 0 ? 0.12 : -0.12;
-      zoomScale = Math.min(2.6, Math.max(0.5, +(zoomScale + delta).toFixed(2)));
-      applyPanZoomTransform();
-    }, { passive: false });
-
-    canvasViewport.addEventListener('mousedown', (e) => {
-      if (activeBlueprintDiagramMode === 'code') return;
-      if (e.target.closest('#bp-panzoom-toolbar')) return;
-      isDragging = true;
-      dragStartX = e.clientX - panX;
-      dragStartY = e.clientY - panY;
-    });
-
-    window.addEventListener('mousemove', (e) => {
-      if (!isDragging) return;
-      panX = e.clientX - dragStartX;
-      panY = e.clientY - dragStartY;
-      applyPanZoomTransform();
-    });
-
-    window.addEventListener('mouseup', () => {
-      isDragging = false;
-    });
-  }
 
   if (window.mermaid) {
     window.mermaid.initialize({
@@ -1687,6 +1412,21 @@ function initBlueprintTerminal() {
       theme: 'dark',
       securityLevel: 'loose',
       fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+      flowchart: {
+        htmlLabels: true,
+        curve: 'basis',
+        nodeSpacing: 28,
+        rankSpacing: 34,
+        padding: 12,
+        useMaxWidth: true
+      },
+      er: {
+        layoutDirection: 'TB',
+        minEntityWidth: 95,
+        minEntityHeight: 60,
+        entityPadding: 10,
+        useMaxWidth: true
+      },
       themeVariables: {
         darkMode: true,
         background: '#0c101a',
@@ -1702,85 +1442,28 @@ function initBlueprintTerminal() {
     });
   }
 
-  function syncLaunchLabButton(bp) {
-    if (!launchLabBtn) return;
-    if (bp.labDemo && UNITY_LAB_MANIFEST[bp.labDemo]) {
-      launchLabBtn.classList.remove('hidden');
-      launchLabBtn.classList.add('flex');
-      launchLabBtn.onclick = () => {
-        window.openLabDemo(bp.labDemo, 'html');
-      };
-    } else {
-      launchLabBtn.classList.add('hidden');
-      launchLabBtn.classList.remove('flex');
-    }
-  }
-
   function updateDiagramModeButtons() {
-    const inactiveClass = 'px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer flex items-center gap-1.5 text-slate-400 hover:text-white';
+    const inactiveClass = 'px-3 py-1.5 rounded-md font-semibold transition-all cursor-pointer flex items-center gap-1.5 text-slate-400 hover:text-white';
     if (btnModeFlowchart) {
       btnModeFlowchart.className = activeBlueprintDiagramMode === 'flowchart'
-        ? 'px-2.5 py-1 rounded-md font-bold transition-all cursor-pointer flex items-center gap-1.5 bg-sky-500 text-slate-950 shadow'
+        ? 'px-3 py-1.5 rounded-md font-bold transition-all cursor-pointer flex items-center gap-1.5 bg-sky-500 text-slate-950 shadow'
         : inactiveClass;
     }
     if (btnModeEr) {
       btnModeEr.className = activeBlueprintDiagramMode === 'er'
-        ? 'px-2.5 py-1 rounded-md font-bold transition-all cursor-pointer flex items-center gap-1.5 bg-amber-500 text-slate-950 shadow'
+        ? 'px-3 py-1.5 rounded-md font-bold transition-all cursor-pointer flex items-center gap-1.5 bg-amber-500 text-slate-950 shadow'
         : inactiveClass;
     }
-    if (btnModeCode) {
-      btnModeCode.className = activeBlueprintDiagramMode === 'code'
-        ? 'px-2.5 py-1 rounded-md font-bold transition-all cursor-pointer flex items-center gap-1.5 bg-emerald-500 text-slate-950 shadow'
-        : inactiveClass;
-    }
-  }
-
-  function getActiveDefinition(bp) {
-    const mode = activeBlueprintDiagramMode === 'code' ? lastMermaidGraphicMode : activeBlueprintDiagramMode;
-    return mode === 'er' && bp.mermaidEr ? bp.mermaidEr : bp.mermaidFlowchart;
   }
 
   async function renderBlueprintStage(bp) {
     if (!bp) return;
 
-    stageTitle.textContent = bp.title;
-    stageDomain.textContent = `INDEPENDENT SYSTEM — ${bp.domain.toUpperCase()}`;
-    stageDesc.textContent = bp.desc;
-    syncLaunchLabButton(bp);
     updateDiagramModeButtons();
-    resetPanZoom();
 
-    const definition = getActiveDefinition(bp);
-
-    if (btnOpenMermaidLive) {
-      btnOpenMermaidLive.href = buildMermaidLiveUrl(definition);
-    }
-
-    if (activeBlueprintDiagramMode === 'code') {
-      if (stageMermaid) stageMermaid.classList.add('hidden');
-      if (panzoomToolbar) panzoomToolbar.classList.add('hidden');
-      if (stageCode) stageCode.classList.remove('hidden');
-      if (stageCodePre) stageCodePre.textContent = definition;
-      if (codeHeaderLabel) {
-        codeHeaderLabel.textContent = `Mermaid.js Source (${lastMermaidGraphicMode === 'er' ? 'erDiagram' : 'flowchart TB'}) — ${bp.title}`;
-      }
-      if (footerBadge) {
-        footerBadge.textContent = 'Mermaid.js v10 DSL Source • Click "mermaid.live ↗" to edit interactively';
-        footerBadge.className = 'text-emerald-400';
-      }
-      return;
-    }
-
-    if (stageCode) stageCode.classList.add('hidden');
-    if (panzoomToolbar) panzoomToolbar.classList.remove('hidden');
-    if (stageMermaid) stageMermaid.classList.remove('hidden');
-
-    if (footerBadge) {
-      footerBadge.textContent = activeBlueprintDiagramMode === 'flowchart'
-        ? 'Live Mermaid.js DOM SVG • Architecture Flowchart (Drag to Pan / Scroll to Zoom)'
-        : 'Live Mermaid.js DOM SVG • Entity-Relationship (E-R) Data Schema (Drag to Pan / Scroll to Zoom)';
-      footerBadge.className = 'text-sky-400';
-    }
+    const definition = activeBlueprintDiagramMode === 'er' && bp.mermaidEr
+      ? bp.mermaidEr
+      : bp.mermaidFlowchart;
 
     if (stageMermaid && window.mermaid) {
       try {
@@ -1789,9 +1472,14 @@ function initBlueprintTerminal() {
         stageMermaid.innerHTML = svg;
         const svgEl = stageMermaid.querySelector('svg');
         if (svgEl) {
+          svgEl.removeAttribute('style');
+          svgEl.setAttribute('width', '100%');
+          svgEl.setAttribute('height', '100%');
+          svgEl.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+          svgEl.style.width = '100%';
+          svgEl.style.height = '100%';
+          svgEl.style.maxHeight = '510px';
           svgEl.style.maxWidth = '100%';
-          svgEl.style.maxHeight = '430px';
-          svgEl.style.height = 'auto';
         }
       } catch (err) {
         console.error('Mermaid render error:', err);
@@ -1800,24 +1488,9 @@ function initBlueprintTerminal() {
     }
   }
 
-  if (copyCodeBtn) {
-    copyCodeBtn.addEventListener('click', () => {
-      const bp = blueprintsData[activeBlueprintIdx];
-      if (!bp) return;
-      const def = getActiveDefinition(bp);
-      navigator.clipboard.writeText(def).then(() => {
-        copyCodeBtn.textContent = '✅ Copied to Clipboard!';
-        setTimeout(() => {
-          copyCodeBtn.textContent = '📋 Copy Mermaid Code';
-        }, 1600);
-      });
-    });
-  }
-
   if (btnModeFlowchart) {
     btnModeFlowchart.addEventListener('click', () => {
       activeBlueprintDiagramMode = 'flowchart';
-      lastMermaidGraphicMode = 'flowchart';
       renderBlueprintStage(blueprintsData[activeBlueprintIdx]);
     });
   }
@@ -1825,14 +1498,6 @@ function initBlueprintTerminal() {
   if (btnModeEr) {
     btnModeEr.addEventListener('click', () => {
       activeBlueprintDiagramMode = 'er';
-      lastMermaidGraphicMode = 'er';
-      renderBlueprintStage(blueprintsData[activeBlueprintIdx]);
-    });
-  }
-
-  if (btnModeCode) {
-    btnModeCode.addEventListener('click', () => {
-      activeBlueprintDiagramMode = 'code';
       renderBlueprintStage(blueprintsData[activeBlueprintIdx]);
     });
   }
@@ -1846,7 +1511,6 @@ function initBlueprintTerminal() {
       <div>
         <div class="font-bold text-xs flex items-center gap-1.5">
           <span>${bp.title}</span>
-          <span class="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[9px] font-mono">MERMAID</span>
         </div>
         <div class="text-[10px] text-slate-500 font-mono">${bp.domain}</div>
       </div>
@@ -1880,7 +1544,7 @@ function initBlueprintTerminal() {
       if (!modal || !currentBp) return;
 
       if (modalTitle) {
-        modalTitle.textContent = `${currentBp.title} — ${lastMermaidGraphicMode === 'er' ? 'E-R Data Schema' : 'Architecture Flowchart'}`;
+        modalTitle.textContent = `${currentBp.title} — ${activeBlueprintDiagramMode === 'er' ? 'E-R Data Schema' : 'Architecture Flowchart'}`;
       }
 
       if (modalMermaid && stageMermaid) {
@@ -1889,8 +1553,9 @@ function initBlueprintTerminal() {
         modalMermaid.innerHTML = stageMermaid.innerHTML;
         const svgEl = modalMermaid.querySelector('svg');
         if (svgEl) {
-          svgEl.style.maxHeight = '80vh';
+          svgEl.style.maxHeight = '82vh';
           svgEl.style.width = '100%';
+          svgEl.style.height = '82vh';
         }
       }
 
