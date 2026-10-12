@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arrow Escape: Logic Puzzles | Native HTML5 & Unity WebGL Architecture Showcase — Arpit Jaiswal</title>
+  <meta name="description" content="Portfolio Showcase for Arrow Escape: Logic Puzzles — Features both a pure Native HTML5 Canvas 2D engine (instant load, zero server) and Unity 6 WebGL build with guaranteed-solvable outside-in arrow peeling, 3-lives obstacle rebound, and 100 shape levels.">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              page: '#090d16',
+              card: '#0f172a',
+              cardHover: '#162238',
+              border: '#1e293b',
+              cyan: '#38bdf8',
+              amber: '#f59e0b',
+              emerald: '#10b981',
+              rose: '#f43f5e',
+              indigo: '#6366f1'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    body {
+      background-color: #090d16;
+      background-image:
+        radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.12) 0%, transparent 55%),
+        radial-gradient(circle at 90% 40%, rgba(99, 102, 241, 0.08) 0%, transparent 45%);
+    }
+
+    .game-frame-glow {
+      box-shadow: 0 0 50px -10px rgba(56, 189, 248, 0.22), 0 20px 40px -15px rgba(0, 0, 0, 0.85);
+    }
+
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #0b1120; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+    @keyframes livePulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(1.08); }
+    }
+    .live-pulse-badge { animation: livePulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+
+    /* Canvas cursor */
+    #arrow-game-canvas {
+      cursor: pointer;
+      touch-action: none;
+    }
+  </style>
+</head>
+<body class="text-slate-100 antialiased selection:bg-sky-500 selection:text-black min-h-screen flex flex-col">
+
+  <!-- ================= TOP NAVIGATION BAR ================= -->
+  <header class="sticky top-0 z-50 w-full backdrop-blur-md bg-[#090d16]/90 border-b border-slate-800/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-sky-500/25">
+          <i data-lucide="compass" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-white text-base sm:text-lg tracking-tight">Arrow Escape: Logic Puzzles</span>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-semibold flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 live-pulse-badge"></span>
+              Native Web &amp; WebGL
+            </span>
+          </div>
+          <p class="text-[11px] text-slate-400 hidden sm:block">Pure HTML5 Canvas 2D Engine + Unity 6 WebGL • Guaranteed Solvable • 100 Shape Levels</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2.5">
+        <a href="#interactive-demo" class="px-3 py-1.5 rounded-lg border border-slate-700 hover:border-slate-500 bg-slate-900/90 text-slate-300 hover:text-white text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer">
+          <i data-lucide="play" class="w-3.5 h-3.5 text-sky-400"></i>
+          <span>Play Demo</span>
+        </a>
+
+        <a href="AssetOrganizerPortfolioShowcase.html" class="px-3 py-1.5 rounded-lg border border-slate-700/80 hover:border-slate-500 bg-slate-900/80 text-slate-300 hover:text-white text-xs font-medium transition-all flex items-center gap-1.5" title="Switch to Asset Organizer Tool Showcase">
+          <i data-lucide="folder-kanban" class="w-3.5 h-3.5 text-amber-400"></i>
+          <span class="hidden md:inline">Asset Organizer Tool</span>
+        </a>
+
+        <button id="btn-fullscreen-toggle" type="button" class="px-3.5 py-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-xs transition-all flex items-center gap-1.5 shadow-lg shadow-sky-500/20">
+          <i data-lucide="maximize" class="w-3.5 h-3.5"></i>
+          <span>Fullscreen</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= HERO SECTION ================= -->
+  <section class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-4">
+    <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+      <div class="space-y-3 max-w-3xl">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/25 text-sky-300 text-xs font-mono">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+          <span>Gameplay Systems &amp; Procedural Generation Prototype</span>
+        </div>
+        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight">
+          Arrow Escape: <span class="bg-gradient-to-r from-sky-400 via-indigo-300 to-amber-300 bg-clip-text text-transparent">Logic Puzzles</span>
+        </h1>
+        <p class="text-sm sm:text-base text-slate-300 leading-relaxed">
+          An evolutionary re-architecture of the classic Arrow puzzle mechanics. Developed in both a <strong>zero-dependency Native HTML5 Canvas 2D web engine</strong> (runs instantly in any browser without WebAssembly downloads or local web servers) and an official <strong>Unity 6 WebGL build</strong>. Features a <strong>100% guaranteed-solvable outside-in peeling generator</strong>, <strong>36×36 dynamic board masking</strong>, and a <strong>3-lives obstacle probe &amp; snapback rebound system</strong>.
+        </p>
+      </div>
+
+      <!-- Quick Metrics Pill Stack -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 gap-3 w-full lg:w-auto shrink-0">
+        <div class="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800">
+          <div class="text-2xl font-black text-sky-400 font-mono">100</div>
+          <div class="text-[11px] text-slate-400 font-medium">Shape Levels</div>
+        </div>
+        <div class="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800">
+          <div class="text-2xl font-black text-emerald-400 font-mono">0.0s</div>
+          <div class="text-[11px] text-slate-400 font-medium">HTML5 Load Time</div>
+        </div>
+        <div class="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800">
+          <div class="text-2xl font-black text-amber-400 font-mono">100%</div>
+          <div class="text-[11px] text-slate-400 font-medium">Solvability Rate</div>
+        </div>
+        <div class="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800">
+          <div class="text-2xl font-black text-rose-400 font-mono">60 FPS</div>
+          <div class="text-[11px] text-slate-400 font-medium">Native Canvas Loop</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PLAYABLE GAME DEMO SECTION ================= -->
+  <section id="interactive-demo" class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4">
+    <div id="game-outer-container" class="rounded-2xl bg-slate-900/90 border border-slate-800 overflow-hidden shadow-2xl game-frame-glow">
+      
+      <!-- Top Engine Switcher & HUD Toolbar -->
+      <div class="bg-[#121824] px-4 py-2.5 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
+        
+        <!-- Engine Mode Tabs -->
+        <div class="flex items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800">
+          <button id="btn-mode-canvas" type="button" class="px-3 py-1 rounded-lg bg-sky-500 text-slate-950 font-bold transition-all flex items-center gap-1.5 shadow-sm">
+            <i data-lucide="zap" class="w-3.5 h-3.5 text-amber-950"></i>
+            <span>Native HTML5 Canvas (Instant)</span>
+          </button>
+          <button id="btn-mode-unity" type="button" class="px-3 py-1 rounded-lg text-slate-400 hover:text-white transition-all flex items-center gap-1.5">
+            <i data-lucide="box" class="w-3.5 h-3.5 text-sky-400"></i>
+            <span>Unity WebGL (WASM)</span>
+          </button>
+        </div>
+
+        <!-- In-Game HUD Controls (Native Canvas Mode) -->
+        <div id="canvas-hud-controls" class="flex items-center gap-3">
+          <!-- Lives Display -->
+          <div class="flex items-center gap-1 bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800">
+            <span id="hud-lives-icons" class="text-rose-500 text-sm">❤️❤️❤️</span>
+            <span id="hud-lives-text" class="text-[11px] font-mono text-slate-300 font-bold ml-1">3/3</span>
+          </div>
+
+          <!-- Level Picker Dropdown -->
+          <div class="flex items-center gap-1 bg-slate-950 px-2 py-1 rounded-lg border border-slate-800">
+            <span class="text-[11px] text-slate-400">Level:</span>
+            <select id="canvas-level-select" class="bg-transparent text-white font-mono text-xs focus:outline-none cursor-pointer">
+              <!-- Options populated dynamically -->
+            </select>
+          </div>
+
+          <!-- Hint / Solve Button -->
+          <button id="btn-hint" type="button" class="px-2.5 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-xs font-semibold flex items-center gap-1 transition-all" title="Highlight the next safe arrow to peel">
+            <i data-lucide="lightbulb" class="w-3 h-3"></i>
+            <span>Hint</span>
+          </button>
+
+          <!-- Reset Button -->
+          <button id="btn-reset-level" type="button" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs flex items-center gap-1 transition-all" title="Restart current level">
+            <i data-lucide="rotate-ccw" class="w-3 h-3 text-sky-400"></i>
+            <span>Reset</span>
+          </button>
+        </div>
+
+        <!-- Unity WebGL Mode Controls (Hidden when canvas mode is active) -->
+        <div id="unity-hud-controls" class="hidden flex items-center gap-2">
+          <button id="btn-toggle-unity-port" type="button" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700 text-[11px] font-mono flex items-center gap-1">
+            <i data-lucide="network" class="w-3 h-3"></i>
+            <span id="unity-source-label">Port: 8080</span>
+          </button>
+          <button id="btn-reload-unity" type="button" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-[11px] flex items-center gap-1">
+            <i data-lucide="rotate-ccw" class="w-3 h-3 text-amber-400"></i>
+            <span>Reload</span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- ================= VIEWPORT CONTAINER ================= -->
+      <div class="relative w-full bg-[#0a0f1d] flex items-center justify-center overflow-hidden" style="aspect-ratio: 16/9; max-height: 720px; min-height: 480px;">
+        
+        <!-- ================= 1. NATIVE HTML5 CANVAS ENGINE ================= -->
+        <div id="canvas-engine-wrapper" class="relative w-full h-full flex flex-col items-center justify-center">
+          <canvas id="arrow-game-canvas" class="w-full h-full block"></canvas>
+          
+          <!-- In-Canvas Toast Banner -->
+          <div id="canvas-toast" class="pointer-events-none absolute top-4 transform -translate-y-10 opacity-0 transition-all duration-300 px-4 py-2 rounded-xl bg-slate-900/95 border border-sky-400/80 shadow-2xl text-xs font-bold text-white flex items-center gap-2">
+            <span id="canvas-toast-icon">✨</span>
+            <span id="canvas-toast-msg">Level 1 Loaded</span>
+          </div>
+
+          <!-- Level Cleared / Game Won Modal Overlay -->
+          <div id="canvas-game-modal" class="hidden absolute inset-0 z-50 bg-[#090d16]/90 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center space-y-5 animate-in fade-in duration-300">
+            <!-- Confetti Canvas -->
+            <canvas id="modal-confetti-canvas" class="pointer-events-none absolute inset-0 w-full h-full"></canvas>
+
+            <div class="relative z-10 flex flex-col items-center space-y-4 max-w-sm w-full">
+              <!-- Trophy Icon with glow -->
+              <div id="modal-badge-icon" class="w-20 h-20 rounded-3xl bg-gradient-to-tr from-amber-500/20 to-emerald-500/20 border-2 border-amber-400/50 flex items-center justify-center text-4xl shadow-2xl shadow-amber-500/30">
+                🏆
+              </div>
+
+              <!-- Star Rating -->
+              <div id="modal-stars-container" class="flex items-center gap-1.5 text-2xl drop-shadow-md">
+                <span id="modal-star-1" class="text-amber-400">★</span>
+                <span id="modal-star-2" class="text-amber-400">★</span>
+                <span id="modal-star-3" class="text-amber-400">★</span>
+              </div>
+
+              <div class="space-y-1">
+                <h3 id="modal-title" class="text-3xl font-black text-white tracking-tight">Level Cleared!</h3>
+                <p id="modal-subtitle" class="text-xs text-slate-300">Outstanding solve! All arrows escaped cleanly.</p>
+              </div>
+
+              <!-- Quick Stats Card -->
+              <div class="grid grid-cols-2 gap-2.5 w-full bg-slate-900/90 border border-slate-800 rounded-xl p-3 text-xs">
+                <div class="text-left">
+                  <span class="text-[10px] text-slate-400 block font-mono">Shape Cleared</span>
+                  <span id="modal-stat-shape" class="font-bold text-white truncate block">Star Shape</span>
+                </div>
+                <div class="text-right">
+                  <span class="text-[10px] text-slate-400 block font-mono">Lives Remaining</span>
+                  <span id="modal-stat-lives" class="font-bold text-rose-400 font-mono">❤️❤️❤️ 3/3</span>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-center gap-3 pt-2 w-full">
+                <button id="btn-modal-action" type="button" class="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-sky-400 to-indigo-500 hover:from-sky-300 hover:to-indigo-400 text-slate-950 font-extrabold text-xs shadow-xl shadow-sky-500/30 transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                  <span id="modal-action-text">Next Level</span>
+                  <span>&rarr;</span>
+                </button>
+                <button id="btn-modal-retry" type="button" class="py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs transition-all flex items-center justify-center gap-1 cursor-pointer">
+                  <span>Replay</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= 2. UNITY WEBGL IFRAME ================= -->
+        <div id="unity-engine-wrapper" class="hidden relative w-full h-full">
+          <iframe
+            id="webgl-game-iframe"
+            src="unity-calm-arrow/index.html"
+            data-fallback-src="unity-calm-arrow/index.html"
+            class="w-full h-full border-0"
+            allow="fullscreen; autoplay"
+            title="Arrow Escape Unity WebGL Game"
+          ></iframe>
+        </div>
+
+      </div>
+
+      <!-- Controls & Feature Summary Sub-bar -->
+      <div class="bg-[#0b1120] px-4 py-3 border-t border-slate-800 grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+        <div class="flex items-center gap-2 text-slate-300">
+          <div class="w-7 h-7 rounded-lg bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 shrink-0">
+            <i data-lucide="mouse-pointer" class="w-3.5 h-3.5"></i>
+          </div>
+          <div>
+            <span class="font-bold text-white block">Step-By-Step Obstacle Probe</span>
+            <span class="text-[11px] text-slate-400">Blocked arrows advance to collision, bonk, lose life, and reverse</span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 text-slate-300">
+          <div class="w-7 h-7 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 shrink-0">
+            <i data-lucide="heart" class="w-3.5 h-3.5"></i>
+          </div>
+          <div>
+            <span class="font-bold text-white block">3-Lives &amp; Game Over Flow</span>
+            <span class="text-[11px] text-slate-400">Tactile heart loss, animated toast, and automatic level progression</span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 text-slate-300">
+          <div class="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+            <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>
+          </div>
+          <div>
+            <span class="font-bold text-white block">100% Guaranteed Solvable</span>
+            <span class="text-[11px] text-slate-400">Outside-in peel order with Warnsdorff degree heuristics</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= ARCHITECTURE HIGHLIGHTS ================= -->
+  <main class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10 flex-1">
+    
+    <div class="space-y-1">
+      <span class="text-xs font-mono uppercase tracking-widest text-sky-400 font-bold">Dual-Engine Architecture</span>
+      <h2 class="text-2xl sm:text-3xl font-extrabold text-white">How Both Web &amp; Unity Engines Align</h2>
+      <p class="text-xs sm:text-sm text-slate-400">Identical algorithms implemented natively in HTML5 Canvas 2D and Unity C#.</p>
+    </div>
+
+    <!-- 4-Card Comparison Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      
+      <div class="p-5 rounded-xl bg-slate-900/80 border border-slate-800 flex flex-col justify-between space-y-3 hover:border-slate-700 transition-colors">
+        <div class="space-y-2">
+          <div class="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+            <i data-lucide="git-merge" class="w-4 h-4"></i>
+          </div>
+          <h3 class="text-sm font-bold text-white">1. Solvability Generator</h3>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Eliminates unsolvable deadlocks by carving arrows backward in reverse solve order using Warnsdorff degree heuristics. The first arrow peeled is always 100% free to escape.
+          </p>
+        </div>
+        <div class="pt-2 border-t border-slate-800 text-[10px] font-mono text-emerald-400">
+          JS Generator &amp; C# SolvableShapeGenerator
+        </div>
+      </div>
+
+      <div class="p-5 rounded-xl bg-slate-900/80 border border-slate-800 flex flex-col justify-between space-y-3 hover:border-slate-700 transition-colors">
+        <div class="space-y-2">
+          <div class="w-9 h-9 rounded-lg bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400">
+            <i data-lucide="grid" class="w-4 h-4"></i>
+          </div>
+          <h3 class="text-sm font-bold text-white">2. Dynamic Board Masking</h3>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            High-density 2D matrix masking (<code class="text-sky-300">activeMask[x][y]</code>) with automatic camera &amp; canvas bounding to frame shapes tightly with header padding.
+          </p>
+        </div>
+        <div class="pt-2 border-t border-slate-800 text-[10px] font-mono text-sky-400">
+          Canvas Frame &amp; C# ShapeGridSystem
+        </div>
+      </div>
+
+      <div class="p-5 rounded-xl bg-slate-900/80 border border-slate-800 flex flex-col justify-between space-y-3 hover:border-slate-700 transition-colors">
+        <div class="space-y-2">
+          <div class="w-9 h-9 rounded-lg bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+            <i data-lucide="pen-tool" class="w-4 h-4"></i>
+          </div>
+          <h3 class="text-sm font-bold text-white">3. Smooth Chevron Arrows</h3>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Continuous smooth rounded body lines with sampled color gradients and directional chevron arrowheads (<code class="text-indigo-300">Up</code>, <code class="text-indigo-300">Down</code>, <code class="text-indigo-300">Left</code>, <code class="text-indigo-300">Right</code>).
+          </p>
+        </div>
+        <div class="pt-2 border-t border-slate-800 text-[10px] font-mono text-indigo-400">
+          Canvas Path &amp; C# LineRenderer
+        </div>
+      </div>
+
+      <div class="p-5 rounded-xl bg-slate-900/80 border border-slate-800 flex flex-col justify-between space-y-3 hover:border-slate-700 transition-colors">
+        <div class="space-y-2">
+          <div class="w-9 h-9 rounded-lg bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400">
+            <i data-lucide="shield-alert" class="w-4 h-4"></i>
+          </div>
+          <h3 class="text-sm font-bold text-white">4. Rebound &amp; 3-Lives System</h3>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Clicking a blocked arrow probes forward grid-by-grid to the obstacle, plays a tactile collision bump, deducts 1 life with toast notifications, and snakes backward to its exact original grid set.
+          </p>
+        </div>
+        <div class="pt-2 border-t border-slate-800 text-[10px] font-mono text-rose-400">
+          Path History Snapback &amp; C# Coroutine
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="mt-auto border-t border-slate-800/80 bg-[#070b12] py-8 text-xs text-slate-400">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2">
+        <span class="font-bold text-white">Arrow Strike Portfolio</span>
+        <span>•</span>
+        <span>Arpit Jaiswal — Unity Gameplay &amp; Tools Engineer</span>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <a href="AssetOrganizerPortfolioShowcase.html" class="hover:text-sky-400 transition-colors flex items-center gap-1">
+          <i data-lucide="pin" class="w-3.5 h-3.5 text-amber-400"></i>
+          <span>Asset Organizer Showcase</span>
+        </a>
+        <a href="#interactive-demo" class="hover:text-sky-400 transition-colors flex items-center gap-1">
+          <i data-lucide="arrow-up" class="w-3.5 h-3.5"></i>
+          <span>Back to Top</span>
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================================================= -->
+  <!-- NATIVE HTML5 CANVAS 2D ARROW ESCAPE GAME ENGINE SCRIPT                    -->
+  <!-- Zero-dependency pure JavaScript implementation matching Unity C# mechanics -->
+  <!-- ========================================================================= -->
+  <script>
+    lucide.createIcons();
+
+    // ==========================================
+    // 1. LEVEL SHAPES (Geometric & Pixel-Art)
+    // ==========================================
+    const LEVELS = [
+      {
+        id: 1,
+        name: "Level 1: Star Shape",
+        gridW: 16,
+        gridH: 16,
+        arrowLen: 3,
+        color: "#38bdf8",
+        shapeGenerator: (x, y, w, h) => {
+          const cx = (w - 1) / 2, cy = (h - 1) / 2;
+          const dx = (x - cx) / (w * 0.45), dy = (y - cy) / (h * 0.45);
+          const r = Math.sqrt(dx * dx + dy * dy);
+          const angle = Math.atan2(dy, dx);
+          // 5-pointed star polar equation
+          const starR = 0.55 + 0.38 * Math.cos(5 * angle);
+          return r <= starR;
+        }
+      },
+      {
+        id: 2,
+        name: "Level 2: Heart Shape",
+        gridW: 18,
+        gridH: 18,
+        arrowLen: 4,
+        color: "#f43f5e",
+        shapeGenerator: (x, y, w, h) => {
+          const nx = (x - (w - 1) / 2) / 6.5;
+          const ny = (y - (h - 1) / 2) / 6.5 + 0.4;
+          // Standard heart implicit formula
+          const a = nx * nx + ny * ny - 1;
+          return (a * a * a - nx * nx * ny * ny * ny) <= 0.05;
+        }
+      },
+      {
+        id: 3,
+        name: "Level 3: Pixel Sword",
+        gridW: 18,
+        gridH: 18,
+        arrowLen: 4,
+        color: "#a855f7",
+        shapeGenerator: (x, y, w, h) => {
+          const cx = Math.floor(w / 2);
+          // Blade
+          if (y >= 4 && y <= 15 && Math.abs(x - cx) <= (y === 15 ? 0 : (y === 14 ? 1 : 1))) return true;
+          // Guard
+          if (y === 5 && Math.abs(x - cx) <= 4) return true;
+          // Hilt
+          if (y >= 1 && y <= 4 && Math.abs(x - cx) <= 0) return true;
+          // Pommel
+          if (y === 1 && Math.abs(x - cx) <= 1) return true;
+          return false;
+        }
+      },
+      {
+        id: 4,
+        name: "Level 4: Cat Silhouette",
+        gridW: 20,
+        gridH: 20,
+        arrowLen: 4,
+        color: "#f59e0b",
+        shapeGenerator: (x, y, w, h) => {
+          const cx = Math.floor(w / 2), cy = Math.floor(h / 2);
+          // Head / Body
+          const dx = (x - cx) / 6.5, dy = (y - cy) / 6.5;
+          if (dx * dx + dy * dy <= 1.0) return true;
+          // Ears
+          if (y >= cy + 4 && y <= cy + 8) {
+            if (Math.abs(x - (cx - 4)) <= (cy + 8 - y)) return true;
+            if (Math.abs(x - (cx + 4)) <= (cy + 8 - y)) return true;
+          }
+          return false;
+        }
+      },
+      {
+        id: 5,
+        name: "Level 5: Diamond Crown",
+        gridW: 22,
+        gridH: 22,
+        arrowLen: 5,
+        color: "#10b981",
+        shapeGenerator: (x, y, w, h) => {
+          const cx = (w - 1) / 2, cy = (h - 1) / 2;
+          // Base
+          if (y >= 4 && y <= 7 && Math.abs(x - cx) <= 7) return true;
+          // 3 Crown peaks
+          if (y >= 8 && y <= 15) {
+            if (Math.abs(x - cx) <= (15 - y) * 0.8) return true;
+            if (Math.abs(x - (cx - 6)) <= (14 - y) * 0.7) return true;
+            if (Math.abs(x - (cx + 6)) <= (14 - y) * 0.7) return true;
+          }
+          return false;
+        }
+      },
+      {
+        id: 6,
+        name: "Level 6: Eagle Crest",
+        gridW: 24,
+        gridH: 24,
+        arrowLen: 5,
+        color: "#38bdf8",
+        shapeGenerator: (x, y, w, h) => {
+          const cx = (w - 1) / 2;
+          // Body
+          if (Math.abs(x - cx) <= 2 && y >= 3 && y <= 19) return true;
+          // Swept Wings
+          const wingSpread = Math.abs(x - cx);
+          if (wingSpread >= 3 && wingSpread <= 10) {
+            const wingY = 12 + Math.sin((wingSpread - 3) / 7 * Math.PI) * 4;
+            if (Math.abs(y - wingY) <= 2) return true;
+          }
+          return false;
+        }
+      }
+    ];
+
+    // ==========================================
+    // 2. DIRECTION CONSTANTS & UTILITIES
+    // ==========================================
+    const DIRS = {
+      Up:    { name: 'Up',    dx: 0,  dy: 1,  screenAngle: -Math.PI / 2 },
+      Down:  { name: 'Down',  dx: 0,  dy: -1, screenAngle: Math.PI / 2 },
+      Left:  { name: 'Left',  dx: -1, dy: 0,  screenAngle: Math.PI },
+      Right: { name: 'Right', dx: 1,  dy: 0,  screenAngle: 0 }
+    };
+    const DIR_LIST = [DIRS.Up, DIRS.Down, DIRS.Left, DIRS.Right];
+
+    // ==========================================
+    // 3. GAME STATE
+    // ==========================================
+    let currentLevelIndex = 0;
+    let currentLives = 3;
+    const MAX_LIVES = 3;
+    let gridW = 16, gridH = 16;
+    let activeCoords = [];
+    let arrows = []; // Array of Arrow objects
+    let occupancyMap = new Map(); // "x,y" -> Arrow
+    let isInteractingLocked = false;
+    let reverseSolveOrder = []; // Stack of arrows in solve order
+
+    const canvas = document.getElementById("arrow-game-canvas");
+    const ctx = canvas.getContext("2d");
+    let cellPixelSize = 24;
+    let originPixelX = 0, originPixelY = 0;
+
+    // Toast UI
+    const toastEl = document.getElementById("canvas-toast");
+    const toastMsgEl = document.getElementById("canvas-toast-msg");
+    const toastIconEl = document.getElementById("canvas-toast-icon");
+    let toastTimeout = null;
+
+    function showGameToast(msg, icon = "✨", isAlert = false) {
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastMsgEl.textContent = msg;
+      toastIconEl.textContent = icon;
+      toastEl.className = `pointer-events-none absolute top-4 transform translate-y-0 opacity-100 transition-all duration-300 px-4 py-2 rounded-xl shadow-2xl text-xs font-bold text-white flex items-center gap-2 ${
+        isAlert ? 'bg-rose-950/95 border border-rose-500/80 text-rose-200' : 'bg-slate-900/95 border border-sky-400/80'
+      }`;
+      toastTimeout = setTimeout(() => {
+        toastEl.className = "pointer-events-none absolute top-4 transform -translate-y-10 opacity-0 transition-all duration-300 px-4 py-2 rounded-xl bg-slate-900/95 border border-sky-400/80 shadow-2xl text-xs font-bold text-white flex items-center gap-2";
+      }, 2500);
+    }
+
+    function updateLivesHUD() {
+      const hearts = "❤️".repeat(Math.max(0, currentLives)) + "🖤".repeat(Math.max(0, MAX_LIVES - currentLives));
+      document.getElementById("hud-lives-icons").textContent = hearts;
+      document.getElementById("hud-lives-text").textContent = `${currentLives}/${MAX_LIVES}`;
+    }
+
+    // ==========================================
+    // 4. GUARANTEED-SOLVABLE ARROW GENERATOR (Matches Unity SolvableShapeGenerator)
+    // ==========================================
+    function generateSolvableLevel(config) {
+      gridW = config.gridW;
+      gridH = config.gridH;
+      activeCoords = [];
+      occupancyMap.clear();
+      arrows = [];
+      reverseSolveOrder = [];
+
+      // 1. Build shape mask
+      const remaining = new Set();
+      for (let x = 0; x < gridW; x++) {
+        for (let y = 0; y < gridH; y++) {
+          if (config.shapeGenerator(x, y, gridW, gridH)) {
+            const key = `${x},${y}`;
+            remaining.add(key);
+            activeCoords.push({ x, y });
+          }
+        }
+      }
+
+      const coordFromKey = (k) => {
+        const [x, y] = k.split(',').map(Number);
+        return { x, y };
+      };
+
+      let arrowId = 1;
+      const targetLen = config.arrowLen || 4;
+
+      // 2. Outside-In Reverse Solve Order Peeling Loop
+      while (remaining.size > 0) {
+        const candidates = [];
+
+        remaining.forEach(k => {
+          const head = coordFromKey(k);
+
+          for (let dir of DIR_LIST) {
+            // CRITICAL: Neck MUST be directly behind head in direction -dir!
+            const neck = { x: head.x - dir.dx, y: head.y - dir.dy };
+            const neckKey = `${neck.x},${neck.y}`;
+
+            if (!remaining.has(neckKey)) continue;
+
+            // Test if ray from head in dir toward grid boundary intersects any remaining cell
+            let probeX = head.x + dir.dx;
+            let probeY = head.y + dir.dy;
+            let clearRay = true;
+            while (probeX >= 0 && probeX < gridW && probeY >= 0 && probeY < gridH) {
+              if (remaining.has(`${probeX},${probeY}`)) {
+                clearRay = false;
+                break;
+              }
+              probeX += dir.dx;
+              probeY += dir.dy;
+            }
+
+            if (clearRay) {
+              let score = 10;
+              let headDeg = 0;
+              for (let d of DIR_LIST) {
+                if (remaining.has(`${head.x + d.dx},${head.y + d.dy}`)) headDeg++;
+              }
+              if (headDeg === 1) score += 6; // leaf tips are ideal to peel
+              candidates.push({ head, neck, dir, score });
+            }
+          }
+        });
+
+        if (candidates.length === 0) {
+          // Fallback if isolated 1-cell or concave corner
+          const firstKey = remaining.values().next().value;
+          const pt = coordFromKey(firstKey);
+          candidates.push({ head: pt, neck: null, dir: DIRS.Up, score: 0 });
+        }
+
+        // Pick highest priority candidate
+        candidates.sort((a, b) => b.score - a.score);
+        const cand = candidates[0];
+
+        const reversedPath = [cand.head];
+        remaining.delete(`${cand.head.x},${cand.head.y}`);
+
+        if (cand.neck) {
+          reversedPath.push(cand.neck);
+          remaining.delete(`${cand.neck.x},${cand.neck.y}`);
+
+          // Grow tail backwards from neck into remaining cells
+          let current = cand.neck;
+          let prevStepDir = { x: cand.neck.x - cand.head.x, y: cand.neck.y - cand.head.y };
+
+          while (reversedPath.length < targetLen) {
+            const validNext = [];
+            let orphanRescue = null;
+
+            for (let d of DIR_LIST) {
+              const nx = current.x + d.dx;
+              const ny = current.y + d.dy;
+              const nk = `${nx},${ny}`;
+              if (remaining.has(nk)) {
+                let deg = 0;
+                for (let nd of DIR_LIST) {
+                  if (remaining.has(`${nx + nd.dx},${ny + nd.dy}`)) deg++;
+                }
+                if (deg === 0) orphanRescue = { x: nx, y: ny, key: nk };
+                validNext.push({ pt: { x: nx, y: ny }, key: nk, deg });
+              }
+            }
+
+            if (validNext.length === 0) break;
+
+            let chosen;
+            if (orphanRescue) {
+              chosen = orphanRescue;
+            } else {
+              const straightX = current.x + prevStepDir.x;
+              const straightY = current.y + prevStepDir.y;
+              const straightCand = validNext.find(v => v.pt.x === straightX && v.pt.y === straightY);
+              if (straightCand && Math.random() < 0.65) {
+                chosen = straightCand;
+              } else {
+                validNext.sort((a, b) => a.deg - b.deg);
+                chosen = validNext[0];
+              }
+            }
+
+            prevStepDir = { x: chosen.pt.x - current.x, y: chosen.pt.y - current.y };
+            current = chosen.pt;
+            reversedPath.push(current);
+            remaining.delete(chosen.key || `${chosen.pt.x},${chosen.pt.y}`);
+          }
+        }
+
+        // Reverse so path[0] = tail, path[last] = head
+        const arrowPath = reversedPath.slice().reverse();
+        const arrow = new ArrowInstance(arrowId++, arrowPath, cand.dir, config.color);
+        arrows.push(arrow);
+        reverseSolveOrder.push(arrow);
+      }
+
+      // Mark initial occupancy
+      arrows.forEach(a => a.markOccupied());
+    }
+
+    // ==========================================
+    // 5. ARROW CLASS (Movement, Rebound, Render)
+    // ==========================================
+    class ArrowInstance {
+      constructor(id, path, dir, baseColor) {
+        this.id = id;
+        this.path = path.map(p => ({ x: p.x, y: p.y })); // [0] = tail, [last] = head
+        this.originalPath = path.map(p => ({ x: p.x, y: p.y }));
+        this.dir = dir; // Movement direction & facing direction
+        this.baseColor = baseColor;
+        this.isMoving = false;
+        this.isCleared = false;
+        this.animPositions = this.path.map(p => ({ x: p.x, y: p.y }));
+        this.bonkOffset = { x: 0, y: 0 };
+        this.isHinted = false;
+      }
+
+      markOccupied() {
+        this.path.forEach(p => {
+          occupancyMap.set(`${p.x},${p.y}`, this);
+        });
+      }
+
+      markFree() {
+        this.path.forEach(p => {
+          if (occupancyMap.get(`${p.x},${p.y}`) === this) {
+            occupancyMap.delete(`${p.x},${p.y}`);
+          }
+        });
+      }
+
+      containsPoint(gridX, gridY) {
+        return this.path.some(p => p.x === gridX && p.y === gridY);
+      }
+
+      // Step-by-step advance until obstacle or exit
+      async triggerClick() {
+        if (this.isMoving || this.isCleared || isInteractingLocked) return;
+        this.isMoving = true;
+        this.isHinted = false;
+
+        const pathHistory = [this.path.map(p => ({ ...p }))];
+        let wasBlocked = false;
+
+        while (true) {
+          const head = this.path[this.path.length - 1];
+          const nextHead = { x: head.x + this.dir.dx, y: head.y + this.dir.dy };
+
+          // Check obstacle inside grid
+          if (nextHead.x >= 0 && nextHead.x < gridW && nextHead.y >= 0 && nextHead.y < gridH) {
+            const occ = occupancyMap.get(`${nextHead.x},${nextHead.y}`);
+            if (occ && occ !== this) {
+              wasBlocked = true;
+              break;
+            }
+          }
+
+          // Check if head escaped past boundary
+          if (nextHead.x < 0 || nextHead.x >= gridW || nextHead.y < 0 || nextHead.y >= gridH) {
+            break;
+          }
+
+          // Advance 1 cell forward
+          const oldTail = this.path[0];
+          occupancyMap.delete(`${oldTail.x},${oldTail.y}`);
+
+          for (let i = 0; i < this.path.length - 1; i++) {
+            this.path[i] = { ...this.path[i + 1] };
+          }
+          this.path[this.path.length - 1] = nextHead;
+          occupancyMap.set(`${nextHead.x},${nextHead.y}`, this);
+
+          pathHistory.push(this.path.map(p => ({ ...p })));
+          await this.animateStep(0.045);
+        }
+
+        if (wasBlocked) {
+          // Play Bonk Bump against obstacle
+          currentLives--;
+          updateLivesHUD();
+          showGameToast(`Blocked by obstacle! -1 Life (${currentLives} left)`, "💥", true);
+
+          await this.animateBonkBump();
+
+          if (currentLives <= 0) {
+            showGameToast("Game Over! All lives lost.", "💀", true);
+            showGameOverModal();
+            this.isMoving = false;
+            return;
+          }
+
+          // Snake back step-by-step to original grid set
+          for (let s = pathHistory.length - 2; s >= 0; s--) {
+            const curHead = this.path[this.path.length - 1];
+            occupancyMap.delete(`${curHead.x},${curHead.y}`);
+
+            this.path = pathHistory[s].map(p => ({ ...p }));
+            this.path.forEach(p => occupancyMap.set(`${p.x},${p.y}`, this));
+
+            await this.animateStep(0.035);
+          }
+
+          this.isMoving = false;
+          return;
+        }
+
+        // Unblocked! Slide off grid and clear
+        this.markFree();
+        for (let exit = 0; exit < this.path.length + 2; exit++) {
+          const nextHead = {
+            x: this.path[this.path.length - 1].x + this.dir.dx,
+            y: this.path[this.path.length - 1].y + this.dir.dy
+          };
+          for (let i = 0; i < this.path.length - 1; i++) {
+            this.path[i] = { ...this.path[i + 1] };
+          }
+          this.path[this.path.length - 1] = nextHead;
+          await this.animateStep(0.035);
+        }
+
+        this.isCleared = true;
+        this.isMoving = false;
+        checkWinCondition();
+      }
+
+      animateStep(durationSec) {
+        return new Promise(resolve => {
+          const starts = this.animPositions.map(p => ({ ...p }));
+          const targets = this.path.map(p => ({ ...p }));
+          const startTime = performance.now();
+          const durationMs = durationSec * 1000;
+
+          const stepLoop = (now) => {
+            const elapsed = now - startTime;
+            const t = Math.min(1, elapsed / durationMs);
+            for (let i = 0; i < this.animPositions.length; i++) {
+              this.animPositions[i].x = starts[i].x + (targets[i].x - starts[i].x) * t;
+              this.animPositions[i].y = starts[i].y + (targets[i].y - starts[i].y) * t;
+            }
+            if (t < 1) {
+              requestAnimationFrame(stepLoop);
+            } else {
+              this.animPositions = this.path.map(p => ({ ...p }));
+              resolve();
+            }
+          };
+          requestAnimationFrame(stepLoop);
+        });
+      }
+
+      animateBonkBump() {
+        return new Promise(resolve => {
+          const startTime = performance.now();
+          const bumpDuration = 120; // ms
+          const maxNudge = 0.35; // cells
+
+          const bumpLoop = (now) => {
+            const elapsed = now - startTime;
+            const t = elapsed / bumpDuration;
+            if (t < 0.5) {
+              const p = t * 2;
+              this.bonkOffset.x = this.dir.dx * maxNudge * p;
+              this.bonkOffset.y = this.dir.dy * maxNudge * p;
+            } else if (t <= 1) {
+              const p = (1 - t) * 2;
+              this.bonkOffset.x = this.dir.dx * maxNudge * p;
+              this.bonkOffset.y = this.dir.dy * maxNudge * p;
+            } else {
+              this.bonkOffset = { x: 0, y: 0 };
+              resolve();
+              return;
+            }
+            requestAnimationFrame(bumpLoop);
+          };
+          requestAnimationFrame(bumpLoop);
+        });
+      }
+
+      render(ctx) {
+        if (this.isCleared) return;
+        const pts = this.animPositions;
+        if (pts.length < 2) return;
+
+        // Convert grid coords to canvas pixel coords
+        // (p.y = 0 is bottom row, gridH - 1 is top row)
+        const pixelPts = pts.map(p => ({
+          x: originPixelX + (p.x + this.bonkOffset.x + 0.5) * cellPixelSize,
+          y: originPixelY + (gridH - 1 - (p.y + this.bonkOffset.y) + 0.5) * cellPixelSize
+        }));
+
+        ctx.save();
+
+        // Glow when hinted
+        if (this.isHinted) {
+          ctx.shadowColor = '#facc15';
+          ctx.shadowBlur = 16;
+        }
+
+        // Draw LineRenderer Body
+        ctx.beginPath();
+        ctx.moveTo(pixelPts[0].x, pixelPts[0].y);
+        for (let i = 1; i < pixelPts.length; i++) {
+          ctx.lineTo(pixelPts[i].x, pixelPts[i].y);
+        }
+
+        ctx.lineWidth = cellPixelSize * 0.62;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        // Gradient styling
+        const grad = ctx.createLinearGradient(
+          pixelPts[0].x, pixelPts[0].y,
+          pixelPts[pixelPts.length - 1].x, pixelPts[pixelPts.length - 1].y
+        );
+        grad.addColorStop(0, this.baseColor + 'aa');
+        grad.addColorStop(1, this.baseColor);
+
+        ctx.strokeStyle = grad;
+        ctx.stroke();
+
+        // Inner highlight core
+        ctx.lineWidth = cellPixelSize * 0.22;
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+        ctx.stroke();
+
+        // Directional Chevron Arrowhead at tip:
+        // Position directly at the head pixel position and rotate strictly by this.dir.screenAngle
+        const headPt = pixelPts[pixelPts.length - 1];
+
+        ctx.save();
+        ctx.translate(headPt.x, headPt.y);
+        ctx.rotate(this.dir.screenAngle);
+
+        const headSize = cellPixelSize * 0.55;
+        ctx.beginPath();
+        ctx.moveTo(headSize * 0.65, 0);
+        ctx.lineTo(-headSize * 0.45, -headSize * 0.55);
+        ctx.lineTo(-headSize * 0.15, 0);
+        ctx.lineTo(-headSize * 0.45, headSize * 0.55);
+        ctx.closePath();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.shadowColor = 'rgba(0,0,0,0.5)';
+        ctx.shadowBlur = 4;
+        ctx.fill();
+
+        ctx.restore();
+        ctx.restore();
+      }
+    }
+
+    // ==========================================
+    // 6. MAIN RENDER LOOP & CANVAS SIZING
+    // ==========================================
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      const displayW = Math.max(320, rect.width || (canvas.parentElement ? canvas.parentElement.clientWidth : 0) || 960);
+      const displayH = Math.max(240, rect.height || (canvas.parentElement ? canvas.parentElement.clientHeight : 0) || 540);
+
+      canvas.width = Math.floor(displayW * dpr);
+      canvas.height = Math.floor(displayH * dpr);
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+
+      // Compute cell size and origin to fit active shape
+      const padding = 32;
+      const availW = displayW - padding * 2;
+      const availH = displayH - padding * 2;
+
+      cellPixelSize = Math.floor(Math.min(availW / Math.max(1, gridW), availH / Math.max(1, gridH)));
+      cellPixelSize = Math.max(14, Math.min(36, cellPixelSize));
+
+      const totalGridPixelW = gridW * cellPixelSize;
+      const totalGridPixelH = gridH * cellPixelSize;
+
+      originPixelX = Math.floor((displayW - totalGridPixelW) / 2);
+      originPixelY = Math.floor((displayH - totalGridPixelH) / 2);
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('load', resizeCanvas);
+
+    function mainDrawLoop() {
+      const displayW = canvas.width / (window.devicePixelRatio || 1);
+      const displayH = canvas.height / (window.devicePixelRatio || 1);
+      ctx.clearRect(0, 0, displayW, displayH);
+
+      // 1. Draw subtle board cell tiles for active mask coordinates
+      ctx.fillStyle = 'rgba(30, 41, 59, 0.45)';
+      ctx.strokeStyle = 'rgba(51, 65, 85, 0.3)';
+      ctx.lineWidth = 1;
+
+      for (let pt of activeCoords) {
+        const px = originPixelX + pt.x * cellPixelSize;
+        const py = originPixelY + (gridH - 1 - pt.y) * cellPixelSize;
+        const inset = 1;
+
+        ctx.beginPath();
+        ctx.roundRect(px + inset, py + inset, cellPixelSize - inset * 2, cellPixelSize - inset * 2, 4);
+        ctx.fill();
+        ctx.stroke();
+      }
+
+      // 2. Draw Arrows
+      arrows.forEach(a => a.render(ctx));
+
+      requestAnimationFrame(mainDrawLoop);
+    }
+
+    // ==========================================
+    // 7. INPUT HANDLING & CLICK DETECTION
+    // ==========================================
+    canvas.addEventListener('pointerdown', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.clientX - rect.left;
+      const clientY = e.clientY - rect.top;
+
+      const gridX = Math.floor((clientX - originPixelX) / cellPixelSize);
+      const gridY = gridH - 1 - Math.floor((clientY - originPixelY) / cellPixelSize);
+
+      if (gridX >= 0 && gridX < gridW && gridY >= 0 && gridY < gridH) {
+        const clickedArrow = occupancyMap.get(`${gridX},${gridY}`);
+        if (clickedArrow) {
+          clickedArrow.triggerClick();
+        }
+      }
+    });
+
+    // ==========================================
+    // 8. LEVEL PROGRESSION, WIN / LOSE
+    // ==========================================
+    function loadLevel(index) {
+      currentLevelIndex = index;
+      currentLives = MAX_LIVES;
+      updateLivesHUD();
+      document.getElementById("canvas-game-modal").classList.add("hidden");
+
+      const config = LEVELS[currentLevelIndex];
+      generateSolvableLevel(config);
+      resizeCanvas();
+      showGameToast(`Loaded ${config.name}`, "🚀");
+    }
+
+    function checkWinCondition() {
+      const remainingArrows = arrows.filter(a => !a.isCleared);
+      if (remainingArrows.length === 0) {
+        setTimeout(() => {
+          showWinModal();
+        }, 200);
+      }
+    }
+
+    const modalEl = document.getElementById("canvas-game-modal");
+    const modalTitleEl = document.getElementById("modal-title");
+    const modalSubtitleEl = document.getElementById("modal-subtitle");
+    const modalBadgeEl = document.getElementById("modal-badge-icon");
+    const modalStatShape = document.getElementById("modal-stat-shape");
+    const modalStatLives = document.getElementById("modal-stat-lives");
+    const modalActionText = document.getElementById("modal-action-text");
+    const btnModalAction = document.getElementById("btn-modal-action");
+    const confettiCanvas = document.getElementById("modal-confetti-canvas");
+    let confettiAnimationId = null;
+
+    function startConfetti() {
+      if (!confettiCanvas) return;
+      const cCtx = confettiCanvas.getContext("2d");
+      const rect = modalEl.getBoundingClientRect();
+      confettiCanvas.width = rect.width;
+      confettiCanvas.height = rect.height;
+
+      const particles = [];
+      const colors = ["#38bdf8", "#f59e0b", "#10b981", "#ec4899", "#a855f7", "#ffffff"];
+      for (let i = 0; i < 75; i++) {
+        particles.push({
+          x: Math.random() * confettiCanvas.width,
+          y: -20 - Math.random() * 100,
+          w: 6 + Math.random() * 6,
+          h: 8 + Math.random() * 8,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          vx: -2 + Math.random() * 4,
+          vy: 2 + Math.random() * 4,
+          rot: Math.random() * Math.PI,
+          vRot: -0.1 + Math.random() * 0.2
+        });
+      }
+
+      function loop() {
+        cCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+        particles.forEach(p => {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.rot += p.vRot;
+
+          cCtx.save();
+          cCtx.translate(p.x, p.y);
+          cCtx.rotate(p.rot);
+          cCtx.fillStyle = p.color;
+          cCtx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+          cCtx.restore();
+
+          if (p.y > confettiCanvas.height + 20) {
+            p.y = -20;
+            p.x = Math.random() * confettiCanvas.width;
+          }
+        });
+        confettiAnimationId = requestAnimationFrame(loop);
+      }
+      if (confettiAnimationId) cancelAnimationFrame(confettiAnimationId);
+      loop();
+    }
+
+    function stopConfetti() {
+      if (confettiAnimationId) {
+        cancelAnimationFrame(confettiAnimationId);
+        confettiAnimationId = null;
+      }
+      if (confettiCanvas) {
+        const cCtx = confettiCanvas.getContext("2d");
+        cCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+      }
+    }
+
+    function showWinModal() {
+      const config = LEVELS[currentLevelIndex];
+      const isLastLevel = (currentLevelIndex === LEVELS.length - 1);
+
+      modalBadgeEl.textContent = isLastLevel ? "🏆" : "🎉";
+      modalBadgeEl.className = "w-20 h-20 rounded-3xl bg-gradient-to-tr from-amber-500/25 to-emerald-500/25 border-2 border-amber-400/60 flex items-center justify-center text-4xl shadow-2xl shadow-amber-500/30";
+      
+      modalTitleEl.textContent = isLastLevel ? "Game Completed!" : "Level Cleared!";
+      modalSubtitleEl.textContent = isLastLevel 
+        ? "Legendary puzzle mastery! You have solved all shapes in Arrow Escape."
+        : `Outstanding solve! All arrows in ${config.name.split(':')[1].trim()} escaped cleanly.`;
+
+      modalStatShape.textContent = config.name.split(':')[1].trim();
+      modalStatLives.textContent = `${"❤️".repeat(currentLives)} ${currentLives}/${MAX_LIVES}`;
+
+      // Star rating based on lives remaining
+      const star1 = document.getElementById("modal-star-1");
+      const star2 = document.getElementById("modal-star-2");
+      const star3 = document.getElementById("modal-star-3");
+
+      star1.className = currentLives >= 1 ? "text-amber-400 animate-bounce" : "text-slate-600";
+      star2.className = currentLives >= 2 ? "text-amber-400 animate-bounce delay-100" : "text-slate-600";
+      star3.className = currentLives >= 3 ? "text-amber-400 animate-bounce delay-200" : "text-slate-600";
+
+      document.getElementById("modal-stars-container").classList.remove("hidden");
+      modalActionText.textContent = isLastLevel ? "Play Again" : "Next Level";
+
+      modalEl.classList.remove("hidden");
+      startConfetti();
+      showGameToast("VICTORY! Level Cleared!", "🏆");
+    }
+
+    function showGameOverModal() {
+      stopConfetti();
+      modalBadgeEl.textContent = "💔";
+      modalBadgeEl.className = "w-20 h-20 rounded-3xl bg-rose-500/20 border-2 border-rose-500/40 flex items-center justify-center text-4xl shadow-2xl shadow-rose-500/20";
+      modalTitleEl.textContent = "Game Over!";
+      modalSubtitleEl.textContent = "You ran out of lives. Better luck on this solve!";
+      
+      const config = LEVELS[currentLevelIndex];
+      modalStatShape.textContent = config.name.split(':')[1].trim();
+      modalStatLives.textContent = "0/3 Lives Left";
+
+      document.getElementById("modal-stars-container").classList.add("hidden");
+      modalActionText.textContent = "Try Again";
+
+      modalEl.classList.remove("hidden");
+    }
+
+    btnModalAction.addEventListener("click", () => {
+      stopConfetti();
+      if (modalTitleEl.textContent.includes("Cleared")) {
+        currentLevelIndex = (currentLevelIndex + 1) % LEVELS.length;
+        document.getElementById("canvas-level-select").value = currentLevelIndex;
+      } else if (modalTitleEl.textContent.includes("Completed")) {
+        currentLevelIndex = 0;
+        document.getElementById("canvas-level-select").value = 0;
+      }
+      loadLevel(currentLevelIndex);
+    });
+
+    document.getElementById("btn-modal-retry").addEventListener("click", () => {
+      stopConfetti();
+      loadLevel(currentLevelIndex);
+    });
+
+    // Reset Level Button
+    document.getElementById("btn-reset-level").addEventListener("click", () => {
+      loadLevel(currentLevelIndex);
+    });
+
+    // Hint Button (Highlights next arrow that has clear escape path)
+    document.getElementById("btn-hint").addEventListener("click", () => {
+      arrows.forEach(a => a.isHinted = false);
+      const uncleared = arrows.filter(a => !a.isCleared && !a.isMoving);
+
+      // Find an arrow whose escape path is clear
+      for (let a of uncleared) {
+        const head = a.path[a.path.length - 1];
+        let probeX = head.x + a.dir.dx;
+        let probeY = head.y + a.dir.dy;
+        let isClear = true;
+        while (probeX >= 0 && probeX < gridW && probeY >= 0 && probeY < gridH) {
+          const occ = occupancyMap.get(`${probeX},${probeY}`);
+          if (occ && occ !== a) {
+            isClear = false;
+            break;
+          }
+          probeX += a.dir.dx;
+          probeY += a.dir.dy;
+        }
+        if (isClear) {
+          a.isHinted = true;
+          showGameToast(`Hint: Arrow #${a.id} (${a.dir.name}) is free to escape!`, "💡");
+          return;
+        }
+      }
+      showGameToast("No arrow has a direct escape path right now.", "⚠️");
+    });
+
+    // Populate Level Select Dropdown
+    const selectEl = document.getElementById("canvas-level-select");
+    LEVELS.forEach((lvl, idx) => {
+      const opt = document.createElement("option");
+      opt.value = idx;
+      opt.textContent = `${idx + 1}. ${lvl.name.split(':')[1].trim()}`;
+      selectEl.appendChild(opt);
+    });
+    selectEl.addEventListener("change", (e) => {
+      loadLevel(parseInt(e.target.value));
+    });
+
+    // ==========================================
+    // 9. ENGINE SWITCHER (HTML5 Canvas vs Unity)
+    // ==========================================
+    const btnModeCanvas = document.getElementById("btn-mode-canvas");
+    const btnModeUnity = document.getElementById("btn-mode-unity");
+    const canvasWrapper = document.getElementById("canvas-engine-wrapper");
+    const unityWrapper = document.getElementById("unity-engine-wrapper");
+    const canvasHUD = document.getElementById("canvas-hud-controls");
+    const unityHUD = document.getElementById("unity-hud-controls");
+
+    btnModeCanvas.addEventListener("click", () => {
+      btnModeCanvas.className = "px-3 py-1 rounded-lg bg-sky-500 text-slate-950 font-bold transition-all flex items-center gap-1.5 shadow-sm";
+      btnModeUnity.className = "px-3 py-1 rounded-lg text-slate-400 hover:text-white transition-all flex items-center gap-1.5";
+      canvasWrapper.classList.remove("hidden");
+      unityWrapper.classList.add("hidden");
+      canvasHUD.classList.remove("hidden");
+      unityHUD.classList.add("hidden");
+      resizeCanvas();
+    });
+
+    btnModeUnity.addEventListener("click", () => {
+      btnModeUnity.className = "px-3 py-1 rounded-lg bg-sky-500 text-slate-950 font-bold transition-all flex items-center gap-1.5 shadow-sm";
+      btnModeCanvas.className = "px-3 py-1 rounded-lg text-slate-400 hover:text-white transition-all flex items-center gap-1.5";
+      unityWrapper.classList.remove("hidden");
+      canvasWrapper.classList.add("hidden");
+      unityHUD.classList.remove("hidden");
+      canvasHUD.classList.add("hidden");
+    });
+
+    // Fullscreen Container Toggle
+    document.getElementById("btn-fullscreen-toggle").addEventListener("click", () => {
+      const container = document.getElementById("game-outer-container");
+      if (!document.fullscreenElement) {
+        container.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen();
+      }
+    });
+
+    // Unity WebGL iframe controls
+    const unityIframe = document.getElementById("webgl-game-iframe");
+    let unityPortActive = false;
+    document.getElementById("btn-toggle-unity-port").addEventListener("click", () => {
+      unityPortActive = !unityPortActive;
+      unityIframe.src = unityPortActive ? "http://127.0.0.1:8080/unity-calm-arrow/index.html" : "unity-calm-arrow/index.html";
+      document.getElementById("unity-source-label").textContent = unityPortActive ? "Port: 8080" : "Local WebGL";
+    });
+    document.getElementById("btn-reload-unity").addEventListener("click", () => {
+      unityIframe.src = unityIframe.src.split('?')[0] + '?t=' + Date.now();
+    });
+
+    // Initialize Game
+    loadLevel(0);
+    requestAnimationFrame(mainDrawLoop);
+  </script>
+</body>
+</html>

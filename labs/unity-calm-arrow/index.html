@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Arrow Escape: Logic Puzzles | Unity WebGL WASM</title>
+    <link rel="shortcut icon" href="TemplateData/favicon.ico">
+    <link rel="stylesheet" href="TemplateData/style.css">
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      html, body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background-color: #0d1117;
+        color: #e6edf3;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      }
+      #app-container {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        background-color: #0d1117;
+        position: relative;
+      }
+      #canvas-stage {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+        background: #0d1117;
+      }
+      #unity-canvas {
+        background: #0f172a;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+        border: 1px solid #30363d;
+        border-radius: 8px;
+        display: block;
+        cursor: pointer;
+      }
+      #unity-loading-bar {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background: rgba(13, 17, 23, 0.95);
+        padding: 24px 32px;
+        border-radius: 16px;
+        border: 1px solid #30363d;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+        z-index: 20;
+      }
+      #unity-logo {
+        width: 64px;
+        height: 64px;
+        background: url('TemplateData/unity-logo-dark.png') no-repeat center;
+        background-size: contain;
+        margin-bottom: 16px;
+      }
+      #unity-progress-bar-empty {
+        width: 200px;
+        height: 8px;
+        background: #21262d;
+        border-radius: 4px;
+        overflow: hidden;
+      }
+      #unity-progress-bar-full {
+        width: 0%;
+        height: 100%;
+        background: linear-gradient(90deg, #38bdf8, #6366f1);
+        border-radius: 4px;
+        transition: width 0.15s ease;
+      }
+      #unity-warning {
+        position: absolute;
+        top: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 13px;
+        display: none;
+        z-index: 30;
+      }
+      #app-footer {
+        height: 38px;
+        background-color: #161b22;
+        border-top: 1px solid #30363d;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 16px;
+        font-size: 12px;
+        color: #8b949e;
+        flex-shrink: 0;
+      }
+      .badge-live {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 2px 8px;
+        background: rgba(56, 189, 248, 0.15);
+        border: 1px solid rgba(56, 189, 248, 0.35);
+        border-radius: 9999px;
+        color: #38bdf8;
+        font-weight: 600;
+        font-size: 11px;
+      }
+      .badge-dot {
+        width: 6px;
+        height: 6px;
+        background: #38bdf8;
+        border-radius: 50%;
+        animation: pulseDot 2s infinite;
+      }
+      @keyframes pulseDot {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.4; transform: scale(0.85); }
+      }
+      #btn-fs {
+        background: #21262d;
+        border: 1px solid #30363d;
+        color: #e6edf3;
+        border-radius: 6px;
+        padding: 4px 10px;
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        transition: all 0.15s;
+      }
+      #btn-fs:hover {
+        background: #30363d;
+        color: #ffffff;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app-container">
+      <div id="unity-warning"></div>
+
+      <div id="canvas-stage">
+        <canvas id="unity-canvas" tabindex="-1"></canvas>
+        <div id="unity-loading-bar">
+          <div id="unity-logo"></div>
+          <div id="unity-progress-bar-empty">
+            <div id="unity-progress-bar-full"></div>
+          </div>
+          <div style="margin-top: 10px; font-size: 12px; font-family: monospace; color: #8b949e;">Booting Arrow Strike WebGL WASM...</div>
+        </div>
+      </div>
+
+      <div id="app-footer">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-weight: 700; color: #f0f6fc;">🏹 Calm Arrow</span>
+          <span class="badge-live"><span class="badge-dot"></span> Unity 6 WebGL</span>
+          <span style="color: #6e7681;">•</span>
+          <span style="color: #8b949e;">Guaranteed Solvable Outside-In Peeling, 3-Lives, 100 Shape Levels</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-family: monospace; color: #7ee787;">Unity 6000.3.14f1 WASM</span>
+          <button id="btn-fs" type="button" title="Toggle Fullscreen">
+            <span>⛶</span> <span>Fullscreen</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      var canvas = document.querySelector("#unity-canvas");
+      var stage = document.querySelector("#canvas-stage");
+
+      canvas.addEventListener("contextmenu", function(e) {
+        e.preventDefault();
+        return false;
+      });
+
+      function fitCanvas() {
+        if (!stage || !canvas) return;
+        var sw = stage.clientWidth;
+        var sh = stage.clientHeight;
+        if (sw <= 0 || sh <= 0) return;
+
+        // Maintain comfortable 16:9 or fit responsive area
+        var aspect = 16 / 9;
+        var w = sw;
+        var h = Math.round(sw / aspect);
+        if (h > sh) {
+          h = sh;
+          w = Math.round(sh * aspect);
+        }
+        canvas.style.width = w + "px";
+        canvas.style.height = h + "px";
+      }
+
+      window.addEventListener("resize", fitCanvas);
+      fitCanvas();
+
+      function unityShowBanner(msg, type) {
+        var warningBanner = document.querySelector("#unity-warning");
+        if (!warningBanner) return;
+        warningBanner.textContent = msg;
+        warningBanner.style.display = "block";
+        if (type == 'error') {
+          warningBanner.style.background = "#f85149";
+          warningBanner.style.color = "#ffffff";
+        } else {
+          warningBanner.style.background = "#d29922";
+          warningBanner.style.color = "#ffffff";
+          setTimeout(function() {
+            warningBanner.style.display = "none";
+          }, 5000);
+        }
+      }
+
+      var buildUrl = "Build";
+      var cacheBuster = "?v=" + Date.now();
+      var loaderUrl = buildUrl + "/WebGL.loader.js" + cacheBuster;
+      var config = {
+        arguments: [],
+        dataUrl: buildUrl + "/WebGL.data" + cacheBuster,
+        frameworkUrl: buildUrl + "/WebGL.framework.js" + cacheBuster,
+        codeUrl: buildUrl + "/WebGL.wasm" + cacheBuster,
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "DefaultCompany",
+        productName: "ArrowStrike",
+        productVersion: "1.0",
+        showBanner: unityShowBanner,
+      };
+
+      var loadingBar = document.querySelector("#unity-loading-bar");
+      var progressBarFull = document.querySelector("#unity-progress-bar-full");
+      var fsBtn = document.querySelector("#btn-fs");
+
+      var script = document.createElement("script");
+      script.src = loaderUrl;
+      script.onload = () => {
+        createUnityInstance(canvas, config, (progress) => {
+          progressBarFull.style.width = 100 * progress + "%";
+        }).then((unityInstance) => {
+          loadingBar.style.display = "none";
+          fitCanvas();
+
+          fsBtn.onclick = () => {
+            unityInstance.SetFullscreen(1);
+          };
+        }).catch((message) => {
+          alert("Error loading Unity WebGL player: " + message);
+        });
+      };
+      document.body.appendChild(script);
+    </script>
+  </body>
+</html>

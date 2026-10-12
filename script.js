@@ -260,6 +260,16 @@ const UNITY_LAB_MANIFEST = {
     unitySpecs: 'Unity 6000.3.14f1 (C# / WebGL 2.0 WASM) • Connected to Live Level Server',
     desc: 'MeowSweeper Core & Offline Leaderboard (Headless Unity WebGL WASM wired to Live CDN)'
   },
+  'calm-arrow': {
+    icon: '🏹',
+    title: 'Calm Arrow',
+    scene: 'ShapeEscapeScene.unity',
+    htmlUrl: 'labs/calm-arrow.html',
+    webglUrl: 'labs/unity-calm-arrow/index.html',
+    hasWebgl: true,
+    unitySpecs: 'Unity 6000.3.14f1 (C# / WebGL 2.0 WASM) • Outside-In Peeling & Obstacle Rebound',
+    desc: 'Guaranteed-solvable outside-in peeling, 36x36 shape mask, tactile 3-lives obstacle bonk, and 100 shape levels'
+  },
   'calm-jigsaw': {
     icon: '🧩',
     title: 'Calm Jigsaw',

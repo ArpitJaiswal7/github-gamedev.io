@@ -320,7 +320,7 @@
           </div>
           <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight mt-1">Unity Lab: Playable Vertical Slices &amp; Engine Simulators</h2>
           <p class="text-xs sm:text-sm text-slate-400 mt-1">
-            Switch between 7 live playable systems below &bull; Only 1 instance runs in memory at a time &bull; Supports embedded &amp; 100% Fullscreen play
+            Switch between 8 live playable systems below &bull; Only 1 instance runs in memory at a time &bull; Supports embedded &amp; 100% Fullscreen play
           </p>
         </div>
 
@@ -332,6 +332,7 @@
 
       <!-- Prefetch hints for instant tab switching -->
       <link rel="prefetch" href="labs/meowsweeper.html">
+      <link rel="prefetch" href="labs/calm-arrow.html">
       <link rel="prefetch" href="labs/calm-jigsaw.html">
       <link rel="prefetch" href="labs/jigsaw-solitaire.html">
       <link rel="prefetch" href="labs/offline-leaderboard.html">
@@ -354,10 +355,13 @@
               <span class="ml-1.5 font-mono text-xs font-bold text-sky-400 hidden sm:inline">UNITY LAB</span>
             </div>
 
-            <!-- 7 Demo Tabs (Strictly 1 Active Instance at a Time) -->
+            <!-- 8 Demo Tabs (Strictly 1 Active Instance at a Time) -->
             <div class="flex items-center gap-1.5 flex-wrap" id="unity-lab-tabs" role="tablist">
               <button type="button" data-lab-demo="meowsweeper" class="lab-tab-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 bg-sky-500/20 text-sky-300 border border-sky-500/40 shadow-sm">
                 <img src="assets/games/meowsweeper-icon.png" alt="" class="w-4 h-4 rounded-sm object-cover shrink-0"> <span>MeowSweeper</span>
+              </button>
+              <button type="button" data-lab-demo="calm-arrow" class="lab-tab-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 bg-[#21262d] text-slate-300 hover:text-white border border-transparent hover:border-slate-700">
+                <span>🏹</span> <span>Calm Arrow</span>
               </button>
               <button type="button" data-lab-demo="calm-jigsaw" class="lab-tab-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 bg-[#21262d] text-slate-300 hover:text-white border border-transparent hover:border-slate-700">
                 <img src="assets/games/calm-jigsaw-icon.png" alt="" class="w-4 h-4 rounded-sm object-cover shrink-0"> <span>Calm Jigsaw</span>
@@ -664,7 +668,7 @@
     </div>
   </div>
 
-  <script src="script.js?v=12ed8fc"></script>
+  <script src="script.js?v=calm-arrow-1012"></script>
   <script>
     lucide.createIcons();
   </script>
