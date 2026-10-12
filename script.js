@@ -1218,7 +1218,7 @@ function initBlueprintTerminal() {
           svgEl.setAttribute('preserveAspectRatio', 'xMidYMid meet');
           svgEl.style.width = '100%';
           svgEl.style.height = '100%';
-          svgEl.style.maxHeight = '460px';
+          svgEl.style.maxHeight = '485px';
           svgEl.style.maxWidth = '100%';
         }
       } catch (err) {
@@ -1230,7 +1230,7 @@ function initBlueprintTerminal() {
 
   blueprintsData.forEach((bp, idx) => {
     const item = document.createElement('button');
-    item.className = `w-full text-left px-2 py-1.5 rounded-lg border transition-all flex items-center justify-between gap-1.5 cursor-pointer ${idx === 0 ? 'bg-[#1a2333] border-sky-500/50 text-white' : 'bg-[#0f141f] border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-[#161c28]'}`;
+    item.className = `w-full text-left px-2.5 py-2 rounded-lg border transition-all flex items-center justify-between gap-1.5 cursor-pointer ${idx === 0 ? 'bg-[#1a2333] border-sky-500/50 text-white' : 'bg-[#0f141f] border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-[#161c28]'}`;
     item.setAttribute('data-index', idx);
 
     item.innerHTML = `
@@ -1246,9 +1246,9 @@ function initBlueprintTerminal() {
     item.addEventListener('click', () => {
       activeBlueprintIdx = idx;
       document.querySelectorAll('#blueprint-nav-list button').forEach(b => {
-        b.className = 'w-full text-left px-2 py-1.5 rounded-lg border transition-all flex items-center justify-between gap-1.5 cursor-pointer bg-[#0f141f] border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-[#161c28]';
+        b.className = 'w-full text-left px-2.5 py-2 rounded-lg border transition-all flex items-center justify-between gap-1.5 cursor-pointer bg-[#0f141f] border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-[#161c28]';
       });
-      item.className = 'w-full text-left px-2 py-1.5 rounded-lg border transition-all flex items-center justify-between gap-1.5 cursor-pointer bg-[#1a2333] border-sky-500/50 text-white';
+      item.className = 'w-full text-left px-2.5 py-2 rounded-lg border transition-all flex items-center justify-between gap-1.5 cursor-pointer bg-[#1a2333] border-sky-500/50 text-white';
 
       renderBlueprintStage(bp);
     });
