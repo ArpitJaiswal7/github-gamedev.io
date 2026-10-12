@@ -816,42 +816,44 @@ const blueprintsData = [
     sheetNum: 'Sheet 02 — Live Mermaid',
     title: 'Native Image Pipeline',
     domain: 'Platform Services',
-    engine: 'Unity (Android + iOS)',
+    engine: 'Unity 6000.3.14f1 (WebGL + Android/iOS)',
     labDemo: 'native-image-bridge',
     mermaidFlowchart: `flowchart TB
-  subgraph Callers["GAMEPLAY & UI CALLERS"]
+  subgraph Callers["MANIFEST, VIEWPORT & TEST HARNESS"]
     direction LR
-    LevelThumb["Level Select Grid<br/>(Thumbnail Batch)"]
-    JigsawTex["Jigsaw TextureLoader<br/>(HD Board Artwork)"]
-    AvatarUI["Leaderboard UI<br/>(Avatar Sprites)"]
+    Harness["NativeImagePipelineTestHarness.cs<br/>(FetchAndEnqueueManifest & 120 Keys)"]
+    Viewport["PuzzleViewportScrollTracker.cs<br/>(UpdatePriority & currentViewportKeys)"]
   end
 
-  subgraph Core["CORE MODULE — NATIVE IMAGE BRIDGE"]
-    Facade["NativeImagePipeline.cs<br/>(Shared Async API + Deduplicator)"]
-  end
-
-  subgraph Backends["PLATFORM BRIDGES & CACHE"]
+  subgraph Core["CORE MODULE — NATIVE IMAGE PIPELINE"]
     direction LR
-    Android["Android JNI Bridge<br/>(Glide + OkHttp3)"]
-    iOS["iOS ObjC Bridge<br/>(NSURLSession + vImage)"]
-    Cache["L1 RAM LRU Pool<br/>& L2 SHA-256 Disk Cache"]
+    Pipeline["NativeImagePipeline.cs<br/>(EnqueueUrl & RequestCustomSize)"]
+    Receiver["NativeBridgeCallbackReceiver.cs<br/>(OnDownloadCompleted & Retry Guard)"]
   end
 
-  LevelThumb -->|"LoadImageAsync"| Facade
-  JigsawTex -->|"LoadImageAsync"| Facade
-  AvatarUI -->|"LoadImageAsync"| Facade
+  subgraph Backends["PLATFORM BRIDGES, RAM LRU & TIERED STORAGE"]
+    direction LR
+    WebGLBridge["WebGLImageBridge.cs (.jslib)<br/>(OffscreenCanvas 256/1080px + IDB)"]
+    MobileBridge["AndroidImageBridge / IOSImageBridge<br/>(JNI Glide + ObjC vImage Downsample)"]
+    CachePool["SpriteMemoryCache & DiskStorageHelper<br/>(RAM LRU Pool + VolatileCache / ROM)"]
+  end
 
-  Facade -->|"AndroidJNI"| Android
-  Facade -->|"DllImport"| iOS
-  Facade -.->|"LRU / SHA-256"| Cache
+  Harness -->|"published.json URLs"| Pipeline
+  Viewport -->|"Visible / Prefetch"| Pipeline
+  Harness -->|"status telemetry"| Receiver
+
+  Pipeline <-->|"NIP_WebGL_* async"| WebGLBridge
+  Pipeline <-->|"JNI / DllImport"| MobileBridge
+  Receiver -->|"DecodeFileToSprite"| CachePool
+  Pipeline -.->|"TryGetSprite() hit"| CachePool
 
   classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
   classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
   classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1.5px,stroke-dasharray: 5 5,color:#cbd5e1
 
-  class Facade coreNode
-  class LevelThumb,JigsawTex,AvatarUI,Android,iOS adjNode
-  class Cache intNode`
+  class Pipeline,Receiver coreNode
+  class Harness,Viewport,WebGLBridge,MobileBridge adjNode
+  class CachePool intNode`
   },
   {
     id: 'sheet-09',
@@ -992,210 +994,212 @@ const blueprintsData = [
     sheetNum: 'Sheet 06 — Live Mermaid',
     title: 'Offline Leaderboard',
     domain: 'LiveOps / Retention',
-    engine: 'Unity',
+    engine: 'Unity 6000.3.14f1 (WebGL WASM)',
     labDemo: 'offline-leaderboard',
     mermaidFlowchart: `flowchart TB
-  subgraph Events["SCORE & CLOCK INPUTS"]
+  subgraph Events["SCORE SUBMISSION & SEASON CLOCK"]
     direction LR
-    GameWin["Level Complete<br/>(SubmitRun Score / Ms)"]
-    BootClock["System Realtime Clock<br/>(NowSec Elapsed Delta)"]
-    ModeCfg["Season Mode Config<br/>(Best Time vs League Pts)"]
+    SubmitRun["SubmitRun(modeId, rawScore)<br/>(BestTimeMs vs LeaguePts)"]
+    SimClock["NowSec() & AdvanceTimeHours()<br/>(Realtime + simOffsetSec)"]
+    SeasonStore["GetOrCreateSeason(modeId)<br/>(S01_MEOW & S01_UNIFIED JSON)"]
   end
 
-  subgraph Core["CORE MODULE — OFFLINE LEADERBOARD"]
-    SimEngine["OfflineLeaderboardService.cs<br/>(SyncAndCalculate & ModeSeasonState)"]
-  end
-
-  subgraph Runtime["STANDINGS & ANTI-ROLLBACK"]
+  subgraph Core["CORE MODULE — OFFLINE LEADERBOARD ENGINE"]
     direction LR
-    LeagueUI["Windowed Standings UI<br/>(Top 3 + Neighborhood)"]
-    RewardBox["ClaimSeasonReward<br/>(PlayerPrefs Coin Grant)"]
-    AntiCheat["29 Seeded BotState Sim<br/>& Anti-Rollback Clamp"]
+    SimEngine["OfflineLeaderboardService.cs<br/>(SyncAndCalculate & lastSeenSec Clamp)"]
+    BotPacer["29 Seeded BotState Pacing<br/>(Elite / Rival Convergence >=65%)"]
   end
 
-  GameWin -->|"rawScore"| SimEngine
-  BootClock -->|"dtSec"| SimEngine
-  ModeCfg -->|"modeId"| SimEngine
+  subgraph Runtime["WINDOWED STANDINGS & REWARD GUARD"]
+    direction LR
+    WindowUI["BuildResult() Windowed Rows<br/>(Top 3 + Player Neighborhood +-2)"]
+    RewardGuard["ClaimSeasonReward() & StartNextSeason<br/>(Idempotent Guard & PlayerPrefs Coins)"]
+  end
 
-  SimEngine -->|"rank delta"| LeagueUI
-  SimEngine -->|"tier chest"| RewardBox
-  SimEngine -.->|"lastSeenSec clamp"| AntiCheat
+  SubmitRun -->|"improved score"| SimEngine
+  SimClock -->|"dtSec & progress"| SimEngine
+  SeasonStore -->|"ModeSeasonState"| BotPacer
+  SimClock -->|"activeHours step"| BotPacer
+
+  SimEngine -->|"sorted 30 entries"| WindowUI
+  BotPacer -->|"simulated bot scores"| WindowUI
+  SimEngine -.->|"isSeasonOver & rank"| RewardGuard
 
   classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
   classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
   classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1.5px,stroke-dasharray: 5 5,color:#cbd5e1
 
-  class SimEngine coreNode
-  class GameWin,BootClock,ModeCfg,LeagueUI,RewardBox adjNode
-  class AntiCheat intNode`
+  class SimEngine,BotPacer coreNode
+  class SubmitRun,SimClock,SeasonStore,WindowUI adjNode
+  class RewardGuard intNode`
   },
   {
     id: 'sheet-04',
     sheetNum: 'Sheet 04 — Live Mermaid',
     title: 'IAP System Gateway',
     domain: 'Monetization',
-    engine: 'Unity (Android + iOS)',
+    engine: 'Unity (Google Play Billing + StoreKit 2)',
     labDemo: null,
     mermaidFlowchart: `flowchart TB
-  subgraph StoreUI["STOREFRONT & CATALOG"]
+  subgraph StoreUI["STOREFRONT, SKU CATALOG & RESTORE"]
     direction LR
-    ShopBtn["Store Purchase UI<br/>(Purchase SKU)"]
-    Catalog["Unified SKU Catalog<br/>(IAP + Soft Coins)"]
-    Restore["Restore Purchases<br/>(Sync Entitlements)"]
+    ShopUI["StorePurchaseButton.cs<br/>(PurchaseProduct(skuId))"]
+    CatalogSO["IAPCatalogConfig.asset<br/>(Real-Money IAP + Soft Coin SKUs)"]
+    RestoreBtn["RestoreTransactions()<br/>(Boot & Manual Entitlement Sync)"]
   end
 
   subgraph Core["CORE MODULE — IAP SYSTEM GATEWAY"]
-    Gateway["IAPStoreGateway.cs<br/>(Dual-Currency Router & Guard)"]
+    Gateway["IAPStoreGateway.cs<br/>(ProcessPurchase & Grant-Before-Confirm)"]
   end
 
-  subgraph Providers["BILLING & CRASH RECOVERY"]
+  subgraph Providers["NATIVE BILLING & IDEMPOTENT LEDGER"]
     direction LR
-    StoreSDK["Google Play Billing<br/>& Apple StoreKit 2"]
-    Inventory["Player Entitlement DB<br/>& Coin Wallet Ledger"]
-    GrantFirst["Grant-Then-Confirm Log<br/>& Receipt ID Dedup"]
+    StoreSDK["IStoreController & IExtensionProvider<br/>(GooglePlay / Apple StoreKit 2)"]
+    Ledger["EntitlementLedger & PendingTxLog<br/>(Receipt Hash Dedup & ConfirmPending)"]
   end
 
-  ShopBtn -->|"productId"| Gateway
-  Catalog -->|"SKU config"| Gateway
-  Restore -->|"re-verify"| Gateway
+  ShopUI -->|"InitiatePurchase(sku)"| Gateway
+  CatalogSO -->|"ProductDefinition[]"| Gateway
+  RestoreBtn -->|"re-verify owned"| Gateway
 
-  Gateway <-->|"store tx"| StoreSDK
-  Gateway -->|"1. grant save"| Inventory
-  Gateway -.->|"2. confirm"| GrantFirst
+  Gateway <-->|"PurchaseProcessingResult"| StoreSDK
+  Gateway -.->|"1. Grant -> 2. Confirm"| Ledger
 
   classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
   classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
   classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1.5px,stroke-dasharray: 5 5,color:#cbd5e1
 
   class Gateway coreNode
-  class ShopBtn,Catalog,Restore,StoreSDK,Inventory adjNode
-  class GrantFirst intNode`
+  class ShopUI,CatalogSO,RestoreBtn,StoreSDK adjNode
+  class Ledger intNode`
   },
   {
     id: 'sheet-13',
     sheetNum: 'Sheet 13 — Live Mermaid',
     title: 'Argos Localization IPC',
     domain: 'Editor Tooling / IPC',
-    engine: 'Unity + Python (offline)',
+    engine: 'Unity Editor + Offline Python IPC',
     labDemo: 'argos-localization',
     mermaidFlowchart: `flowchart TB
-  subgraph EditorUI["UNITY EDITOR LOCALIZATION"]
+  subgraph EditorUI["HIERARCHY HARVESTER & RUNTIME SWITCHER"]
     direction LR
-    StringTable["Localization String Table<br/>(CSV / ScriptableObject)"]
-    LangSelect["Target Locale Batch<br/>(EN to ES/FR/DE/JA/HI)"]
-    TokenMask["Token Freezer (__TK0__)<br/>(Protects {0} & Tags)"]
+    Harvester["HarvestSceneTmpTextsIntoEnglishTable()<br/>(Scans 18 TMP_Text & LocalizeStringEvent)"]
+    Switcher["LanguageSwitcher.SetLocale(code)<br/>(Live 6-Locale Switch: en/es/ja/hi/fr/de)"]
   end
 
-  subgraph Core["CORE MODULE — ARGOS IPC BRIDGE"]
-    IPCController["ArgosIPCProcessRunner.cs<br/>(Persistent Subprocess + JSON Pipe)"]
-  end
-
-  subgraph PythonWorker["OFFLINE PYTHON WORKER"]
+  subgraph Core["CORE MODULE — ARGOS TRANSLATE BRIDGE"]
     direction LR
-    WorkerLoop["argos_worker.py<br/>(UTF-8 stdin / stdout)"]
-    CTranslate["Argos + CTranslate2<br/>(Offline Neural Engine)"]
-    Watchdog["Warm Model Cache<br/>& Pipe Watchdog"]
+    EditorTool["ArgosTranslateTool.cs<br/>(TranslateStringTableCollection & JSON Pipe)"]
+    PyBridge["argos_bridge.py (.argos_venv)<br/>(UTF-8 stdin/stdout & argostranslate)"]
   end
 
-  StringTable -->|"source rows"| IPCController
-  LangSelect -->|"locale codes"| IPCController
-  TokenMask -->|"masked text"| IPCController
+  subgraph PythonWorker["STRING TABLES & REFLECTION REFRESH"]
+    direction LR
+    StringTable["StringTableCollection (UI_Strings)<br/>(Row Key x Target Locale Cell Write)"]
+    Repaint["EditorUtility.SetDirty & Reflection<br/>(Instant Localization Window Repaint)"]
+  end
 
-  IPCController <-->|"JSONL stdio"| WorkerLoop
-  WorkerLoop <-->|"batch inference"| CTranslate
-  IPCController -.->|"keep-alive"| Watchdog
+  Harvester -->|"SharedTableData keys"| EditorTool
+  Switcher -->|"SelectedLocaleChanged"| EditorTool
+  Harvester -->|"batch EN payload"| PyBridge
+
+  EditorTool <-->|"AddEntry(key, translated)"| StringTable
+  PyBridge -->|"JSON translations[]"| StringTable
+  EditorTool -.->|"AssetDatabase.SaveAssets"| Repaint
 
   classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
   classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
   classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1.5px,stroke-dasharray: 5 5,color:#cbd5e1
 
-  class IPCController coreNode
-  class StringTable,LangSelect,TokenMask,WorkerLoop,CTranslate adjNode
-  class Watchdog intNode`
+  class EditorTool,PyBridge coreNode
+  class Harvester,Switcher,StringTable adjNode
+  class Repaint intNode`
   },
   {
     id: 'sheet-11',
     sheetNum: 'Sheet 11 — Live Mermaid',
     title: 'Asset Organizer Tool',
     domain: 'Unity Editor DX',
-    engine: 'Unity Editor',
+    engine: 'Unity Editor (com.arrowstrike.asset-organizer)',
     labDemo: 'asset-organizer',
     mermaidFlowchart: `flowchart TB
-  subgraph EditorHooks["UNITY EDITOR HOOKS"]
+  subgraph EditorHooks["PROJECT WINDOW HOOKS & HOTKEYS"]
     direction LR
-    ProjectGUI["projectWindowItemOnGUI<br/>(Row Rect & GUID)"]
-    Postproc["AssetPostprocessor<br/>(Import & Move Watcher)"]
-    Shortcut["Quick-Pin Dock<br/>& Filter Toolbar"]
+    BadgeOverlay["ProjectWindowBadgeOverlay.cs<br/>(projectWindowItemOnGUI & SDF Badges)"]
+    HoverTag["Hover C / R Tag-Button & Hotkey<br/>(Ctrl+Win+P Win32 Poll & Corner Rect)"]
+    Watcher["AssetChangeWatcher.cs<br/>(AssetPostprocessor Move/Rename Heal)"]
   end
 
-  subgraph Core["CORE MODULE — ASSET ORGANIZER"]
-    Organizer["AssetOrganizerController.cs<br/>(GUID Registry + Rule Matcher)"]
-  end
-
-  subgraph Subsystems["EDITOR UX & METADATA"]
+  subgraph Core["CORE MODULE — ASSET ORGANIZER STORE & WINDOW"]
     direction LR
-    BadgeDrawer["Custom Category Badges<br/>& Color Row Stripes"]
-    RuleScanner["One-Click Folder Audit<br/>& Auto-Mover"]
-    GuidMap["O(1) GUID Hash Cache<br/>(Zero Runtime Overhead)"]
+    PinStore["PinnedAssetsStore.cs<br/>(ProjectSettings JSON & O(1) GUID Map)"]
+    OrganizerWin["AssetOrganizerWindow.cs<br/>(Build-Report Groups, Sizes & Ping)"]
   end
 
-  ProjectGUI -->|"visible GUID"| Organizer
-  Postproc -->|"asset delta"| Organizer
-  Shortcut -->|"pin query"| Organizer
+  subgraph Subsystems["OS SHELL INTEROP & CLIPBOARD"]
+    direction LR
+    OSExplorer["OSFileExplorerUtility.cs<br/>(SHOpenFolderAndSelectItems / osascript)"]
+    ClipPath["EditorGUIUtility.systemCopyBuffer<br/>(Full Disk Path Copy & 0B Runtime Cost)"]
+  end
 
-  Organizer -->|"draw overlay"| BadgeDrawer
-  Organizer -->|"route folders"| RuleScanner
-  Organizer -.->|"GUID lookup"| GuidMap
+  BadgeOverlay -->|"IsPinned(guid)"| PinStore
+  HoverTag -->|"Pin / Cycle UsageTag"| PinStore
+  Watcher -->|"RefreshMovedAssets()"| PinStore
+  HoverTag -->|"Dock & Filter Search"| OrganizerWin
+
+  OrganizerWin -->|"RevealInFinder(guid)"| OSExplorer
+  PinStore -.->|"AssetDatabase.GUIDToAssetPath"| ClipPath
+  OrganizerWin -.->|"CopyFullDiskPath"| ClipPath
 
   classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
   classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
   classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1.5px,stroke-dasharray: 5 5,color:#cbd5e1
 
-  class Organizer coreNode
-  class ProjectGUI,Postproc,Shortcut,BadgeDrawer,RuleScanner adjNode
-  class GuidMap intNode`
+  class PinStore,OrganizerWin coreNode
+  class BadgeOverlay,HoverTag,Watcher,OSExplorer adjNode
+  class ClipPath intNode`
   },
   {
     id: 'sheet-12',
     sheetNum: 'Sheet 12 — Live Mermaid',
     title: 'Flame Flicker Effect',
     domain: 'Tech Art & Shaders',
-    engine: 'Unity',
+    engine: 'Unity UI Shader + C# Driver',
     labDemo: 'jigsaw-solitaire',
     mermaidFlowchart: `flowchart TB
-  subgraph SceneInputs["UI CANVAS & PRESETS"]
+  subgraph SceneInputs["UI GRAPHIC & FLICKER PRESETS"]
     direction LR
-    CanvasImg["UnityEngine.UI.Image<br/>(Target UI Graphic)"]
-    PresetCfg["Flicker Profile Preset<br/>(Hearth / Torch / Candle)"]
-    LightSync["2D Ambient Glow<br/>(Warmth Synchronizer)"]
+    CanvasGraphic["UnityEngine.UI.Graphic / Image<br/>(IMaterialModifier & CanvasRenderer)"]
+    PresetSO["FlameFlickerProfile.cs<br/>(Hearth / Torch / Candle Curves)"]
   end
 
-  subgraph Core["CORE MODULE — FLAME FLICKER DRIVER"]
-    Driver["FlameFlickerDriver.cs<br/>+ ProceduralFlame.shader"]
-  end
-
-  subgraph ShaderPass["GPU UNIFORMS & FRAGMENT MATH"]
+  subgraph Core["CORE MODULE — FLAME FLICKER DRIVER & SHADER"]
     direction LR
-    MatBlock["MaterialPropertyBlock<br/>(_Phase, _Wind, _Intensity)"]
-    FBM["2-Octave Simplex FBM<br/>(UV Domain Warp)"]
-    SDF["Teardrop SDF Mask<br/>(Zero Particle GC)"]
+    Driver["FlameFlickerDriver.cs<br/>(Per-Instance Phase Seed & Uniform Push)"]
+    ShaderPass["UI/ProceduralFlame.shader<br/>(2-Octave Simplex FBM & Domain Warp)"]
   end
 
-  CanvasImg -->|"graphic ref"| Driver
-  PresetCfg -->|"turbulence"| Driver
-  LightSync <-->|"luminance"| Driver
+  subgraph ShaderMath["SDF MASKING & AMBIENT GLOW SYNC"]
+    direction LR
+    TeardropSDF["Teardrop SDF & 3-Stop Color Ramp<br/>(Core White -> Amber -> Crimson Tip)"]
+    AmbientSync["2D Ambient Light & Scale Pulse<br/>(Synchronized Luminance & Zero GC)"]
+  end
 
-  Driver -->|"per-frame"| MatBlock
-  Driver -->|"noise UV"| FBM
-  Driver -.->|"fragment math"| SDF
+  CanvasGraphic -->|"GetModifiedMaterial()"| Driver
+  PresetSO -->|"speed / wind / turbulence"| Driver
+  PresetSO -->|"color ramp uniforms"| ShaderPass
+
+  Driver -->|"uv + _PhaseOffset"| ShaderPass
+  ShaderPass -->|"smoothstep alpha mask"| TeardropSDF
+  Driver -.->|"EvaluatedFlickerIntensity"| AmbientSync
 
   classDef coreNode fill:#261c10,stroke:#f59e0b,stroke-width:2.5px,color:#ffffff
   classDef adjNode fill:#0f1b2d,stroke:#38bdf8,stroke-width:1.5px,color:#e2e8f0
   classDef intNode fill:#0d121c,stroke:#64748b,stroke-width:1.5px,stroke-dasharray: 5 5,color:#cbd5e1
 
-  class Driver coreNode
-  class CanvasImg,PresetCfg,LightSync,MatBlock,FBM adjNode
-  class SDF intNode`
+  class Driver,ShaderPass coreNode
+  class CanvasGraphic,PresetSO,TeardropSDF adjNode
+  class AmbientSync intNode`
   }
 ];
 
