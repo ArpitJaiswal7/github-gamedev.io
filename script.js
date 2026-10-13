@@ -153,14 +153,13 @@ function removeActiveNavLinks() {
 }
 
 // --------------------------------------------------------
-// 2. Split Download Resume Button & Dropdown
+// 2. Resume Navigation & Direct Downloads
 // --------------------------------------------------------
 function initResumeDropdown() {
   const container = document.getElementById('resume-dropdown-container');
   const toggleBtn = document.getElementById('resume-dropdown-toggle');
   const menu = document.getElementById('resume-dropdown-menu');
   const caretIcon = document.getElementById('resume-caret-icon');
-  const webpageBtn = document.getElementById('btn-webpage-resume');
 
   if (!toggleBtn || !menu) return;
 
@@ -206,8 +205,6 @@ function initResumeDropdown() {
       closeDropdown();
     });
   });
-
-  // Webpage HTML View opens resume.html directly via <a href="resume.html" target="_blank">
 }
 
 // Toast Notification Utility

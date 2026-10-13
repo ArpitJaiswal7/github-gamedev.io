@@ -98,56 +98,5 @@ body {
   background: #384661;
 }
 
-/* ================= Continuous Rotate Shake Effect (Start to Infinity) ================= */
-@keyframes rotate-shake-continuous {
-  0% {
-    transform: rotate(0deg) scale(1);
-    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.28);
-  }
-  15% {
-    transform: rotate(-6deg) scale(1.03);
-    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.52);
-  }
-  30% {
-    transform: rotate(6deg) scale(1.03);
-    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.52);
-  }
-  45% {
-    transform: rotate(-5deg) scale(1.02);
-    box-shadow: 0 5px 18px rgba(245, 158, 11, 0.45);
-  }
-  60% {
-    transform: rotate(5deg) scale(1.02);
-    box-shadow: 0 5px 18px rgba(245, 158, 11, 0.45);
-  }
-  75% {
-    transform: rotate(-3deg) scale(1.01);
-    box-shadow: 0 4px 16px rgba(245, 158, 11, 0.35);
-  }
-  90% {
-    transform: rotate(3deg) scale(1.01);
-    box-shadow: 0 4px 16px rgba(245, 158, 11, 0.35);
-  }
-  100% {
-    transform: rotate(0deg) scale(1);
-    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.28);
-  }
-}
 
-.animate-wiggle-infinite {
-  display: inline-flex !important;
-  animation: rotate-shake-continuous 1.25s ease-in-out infinite !important;
-  transform-origin: center center;
-  will-change: transform, box-shadow;
-}
-
-.animate-wiggle-infinite:hover {
-  box-shadow: 0 8px 28px rgba(245, 158, 11, 0.7) !important;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .animate-wiggle-infinite {
-    animation: none !important;
-  }
-}
 
