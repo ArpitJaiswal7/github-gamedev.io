@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arpit K. Jaiswal — Word (.docx) Live Document Viewer</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- JSZip (Dependency for docx-preview) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <!-- docx-preview by docxjs -->
+  <script src="https://cdn.jsdelivr.net/npm/docx-preview@latest/dist/docx-preview.min.js"></script>
+
+  <style>
+    /* docx-preview styling overrides for authentic Word appearance */
+    .docx-wrapper {
+      background: transparent !important;
+      padding: 0 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      gap: 24px !important;
+    }
+
+    .docx-wrapper > section.docx {
+      background: #ffffff !important;
+      color: #000000 !important;
+      box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+      border-radius: 4px !important;
+      margin-bottom: 24px !important;
+      transition: transform 0.15s ease-out;
+      overflow: hidden !important;
+    }
+
+    /* Print styles */
+    @media print {
+      body { background: white !important; }
+      #viewer-toolbar { display: none !important; }
+      .docx-wrapper { padding: 0 !important; gap: 0 !important; }
+      .docx-wrapper > section.docx { box-shadow: none !important; margin: 0 !important; }
+    }
+
+    /* Custom scrollbars */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+  </style>
+</head>
+<body class="bg-[#0b0f19] text-slate-100 min-h-screen flex flex-col font-sans antialiased selection:bg-blue-600 selection:text-white">
+
+  <!-- ================= TOP TOOLBAR ================= -->
+  <header id="viewer-toolbar" class="sticky top-0 z-50 bg-[#111827]/95 backdrop-blur-md border-b border-slate-800 px-4 py-2.5 shadow-xl flex flex-wrap items-center justify-between gap-3">
+    
+    <!-- Left: File Info & Live Status -->
+    <div class="flex items-center gap-3">
+      <a href="index.html" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-all text-xs flex items-center gap-1.5 font-medium cursor-pointer" title="Back to Portfolio">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        <span class="hidden sm:inline">Portfolio</span>
+      </a>
+
+      <div class="h-5 w-px bg-slate-700 hidden sm:block"></div>
+
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-lg bg-blue-600/20 border border-blue-500/40 text-blue-400 flex items-center justify-center font-bold text-xs">
+          W
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-xs sm:text-sm font-bold text-white tracking-tight">Arpit_Jaiswal_Game_Dev_Resume.docx</h1>
+            <span class="inline-flex items-center gap-1 text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              Live Document
+            </span>
+          </div>
+          <p id="doc-meta" class="text-[11px] text-slate-400 font-mono">Loading document...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center: Zoom & View Controls -->
+    <div class="flex items-center gap-1.5 bg-slate-900/90 border border-slate-800 rounded-xl p-1 shadow-inner">
+      <button id="btn-zoom-out" type="button" class="p-1.5 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white transition-all" title="Zoom Out (-10%)">
+        <i data-lucide="zoom-out" class="w-4 h-4"></i>
+      </button>
+
+      <span id="zoom-label" class="text-xs font-mono font-bold px-2 py-0.5 text-slate-200 select-none min-w-[50px] text-center">
+        100%
+      </span>
+
+      <button id="btn-zoom-in" type="button" class="p-1.5 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white transition-all" title="Zoom In (+10%)">
+        <i data-lucide="zoom-in" class="w-4 h-4"></i>
+      </button>
+
+      <button id="btn-zoom-reset" type="button" class="px-2 py-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white text-xs font-medium transition-all" title="Reset Zoom">
+        Reset
+      </button>
+
+      <button id="btn-fit-width" type="button" class="px-2 py-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white text-xs font-medium transition-all hidden md:inline-block" title="Fit to Window Width">
+        Fit Width
+      </button>
+    </div>
+
+    <!-- Right: Actions (Reload, Web View, Download) -->
+    <div class="flex items-center gap-2">
+      <!-- Live Reload Button -->
+      <button id="btn-reload" type="button" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm" title="Reload Word document from server">
+        <i data-lucide="refresh-cw" class="w-3.5 h-3.5" id="reload-icon"></i>
+        <span class="hidden sm:inline">Refresh</span>
+      </button>
+
+      <!-- Switch to HTML View -->
+      <a href="resume_arpit_jaiswal.html" class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-sky-400 hover:text-sky-300 border border-slate-800 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer" title="Switch to Responsive Webpage View">
+        <i data-lucide="globe" class="w-3.5 h-3.5"></i>
+        <span class="hidden sm:inline">Web View</span>
+      </a>
+
+      <!-- Direct Download Button -->
+      <a id="btn-download" href="assets/resume/Arpit_Jaiswal_Game_Dev_Resume.docx" download="Arpit_Jaiswal_Game_Dev_Resume.docx" class="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-blue-600/30 transition-all cursor-pointer" title="Download Word (.docx)">
+        <i data-lucide="download" class="w-3.5 h-3.5"></i>
+        <span>Download (.docx)</span>
+      </a>
+    </div>
+
+  </header>
+
+  <!-- ================= VIEWER WORKSPACE ================= -->
+  <main class="flex-1 overflow-auto p-4 sm:p-8 flex justify-center items-start">
+    
+    <!-- Loading State -->
+    <div id="loading-container" class="my-32 flex flex-col items-center justify-center gap-4 text-center">
+      <div class="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
+      <div>
+        <p class="text-sm font-bold text-white">Rendering Word Document...</p>
+        <p class="text-xs text-slate-400 mt-1">Parsing OpenXML styles, margins, and typography directly in browser</p>
+      </div>
+    </div>
+
+    <!-- Error State -->
+    <div id="error-container" class="hidden my-32 max-w-md bg-rose-950/40 border border-rose-500/30 rounded-2xl p-6 text-center">
+      <i data-lucide="alert-triangle" class="w-8 h-8 text-rose-400 mx-auto mb-3"></i>
+      <h3 class="text-sm font-bold text-white">Failed to load document</h3>
+      <p id="error-message" class="text-xs text-rose-300 mt-1.5">Could not fetch or parse the .docx file.</p>
+      <button onclick="loadDocument()" class="mt-4 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold transition-all">
+        Try Again
+      </button>
+    </div>
+
+    <!-- Document Target Container (docx-preview injects here) -->
+    <div id="docx-container" class="hidden transition-transform duration-150 origin-top"></div>
+
+  </main>
+
+  <script>
+    const DOC_PATH = 'assets/resume/Arpit_Jaiswal_Game_Dev_Resume.docx';
+    let currentZoom = 1.0;
+    const docxContainer = document.getElementById('docx-container');
+    const loadingContainer = document.getElementById('loading-container');
+    const errorContainer = document.getElementById('error-container');
+    const zoomLabel = document.getElementById('zoom-label');
+    const docMeta = document.getElementById('doc-meta');
+    const reloadIcon = document.getElementById('reload-icon');
+
+    // Load and render Word DOCX
+    async function loadDocument() {
+      loadingContainer.classList.remove('hidden');
+      docxContainer.classList.add('hidden');
+      errorContainer.classList.add('hidden');
+      if (reloadIcon) reloadIcon.classList.add('animate-spin');
+
+      try {
+        // Cache-busting URL to ensure real-time updates are reflected instantly
+        const cacheBusterUrl = `${DOC_PATH}?t=${Date.now()}`;
+        const response = await fetch(cacheBusterUrl);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status} (${response.statusText})`);
+        }
+
+        const arrayBuffer = await response.arrayBuffer();
+        const fileSizeKb = (arrayBuffer.byteLength / 1024).toFixed(1);
+        docMeta.textContent = `Size: ${fileSizeKb} KB • Updated: ${new Date().toLocaleTimeString()}`;
+
+        // Clear previous content
+        docxContainer.innerHTML = '';
+
+        // Render using docx-preview
+        await docx.renderAsync(arrayBuffer, docxContainer, null, {
+          className: 'docx',
+          inWrapper: true,
+          ignoreWidth: false,
+          ignoreHeight: false,
+          ignoreFonts: false,
+          breakPages: true,
+          ignoreLastRenderedPageBreak: false,
+          experimental: true,
+          trimXml: true,
+          debug: false
+        });
+
+        loadingContainer.classList.add('hidden');
+        docxContainer.classList.remove('hidden');
+        applyZoom();
+
+      } catch (err) {
+        console.error('DOCX Render error:', err);
+        loadingContainer.classList.add('hidden');
+        errorContainer.classList.remove('hidden');
+        document.getElementById('error-message').textContent = err.message || 'Error parsing OpenXML document.';
+      } finally {
+        if (reloadIcon) reloadIcon.classList.remove('animate-spin');
+      }
+    }
+
+    // Zoom Management
+    function setZoom(val) {
+      currentZoom = Math.min(Math.max(val, 0.4), 2.5);
+      applyZoom();
+    }
+
+    function applyZoom() {
+      zoomLabel.textContent = `${Math.round(currentZoom * 100)}%`;
+      docxContainer.style.transform = `scale(${currentZoom})`;
+    }
+
+    document.getElementById('btn-zoom-in').addEventListener('click', () => setZoom(currentZoom + 0.1));
+    document.getElementById('btn-zoom-out').addEventListener('click', () => setZoom(currentZoom - 0.1));
+    document.getElementById('btn-zoom-reset').addEventListener('click', () => setZoom(1.0));
+    document.getElementById('btn-reload').addEventListener('click', () => loadDocument());
+
+    document.getElementById('btn-fit-width').addEventListener('click', () => {
+      const firstSection = docxContainer.querySelector('section.docx');
+      if (firstSection) {
+        const availableWidth = window.innerWidth - 64;
+        const docWidth = firstSection.offsetWidth || 816; // 8.5" at 96 DPI
+        if (availableWidth > 0 && docWidth > 0) {
+          setZoom(availableWidth / docWidth);
+        }
+      }
+    });
+
+    // Initial render
+    window.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      loadDocument();
+    });
+  </script>
+</body>
+</html>
