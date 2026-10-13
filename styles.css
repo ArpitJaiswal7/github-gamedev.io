@@ -98,57 +98,56 @@ body {
   background: #384661;
 }
 
-/* ================= Infinite Wiggle & Highlight Animation ================= */
-@keyframes wiggle-infinite {
-  0%, 100% {
+/* ================= Continuous Rotate Shake Effect (Start to Infinity) ================= */
+@keyframes rotate-shake-continuous {
+  0% {
     transform: rotate(0deg) scale(1);
-    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.25);
+    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.28);
   }
-  12% {
-    transform: rotate(-5deg) scale(1.05);
-    box-shadow: 0 6px 22px rgba(245, 158, 11, 0.55);
+  15% {
+    transform: rotate(-6deg) scale(1.03);
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.52);
   }
-  24% {
-    transform: rotate(5deg) scale(1.05);
-    box-shadow: 0 6px 22px rgba(245, 158, 11, 0.55);
+  30% {
+    transform: rotate(6deg) scale(1.03);
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.52);
   }
-  36% {
-    transform: rotate(-3.5deg) scale(1.03);
-    box-shadow: 0 5px 18px rgba(245, 158, 11, 0.45);
-  }
-  48% {
-    transform: rotate(3.5deg) scale(1.03);
+  45% {
+    transform: rotate(-5deg) scale(1.02);
     box-shadow: 0 5px 18px rgba(245, 158, 11, 0.45);
   }
   60% {
-    transform: rotate(-1.5deg) scale(1.01);
-    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
+    transform: rotate(5deg) scale(1.02);
+    box-shadow: 0 5px 18px rgba(245, 158, 11, 0.45);
   }
-  72% {
-    transform: rotate(1deg) scale(1.01);
+  75% {
+    transform: rotate(-3deg) scale(1.01);
+    box-shadow: 0 4px 16px rgba(245, 158, 11, 0.35);
   }
-  84%, 100% {
+  90% {
+    transform: rotate(3deg) scale(1.01);
+    box-shadow: 0 4px 16px rgba(245, 158, 11, 0.35);
+  }
+  100% {
     transform: rotate(0deg) scale(1);
-    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.25);
+    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.28);
   }
 }
 
 .animate-wiggle-infinite {
-  display: inline-flex;
-  animation: wiggle-infinite 2.5s ease-in-out infinite;
+  display: inline-flex !important;
+  animation: rotate-shake-continuous 1.25s ease-in-out infinite !important;
   transform-origin: center center;
   will-change: transform, box-shadow;
 }
 
 .animate-wiggle-infinite:hover {
-  animation-play-state: paused;
-  transform: scale(1.06) rotate(0deg);
-  box-shadow: 0 8px 26px rgba(245, 158, 11, 0.65);
+  box-shadow: 0 8px 28px rgba(245, 158, 11, 0.7) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .animate-wiggle-infinite {
-    animation: none;
+    animation: none !important;
   }
 }
 
