@@ -60,13 +60,17 @@
 
         <!-- Right: Inline Controls (Photo Select, Grid Select, Shuffle, Coins) -->
         <div class="flex items-center gap-1.5 shrink-0">
-          <select id="sceneSelect" class="bg-[#21262d] hover:bg-[#30363d] text-[#e6edf3] border border-[#30363d] rounded-lg px-2 py-1 text-xs font-semibold cursor-pointer focus:outline-none transition">
-            <option value="sunset">🌅 Alpine Sunset</option>
-            <option value="flamingo">🦩 Flamingo Lagoon</option>
-            <option value="forest">🌲 Misty Pines</option>
-            <option value="coast">🌊 Calm Cove</option>
-            <option value="custom" id="customPhotoOption" hidden>🖼️ Custom Photo</option>
-            <option value="explorer">📁 Select from Explorer...</option>
+          <select id="sceneSelect" class="bg-[#21262d] hover:bg-[#30363d] text-[#e6edf3] border border-[#30363d] rounded-lg px-2 py-1 text-xs font-semibold cursor-pointer focus:outline-none transition max-w-[195px] truncate">
+            <optgroup id="serverPuzzlesGroup" label="🌐 Server Puzzles">
+            </optgroup>
+            <optgroup label="🎨 Built-in Demo Scenes">
+              <option value="sunset">🌅 Alpine Sunset</option>
+              <option value="flamingo">🦩 Flamingo Lagoon</option>
+              <option value="forest">🌲 Misty Pines</option>
+              <option value="coast">🌊 Calm Cove</option>
+              <option value="custom" id="customPhotoOption" hidden>🖼️ Custom Photo</option>
+              <option value="explorer">📁 Select from Explorer...</option>
+            </optgroup>
           </select>
 
           <select id="gridSelect" class="bg-[#21262d] hover:bg-[#30363d] text-[#e6edf3] border border-[#30363d] rounded-lg px-2 py-1 text-xs font-semibold cursor-pointer focus:outline-none transition">
@@ -84,8 +88,8 @@
             <span>Shuffle</span>
           </button>
 
-          <div class="flex items-center gap-1 bg-[#0d1117] border border-[#30363d] px-2 py-1 rounded-lg text-xs font-mono font-bold text-[#e6edf3] whitespace-nowrap">
-            <span class="text-[#8b949e]">⏱️</span>
+          <!-- Headless timer display node preserved for run telemetry without header clutter -->
+          <div class="hidden" style="display: none !important;">
             <span id="runTimerDisplay">00:00</span>
           </div>
 
@@ -120,9 +124,9 @@
           <span>Preview</span>
         </button>
 
-        <button id="btnSolitaireDeal" title="Toggle face-down mystery cards that flip when neighbors connect" class="flex-1 flex items-center justify-center gap-1.5 py-1 px-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] active:scale-95 transition text-[#e6edf3] border border-[#30363d] text-xs font-semibold cursor-pointer whitespace-nowrap">
+        <button id="btnSolitaireDeal" title="Toggle face-down hidden cards: hold to peek image; correct slots or joins reveal permanently" class="flex-1 flex items-center justify-center gap-1.5 py-1 px-2.5 rounded-xl bg-purple-900/30 ring-2 ring-purple-500 hover:bg-[#30363d] active:scale-95 transition text-[#e6edf3] border border-purple-500/40 text-xs font-semibold cursor-pointer whitespace-nowrap">
           <span>🂠</span>
-          <span>Mystery Cards</span>
+          <span>Hidden Cards</span>
         </button>
 
         <button id="btnReset" class="flex-1 flex items-center justify-center gap-1.5 py-1 px-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] active:scale-95 transition text-[#e6edf3] border border-[#30363d] text-xs font-semibold cursor-pointer whitespace-nowrap">
@@ -277,13 +281,15 @@
       tileW: 100,
       tileH: 125,
       showPreview: false,
-      mysteryMode: false,
+      mysteryMode: true,
+      serverImagesMap: {},
+      serverPuzzles: [],
       animatingPowerup: false,
       hintsLeft: 3,
       magnetsLeft: 3,
       coins: 150,
       fullBoardImageUrl: '',
-      cards: [], // { id, row, col, boardRow, boardCol, groupId, faceDown, justJoinedGroup }
+      cards: [], // { id, row, col, boardRow, boardCol, groupId, faceDown, justJoinedGroup, isPeeking }
       dragging: null,
       nextGroupId: 1
     };
@@ -477,6 +483,22 @@
       if (scene === 'custom' && state.customImageElement) {
         // Center-crop custom image to fill the rectangular board
         const img = state.customImageElement;
+        const imgAspect = img.naturalWidth / img.naturalHeight;
+        const boardAspect = w / h;
+        let sx = 0, sy = 0, sw = img.naturalWidth, sh = img.naturalHeight;
+        if (imgAspect > boardAspect) {
+          sw = img.naturalHeight * boardAspect;
+          sx = (img.naturalWidth - sw) / 2;
+        } else {
+          sh = img.naturalWidth / boardAspect;
+          sy = (img.naturalHeight - sh) / 2;
+        }
+        ctx.drawImage(img, sx, sy, sw, sh, 0, 0, w, h);
+        return canvas.toDataURL();
+      }
+
+      if (scene && scene.startsWith('server:') && state.serverImagesMap[scene]) {
+        const img = state.serverImagesMap[scene];
         const imgAspect = img.naturalWidth / img.naturalHeight;
         const boardAspect = w / h;
         let sx = 0, sy = 0, sw = img.naturalWidth, sh = img.naturalHeight;

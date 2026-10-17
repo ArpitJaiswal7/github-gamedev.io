@@ -24,6 +24,15 @@
       -webkit-user-select: none;
       touch-action: none;
     }
+    header, header * {
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+    }
+    header::-webkit-scrollbar, header *::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
     .tray-scroll-y {
       touch-action: pan-y;
       scrollbar-width: thin;
@@ -84,8 +93,8 @@
 
     <!-- 1. COMPACT TOP HEADER: Row 1 (Title + Inline Placed Indicator + Controls) & Row 2 (Single Line Powerups) -->
     <header class="border-b border-[#30363d] bg-[#161b22] px-3.5 py-2 flex flex-col gap-1.5 shrink-0 z-10">
-      <!-- Top Row: Title + Inline "1/36 Placed" + Photo Dropdown + Grid Dropdown + Shuffle + Coins -->
-      <div class="flex items-center justify-between gap-2 flex-nowrap overflow-x-auto">
+      <!-- Top Row: Title + Inline "0/16 Placed" + Grid Dropdown + Shuffle + Leaderboard + Coins -->
+      <div class="flex items-center justify-between gap-2 flex-nowrap overflow-hidden">
         <!-- Left: Game Title + Inline Placed Badge -->
         <div class="flex items-center gap-2 shrink-0">
           <span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-[#21262d] border border-[#30363d] text-[#e6edf3] font-bold text-xs">
@@ -97,28 +106,24 @@
           </span>
         </div>
 
-        <!-- Right: Inline Controls (Photo Select, Server Sync, Bridge Cache, Grid Select, Shuffle, Coins) -->
+        <!-- Right: Inline Controls (Grid Select, Shuffle, Leaderboard, Coins) -->
         <div class="flex items-center gap-1.5 shrink-0">
-          <select id="sceneSelect" class="bg-[#21262d] hover:bg-[#30363d] text-[#e6edf3] border border-[#30363d] rounded-lg px-2 py-1 text-xs font-semibold cursor-pointer focus:outline-none transition max-w-[185px] truncate">
-            <optgroup id="serverPuzzlesGroup" label="🌐 Server Puzzles (localhost:4200)">
-            </optgroup>
-            <optgroup label="🎨 Built-in Demo Scenes">
-              <option value="sunset">🌅 Alpine Sunset</option>
-              <option value="forest">🌲 Misty Pines</option>
-              <option value="coast">🌊 Calm Cove</option>
-              <option value="custom" id="customPhotoOption" hidden>🖼️ Custom Photo</option>
-              <option value="explorer">📁 Select from Explorer...</option>
-            </optgroup>
-          </select>
-
-          <button id="btnSyncServer" title="Fetch Published Puzzle URLs from Server (http://localhost:4200/api/puzzles/urls)" class="inline-flex items-center justify-center gap-1 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 active:scale-95 transition border border-emerald-500/30 rounded-lg px-2 py-1 text-xs font-semibold cursor-pointer whitespace-nowrap">
-            <span>🌐</span>
-            <span id="serverSyncBadge">Sync</span>
-          </button>
-
-          <button id="btnInspectBridge" title="Open Native Image Bridge IndexedDB Cache & ROM Explorer" class="inline-flex items-center justify-center gap-1 bg-[#21262d] hover:bg-[#30363d] text-[#58a6ff] active:scale-95 transition border border-[#30363d] rounded-lg px-2 py-1 text-xs font-semibold cursor-pointer whitespace-nowrap">
-            <span>📂</span>
-          </button>
+          <!-- Preserved Headless DOM nodes for Background API & State Sync without UI clutter -->
+          <div class="hidden" style="display: none !important;">
+            <select id="sceneSelect">
+              <optgroup id="serverPuzzlesGroup" label="🌐 Server Puzzles"></optgroup>
+              <optgroup label="🎨 Built-in Demo Scenes">
+                <option value="sunset">🌅 Alpine Sunset</option>
+                <option value="forest">🌲 Misty Pines</option>
+                <option value="coast">🌊 Calm Cove</option>
+                <option value="custom" id="customPhotoOption" hidden>🖼️ Custom Photo</option>
+                <option value="explorer">📁 Select from Explorer...</option>
+              </optgroup>
+            </select>
+            <button id="btnSyncServer" type="button"><span id="serverSyncBadge">Sync</span></button>
+            <button id="btnInspectBridge" type="button"></button>
+            <span id="runTimerDisplay">00:00</span>
+          </div>
 
           <select id="gridSelect" class="bg-[#21262d] hover:bg-[#30363d] text-[#e6edf3] border border-[#30363d] rounded-lg px-2 py-1 text-xs font-semibold cursor-pointer focus:outline-none transition">
             <option value="4" selected>4 × 4 (16)</option>
@@ -135,11 +140,6 @@
             <span>Shuffle</span>
           </button>
 
-          <div class="flex items-center gap-1 bg-[#0d1117] border border-[#30363d] px-2 py-1 rounded-lg text-xs font-mono font-bold text-[#e6edf3] whitespace-nowrap">
-            <span class="text-[#8b949e]">⏱️</span>
-            <span id="runTimerDisplay">00:00</span>
-          </div>
-
           <button id="btnOpenLeaderboard" title="Open Live Offline Leaderboard" class="inline-flex items-center justify-center gap-1 bg-[#21262d] hover:bg-[#30363d] active:scale-95 transition border border-[#30363d] rounded-lg px-2.5 py-1 text-xs font-semibold cursor-pointer whitespace-nowrap">
             <span>🏆</span>
             <span id="topRankBadge" class="text-amber-400 font-bold font-mono">#30</span>
@@ -153,7 +153,7 @@
       </div>
 
       <!-- Second Row: Strictly 1 Line for Powerups -->
-      <div class="flex items-center gap-1.5 overflow-x-auto">
+      <div class="flex items-center gap-1.5 overflow-hidden">
         <button id="btnHint" class="flex-1 flex items-center justify-center gap-1.5 py-1 px-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] active:scale-95 transition text-[#e6edf3] border border-[#30363d] text-xs font-semibold cursor-pointer whitespace-nowrap">
           <span>💡</span>
           <span>Hint</span>
