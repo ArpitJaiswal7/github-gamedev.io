@@ -32,6 +32,10 @@
         color: var(--foreground);
       }
       body.ag-dark {
+        --card: var(--ag-card);
+        --border: var(--ag-border);
+        --foreground: var(--ag-fg);
+        --muted-foreground: var(--ag-muted);
         background-color: var(--ag-bg) !important;
         color: var(--ag-fg) !important;
       }
@@ -222,8 +226,8 @@
       }
       body { background: white !important; color: #0f172a !important; padding: 0 !important; margin: 0 !important; }
       .no-print { display: none !important; }
-      #resume-card-container { border: none !important; box-shadow: none !important; padding: 0 !important; max-width: 100% !important; }
-      #resume-sheet { border: none !important; box-shadow: none !important; padding: 0 !important; }
+      #resume-card-container { border: none !important; box-shadow: none !important; padding: 0 !important; max-width: 100% !important; width: 100% !important; }
+      #resume-sheet { border: none !important; box-shadow: none !important; padding: 0 !important; width: 100% !important; max-width: 100% !important; margin: 0 !important; zoom: 1 !important; transform: none !important; margin-bottom: 0 !important; }
       #resume-sheet .rounded-lg,
       #resume-sheet .rounded-xl {
         break-inside: avoid;
@@ -254,7 +258,7 @@
           <span id="theme-toggle-label">Dark Theme</span>
         </button>
         <!-- Fit Width Toggle Button -->
-        <button id="fit-width-btn" type="button" onclick="toggleFitWidth()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer" title="Widen resume to screen size (Fit Width)">
+        <button id="fit-width-btn" type="button" onclick="toggleFitWidth()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer" title="Zoom resume to fit screen width (Fit Width)">
           <svg id="fit-width-expand-icon" class="w-3.5 h-3.5 fill-none stroke-current" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
           <svg id="fit-width-compress-icon" class="w-3.5 h-3.5 fill-none stroke-current hidden" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 4v4m0 0H5m4 0L4 3m11 5h4m-4 0V4m0 4l5-5M9 20v-4m0 0H5m4 0l-5 5m11-5h4m-4 0v4m0-4l5 5"/></svg>
           <span id="fit-width-label">Fit Width</span>
@@ -806,8 +810,61 @@
       } catch (e) {}
     })();
 
-    // Fit Width Toggle & State Management
+    // Fit Width Zoom & State Management
     let isFitWidth = false;
+
+    function applyFitWidthZoom() {
+      const container = document.getElementById('resume-card-container');
+      const sheet = document.getElementById('resume-sheet');
+      if (!container || !sheet) return;
+
+      if (!isFitWidth) {
+        sheet.style.width = '';
+        sheet.style.maxWidth = '';
+        sheet.style.margin = '';
+        sheet.style.zoom = '';
+        sheet.style.transform = '';
+        sheet.style.transformOrigin = '';
+        sheet.style.marginBottom = '';
+        return;
+      }
+
+      // Base width of the resume document in standard max-w-4xl mode (896px - 32px padding = 864px)
+      const baseWidth = 864;
+      // Available width: container clientWidth minus horizontal padding (32px)
+      const availableWidth = Math.max(container.clientWidth - 32, 320);
+
+      if (availableWidth > baseWidth) {
+        const scale = availableWidth / baseWidth;
+        sheet.style.width = baseWidth + 'px';
+        sheet.style.maxWidth = 'none';
+        sheet.style.margin = '0 auto';
+
+        // Check for CSS zoom support (Chrome, Edge, Safari, Firefox 126+)
+        const supportsZoom = 'zoom' in document.body.style || (window.CSS && CSS.supports && CSS.supports('zoom', '1'));
+        if (supportsZoom) {
+          sheet.style.zoom = scale;
+          sheet.style.transform = '';
+          sheet.style.transformOrigin = '';
+          sheet.style.marginBottom = '';
+        } else {
+          // Universal CSS transform fallback for older browsers
+          sheet.style.zoom = '';
+          sheet.style.transformOrigin = 'top center';
+          sheet.style.transform = `scale(${scale})`;
+          const heightDiff = sheet.offsetHeight * (scale - 1);
+          sheet.style.marginBottom = `${Math.max(heightDiff, 0)}px`;
+        }
+      } else {
+        sheet.style.width = '100%';
+        sheet.style.maxWidth = '100%';
+        sheet.style.margin = '0 auto';
+        sheet.style.zoom = '1';
+        sheet.style.transform = '';
+        sheet.style.transformOrigin = '';
+        sheet.style.marginBottom = '';
+      }
+    }
 
     function toggleFitWidth() {
       const container = document.getElementById('resume-card-container');
@@ -821,7 +878,7 @@
 
       if (isFitWidth) {
         container.classList.remove('max-w-4xl');
-        container.classList.add('max-w-none', 'w-full', 'max-w-[96vw]');
+        container.classList.add('max-w-none', 'w-full');
         if (expandIcon) expandIcon.classList.add('hidden');
         if (compressIcon) compressIcon.classList.remove('hidden');
         if (label) label.textContent = 'Reset Width';
@@ -830,22 +887,31 @@
           btn.classList.remove('bg-slate-800', 'text-slate-200', 'border-slate-700');
           btn.setAttribute('title', 'Reset to standard centered paper width');
         }
+        applyFitWidthZoom();
       } else {
-        container.classList.remove('max-w-none', 'w-full', 'max-w-[96vw]');
+        container.classList.remove('max-w-none', 'w-full');
         container.classList.add('max-w-4xl');
+        applyFitWidthZoom();
         if (expandIcon) expandIcon.classList.remove('hidden');
         if (compressIcon) compressIcon.classList.add('hidden');
         if (label) label.textContent = 'Fit Width';
         if (btn) {
           btn.classList.remove('bg-blue-600', 'text-white', 'border-blue-500');
           btn.classList.add('bg-slate-800', 'text-slate-200', 'border-slate-700');
-          btn.setAttribute('title', 'Widen resume to screen size (Fit Width)');
+          btn.setAttribute('title', 'Zoom resume to fit screen width (Fit Width)');
         }
       }
       try {
         localStorage.setItem('ag-resume-fit-width', isFitWidth ? 'true' : 'false');
       } catch (e) {}
     }
+
+    // Dynamic resize handler while Fit Width is active
+    window.addEventListener('resize', () => {
+      if (isFitWidth) {
+        applyFitWidthZoom();
+      }
+    });
 
     // Restore saved width preference on load
     (function initFitWidth() {
