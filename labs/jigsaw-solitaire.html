@@ -794,6 +794,18 @@
         }
       }
 
+      // Ensure all cards in any joined group (size > 1) or in correct slot are revealed
+      const groupCounts = {};
+      state.cards.forEach(c => {
+        groupCounts[c.groupId] = (groupCounts[c.groupId] || 0) + 1;
+      });
+      state.cards.forEach(c => {
+        if (groupCounts[c.groupId] > 1 || (c.boardRow === c.row && c.boardCol === c.col)) {
+          c.faceDown = false;
+          c.isPeeking = false;
+        }
+      });
+
       if (anyMerged && !silent) {
         triggerSeamMergeEffects(mergedGroupIds, seamPoints);
       }
@@ -898,12 +910,16 @@
     }
 
     function applyMysteryFaceDownCards() {
-      const total = state.cards.length;
-      const targetFaceDown = Math.max(2, Math.floor(total * 0.22));
-      const indices = [...Array(total).keys()].sort(() => Math.random() - 0.5);
-      for (let i = 0; i < total; i++) {
-        state.cards[indices[i]].faceDown = i < targetFaceDown;
-      }
+      // Cards already in their correct slot or in a group stay face-up
+      state.cards.forEach(c => {
+        c.faceDown = false;
+      });
+      const candidates = state.cards.filter(c => !(c.boardRow === c.row && c.boardCol === c.col));
+      const targetFaceDown = Math.max(2, Math.floor(state.cards.length * 0.25));
+      candidates.sort(() => Math.random() - 0.5);
+      candidates.slice(0, targetFaceDown).forEach(c => {
+        c.faceDown = true;
+      });
     }
 
     // --- 5. CREATE RECTANGULAR CARD DOM ELEMENT WITH DYNAMIC SEAM REMOVAL ---
@@ -950,14 +966,16 @@
       el.style.borderRadius = `${rTL} ${rTR} ${rBR} ${rBL}`;
       el.style.overflow = 'hidden';
 
-      if (card.faceDown) {
-        // Royal Purple Solitaire Card Back (Inspired by Play Store screenshots)
-        el.style.background = 'linear-gradient(145deg, #6d28d9 0%, #4c1d95 100%)';
-        el.style.border = '1.5px solid rgba(216, 180, 254, 0.55)';
-        el.className = 'flex flex-col items-center justify-center cursor-grab select-none shadow-sm';
+      const isVisibleImage = !card.faceDown || card.isPeeking;
+
+      if (!isVisibleImage) {
+        // Royal Indigo/Purple Solitaire Card Back
+        el.style.background = 'linear-gradient(145deg, #4f46e5 0%, #312e81 100%)';
+        el.style.border = '1.5px solid rgba(165, 180, 252, 0.55)';
+        el.className = 'flex flex-col items-center justify-center cursor-grab select-none shadow-md transition-all duration-150';
         const innerBadge = document.createElement('div');
-        innerBadge.className = 'px-2 py-1 rounded-md border border-purple-300/30 bg-purple-950/40 text-purple-200 text-xs font-bold tracking-wide flex flex-col items-center';
-        innerBadge.innerHTML = '<span>🃏</span>';
+        innerBadge.className = 'px-2 py-1 rounded-md border border-indigo-300/30 bg-indigo-950/60 text-indigo-200 text-xs font-bold tracking-wide flex flex-col items-center pointer-events-none';
+        innerBadge.innerHTML = '<span class="text-base">🂠</span><span class="text-[9px] font-mono tracking-wider opacity-80 mt-0.5">HOLD</span>';
         el.appendChild(innerBadge);
       } else {
         // Exact UV slice of the full board image so connected neighbors have zero seam offset
@@ -966,13 +984,19 @@
         el.style.backgroundPosition = `${-(card.col * state.tileW + leftInset)}px ${-(card.row * state.tileH + topInset)}px`;
         el.style.backgroundRepeat = 'no-repeat';
 
-        // Crisp card borders on unconnected edges; 0px on connected inner edges
-        const bStyle = '1px solid rgba(255, 255, 255, 0.38)';
-        el.style.borderTop = conn.top ? 'none' : bStyle;
-        el.style.borderRight = conn.right ? 'none' : bStyle;
-        el.style.borderBottom = conn.bottom ? 'none' : bStyle;
-        el.style.borderLeft = conn.left ? 'none' : bStyle;
-        el.className = 'cursor-grab select-none';
+        if (card.isPeeking && card.faceDown) {
+          el.style.border = '2px solid rgba(251, 191, 36, 0.9)';
+          el.style.boxShadow = '0 0 16px rgba(251, 191, 36, 0.45)';
+          el.className = 'cursor-grab select-none transition-transform duration-150 scale-[1.03] z-30';
+        } else {
+          // Crisp card borders on unconnected edges; 0px on connected inner edges
+          const bStyle = '1px solid rgba(255, 255, 255, 0.38)';
+          el.style.borderTop = conn.top ? 'none' : bStyle;
+          el.style.borderRight = conn.right ? 'none' : bStyle;
+          el.style.borderBottom = conn.bottom ? 'none' : bStyle;
+          el.style.borderLeft = conn.left ? 'none' : bStyle;
+          el.className = 'cursor-grab select-none';
+        }
       }
 
       return el;
@@ -1048,6 +1072,10 @@
     function startDrag(e, leadCard) {
       if (state.animatingPowerup || checkWinCondition()) return;
       e.preventDefault();
+
+      if (leadCard.faceDown) {
+        leadCard.isPeeking = true;
+      }
 
       // If face-down, only drags as a single card; if face-up, drags its entire connected groupId block
       const groupMembers = leadCard.faceDown
@@ -1165,6 +1193,15 @@
       const dCol = targetLeadCol - leadCard.boardCol;
 
       if (dRow === 0 && dCol === 0) {
+        leadCard.isPeeking = false;
+        if (leadCard.boardRow === leadCard.row && leadCard.boardCol === leadCard.col) {
+          if (leadCard.faceDown) {
+            leadCard.faceDown = false;
+            playCalmChime('join');
+            spawnSparkleBurst((leadCard.boardCol + 0.5) * state.tileW, (leadCard.boardRow + 0.5) * state.tileH, ['#fde047', '#38bdf8', '#34d399', '#ffffff'], 10, 30);
+            showToast('✨ Revealed! Card is in correct position.');
+          }
+        }
         renderAll();
         return;
       }
@@ -1222,7 +1259,24 @@
       affectedGroupIds.forEach(gid => revalidateGroupContiguity(gid));
 
       animateCardSwaps(flightMoves, () => {
+        leadCard.isPeeking = false;
         const merged = evaluateBoardMerges(false);
+
+        // Check permanent reveal conditions:
+        // "when placed at correct position or joined with a group then reveal the card again"
+        // "releasing should make it hidden again" (if not in correct slot or group)
+        state.cards.forEach(c => {
+          c.isPeeking = false;
+          const isCorrect = (c.boardRow === c.row && c.boardCol === c.col);
+          const inGroup = state.cards.filter(other => other.groupId === c.groupId).length > 1;
+          if (isCorrect || inGroup) {
+            if (c.faceDown) {
+              c.faceDown = false;
+              spawnSparkleBurst((c.boardCol + 0.5) * state.tileW, (c.boardRow + 0.5) * state.tileH, ['#fde047', '#38bdf8', '#34d399', '#ffffff'], 8, 25);
+            }
+          }
+        });
+
         if (!merged) {
           playCalmChime('swap');
         }
@@ -1492,8 +1546,8 @@
       e.currentTarget.classList.toggle('ring-purple-500', state.mysteryMode);
       showToast(
         state.mysteryMode
-          ? '🂠 Mystery Cards enabled: Face-down cards flip when adjacent neighbors merge!'
-          : '🂠 Mystery Cards disabled: All cards dealt face-up.'
+          ? '🂠 Hidden Cards enabled: Hold card to peek image; connects or correct slots reveal permanently!'
+          : '🂠 Hidden Cards disabled: All cards dealt face-up.'
       );
       initPuzzle(false);
     });
@@ -1520,15 +1574,22 @@
       initPuzzle(false);
     });
 
-    // --- 10. CUSTOM PHOTO SELECT FROM EXPLORER ---
-    sceneSelect.addEventListener('change', e => {
-      if (e.target.value === 'explorer') {
+    // --- 10. CUSTOM PHOTO SELECT FROM EXPLORER OR SERVER ---
+    sceneSelect.addEventListener('change', async e => {
+      const val = e.target.value;
+      if (val === 'explorer') {
         fileInput.value = '';
         fileInput.click();
         sceneSelect.value = state.lastValidScene;
+      } else if (val.startsWith('server:')) {
+        const pid = val.slice('server:'.length);
+        const puzzle = (state.serverPuzzles || []).find(p => p.id === pid);
+        if (puzzle) {
+          await loadServerPuzzle(puzzle);
+        }
       } else {
-        state.scene = e.target.value;
-        state.lastValidScene = e.target.value;
+        state.scene = val;
+        state.lastValidScene = val;
         initPuzzle(false);
       }
     });
@@ -2039,10 +2100,111 @@
     });
     setInterval(() => lbRenderUI(false), 4000);
 
+    // =========================================================================
+    // SHEET 10: BACKEND SERVER PUZZLE API & CACHE
+    // =========================================================================
+    const PUZZLE_SERVER_URL = 'http://localhost:4200';
+    const GH_PAGES_MIRROR_URL = 'https://arpitjaiswal7.github.io/github-gamedev.io/assets/puzzles';
+
+    const PuzzleServerAPI = {
+      async getPublishedPuzzles() {
+        const candidates = [
+          '../assets/puzzles/published.json',
+          `${GH_PAGES_MIRROR_URL}/published.json`,
+          `${PUZZLE_SERVER_URL}/api/puzzles/published`
+        ];
+        for (const url of candidates) {
+          try {
+            const resp = await fetch(url, { mode: 'cors' });
+            if (resp.ok) {
+              const data = await resp.json();
+              if (data && Array.isArray(data.puzzles) && data.puzzles.length > 0) {
+                return data.puzzles;
+              }
+            }
+          } catch (_) {}
+        }
+        return [];
+      },
+
+      async loadServerImage(puzzle) {
+        const candidates = [];
+        if (puzzle.dataUrl) candidates.push(puzzle.dataUrl);
+        const fname = puzzle.filename || (puzzle.url && puzzle.url.includes('/uploads/') ? puzzle.url.split('/uploads/').pop() : '');
+        if (fname) {
+          candidates.push(`../assets/puzzles/uploads/${fname}`);
+          candidates.push(`${GH_PAGES_MIRROR_URL}/uploads/${fname}`);
+          candidates.push(`${PUZZLE_SERVER_URL}/uploads/${fname}`);
+        }
+        if (puzzle.url) candidates.push(puzzle.url);
+
+        for (const u of candidates) {
+          try {
+            const img = await new Promise((resolve, reject) => {
+              const el = new Image();
+              el.crossOrigin = 'anonymous';
+              el.onload = () => resolve(el);
+              el.onerror = reject;
+              el.src = u;
+            });
+            if (img && img.naturalWidth > 0) return img;
+          } catch (_) {}
+        }
+        throw new Error('Failed to load image from candidate URLs');
+      }
+    };
+
+    async function loadServerPuzzle(puzzle) {
+      try {
+        const sceneKey = `server:${puzzle.id}`;
+        if (!state.serverImagesMap[sceneKey]) {
+          const img = await PuzzleServerAPI.loadServerImage(puzzle);
+          state.serverImagesMap[sceneKey] = img;
+        }
+        state.scene = sceneKey;
+        state.lastValidScene = sceneKey;
+        sceneSelect.value = sceneKey;
+        initPuzzle(false);
+        showToast(`🌐 Loaded "${puzzle.title || puzzle.id}" from server!`);
+      } catch (err) {
+        showToast(`⚠️ Failed to load server puzzle: ${err.message}`, true);
+      }
+    }
+
+    async function syncServerPuzzles(autoSelect = false) {
+      const groupEl = document.getElementById('serverPuzzlesGroup');
+      if (!groupEl) return;
+      try {
+        const puzzles = await PuzzleServerAPI.getPublishedPuzzles();
+        state.serverPuzzles = puzzles;
+        groupEl.innerHTML = '';
+        if (puzzles.length === 0) {
+          const opt = document.createElement('option');
+          opt.value = 'sunset';
+          opt.disabled = true;
+          opt.textContent = '(No server images)';
+          groupEl.appendChild(opt);
+          return;
+        }
+        puzzles.forEach(p => {
+          const opt = document.createElement('option');
+          opt.value = `server:${p.id}`;
+          opt.textContent = `🌐 ${p.title || p.id}`;
+          groupEl.appendChild(opt);
+        });
+        if (autoSelect && puzzles.length > 0) {
+          await loadServerPuzzle(puzzles[0]);
+        }
+      } catch (e) {
+        console.warn('Failed to sync server puzzles:', e);
+      }
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
       state.coins = lbGetWallet();
       initPuzzle(false);
       lbRenderUI(false);
+      syncServerPuzzles(false);
     });
   </script>
 </body>

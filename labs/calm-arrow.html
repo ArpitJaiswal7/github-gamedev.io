@@ -64,147 +64,77 @@
     }
   </style>
 </head>
-<body class="text-slate-100 antialiased selection:bg-sky-500 selection:text-black min-h-screen flex flex-col">
+<body class="bg-[#090d16] text-slate-100 antialiased selection:bg-sky-500 selection:text-black h-screen w-screen overflow-hidden select-none p-2 sm:p-3 flex items-center justify-center">
 
-  <!-- ================= TOP NAVIGATION BAR ================= -->
-  <header class="sticky top-0 z-50 w-full backdrop-blur-md bg-[#090d16]/90 border-b border-slate-800/80">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-sky-500/25">
-          <i data-lucide="compass" class="w-5 h-5"></i>
-        </div>
-        <div>
-          <div class="flex items-center gap-2">
-            <span class="font-bold text-white text-base sm:text-lg tracking-tight">Arrow Escape: Logic Puzzles</span>
-            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-semibold flex items-center gap-1">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 live-pulse-badge"></span>
-              Native Web &amp; WebGL
-            </span>
-          </div>
-          <p class="text-[11px] text-slate-400 hidden sm:block">Pure HTML5 Canvas 2D Engine + Unity 6 WebGL • Guaranteed Solvable • 100 Shape Levels</p>
-        </div>
-      </div>
-
-        <a href="../index.html#mechanics-lab" class="px-3 py-1.5 rounded-lg border border-slate-700/80 hover:border-slate-500 bg-slate-900/80 text-slate-300 hover:text-white text-xs font-medium transition-all flex items-center gap-1.5" title="Back to Portfolio Main Hub">
-          <i data-lucide="arrow-left" class="w-3.5 h-3.5 text-sky-400"></i>
-          <span>Portfolio Hub</span>
-        </a>
-
-        <a href="asset-organizer.html" class="px-3 py-1.5 rounded-lg border border-slate-700/80 hover:border-slate-500 bg-slate-900/80 text-slate-300 hover:text-white text-xs font-medium transition-all flex items-center gap-1.5" title="Switch to Asset Organizer Tool Showcase">
-          <i data-lucide="folder-kanban" class="w-3.5 h-3.5 text-amber-400"></i>
-          <span class="hidden md:inline">Asset Organizer Tool</span>
-        </a>
-
-        <button id="btn-fullscreen-toggle" type="button" class="px-3.5 py-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-xs transition-all flex items-center gap-1.5 shadow-lg shadow-sky-500/20">
-          <i data-lucide="maximize" class="w-3.5 h-3.5"></i>
-          <span>Fullscreen</span>
+  <!-- ================= PLAYABLE GAME DEMO CONTAINER ================= -->
+  <div id="game-outer-container" class="w-full max-w-6xl h-full flex flex-col bg-[#121824] border border-slate-800 rounded-2xl shadow-2xl overflow-hidden relative game-frame-glow">
+    
+    <!-- Top Engine Switcher & HUD Toolbar -->
+    <div class="bg-[#121824] px-3.5 py-2 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2.5 text-xs shrink-0 z-10">
+      
+      <!-- Engine Mode Tabs -->
+      <div class="flex items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800 shrink-0">
+        <button id="btn-mode-canvas" type="button" class="px-3 py-1 rounded-lg bg-sky-500 text-slate-950 font-bold transition-all flex items-center gap-1.5 shadow-sm cursor-pointer">
+          <i data-lucide="zap" class="w-3.5 h-3.5 text-amber-950"></i>
+          <span>Native HTML5 Canvas (Instant)</span>
+        </button>
+        <button id="btn-mode-unity" type="button" class="px-3 py-1 rounded-lg text-slate-400 hover:text-white transition-all flex items-center gap-1.5 cursor-pointer">
+          <i data-lucide="box" class="w-3.5 h-3.5 text-sky-400"></i>
+          <span>Unity WebGL (WASM)</span>
         </button>
       </div>
+
+      <!-- In-Game HUD Controls (Native Canvas Mode) -->
+      <div id="canvas-hud-controls" class="flex items-center gap-2 shrink-0">
+        <!-- Lives Display -->
+        <div class="flex items-center gap-1 bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800">
+          <span id="hud-lives-icons" class="text-rose-500 text-sm">❤️❤️❤️</span>
+          <span id="hud-lives-text" class="text-[11px] font-mono text-slate-300 font-bold ml-1">3/3</span>
+        </div>
+
+        <!-- Level Picker Dropdown -->
+        <div class="flex items-center gap-1 bg-slate-950 px-2 py-1 rounded-lg border border-slate-800">
+          <span class="text-[11px] text-slate-400">Level:</span>
+          <select id="canvas-level-select" class="bg-transparent text-white font-mono text-xs focus:outline-none cursor-pointer">
+            <!-- Options populated dynamically -->
+          </select>
+        </div>
+
+        <!-- Hint / Solve Button -->
+        <button id="btn-hint" type="button" class="px-2.5 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer" title="Highlight the next safe arrow to peel">
+          <i data-lucide="lightbulb" class="w-3 h-3"></i>
+          <span>Hint</span>
+        </button>
+
+        <!-- Reset Button -->
+        <button id="btn-reset-level" type="button" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs flex items-center gap-1 transition-all cursor-pointer" title="Restart current level">
+          <i data-lucide="rotate-ccw" class="w-3 h-3 text-sky-400"></i>
+          <span>Reset</span>
+        </button>
+
+        <!-- Fullscreen Toggle Button -->
+        <button id="btn-fullscreen-toggle" type="button" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs flex items-center gap-1 transition-all cursor-pointer" title="Toggle Fullscreen">
+          <i data-lucide="maximize" class="w-3 h-3 text-sky-400"></i>
+          <span class="hidden sm:inline">Fullscreen</span>
+        </button>
+      </div>
+
+      <!-- Unity WebGL Mode Controls (Hidden when canvas mode is active) -->
+      <div id="unity-hud-controls" class="hidden flex items-center gap-2">
+        <button id="btn-toggle-unity-port" type="button" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700 text-[11px] font-mono flex items-center gap-1">
+          <i data-lucide="network" class="w-3 h-3"></i>
+          <span id="unity-source-label">Port: 8080</span>
+        </button>
+        <button id="btn-reload-unity" type="button" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-[11px] flex items-center gap-1">
+          <i data-lucide="rotate-ccw" class="w-3 h-3 text-amber-400"></i>
+          <span>Reload</span>
+        </button>
+      </div>
+
     </div>
-  </header>
 
-  <!-- ================= HERO SECTION ================= -->
-  <section class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-4">
-    <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-      <div class="space-y-3 max-w-3xl">
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/25 text-sky-300 text-xs font-mono">
-          <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
-          <span>Gameplay Systems &amp; Procedural Generation Prototype</span>
-        </div>
-        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight">
-          Arrow Escape: <span class="bg-gradient-to-r from-sky-400 via-indigo-300 to-amber-300 bg-clip-text text-transparent">Logic Puzzles</span>
-        </h1>
-        <p class="text-sm sm:text-base text-slate-300 leading-relaxed">
-          An evolutionary re-architecture of the classic Arrow puzzle mechanics. Developed in both a <strong>zero-dependency Native HTML5 Canvas 2D web engine</strong> (runs instantly in any browser without WebAssembly downloads or local web servers) and an official <strong>Unity 6 WebGL build</strong>. Features a <strong>100% guaranteed-solvable outside-in peeling generator</strong>, <strong>36×36 dynamic board masking</strong>, and a <strong>3-lives obstacle probe &amp; snapback rebound system</strong>.
-        </p>
-      </div>
-
-      <!-- Quick Metrics Pill Stack -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 gap-3 w-full lg:w-auto shrink-0">
-        <div class="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800">
-          <div class="text-2xl font-black text-sky-400 font-mono">100</div>
-          <div class="text-[11px] text-slate-400 font-medium">Shape Levels</div>
-        </div>
-        <div class="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800">
-          <div class="text-2xl font-black text-emerald-400 font-mono">0.0s</div>
-          <div class="text-[11px] text-slate-400 font-medium">HTML5 Load Time</div>
-        </div>
-        <div class="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800">
-          <div class="text-2xl font-black text-amber-400 font-mono">100%</div>
-          <div class="text-[11px] text-slate-400 font-medium">Solvability Rate</div>
-        </div>
-        <div class="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800">
-          <div class="text-2xl font-black text-rose-400 font-mono">60 FPS</div>
-          <div class="text-[11px] text-slate-400 font-medium">Native Canvas Loop</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ================= PLAYABLE GAME DEMO SECTION ================= -->
-  <section id="interactive-demo" class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4">
-    <div id="game-outer-container" class="rounded-2xl bg-slate-900/90 border border-slate-800 overflow-hidden shadow-2xl game-frame-glow">
-      
-      <!-- Top Engine Switcher & HUD Toolbar -->
-      <div class="bg-[#121824] px-4 py-2.5 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
-        
-        <!-- Engine Mode Tabs -->
-        <div class="flex items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800">
-          <button id="btn-mode-canvas" type="button" class="px-3 py-1 rounded-lg bg-sky-500 text-slate-950 font-bold transition-all flex items-center gap-1.5 shadow-sm">
-            <i data-lucide="zap" class="w-3.5 h-3.5 text-amber-950"></i>
-            <span>Native HTML5 Canvas (Instant)</span>
-          </button>
-          <button id="btn-mode-unity" type="button" class="px-3 py-1 rounded-lg text-slate-400 hover:text-white transition-all flex items-center gap-1.5">
-            <i data-lucide="box" class="w-3.5 h-3.5 text-sky-400"></i>
-            <span>Unity WebGL (WASM)</span>
-          </button>
-        </div>
-
-        <!-- In-Game HUD Controls (Native Canvas Mode) -->
-        <div id="canvas-hud-controls" class="flex items-center gap-3">
-          <!-- Lives Display -->
-          <div class="flex items-center gap-1 bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800">
-            <span id="hud-lives-icons" class="text-rose-500 text-sm">❤️❤️❤️</span>
-            <span id="hud-lives-text" class="text-[11px] font-mono text-slate-300 font-bold ml-1">3/3</span>
-          </div>
-
-          <!-- Level Picker Dropdown -->
-          <div class="flex items-center gap-1 bg-slate-950 px-2 py-1 rounded-lg border border-slate-800">
-            <span class="text-[11px] text-slate-400">Level:</span>
-            <select id="canvas-level-select" class="bg-transparent text-white font-mono text-xs focus:outline-none cursor-pointer">
-              <!-- Options populated dynamically -->
-            </select>
-          </div>
-
-          <!-- Hint / Solve Button -->
-          <button id="btn-hint" type="button" class="px-2.5 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-xs font-semibold flex items-center gap-1 transition-all" title="Highlight the next safe arrow to peel">
-            <i data-lucide="lightbulb" class="w-3 h-3"></i>
-            <span>Hint</span>
-          </button>
-
-          <!-- Reset Button -->
-          <button id="btn-reset-level" type="button" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs flex items-center gap-1 transition-all" title="Restart current level">
-            <i data-lucide="rotate-ccw" class="w-3 h-3 text-sky-400"></i>
-            <span>Reset</span>
-          </button>
-        </div>
-
-        <!-- Unity WebGL Mode Controls (Hidden when canvas mode is active) -->
-        <div id="unity-hud-controls" class="hidden flex items-center gap-2">
-          <button id="btn-toggle-unity-port" type="button" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700 text-[11px] font-mono flex items-center gap-1">
-            <i data-lucide="network" class="w-3 h-3"></i>
-            <span id="unity-source-label">Port: 8080</span>
-          </button>
-          <button id="btn-reload-unity" type="button" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-[11px] flex items-center gap-1">
-            <i data-lucide="rotate-ccw" class="w-3 h-3 text-amber-400"></i>
-            <span>Reload</span>
-          </button>
-        </div>
-
-      </div>
-
-      <!-- ================= VIEWPORT CONTAINER ================= -->
-      <div class="relative w-full bg-[#0a0f1d] flex items-center justify-center overflow-hidden" style="aspect-ratio: 16/9; max-height: 720px; min-height: 480px;">
+    <!-- ================= VIEWPORT CONTAINER ================= -->
+    <div class="flex-1 min-h-0 relative w-full bg-[#0a0f1d] flex items-center justify-center overflow-hidden">
         
         <!-- ================= 1. NATIVE HTML5 CANVAS ENGINE ================= -->
         <div id="canvas-engine-wrapper" class="relative w-full h-full flex flex-col items-center justify-center">
@@ -278,139 +208,8 @@
 
       </div>
 
-      <!-- Controls & Feature Summary Sub-bar -->
-      <div class="bg-[#0b1120] px-4 py-3 border-t border-slate-800 grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
-        <div class="flex items-center gap-2 text-slate-300">
-          <div class="w-7 h-7 rounded-lg bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 shrink-0">
-            <i data-lucide="mouse-pointer" class="w-3.5 h-3.5"></i>
-          </div>
-          <div>
-            <span class="font-bold text-white block">Step-By-Step Obstacle Probe</span>
-            <span class="text-[11px] text-slate-400">Blocked arrows advance to collision, bonk, lose life, and reverse</span>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-2 text-slate-300">
-          <div class="w-7 h-7 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 shrink-0">
-            <i data-lucide="heart" class="w-3.5 h-3.5"></i>
-          </div>
-          <div>
-            <span class="font-bold text-white block">3-Lives &amp; Game Over Flow</span>
-            <span class="text-[11px] text-slate-400">Tactile heart loss, animated toast, and automatic level progression</span>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-2 text-slate-300">
-          <div class="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
-            <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>
-          </div>
-          <div>
-            <span class="font-bold text-white block">100% Guaranteed Solvable</span>
-            <span class="text-[11px] text-slate-400">Outside-in peel order with Warnsdorff degree heuristics</span>
-          </div>
-        </div>
-      </div>
-
     </div>
-  </section>
-
-  <!-- ================= ARCHITECTURE HIGHLIGHTS ================= -->
-  <main class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10 flex-1">
-    
-    <div class="space-y-1">
-      <span class="text-xs font-mono uppercase tracking-widest text-sky-400 font-bold">Dual-Engine Architecture</span>
-      <h2 class="text-2xl sm:text-3xl font-extrabold text-white">How Both Web &amp; Unity Engines Align</h2>
-      <p class="text-xs sm:text-sm text-slate-400">Identical algorithms implemented natively in HTML5 Canvas 2D and Unity C#.</p>
-    </div>
-
-    <!-- 4-Card Comparison Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      
-      <div class="p-5 rounded-xl bg-slate-900/80 border border-slate-800 flex flex-col justify-between space-y-3 hover:border-slate-700 transition-colors">
-        <div class="space-y-2">
-          <div class="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-            <i data-lucide="git-merge" class="w-4 h-4"></i>
-          </div>
-          <h3 class="text-sm font-bold text-white">1. Solvability Generator</h3>
-          <p class="text-xs text-slate-300 leading-relaxed">
-            Eliminates unsolvable deadlocks by carving arrows backward in reverse solve order using Warnsdorff degree heuristics. The first arrow peeled is always 100% free to escape.
-          </p>
-        </div>
-        <div class="pt-2 border-t border-slate-800 text-[10px] font-mono text-emerald-400">
-          JS Generator &amp; C# SolvableShapeGenerator
-        </div>
-      </div>
-
-      <div class="p-5 rounded-xl bg-slate-900/80 border border-slate-800 flex flex-col justify-between space-y-3 hover:border-slate-700 transition-colors">
-        <div class="space-y-2">
-          <div class="w-9 h-9 rounded-lg bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400">
-            <i data-lucide="grid" class="w-4 h-4"></i>
-          </div>
-          <h3 class="text-sm font-bold text-white">2. Dynamic Board Masking</h3>
-          <p class="text-xs text-slate-300 leading-relaxed">
-            High-density 2D matrix masking (<code class="text-sky-300">activeMask[x][y]</code>) with automatic camera &amp; canvas bounding to frame shapes tightly with header padding.
-          </p>
-        </div>
-        <div class="pt-2 border-t border-slate-800 text-[10px] font-mono text-sky-400">
-          Canvas Frame &amp; C# ShapeGridSystem
-        </div>
-      </div>
-
-      <div class="p-5 rounded-xl bg-slate-900/80 border border-slate-800 flex flex-col justify-between space-y-3 hover:border-slate-700 transition-colors">
-        <div class="space-y-2">
-          <div class="w-9 h-9 rounded-lg bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
-            <i data-lucide="pen-tool" class="w-4 h-4"></i>
-          </div>
-          <h3 class="text-sm font-bold text-white">3. Smooth Chevron Arrows</h3>
-          <p class="text-xs text-slate-300 leading-relaxed">
-            Continuous smooth rounded body lines with sampled color gradients and directional chevron arrowheads (<code class="text-indigo-300">Up</code>, <code class="text-indigo-300">Down</code>, <code class="text-indigo-300">Left</code>, <code class="text-indigo-300">Right</code>).
-          </p>
-        </div>
-        <div class="pt-2 border-t border-slate-800 text-[10px] font-mono text-indigo-400">
-          Canvas Path &amp; C# LineRenderer
-        </div>
-      </div>
-
-      <div class="p-5 rounded-xl bg-slate-900/80 border border-slate-800 flex flex-col justify-between space-y-3 hover:border-slate-700 transition-colors">
-        <div class="space-y-2">
-          <div class="w-9 h-9 rounded-lg bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400">
-            <i data-lucide="shield-alert" class="w-4 h-4"></i>
-          </div>
-          <h3 class="text-sm font-bold text-white">4. Rebound &amp; 3-Lives System</h3>
-          <p class="text-xs text-slate-300 leading-relaxed">
-            Clicking a blocked arrow probes forward grid-by-grid to the obstacle, plays a tactile collision bump, deducts 1 life with toast notifications, and snakes backward to its exact original grid set.
-          </p>
-        </div>
-        <div class="pt-2 border-t border-slate-800 text-[10px] font-mono text-rose-400">
-          Path History Snapback &amp; C# Coroutine
-        </div>
-      </div>
-
-    </div>
-
-  </main>
-
-  <!-- ================= FOOTER ================= -->
-  <footer class="mt-auto border-t border-slate-800/80 bg-[#070b12] py-8 text-xs text-slate-400">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-      <div class="flex items-center gap-2">
-        <span class="font-bold text-white">Arrow Strike Portfolio</span>
-        <span>•</span>
-        <span>Arpit Jaiswal — Unity Gameplay &amp; Tools Engineer</span>
-      </div>
-
-      <div class="flex items-center gap-4">
-        <a href="AssetOrganizerPortfolioShowcase.html" class="hover:text-sky-400 transition-colors flex items-center gap-1">
-          <i data-lucide="pin" class="w-3.5 h-3.5 text-amber-400"></i>
-          <span>Asset Organizer Showcase</span>
-        </a>
-        <a href="#interactive-demo" class="hover:text-sky-400 transition-colors flex items-center gap-1">
-          <i data-lucide="arrow-up" class="w-3.5 h-3.5"></i>
-          <span>Back to Top</span>
-        </a>
-      </div>
-    </div>
-  </footer>
+  </div>
 
   <!-- ========================================================================= -->
   <!-- NATIVE HTML5 CANVAS 2D ARROW ESCAPE GAME ENGINE SCRIPT                    -->
