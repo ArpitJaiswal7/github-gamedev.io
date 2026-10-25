@@ -34,6 +34,11 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <!-- Mermaid.js for Live Architecture Flowcharts & E-R Schemas -->
   <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <!-- High-Priority Unity WebGL Preloading for 2-3s Initial Boot -->
+  <link rel="preload" href="labs/unity-meowsweeper/Build/unity-meowsweeper.loader.js?v=00f06be" as="script">
+  <link rel="preload" href="labs/unity-meowsweeper/Build/unity-meowsweeper.framework.js?v=00f06be" as="script">
+  <link rel="preload" href="labs/unity-meowsweeper/Build/unity-meowsweeper.wasm?v=00f06be" as="fetch" type="application/wasm" crossorigin>
+  <link rel="preload" href="labs/unity-meowsweeper/Build/unity-meowsweeper.data?v=00f06be" as="fetch" crossorigin>
 </head>
 <body class="bg-[#0a0d14] text-slate-100 antialiased selection:bg-sky-500 selection:text-black bg-vignette min-h-screen">
 
@@ -285,10 +290,10 @@
 
       <!-- Prefetch hints for instant tab switching -->
       <link rel="prefetch" href="labs/unity-meowsweeper/index.html?v=00f06be">
-      <link rel="prefetch" href="labs/calm-jigsaw.html">
-      <link rel="prefetch" href="labs/jigsaw-solitaire.html">
-      <link rel="prefetch" href="labs/blockade2d.html">
-      <link rel="prefetch" href="labs/calm-arrow.html">
+      <link rel="prefetch" href="labs/unity-calm-arrow/index.html">
+      <link rel="prefetch" href="labs/unity-calm-jigsaw/index.html">
+      <link rel="prefetch" href="labs/unity-blockade2d/index.html">
+      <link rel="prefetch" href="labs/unity-jigsaw-solitaire/index.html">
       <link rel="prefetch" href="labs/native-image-bridge.html">
       <link rel="prefetch" href="labs/offline-leaderboard.html">
       <link rel="prefetch" href="labs/asset-organizer.html">

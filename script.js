@@ -440,6 +440,42 @@ function initUnityLab() {
     document.addEventListener('fullscreenchange', updateFullscreenButtonUI);
   }
 
+  // ----------------------------------------------------
+  // Fast WebGL: Intelligent Hover & Idle Background Prefetcher
+  // ----------------------------------------------------
+  const prefetchedDemos = new Set(['meowsweeper']);
+  function prefetchLabBuild(demoKey) {
+    const item = UNITY_LAB_MANIFEST[demoKey];
+    if (!item || !item.hasWebgl || !item.webglUrl) return;
+    if (prefetchedDemos.has(demoKey)) return;
+    prefetchedDemos.add(demoKey);
+
+    const link = document.createElement('link');
+    link.rel = 'prefetch';
+    link.href = item.webglUrl;
+    document.head.appendChild(link);
+  }
+
+  // Preload on mouse hover over tab button before user even clicks
+  tabButtons.forEach(btn => {
+    btn.addEventListener('pointerenter', () => {
+      const demoKey = btn.getAttribute('data-lab-demo');
+      if (demoKey) prefetchLabBuild(demoKey);
+    }, { passive: true });
+  });
+
+  // Background idle prefetch for remaining games after 3.5s of page load
+  const scheduleIdlePrefetch = () => {
+    ['calm-arrow', 'calm-jigsaw', 'blockade2d', 'jigsaw-solitaire'].forEach((k, idx) => {
+      setTimeout(() => prefetchLabBuild(k), 1000 + idx * 800);
+    });
+  };
+  if ('requestIdleCallback' in window) {
+    window.requestIdleCallback(scheduleIdlePrefetch, { timeout: 4000 });
+  } else {
+    setTimeout(scheduleIdlePrefetch, 3500);
+  }
+
   // Check URL query/hash on initial load (e.g., ?lab=calm-jigsaw)
   const params = new URLSearchParams(window.location.search);
   const requestedLab = params.get('lab');
