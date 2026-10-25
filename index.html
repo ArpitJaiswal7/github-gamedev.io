@@ -284,7 +284,7 @@
       </div>
 
       <!-- Prefetch hints for instant tab switching -->
-      <link rel="prefetch" href="labs/meowsweeper.html">
+      <link rel="prefetch" href="labs/unity-meowsweeper/index.html?v=00f06be">
       <link rel="prefetch" href="labs/calm-jigsaw.html">
       <link rel="prefetch" href="labs/jigsaw-solitaire.html">
       <link rel="prefetch" href="labs/blockade2d.html">
@@ -344,17 +344,11 @@
           <!-- Row 2 / Right Controls: Dual-Runtime Toggle (Left) + Reload/NewTab/Fullscreen (Right Edge) -->
           <div class="w-full flex items-center justify-between gap-2 pt-1 border-t border-[#30363d]/40 sm:border-0 sm:pt-0">
             
-            <!-- Dual-Runtime Segmented Control (Kept on Left as requested) -->
-            <div class="flex items-center bg-[#0d1117] p-0.5 rounded-xl border border-[#30363d] shadow-inner shrink-0" title="Switch between Instant HTML Architecture Prototype and Compiled Unity WebGL WASM Build">
-              <button type="button" id="lab-runtime-html" class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 bg-sky-500 text-slate-950 shadow">
-                <span>⚡</span>
-                <span>Instant Lab Sim</span>
-              </button>
-              <button type="button" id="lab-runtime-webgl" class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 text-slate-400 hover:text-white">
-                <span>🎮</span>
-                <span>Unity WebGL</span>
-                <span id="lab-webgl-dot" class="w-2 h-2 rounded-full bg-emerald-400" title="Unity WebGL Runtime Mode"></span>
-              </button>
+            <!-- Unity WebGL Runtime Indicator -->
+            <div id="lab-runtime-webgl" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-300 text-xs font-bold shadow-inner shrink-0" title="Compiled Unity WebGL WASM Runtime">
+              <span>🎮</span>
+              <span>Unity WebGL</span>
+              <span id="lab-webgl-dot" class="w-2 h-2 rounded-full bg-emerald-400" title="Unity WebGL Runtime Active"></span>
             </div>
 
             <!-- Viewport Actions (Shifted towards Right Edge in same row) -->
@@ -366,7 +360,7 @@
               </button>
 
               <!-- Open in New Tab -->
-              <a id="lab-btn-newtab" href="labs/meowsweeper.html" target="_blank" rel="noopener" class="px-2.5 py-1.5 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-slate-200 border border-[#30363d] text-xs font-semibold cursor-pointer transition flex items-center gap-1" title="Open Current Demo in Standalone Browser Tab">
+              <a id="lab-btn-newtab" href="labs/unity-meowsweeper/index.html?v=00f06be" target="_blank" rel="noopener" class="px-2.5 py-1.5 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-slate-200 border border-[#30363d] text-xs font-semibold cursor-pointer transition flex items-center gap-1" title="Open Current Demo in Standalone Browser Tab">
                 <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
                 <span class="hidden xl:inline">New Tab</span>
               </a>
@@ -422,9 +416,6 @@
                 <button type="button" id="webgl-btn-try-boot" class="hidden px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold cursor-pointer transition flex items-center gap-1.5 shadow-lg shadow-purple-500/20">
                   <span>▶</span> <span>Retry WebGL Build</span>
                 </button>
-                <button type="button" id="webgl-btn-back-html" class="px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-bold cursor-pointer transition flex items-center gap-1.5 shadow-lg shadow-sky-500/20">
-                  <span>⚡</span> <span>Switch to Instant Lab Sim (0.2s)</span>
-                </button>
               </div>
             </div>
           </div>
@@ -432,7 +423,7 @@
           <!-- THE SINGLE ACTIVE IFRAME -->
           <iframe
             id="unity-lab-frame"
-            src="labs/meowsweeper.html"
+            src="labs/unity-meowsweeper/index.html?v=00f06be"
             title="Unity Lab Interactive Artifact Viewport"
             class="w-full h-full border-0 flex-1 bg-[#0d1117]"
             allow="fullscreen; clipboard-read; clipboard-write"

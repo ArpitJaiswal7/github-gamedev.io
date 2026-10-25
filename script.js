@@ -337,7 +337,7 @@ const UNITY_LAB_MANIFEST = {
 };
 
 let activeLabDemo = 'meowsweeper';
-let activeLabRuntime = 'html'; // 'html' | 'webgl'
+let activeLabRuntime = 'webgl'; // 'html' | 'webgl'
 let labLoaderTimer = null;
 
 function initUnityLab() {
@@ -443,7 +443,7 @@ function initUnityLab() {
   // Check URL query/hash on initial load (e.g., ?lab=calm-jigsaw)
   const params = new URLSearchParams(window.location.search);
   const requestedLab = params.get('lab');
-  const requestedRuntime = params.get('runtime') === 'webgl' ? 'webgl' : 'html';
+  const requestedRuntime = params.get('runtime') === 'html' ? 'html' : 'webgl';
   if (requestedLab && UNITY_LAB_MANIFEST[requestedLab]) {
     switchLabDemo(requestedLab, requestedRuntime);
   } else {
@@ -487,8 +487,8 @@ function updateLabUIState() {
   const btnFooterRuntime = document.getElementById('lab-footer-runtime-switch');
 
   if (dot) {
-    dot.className = item.hasWebgl ? 'w-2 h-2 rounded-full bg-emerald-400' : 'w-2 h-2 rounded-full bg-rose-500';
-    dot.title = item.hasWebgl ? 'Unity WebGL Runtime Mode Available' : 'WebGL Build Not Available for this Solo Product';
+    dot.className = item.hasWebgl ? 'w-2 h-2 rounded-full bg-emerald-400' : 'w-2 h-2 rounded-full bg-amber-400';
+    dot.title = item.hasWebgl ? 'Unity WebGL Runtime Mode Active' : 'Standalone Interactive Architecture Sandbox';
   }
 
   if (btnHtml && btnWebgl) {
@@ -531,9 +531,7 @@ function updateLabUIState() {
   const activeSourceUrl = (activeLabRuntime === 'webgl' && item.webglUrl) ? item.webglUrl : item.htmlUrl;
 
   if (activeBadge) {
-    const modeLabel = activeLabRuntime === 'webgl'
-      ? (item.hasWebgl ? 'Unity WebGL' : 'WebGL N/A • Solo Product')
-      : 'HTML Sim';
+    const modeLabel = item.hasWebgl ? 'Unity WebGL' : 'Architecture Sandbox';
     activeBadge.textContent = `Active Scene: ${item.scene} (${modeLabel})`;
   }
   if (newTabLink) {
@@ -593,8 +591,8 @@ function showLabWebglFailurePanel(demoKey, reason = 'solo_product') {
   }
   if (cardDesc) {
     cardDesc.innerHTML = reason === 'load_failed'
-      ? `The compiled Unity WebGL build for <strong class="text-white">${item.title}</strong> failed to load or is currently unavailable. You can switch to the <strong class="text-sky-300">⚡ Instant Lab Sim</strong> to inspect and test the live interactive architecture immediately.`
-      : `<strong class="text-white">${item.title}</strong> is a standalone architecture subsystem / solo product (${item.unitySpecs}) rather than a standalone compiled WebGL game binary. Its full interactive simulation runs in the <strong class="text-sky-300">⚡ Instant Lab Sim</strong> tab.`;
+      ? `The compiled Unity WebGL build for <strong class="text-white">${item.title}</strong> failed to load or is currently unavailable. Please verify your browser WebGL 2.0 acceleration or try reloading the build.`
+      : `<strong class="text-white">${item.title}</strong> is a standalone architecture subsystem / solo product (${item.unitySpecs}) rather than a standalone compiled WebGL game binary. Its full interactive architecture simulation runs directly in the workstation.`;
   }
   if (btnTryBoot) {
     btnTryBoot.classList.toggle('hidden', !item.hasWebgl);
@@ -647,13 +645,36 @@ function switchLabDemo(demoKey, runtimeMode = 'html', forceReload = false) {
   }
 
   if (runtimeMode === 'webgl') {
-    // If this demo has a WebGL URL (either real WebGL build or solo product ?mode=webgl fallback page inside iframe)
-    if (item.webglUrl) {
+    if (item.hasWebgl && item.webglUrl) {
       bootWebglInIframe(demoKey, forceReload);
       return;
     }
+    // For standalone editor tools & architecture subsystems (offline leaderboard, native image bridge, asset organizer)
+    // load the live interactive tool directly so it functions smoothly
+    if (loader) {
+      if (loaderIcon) loaderIcon.textContent = item.icon;
+      if (loaderTitle) {
+        loaderTitle.innerHTML = `SceneManager.LoadSceneAsync("<span class="text-sky-400">${item.scene}</span>")`;
+      }
+      if (loaderSub) {
+        loaderSub.textContent = 'Mounting interactive architecture tool instance...';
+      }
+      loader.classList.remove('hidden');
+    }
 
-    showLabWebglFailurePanel(demoKey, 'solo_product');
+    const hideLoader = () => {
+      clearTimeout(labLoaderTimer);
+      if (loader) loader.classList.add('hidden');
+      try {
+        if (frame.contentWindow) frame.contentWindow.focus();
+      } catch (_) {}
+    };
+
+    frame.onload = hideLoader;
+    labLoaderTimer = setTimeout(hideLoader, 320);
+
+    const targetUrl = item.htmlUrl;
+    frame.src = forceReload ? `${targetUrl}?t=${Date.now()}` : targetUrl;
     return;
   }
 
