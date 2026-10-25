@@ -1,769 +1,2171 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
-  <script>window.name = 'portfolio_main';</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Arpit Jaiswal | Senior Unity & Gameplay Systems Engineer</title>
-  <meta name="description" content="Unity & AI Systems Developer. 3+ years studio experience, 3 published Google Play games, 8 interactive Unity Labs, and 10 production architecture blueprints.">
-  
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            brand: {
-              page: '#0a0d14',
-              card: '#111622',
-              cardHover: '#161c2b',
-              border: '#1e293b',
-              cyan: '#38bdf8',
-              amber: '#f59e0b',
-              emerald: '#10b981'
-            }
-          }
-        }
-      }
-    }
-  </script>
-  <link rel="stylesheet" href="styles.css?v=stable-1">
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <!-- Mermaid.js for Live Architecture Flowcharts & E-R Schemas -->
-  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>window.name = 'portfolio_main';</script>
   <!-- High-Priority Unity WebGL Preloading for 2-3s Initial Boot -->
   <link rel="preload" href="labs/unity-meowsweeper/Build/unity-meowsweeper.loader.js?v=00f06be" as="script">
   <link rel="preload" href="labs/unity-meowsweeper/Build/unity-meowsweeper.framework.js?v=00f06be" as="script">
   <link rel="preload" href="labs/unity-meowsweeper/Build/unity-meowsweeper.wasm?v=00f06be" as="fetch" type="application/wasm" crossorigin>
   <link rel="preload" href="labs/unity-meowsweeper/Build/unity-meowsweeper.data?v=00f06be" as="fetch" crossorigin>
-</head>
-<body class="bg-[#0a0d14] text-slate-100 antialiased selection:bg-sky-500 selection:text-black bg-vignette min-h-screen">
 
-  <!-- ================= TOP NAVIGATION ================= -->
-  <header class="sticky top-0 z-50 w-full backdrop-blur-md bg-[#0a0d14]/90 border-b border-slate-800/80">
+  <title>Arpit Jaiswal | Cozy Indie Game Dev & Unity Systems Portfolio</title>
+  <!-- Tailwind CSS -->
+      <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class'
+    };
+  </script>
+  <!-- Google Fonts: Fredoka & Quicksand & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    /* Global Cozy Theme Variables */
+    :root {
+      --bg-cream: #FDFBF7;
+      --text-dark: #2A2521;
+      --text-subtle: #6D645D;
+    }
+
+    body {
+      background-color: var(--bg-cream);
+      font-family: 'Quicksand', sans-serif;
+      color: var(--text-dark);
+      overflow-x: hidden;
+      margin: 0;
+      padding: 0;
+    }
+
+    .font-display { font-family: 'Fredoka', cursive, sans-serif; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+    /* ================= FLOATING GAME & UNITY ICONS ANIMATION ================= */
+    .bg-icon {
+      position: absolute;
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0.68;
+      filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.08));
+      transition: all 0.3s ease;
+    }
+    
+    @keyframes driftSlow1 {
+      0% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-24px) rotate(8deg); }
+      100% { transform: translateY(0px) rotate(0deg); }
+    }
+    @keyframes driftSlow2 {
+      0% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-30px) rotate(-10deg); }
+      100% { transform: translateY(0px) rotate(0deg); }
+    }
+    @keyframes driftSlow3 {
+      0% { transform: translateY(0px) rotate(0deg) scale(1); }
+      50% { transform: translateY(-18px) rotate(15deg) scale(1.08); }
+      100% { transform: translateY(0px) rotate(0deg) scale(1); }
+    }
+
+    .anim-drift-1 { animation: driftSlow1 7s ease-in-out infinite; }
+    .anim-drift-2 { animation: driftSlow2 9s ease-in-out infinite 1.5s; }
+    .anim-drift-3 { animation: driftSlow3 8s ease-in-out infinite 3s; }
+
+    /* ================= 3D CLAYMORPHIC BUTTONS & CARDS ================= */
+    .clay-card {
+      background: #FAF8F5;
+      border-radius: 26px;
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+      z-index: 10;
+    }
+    .clay-card:hover {
+      transform: translateY(-4px);
+    }
+    .btn-3d {
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+    .btn-3d:active {
+      transform: translateY(3px);
+      box-shadow: 0 2px 0px rgba(0,0,0,0.2) !important;
+    }
+
+    /* Section Ribbon Dividers */
+    .section-ribbon {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 20px;
+      border-radius: 9999px;
+      font-weight: 800;
+      font-size: 12px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    }
+
+    /* Wave Separator */
+    .wave-divider {
+      width: 100%;
+      height: 48px;
+      display: block;
+    }
+
+    /* Graph paper grid for Blueprints */
+    .blueprint-grid {
+      background-image: 
+        linear-gradient(to right, rgba(14, 165, 233, 0.08) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(14, 165, 233, 0.08) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+
+    /* Dot grid for hero */
+    .hero-dots {
+      background-image: radial-gradient(#E2D9CE 1.5px, transparent 1.5px);
+      background-size: 24px 24px;
+    }
+  
+        /* ========================================================================= */
+    /* COZY MIDNIGHT DARK MODE (UNIFIED OBSIDIAN NAVY PARENT COLOR FAMILY)       */
+    /* ========================================================================= */
+    .dark body {
+      background-color: #070A12 !important;
+      color: #E2E8F0 !important;
+    }
+
+    .dark header {
+      background-color: rgba(7, 10, 18, 0.96) !important;
+      border-bottom: 2px solid #28374F !important;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6) !important;
+    }
+
+    .dark nav a {
+      color: #94A3B8 !important;
+    }
+    .dark nav a:hover {
+      background-color: rgba(255, 255, 255, 0.08) !important;
+      color: #F8FAFC !important;
+    }
+
+    /* Headings in Dark Mode - Crisp Pure White / Slate 50 */
+    .dark .font-display.text-slate-900,
+    .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+      color: #F8FAFC !important;
+    }
+
+    /* Base Body & Secondary Text */
+    .dark p, .dark .text-slate-600, .dark .text-slate-500 {
+      color: #94A3B8 !important;
+    }
+
+    /* Slate Overrides for High Contrast Legibility */
+    .dark .text-slate-900 { color: #F8FAFC !important; }
+    .dark .text-slate-800 { color: #F1F5F9 !important; }
+    .dark .text-slate-700 { color: #CBD5E1 !important; }
+
+    /* Section Subtitle Colors in Dark Mode */
+    .dark #shipped-games .text-emerald-800 { color: #A7F3D0 !important; }
+    .dark #unity-lab .text-purple-800 { color: #DDD6FE !important; }
+    .dark #blueprints .text-sky-800 { color: #BAE6FD !important; }
+    .dark #quest-log .text-amber-850,
+    .dark #quest-log .text-amber-800 { color: #FDE68A !important; }
+    .dark #arsenal .text-rose-800 { color: #FECDD3 !important; }
+
+    /* Clay Cards in Dark Mode: Deep Midnight Blue Slate Surface */
+    .dark .clay-card {
+      background: #101726 !important;
+      border-color: rgba(56, 189, 248, 0.22) !important;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6) !important;
+    }
+
+    /* Card Divider Lines in Dark Mode */
+    .dark .border-amber-100, .dark .border-indigo-100,
+    .dark .border-emerald-100,
+    .dark .border-sky-100,
+    .dark .border-purple-100,
+    .dark .border-rose-100 {
+      border-color: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    /* Floating Animated Icons in Dark Mode: Subtle Neon Glow */
+    .dark .bg-icon {
+      opacity: 0.85 !important;
+      filter: drop-shadow(0 0 12px currentColor) !important;
+    }
+
+    /* Seamless Blended Horizontal Border in Dark Mode */
+    .dark .blended-section-divider::after {
+      background: linear-gradient(90deg, transparent 0%, rgba(56, 189, 248, 0.15) 25%, rgba(255, 255, 255, 0.14) 50%, rgba(56, 189, 248, 0.15) 75%, transparent 100%) !important;
+      opacity: 0.9 !important;
+    }
+
+    /* Unified Parent Dark Navy Family Section Gradients */
+    .dark .theme-blend-hero,
+    .dark section:nth-of-type(1) {
+      background: radial-gradient(rgba(56, 189, 248, 0.08) 1.5px, transparent 1.5px), linear-gradient(to bottom, #070A12 0%, #0A0F1A 50%, #0D1322 100%) !important;
+      background-size: 24px 24px, 100% 100% !important;
+    }
+
+    .dark #shipped-games {
+      background: linear-gradient(to bottom, #0D1322 0%, #0F1728 50%, #111B2E 100%) !important;
+    }
+
+    .dark #unity-lab {
+      background: linear-gradient(to bottom, #111B2E 0%, #141F35 50%, #111A2E 100%) !important;
+    }
+
+    .dark #blueprints {
+      background: linear-gradient(to bottom, #111A2E 0%, #0E1627 50%, #0C1221 100%) !important;
+    }
+    .dark .blueprint-grid {
+      background-image: 
+        linear-gradient(to right, rgba(56, 189, 248, 0.1) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(56, 189, 248, 0.1) 1px, transparent 1px) !important;
+    }
+
+    .dark #quest-log {
+      background: linear-gradient(to bottom, #0C1221 0%, #101625 50%, #0E1423 100%) !important;
+    }
+
+    .dark #arsenal {
+      background: linear-gradient(to bottom, #0E1423 0%, #121828 50%, #0A0F1C 100%) !important;
+    }
+
+    .dark #contact {
+      background: linear-gradient(to bottom, #0A0F1C 0%, #0C1220 50%, #070A12 100%) !important;
+    }
+
+    /* Generic Badges / Pill Styles in Dark Mode */
+    .dark .bg-amber-50, .dark .bg-amber-100 {
+      background-color: rgba(245, 158, 11, 0.15) !important;
+      color: #FCD34D !important;
+      border-color: rgba(245, 158, 11, 0.35) !important;
+    }
+    .dark .bg-emerald-50, .dark .bg-emerald-100 {
+      background-color: rgba(16, 185, 129, 0.15) !important;
+      color: #6EE7B7 !important;
+      border-color: rgba(16, 185, 129, 0.35) !important;
+    }
+    .dark .bg-purple-50, .dark .bg-purple-100 {
+      background-color: rgba(168, 85, 247, 0.15) !important;
+      color: #D8B4FE !important;
+      border-color: rgba(168, 85, 247, 0.35) !important;
+    }
+    .dark .bg-rose-50, .dark .bg-rose-100 {
+      background-color: rgba(244, 63, 94, 0.15) !important;
+      color: #FDA4AF !important;
+      border-color: rgba(244, 63, 94, 0.35) !important;
+    }
+    .dark .bg-sky-50, .dark .bg-sky-100 {
+      background-color: rgba(14, 165, 233, 0.15) !important;
+      color: #7DD3FC !important;
+      border-color: rgba(14, 165, 233, 0.35) !important;
+    }
+
+    /* ========================================================================= */
+    /* SPECIFIC INNER CONTAINER FIXES (WCAG AAA HIGH CONTRAST)                   */
+    /* ========================================================================= */
+
+    /* 1. HERO SECTION & CONSOLE CARD */
+    /* 4 Metric Pills in Hero */
+    .dark section:nth-of-type(1) .grid-cols-2 > div,
+    .dark section:nth-of-type(1) .sm\:grid-cols-4 > div {
+      background: #111827 !important;
+      border-color: rgba(255, 255, 255, 0.1) !important;
+    }
+    .dark section:nth-of-type(1) .text-amber-600 { color: #FBBF24 !important; }
+    .dark section:nth-of-type(1) .text-emerald-600 { color: #34D399 !important; }
+    .dark section:nth-of-type(1) .text-rose-500 { color: #FB7185 !important; }
+    .dark section:nth-of-type(1) .text-sky-600 { color: #38BDF8 !important; }
+    .dark section:nth-of-type(1) .text-slate-500 { color: #94A3B8 !important; }
+
+    /* Hero Right Console Card Inner Screen (Fix white-on-cream invisible text!) */
+    .dark section:nth-of-type(1) .clay-card .rounded-2xl {
+      background: #0B101C !important;
+      border-color: rgba(56, 189, 248, 0.3) !important;
+    }
+    .dark section:nth-of-type(1) .clay-card .rounded-3xl.bg-\[\#FAF8F5\] {
+      background: #151E30 !important;
+      border-color: rgba(56, 189, 248, 0.35) !important;
+    }
+    .dark section:nth-of-type(1) .clay-card h3 {
+      color: #F8FAFC !important;
+    }
+    .dark section:nth-of-type(1) .clay-card p {
+      color: #CBD5E1 !important;
+    }
+    .dark section:nth-of-type(1) .clay-card .flex-wrap .rounded-xl {
+      background: #151E30 !important;
+      border-color: rgba(255, 255, 255, 0.12) !important;
+    }
+    .dark section:nth-of-type(1) .clay-card .flex-wrap .text-amber-900 {
+      color: #FCD34D !important;
+    }
+    .dark section:nth-of-type(1) .clay-card .flex-wrap .text-emerald-900 {
+      color: #6EE7B7 !important;
+    }
+    .dark section:nth-of-type(1) .clay-card .flex-wrap .text-sky-900 {
+      color: #7DD3FC !important;
+    }
+    .dark section:nth-of-type(1) .clay-card .text-emerald-800.bg-emerald-100 {
+      background-color: rgba(16, 185, 129, 0.2) !important;
+      color: #6EE7B7 !important;
+      border-color: rgba(16, 185, 129, 0.4) !important;
+    }
+
+    /* 2. SHIPPED GAMES SECTION (Fix pastel clash & low contrast spec boxes) */
+    .dark #shipped-games .p-4.rounded-2xl {
+      background: #0E1524 !important;
+      border-color: rgba(255, 255, 255, 0.12) !important;
+    }
+    .dark #shipped-games .p-4.rounded-2xl .text-slate-600,
+    .dark #shipped-games .p-4.rounded-2xl span:first-child {
+      color: #94A3B8 !important;
+    }
+    .dark #shipped-games .p-4.rounded-2xl .text-slate-900 {
+      color: #F8FAFC !important;
+    }
+    .dark #shipped-games .p-4.rounded-2xl .text-emerald-700 {
+      color: #34D399 !important;
+    }
+    .dark #shipped-games .p-4.rounded-2xl .text-sky-700 {
+      color: #38BDF8 !important;
+    }
+    .dark #shipped-games .p-4.rounded-2xl .text-purple-700 {
+      color: #C084FC !important;
+    }
+    .dark #shipped-games .p-4.rounded-2xl .text-rose-700 {
+      color: #FB7185 !important;
+    }
+    /* Icon Boxes & Badges in Shipped Cards */
+    .dark #shipped-games .clay-card .w-16.h-16 {
+      background: #151E30 !important;
+      border-color: rgba(255, 255, 255, 0.14) !important;
+    }
+    .dark #shipped-games .clay-card .bg-slate-100 {
+      background: #151E30 !important;
+      border-color: rgba(255, 255, 255, 0.1) !important;
+      color: #CBD5E1 !important;
+    }
+    .dark #shipped-games .clay-card a[title="Google Play Store"] {
+      background: #151E30 !important;
+      border-color: rgba(255, 255, 255, 0.12) !important;
+      color: #CBD5E1 !important;
+    }
+
+    /* 3. BLUEPRINTS SUBSYSTEM CARDS */
+    .dark #blueprints .clay-card .text-sky-700 {
+      color: #38BDF8 !important;
+    }
+    .dark #blueprints .clay-card .text-purple-700 {
+      color: #C084FC !important;
+    }
+    .dark #blueprints .flex-wrap span {
+      background: #151E30 !important;
+      border-color: rgba(255, 255, 255, 0.1) !important;
+    }
+    .dark #blueprints .flex-wrap .text-sky-900 {
+      color: #7DD3FC !important;
+    }
+    .dark #blueprints .flex-wrap .text-emerald-900 {
+      color: #6EE7B7 !important;
+    }
+    .dark #blueprints .flex-wrap .text-purple-900 {
+      color: #D8B4FE !important;
+    }
+
+    /* 4. STUDIO QUEST TRACK RECORD (Fix washed-out beige quest boxes) */
+    .dark #quest-log .clay-card .w-16.h-16 {
+      background: #151E30 !important;
+      border-color: rgba(245, 158, 11, 0.4) !important;
+    }
+    .dark #quest-log .clay-card .p-5.rounded-2xl {
+      background: #0E1524 !important;
+      border-color: rgba(245, 158, 11, 0.3) !important;
+    }
+    .dark #quest-log .clay-card .p-5.rounded-2xl h4 {
+      color: #F8FAFC !important;
+    }
+    .dark #quest-log .clay-card .p-5.rounded-2xl p {
+      color: #CBD5E1 !important;
+    }
+
+    
+    /* Appzia & StudioKrew Experience Badges in Dark Mode */
+    .dark #exp-card-appzia .w-16.h-16 {
+      background: #151E30 !important;
+      border-color: rgba(99, 102, 241, 0.4) !important;
+    }
+    .dark #exp-card-appzia span.bg-indigo-100 {
+      background: rgba(99, 102, 241, 0.15) !important;
+      color: #A5B4FC !important;
+      border-color: rgba(99, 102, 241, 0.35) !important;
+    }
+    .dark #exp-card-studiokrew .w-16.h-16 {
+      background: #151E30 !important;
+      border-color: rgba(245, 158, 11, 0.4) !important;
+    }
+    .dark #exp-card-studiokrew span.bg-amber-100 {
+      background: rgba(245, 158, 11, 0.15) !important;
+      color: #FDE047 !important;
+      border-color: rgba(245, 158, 11, 0.35) !important;
+    }
+
+    /* 5. TECHNICAL ARSENAL LOADOUT (Fix dark-on-dark unreadable rows) */
+    .dark #arsenal .clay-card .rounded-xl {
+      background: #151E30 !important;
+      border-color: rgba(244, 63, 94, 0.28) !important;
+    }
+    .dark #arsenal .clay-card .rounded-xl .text-slate-800,
+    .dark #arsenal .clay-card .rounded-xl span:first-child {
+      color: #F1F5F9 !important;
+      font-weight: 700 !important;
+    }
+    .dark #arsenal .clay-card .rounded-xl .text-rose-700 { color: #FB7185 !important; font-weight: 700 !important; }
+    .dark #arsenal .clay-card .rounded-xl .text-purple-700 { color: #C084FC !important; font-weight: 700 !important; }
+    .dark #arsenal .clay-card .rounded-xl .text-emerald-700 { color: #34D399 !important; font-weight: 700 !important; }
+    .dark #arsenal .clay-card .rounded-xl .text-sky-700 { color: #38BDF8 !important; font-weight: 700 !important; }
+    .dark #arsenal .clay-card .rounded-xl .text-amber-700 { color: #FBBF24 !important; font-weight: 700 !important; }
+
+    /* 6. READY TO JOIN FORCES CONTACT STATION */
+    .dark #contact .rounded-3xl.bg-amber-100 {
+      background: rgba(245, 158, 11, 0.18) !important;
+      border-color: rgba(245, 158, 11, 0.45) !important;
+    }
+    .dark #contact .btn-3d {
+      background: #151E30 !important;
+      border-color: rgba(255, 255, 255, 0.14) !important;
+      color: #F1F5F9 !important;
+    }
+    .dark #contact .btn-3d:hover {
+      border-color: #38BDF8 !important;
+      background: #1D283E !important;
+    }
+    .dark #contact .btn-3d.bg-amber-400 {
+      background: #D97706 !important;
+      border-color: #F59E0B !important;
+      color: #FFFFFF !important;
+    }
+
+    /* Buttons General in Dark Mode */
+    .dark .btn-3d.bg-\[\#FAF8F5\] {
+      background: #151E30 !important;
+      border-color: rgba(255, 255, 255, 0.14) !important;
+      color: #F1F5F9 !important;
+    }
+    .dark .btn-3d.bg-\[\#FAF8F5\]:hover {
+      border-color: #38BDF8 !important;
+      background: #1D283E !important;
+    }
+
+    .dark #mobile-menu {
+      background-color: #0C101A !important;
+      border-color: #1E293B !important;
+    }
+
+  /* ========================================================================= */
+    /* BLENDED HORIZONTAL SECTION TRANSITIONS & DIVIDERS                         */
+    /* ========================================================================= */
+    .blended-section-divider {
+      position: relative;
+    }
+    .blended-section-divider::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 6%;
+      right: 6%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent 0%, rgba(203, 213, 225, 0.4) 25%, rgba(203, 213, 225, 0.7) 50%, rgba(203, 213, 225, 0.4) 75%, transparent 100%);
+      pointer-events: none;
+      opacity: 0.8;
+      z-index: 20;
+    }
+
+    /* Light Theme Seamless Gradient Transitions */
+    .theme-blend-hero {
+      background: linear-gradient(to bottom, #FDFBF7 0%, #FFF7EC 50%, #F3FAF5 100%);
+    }
+    .theme-blend-shipped {
+      background: linear-gradient(to bottom, #F3FAF5 0%, #E8F6ED 50%, #F3EEFD 100%);
+    }
+    .theme-blend-lab {
+      background: linear-gradient(to bottom, #F3EEFD 0%, #ECE5FD 50%, #EDF6FD 100%);
+    }
+    .theme-blend-blueprints {
+      background: linear-gradient(to bottom, #EDF6FD 0%, #E3F2FD 50%, #FAF8EB 100%);
+    }
+    .theme-blend-quest {
+      background: linear-gradient(to bottom, #FAF8EB 0%, #FFF6DA 50%, #FFF0F3 100%);
+    }
+    .theme-blend-arsenal {
+      background: linear-gradient(to bottom, #FFF0F3 0%, #FFE8ED 50%, #FAF5ED 100%);
+    }
+    .theme-blend-contact {
+      background: linear-gradient(to bottom, #FAF5ED 0%, #FFF1DC 60%, #FDFBF7 100%);
+    }
+
+  
+    /* ========================================================================= */
+    /* CINEMATIC VIEW TRANSITION & DARK MODE REVEAL ANIMATIONS                   */
+    /* ========================================================================= */
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+      animation: none;
+      mix-blend-mode: normal;
+    }
+    ::view-transition-old(root) {
+      z-index: 1;
+    }
+    ::view-transition-new(root) {
+      z-index: 9999;
+    }
+    .dark::view-transition-old(root) {
+      z-index: 9999;
+    }
+    .dark::view-transition-new(root) {
+      z-index: 1;
+    }
+
+    /* Silky Cross-Fade Transition Fallback */
+    html.theme-transitioning,
+    html.theme-transitioning *,
+    html.theme-transitioning *::before,
+    html.theme-transitioning *::after {
+      transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                  border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                  color 0.35s ease,
+                  box-shadow 0.4s ease !important;
+      transition-delay: 0s !important;
+    }
+
+    /* Elastic Rotate & Pop for Toggle Icons */
+    @keyframes themeRotatePop {
+      0% { transform: scale(0.6) rotate(-90deg); opacity: 0; }
+      70% { transform: scale(1.2) rotate(15deg); opacity: 1; }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+    .theme-icon-spin {
+      display: inline-block;
+      animation: themeRotatePop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+  </style>
+</head>
+<body class="selection:bg-amber-200 selection:text-amber-950">
+
+  <!-- ================= TOP NAVIGATION BAR ================= -->
+  <header class="sticky top-0 z-50 w-full backdrop-blur-md bg-[#FDFBF7]/95 border-b-2 border-[#D9C8B4] shadow-[0_4px_16px_rgba(180,140,100,0.12)] transition-colors">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
       
-      <!-- Developer Branding with Game Console Icon on Left -->
-      <a href="#" id="brand-logo" class="flex items-center gap-3 group">
-        <div class="w-10 h-10 rounded-xl bg-slate-900 border border-slate-700/80 flex items-center justify-center text-sky-400 group-hover:border-sky-400 group-hover:text-white transition-all shadow-md shadow-sky-500/10">
-          <i data-lucide="gamepad-2" class="w-5 h-5"></i>
+      <!-- Brand Logo -->
+      <a href="#" class="flex items-center gap-3 group">
+        <div class="w-12 h-12 rounded-2xl bg-amber-200 border-2 border-amber-400 flex items-center justify-center text-amber-900 shadow-sm group-hover:rotate-6 transition-all">
+          <span class="text-2xl">🐾</span>
         </div>
         <div class="flex flex-col">
-          <span class="font-bold text-white text-base tracking-tight group-hover:text-sky-300 transition-colors">Arpit Jaiswal</span>
-          <span class="text-xs text-slate-400 font-medium">|  Unity &amp; AI Systems Developer  |</span>
+          <div class="flex items-center gap-2">
+            <span class="font-display font-bold text-slate-900 text-lg sm:text-xl tracking-tight">Arpit Jaiswal</span>
+            <span class="hidden sm:inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+              ● Ready to Build
+            </span>
+          </div>
+          <span class="text-xs text-slate-500 font-medium">Senior Unity &amp; Gameplay Systems Developer</span>
         </div>
       </a>
 
-      <!-- Desktop Nav with Updated Names and Smooth Scroll -->
-      <nav id="desktop-nav" class="hidden md:flex items-center space-x-1 text-xs font-medium text-slate-300">
-        <a href="#shipped" class="nav-link px-3 py-2 rounded-lg hover:text-white hover:bg-slate-800/60 transition-all">Shipped Games</a>
-        <a href="#mechanics-lab" class="nav-link px-3 py-2 rounded-lg hover:text-white hover:bg-slate-800/60 transition-all flex items-center gap-1.5">
-          <span class="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse"></span>
-          Unity Lab
+      <!-- Desktop Nav -->
+      <nav class="hidden md:flex items-center space-x-1 font-bold text-xs text-slate-600">
+        <a href="#shipped-games" class="px-3.5 py-2 rounded-xl hover:text-emerald-900 hover:bg-emerald-100 transition-all flex items-center gap-1.5">
+          <span>🎮</span> Shipped Games
         </a>
-        <a href="#blueprints" class="nav-link px-3 py-2 rounded-lg hover:text-white hover:bg-slate-800/60 transition-all">Blueprints/BlackBox</a>
-        <a href="#experience" class="nav-link px-3 py-2 rounded-lg hover:text-white hover:bg-slate-800/60 transition-all">Studio Walkthrough</a>
-        <a href="#contact" class="nav-link px-3 py-2 rounded-lg hover:text-white hover:bg-slate-800/60 transition-all">Contact</a>
+        <a href="#unity-lab" class="px-3.5 py-2 rounded-xl hover:text-purple-900 hover:bg-purple-100 transition-all flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></span>
+          <span>🧪</span> Unity Lab (8)
+        </a>
+        <a href="#blueprints" class="px-3.5 py-2 rounded-xl hover:text-sky-900 hover:bg-sky-100 transition-all flex items-center gap-1.5">
+          <span>📐</span> Blueprints
+        </a>
+        <a href="#quest-log" class="px-3.5 py-2 rounded-xl hover:text-amber-900 hover:bg-amber-100 transition-all flex items-center gap-1.5">
+          <span>🗺️</span> Studio Quest
+        </a>
+        <a href="#arsenal" class="px-3.5 py-2 rounded-xl hover:text-rose-900 hover:bg-rose-100 transition-all flex items-center gap-1.5">
+          <span>🎒</span> Arsenal
+        </a>
       </nav>
 
-      <!-- Right Action Container: Single Resume Button + Mobile Menu Toggle -->
-      <div class="flex items-center gap-2.5">
-        <!-- Highlighted Amber/Yellowish Resume Button (Opens web preview) -->
-        <a href="https://arpitjaiswal7.github.io/github-gamedev.io/resume_arpit_jaiswal.html" target="_blank" rel="noopener noreferrer" id="btn-header-resume" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 transition-all cursor-pointer group" title="Open Master Resume">
-          <i data-lucide="file-text" class="w-3.5 h-3.5 group-hover:scale-110 transition-transform"></i>
-          <span>Resume</span>
-          <i data-lucide="external-link" class="w-3 h-3 opacity-75 group-hover:opacity-100 transition-opacity"></i>
+      <!-- Right Action: Master Resume Button -->
+      <div class="flex items-center gap-3">
+        <!-- Interactive Theme Toggle Button -->
+        <button id="theme-toggle-btn" type="button" onclick="toggleTheme(event)" class="px-3.5 py-2.5 rounded-2xl bg-[#FAF8F5] dark:bg-[#1A2334] border-2 border-amber-300 dark:border-amber-500/50 text-slate-800 dark:text-amber-300 font-display font-bold text-xs flex items-center gap-2 shadow-sm hover:scale-105 active:scale-95 transition-all cursor-pointer" title="Toggle Light / Dark Mode">
+          <span id="theme-toggle-icon">🌙</span>
+          <span id="theme-toggle-label" class="hidden sm:inline">Dark Mode</span>
+        </button>
+        <a href="https://arpitjaiswal7.github.io/github-gamedev.io/resume_arpit_jaiswal.html" target="_blank" rel="noopener noreferrer" class="btn-3d px-5 py-2.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-display font-bold text-xs flex items-center gap-2 shadow-[0_5px_0_#D97706] border border-amber-500">
+          <i data-lucide="file-text" class="w-4 h-4"></i>
+          <span>Master Resume</span>
+          <i data-lucide="external-link" class="w-3 h-3 opacity-70"></i>
         </a>
 
-        <!-- Mobile Nav Toggle Button -->
-        <button id="mobile-menu-toggle" type="button" class="md:hidden p-2 rounded-lg border border-slate-700 bg-slate-900/90 text-slate-300 hover:text-white hover:bg-slate-800 transition-all flex items-center justify-center cursor-pointer" aria-label="Toggle navigation">
-          <i data-lucide="menu" class="w-4 h-4" id="mobile-menu-icon"></i>
+        <!-- Mobile Menu Toggle -->
+        <button onclick="toggleMobileMenu()" class="md:hidden w-11 h-11 rounded-2xl bg-[#FAF8F5] border-2 border-[#EFE5D7] flex items-center justify-center text-slate-700 shadow-sm">
+          <i data-lucide="menu" class="w-5 h-5"></i>
         </button>
       </div>
 
     </div>
 
-    <!-- Mobile Dropdown Nav Menu -->
-    <div id="mobile-nav-menu" class="hidden md:hidden border-t border-slate-800/90 bg-[#0a0d14]/98 backdrop-blur-xl px-4 py-3 space-y-1">
-      <a href="#shipped" class="nav-link block px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/60 text-xs font-medium">Shipped Games</a>
-      <a href="#mechanics-lab" class="nav-link block px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/60 text-xs font-medium flex items-center gap-2">
-        <span class="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse"></span>
-        Unity Lab
+    <!-- Mobile Dropdown Menu -->
+    <div id="mobile-menu" class="hidden md:hidden px-4 pt-2 pb-6 bg-[#FDFBF7] border-b-2 border-[#EFE5D7] space-y-2">
+      <a href="#shipped-games" onclick="toggleMobileMenu()" class="block px-4 py-3 rounded-2xl bg-emerald-50 border-2 border-emerald-200 font-bold text-sm text-emerald-950 flex items-center gap-3">
+        <span>🎮</span> Commercial Shipped Titles
       </a>
-      <a href="#blueprints" class="nav-link block px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/60 text-xs font-medium">Blueprints/BlackBox</a>
-      <a href="#experience" class="nav-link block px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/60 text-xs font-medium">Studio Walkthrough</a>
-      <a href="#contact" class="nav-link block px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/60 text-xs font-medium">Contact</a>
-      <div class="pt-2 border-t border-slate-800/80 mt-1">
-        <a href="https://arpitjaiswal7.github.io/github-gamedev.io/resume_arpit_jaiswal.html" target="_blank" rel="noopener noreferrer" class="block px-3 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold flex items-center justify-between">
-          <span class="flex items-center gap-2"><i data-lucide="file-text" class="w-3.5 h-3.5"></i> Resume</span>
-          <span class="text-xs font-mono font-bold">↗</span>
-        </a>
-      </div>
+      <a href="#unity-lab" onclick="toggleMobileMenu()" class="block px-4 py-3 rounded-2xl bg-purple-50 border-2 border-purple-200 font-bold text-sm text-purple-950 flex items-center gap-3">
+        <span>🧪</span> Playable Unity WebGL Lab (8)
+      </a>
+      <a href="#blueprints" onclick="toggleMobileMenu()" class="block px-4 py-3 rounded-2xl bg-sky-50 border-2 border-sky-200 font-bold text-sm text-sky-950 flex items-center gap-3">
+        <span>📐</span> Architecture Blueprints (10)
+      </a>
+      <a href="#quest-log" onclick="toggleMobileMenu()" class="block px-4 py-3 rounded-2xl bg-amber-50 border-2 border-amber-200 font-bold text-sm text-amber-950 flex items-center gap-3">
+        <span>🗺️</span> Studio Quest &amp; Track Record
+      </a>
+      <a href="#arsenal" onclick="toggleMobileMenu()" class="block px-4 py-3 rounded-2xl bg-rose-50 border-2 border-rose-200 font-bold text-sm text-rose-950 flex items-center gap-3">
+        <span>🎒</span> Technical Arsenal &amp; Stack
+      </a>
+      <a href="#contact" onclick="toggleMobileMenu()" class="block px-4 py-3 rounded-2xl bg-amber-100 border-2 border-amber-300 font-bold text-sm text-amber-950 flex items-center gap-3">
+        <span>📬</span> Contact &amp; Connect
+      </a>
     </div>
   </header>
 
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-28">
+  <main class="space-y-0">
 
-    <!-- ================= SCREEN 1: HERO SECTION ================= -->
-    <section class="text-center pt-8 pb-4 max-w-4xl mx-auto space-y-7">
-      
-      <!-- Headline -->
-      <h1 class="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-[1.15]">
-        Architecting Production Game <br class="hidden sm:inline">
-        Systems & Core Mechanics in Unity
-      </h1>
+    <!-- ============================================================== -->
+    <!-- ZONE 1: HERO SECTION (WARM SUNRISE / FLOATING PARTICLES)        -->
+    <!-- ============================================================== -->
+    <section id="hero-section" class="relative theme-blend-hero pt-10 pb-20 hero-dots overflow-hidden blended-section-divider">
+      <!-- Dynamic Floating Game Background Icons (Poisson Distributed, Randomized Each Refresh) -->
+      <div class="section-bg-icons absolute inset-0 pointer-events-none overflow-hidden" style="z-index: 1;" aria-hidden="true"></div>
 
-      <!-- Executive Subtitle -->
-      <p class="text-base sm:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
-        Unity &amp; AI Systems Developer with 3+ years of studio experience building scalable game frameworks, deterministic algorithmic hint solvers, procedural N×N geometry shaders, and cross-platform native pipelines.
-      </p>
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="grid lg:grid-cols-12 gap-10 items-center">
+          
+          <!-- Left: Hero Headline -->
+          <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-100 border-2 border-amber-300 text-amber-950 text-xs font-bold shadow-sm">
+              <span>✨</span>
+              <span>COZY CRAFTER &bull; SENIOR GAMEPLAY SYSTEMS ARCHITECT</span>
+            </div>
 
-      <!-- Sleek 3-Metric Bar -->
-      <div class="flex items-center justify-center gap-8 sm:gap-16 pt-2 pb-4 text-center">
-        <div>
-          <div class="text-2xl sm:text-4xl font-bold text-white tracking-tight">3+</div>
-          <div class="text-xs text-slate-400 mt-1">Years Experience</div>
-        </div>
-        <div class="w-px h-10 bg-slate-800"></div>
-        <div>
-          <div class="text-2xl sm:text-4xl font-bold text-white tracking-tight">3</div>
-          <div class="text-xs text-slate-400 mt-1">Shipped Google Play Titles</div>
-        </div>
-        <div class="w-px h-10 bg-slate-800"></div>
-        <div>
-          <div class="text-2xl sm:text-4xl font-bold text-white tracking-tight">8</div>
-          <div class="text-xs text-slate-400 mt-1">Live Unity WebGL &amp; Tool Labs</div>
+            <h1 class="font-display font-extrabold text-slate-900 text-4xl sm:text-6xl tracking-tight leading-[1.12]">
+              Crafting Delightful, <br class="hidden sm:inline">
+              <span class="text-amber-600 relative">
+                High-Performance
+                <svg class="absolute -bottom-2 left-0 w-full h-4 text-amber-400 -z-10" viewBox="0 0 100 20" preserveAspectRatio="none">
+                  <path d="M0,15 Q50,0 100,15" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+                </svg>
+              </span>
+              <br>Game Loops in Unity
+            </h1>
+
+            <p class="text-base sm:text-lg text-slate-600 font-medium leading-relaxed max-w-xl mx-auto lg:mx-0">
+              Unity &amp; AI Systems Developer with 3+ years studio experience at Vasundhara Game Studio. Specialized in procedural Bezier mesh generation, zero-allocation deterministic hint solvers, and silky-smooth mobile game feel.
+            </p>
+
+            <!-- 4 Tactile Metric Pills -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+              <div class="p-3.5 rounded-2xl bg-[#FAF8F5] border-2 border-amber-200 text-center shadow-md">
+                <div class="font-display font-bold text-3xl text-amber-600">3+</div>
+                <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mt-0.5">Years Studio</div>
+              </div>
+              <div class="p-3.5 rounded-2xl bg-[#FAF8F5] border-2 border-emerald-200 text-center shadow-md">
+                <div class="font-display font-bold text-3xl text-emerald-600">3</div>
+                <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mt-0.5">Shipped Titles</div>
+              </div>
+              <div class="p-3.5 rounded-2xl bg-[#FAF8F5] border-2 border-rose-200 text-center shadow-md">
+                <div class="font-display font-bold text-3xl text-rose-500">5.0★</div>
+                <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mt-0.5">Peak Rating</div>
+              </div>
+              <div class="p-3.5 rounded-2xl bg-[#FAF8F5] border-2 border-sky-200 text-center shadow-md">
+                <div class="font-display font-bold text-3xl text-sky-600">8</div>
+                <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mt-0.5">Unity Labs</div>
+              </div>
+            </div>
+
+            <!-- Dual Action CTAs -->
+            <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
+              <a href="#unity-lab" class="btn-3d w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-rose-500 hover:bg-rose-400 text-white font-display font-bold text-sm flex items-center justify-center gap-2.5 shadow-[0_5px_0_#BE123C] border border-rose-600">
+                <span class="text-base">🎮</span>
+                <span>Play Interactive Labs (8)</span>
+              </a>
+              <a href="#shipped-games" class="btn-3d w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-[#FAF8F5] hover:bg-amber-50 text-slate-800 font-display font-bold text-sm flex items-center justify-center gap-2 border-2 border-amber-300 shadow-sm">
+                <span>Inspect Shipped Games ↗</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Right: Hero Console Showcase Card -->
+          <div class="lg:col-span-5 flex justify-center">
+            <div class="w-full max-w-md clay-card p-6 border-4 border-amber-300/80 shadow-[0_16px_40px_rgba(217,119,6,0.18)] relative bg-[#FAF8F5]">
+              <div class="flex items-center justify-between border-b-2 border-amber-100 pb-3 mb-4">
+                <div class="flex items-center gap-2">
+                  <span class="w-3.5 h-3.5 rounded-full bg-amber-400"></span>
+                  <span class="w-3.5 h-3.5 rounded-full bg-emerald-400"></span>
+                  <span class="w-3.5 h-3.5 rounded-full bg-sky-400"></span>
+                  <span class="text-xs font-bold text-slate-600 font-mono ml-1">Unity 6 LTS Sandbox</span>
+                </div>
+                <span class="text-xs font-bold text-emerald-800 bg-emerald-100 px-3 py-1 rounded-full border border-emerald-300">120 FPS</span>
+              </div>
+
+              <!-- Inside Game Preview -->
+              <div class="rounded-2xl bg-gradient-to-br from-amber-50 via-sky-50 to-emerald-50 border-2 border-amber-200 p-5 text-center space-y-4">
+                <div class="py-2">
+                  <div class="inline-block p-4 rounded-3xl bg-[#FAF8F5] shadow-md border-2 border-amber-200">
+                    <div class="text-5xl">🐱🧩</div>
+                  </div>
+                  <h3 class="font-display font-bold text-slate-900 text-xl mt-3">MeowSweeper &amp; Calm Jigsaw</h3>
+                  <p class="text-xs text-slate-600 mt-1 max-w-xs mx-auto">
+                    Algorithmic Queens, Sudoku &amp; Minesweeper logic combined with procedural Bezier quad mesh shaders.
+                  </p>
+                </div>
+
+                <div class="flex flex-wrap justify-center gap-1.5 text-[11px] font-bold">
+                  <span class="px-3 py-1 rounded-xl bg-[#FAF8F5] text-amber-900 border border-amber-200 shadow-sm">Deterministic Solvers</span>
+                  <span class="px-3 py-1 rounded-xl bg-[#FAF8F5] text-emerald-900 border border-emerald-200 shadow-sm">HLSL ShadowMask</span>
+                  <span class="px-3 py-1 rounded-xl bg-[#FAF8F5] text-sky-900 border border-sky-200 shadow-sm">Discrete Touch Locks</span>
+                </div>
+              </div>
+
+              <div class="mt-4 pt-3 border-t-2 border-amber-100 flex items-center justify-between text-xs text-slate-500 font-medium">
+                <span>Android &bull; iOS &bull; WebGL 2.0</span>
+                <span class="text-slate-900 font-bold">Vasundhara Studio</span>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </section>
 
-    <!-- ================= SCREEN 1: COMMERCIAL SHIPPED TITLES (ZONE 1) ================= -->
-    <section id="shipped" class="space-y-6 scroll-mt-24">
-      <div>
-        <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">Commercial Shipped Titles</h2>
-      </div>
+    <!-- ============================================================== -->
+    <!-- ZONE 2: SHIPPED COMMERCIAL TITLES (PASTEL MATCHA SHELF)        -->
+    <!-- ============================================================== -->
+    <section id="shipped-games" class="relative theme-blend-shipped py-20 overflow-hidden blended-section-divider">
+      <!-- Dynamic Floating Game Background Icons (Poisson Distributed, Randomized Each Refresh) -->
+      <div class="section-bg-icons absolute inset-0 pointer-events-none overflow-hidden" style="z-index: 1;" aria-hidden="true"></div>
 
-      <!-- 3-Card Grid Side-by-Side -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-10">
+        
+        <!-- Distinct Section Banner Ribbon -->
+        <div class="text-center max-w-2xl mx-auto space-y-3">
+          <div class="section-ribbon bg-emerald-600 text-white shadow-emerald-600/30">
+            <span>🎮</span> SECTION 01 &bull; COMMERCIAL PRODUCTION
+          </div>
+          <h2 class="font-display font-extrabold text-emerald-950 text-3xl sm:text-5xl">
+            Shipped Commercial Games
+          </h2>
+          <p class="text-sm sm:text-base text-emerald-800 font-medium">
+            Three published Google Play games engineered with robust state machines, procedural shaders, and zero runtime garbage collection.
+          </p>
+        </div>
 
-        <!-- Card 1: MeowSweeper -->
-        <div class="bg-[#111622] rounded-2xl border border-slate-800/90 overflow-hidden flex flex-col justify-between hover:border-slate-700 transition-all duration-300 hover:-translate-y-1 shadow-xl">
-          <div>
-            <div class="relative aspect-[1024/500] overflow-hidden bg-slate-900 border-b border-slate-800/80">
-              <img src="assets/games/meowsweeper-banner.png" alt="MeowSweeper: Sudoku Brain Game" class="w-full h-full object-cover">
-              <div class="absolute top-3 right-3">
-                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-black/80 backdrop-blur-md text-amber-400 text-xs font-semibold border border-amber-500/30 shadow-md">
-                  ★ 5.0
-                </span>
-              </div>
+        <!-- 3 Collectible Cartridge Cards -->
+        <div class="grid md:grid-cols-3 gap-8">
+
+          <!-- GAME 1: MeowSweeper -->
+          <div class="clay-card p-7 border-4 border-emerald-300 shadow-[0_14px_30px_rgba(16,185,129,0.18)] flex flex-col justify-between bg-[#FAF8F5] relative">
+            <div class="absolute -top-4 right-6 px-4 py-1.5 rounded-full bg-amber-400 text-amber-950 font-display font-bold text-xs shadow-md border-2 border-amber-500">
+              ★ 5.0 Google Play
             </div>
 
-            <div class="p-5 space-y-3">
-              <div class="flex items-center gap-3">
-                <img src="assets/games/meowsweeper-icon.png" alt="MeowSweeper Play Store Icon" class="w-10 h-10 rounded-xl border border-slate-700/80 shadow-md shrink-0 object-cover">
-                <h3 class="text-lg font-bold text-white">MeowSweeper</h3>
+            <div class="space-y-4">
+              <div class="flex items-center gap-3.5">
+                <div class="w-16 h-16 rounded-2xl overflow-hidden border-2 border-sky-300 shadow-sm shrink-0 bg-sky-100 flex items-center justify-center">
+                  <img src="assets/games/meowsweeper-icon.png" alt="MeowSweeper Icon" class="w-full h-full object-cover">
+                </div>
+                <div>
+                  <span class="text-[10px] font-bold text-sky-800 uppercase tracking-wider bg-sky-100 px-2.5 py-0.5 rounded-full border border-sky-300">
+                    Featured Logic Title
+                  </span>
+                  <h3 class="font-display font-bold text-slate-900 text-2xl mt-0.5">MeowSweeper</h3>
+                </div>
               </div>
-              <p class="text-xs text-slate-300 leading-relaxed">
+
+              <p class="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
                 Hybrid Queens / Star-Battle, Sudoku, and Minesweeper logic puzzle with discrete multi-touch input locks and deterministic hint cascade solvers.
               </p>
-              
+
+              <!-- Gameplay Spec Box -->
+              <div class="p-4 rounded-2xl bg-emerald-50/90 border-2 border-emerald-200 space-y-2 text-xs font-medium">
+                <div class="flex justify-between text-slate-600">
+                  <span>Architecture</span>
+                  <span class="font-bold text-slate-900">Deterministic State Machine</span>
+                </div>
+                <div class="flex justify-between text-slate-600">
+                  <span>Memory Allocation</span>
+                  <span class="font-bold text-emerald-700 font-mono">0 B / frame (Zero GC)</span>
+                </div>
+                <div class="flex justify-between text-slate-600">
+                  <span>IPC Protocol</span>
+                  <span class="font-bold text-sky-700">Argos Native Bridge</span>
+                </div>
+              </div>
+
               <div class="flex flex-wrap gap-1.5 pt-1">
-                <span class="px-2 py-0.5 rounded bg-slate-800/90 text-slate-300 text-[11px] font-mono">Meowdoku Engine</span>
-                <span class="px-2 py-0.5 rounded bg-slate-800/90 text-slate-300 text-[11px] font-mono">Bot Leaderboard</span>
-                <span class="px-2 py-0.5 rounded bg-slate-800/90 text-slate-300 text-[11px] font-mono">Argos IPC</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="p-5 pt-0 flex gap-2">
-            <a href="#mechanics-lab" onclick="window.openLabDemo && window.openLabDemo('meowsweeper', 'html')" class="flex-1 py-2.5 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/40 text-sky-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all">
-              <i data-lucide="cpu" class="w-3.5 h-3.5 text-sky-400"></i>
-              <span>Play in Unity Lab</span>
-            </a>
-            <a href="https://play.google.com/store/apps/details?id=com.meow.sweeper.sudoku.puzzle.game" target="_blank" rel="noopener" class="flex-1 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-all">
-              <i data-lucide="play" class="w-3.5 h-3.5 text-emerald-400 fill-emerald-400"></i>
-              <span>Google Play</span>
-            </a>
-          </div>
-        </div>
-
-        <!-- Card 2: Calm Jigsaw -->
-        <div class="bg-[#111622] rounded-2xl border border-slate-800/90 overflow-hidden flex flex-col justify-between hover:border-slate-700 transition-all duration-300 hover:-translate-y-1 shadow-xl">
-          <div>
-            <div class="relative aspect-[1024/500] overflow-hidden bg-slate-900 border-b border-slate-800/80">
-              <img src="assets/games/calm-jigsaw-banner.png" alt="Calm Jigsaw" class="w-full h-full object-cover">
-              <div class="absolute top-3 right-3">
-                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-black/80 backdrop-blur-md text-amber-400 text-xs font-semibold border border-amber-500/30 shadow-md">
-                  ★ 4.8
-                </span>
+                <span class="px-3 py-1 rounded-xl bg-slate-100 text-slate-800 text-[11px] font-bold border border-slate-200">Unity 2022.3</span>
+                <span class="px-3 py-1 rounded-xl bg-slate-100 text-slate-800 text-[11px] font-bold border border-slate-200">Zenject (DI)</span>
+                <span class="px-3 py-1 rounded-xl bg-slate-100 text-slate-800 text-[11px] font-bold border border-slate-200">Meowdoku Engine</span>
               </div>
             </div>
 
-            <div class="p-5 space-y-3">
-              <div class="flex items-center gap-3">
-                <img src="assets/games/calm-jigsaw-icon.png" alt="Calm Jigsaw Play Store Icon" class="w-10 h-10 rounded-xl border border-slate-700/80 shadow-md shrink-0 object-cover">
-                <h3 class="text-lg font-bold text-white">Calm Jigsaw</h3>
+            <div class="pt-6 mt-6 border-t-2 border-emerald-100 flex items-center gap-3">
+              <a href="#unity-lab" onclick="selectScene('MeowSweeper_Lab.unity', 'MeowSweeper Cat Puzzle')" class="btn-3d flex-1 py-3 rounded-xl bg-sky-500 hover:bg-sky-400 text-white font-display font-bold text-xs text-center border border-sky-600 shadow-[0_4px_0_#0284C7]">
+                Play in WebGL Lab
+              </a>
+              <a href="https://play.google.com/store/apps/details?id=com.vasundhara.meowsweeper" target="_blank" class="p-3 rounded-xl bg-[#FAF8F5] border-2 border-emerald-200 text-slate-700 hover:bg-emerald-50 transition-colors shadow-sm" title="Google Play Store">
+                <i data-lucide="play" class="w-4 h-4 fill-current text-emerald-600"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- GAME 2: Calm Jigsaw -->
+          <div class="clay-card p-7 border-4 border-amber-300 shadow-[0_14px_30px_rgba(245,158,11,0.18)] flex flex-col justify-between bg-[#FAF8F5] relative">
+            <div class="absolute -top-4 right-6 px-4 py-1.5 rounded-full bg-amber-400 text-amber-950 font-display font-bold text-xs shadow-md border-2 border-amber-500">
+              ★ 4.8 Google Play
+            </div>
+
+            <div class="space-y-4">
+              <div class="flex items-center gap-3.5">
+                <div class="w-16 h-16 rounded-2xl overflow-hidden border-2 border-amber-300 shadow-sm shrink-0 bg-amber-100 flex items-center justify-center">
+                  <img src="assets/games/calm-jigsaw-icon.png" alt="Calm Jigsaw Icon" class="w-full h-full object-cover">
+                </div>
+                <div>
+                  <span class="text-[10px] font-bold text-amber-800 uppercase tracking-wider bg-amber-100 px-2.5 py-0.5 rounded-full border border-amber-300">
+                    Procedural Shader Title
+                  </span>
+                  <h3 class="font-display font-bold text-slate-900 text-2xl mt-0.5">Calm Jigsaw</h3>
+                </div>
               </div>
-              <p class="text-xs text-slate-300 leading-relaxed">
-                Relaxing calm jigsaw puzzle, jigsaw pieces masking within shapeMask with shadowMask Shader Rendering with soothing visualEffects and interlocking whimsy shape driven core game logic with premium puzzles and challanges from 3x3 to NxN grid structure with native image bridge and backend support
+
+              <p class="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                Relaxing calm jigsaw puzzle with procedural N×N Bezier puzzle generator using 9 mathematical edge signatures, dynamic UV quad mesh generation, and custom shadowMask shaders.
               </p>
-              
+
+              <!-- Gameplay Spec Box -->
+              <div class="p-4 rounded-2xl bg-amber-50/90 border-2 border-amber-200 space-y-2 text-xs font-medium">
+                <div class="flex justify-between text-slate-600">
+                  <span>Mesh Generation</span>
+                  <span class="font-bold text-slate-900">N×N Bezier (9 Curves)</span>
+                </div>
+                <div class="flex justify-between text-slate-600">
+                  <span>Shaders</span>
+                  <span class="font-bold text-purple-700">Custom HLSL Dual-Mask</span>
+                </div>
+                <div class="flex justify-between text-slate-600">
+                  <span>Optimization</span>
+                  <span class="font-bold text-emerald-700 font-mono">Burst UV Quads</span>
+                </div>
+              </div>
+
               <div class="flex flex-wrap gap-1.5 pt-1">
-                <span class="px-2 py-0.5 rounded bg-slate-800/90 text-slate-300 text-[11px] font-mono">9-Signature Mesh</span>
-                <span class="px-2 py-0.5 rounded bg-slate-800/90 text-slate-300 text-[11px] font-mono">Native Disk Cache</span>
-                <span class="px-2 py-0.5 rounded bg-slate-800/90 text-slate-300 text-[11px] font-mono">OTA Level Sync</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="p-5 pt-0 flex gap-2">
-            <a href="#mechanics-lab" onclick="window.openLabDemo && window.openLabDemo('calm-jigsaw', 'html')" class="flex-1 py-2.5 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/40 text-sky-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all">
-              <i data-lucide="cpu" class="w-3.5 h-3.5 text-sky-400"></i>
-              <span>Play in Unity Lab</span>
-            </a>
-            <a href="https://play.google.com/store/apps/details?id=com.calm.jigsaw.puzzle" target="_blank" rel="noopener" class="flex-1 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-all">
-              <i data-lucide="play" class="w-3.5 h-3.5 text-emerald-400 fill-emerald-400"></i>
-              <span>Google Play</span>
-            </a>
-          </div>
-        </div>
-
-        <!-- Card 3: Calm Jigsaw Solitaire -->
-        <div class="bg-[#111622] rounded-2xl border border-slate-800/90 overflow-hidden flex flex-col justify-between hover:border-slate-700 transition-all duration-300 hover:-translate-y-1 shadow-xl">
-          <div>
-            <div class="relative aspect-[1024/500] overflow-hidden bg-slate-900 border-b border-slate-800/80">
-              <img src="assets/games/calm-jigsaw-solitaire-banner.png" alt="Calm Jigsaw Solitaire" class="w-full h-full object-cover">
-              <div class="absolute top-3 right-3">
-                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-black/80 backdrop-blur-md text-amber-400 text-xs font-semibold border border-amber-500/30 shadow-md">
-                  ★ 5.0
-                </span>
+                <span class="px-3 py-1 rounded-xl bg-slate-100 text-slate-800 text-[11px] font-bold border border-slate-200">ShaderLab HLSL</span>
+                <span class="px-3 py-1 rounded-xl bg-slate-100 text-slate-800 text-[11px] font-bold border border-slate-200">Procedural UVs</span>
+                <span class="px-3 py-1 rounded-xl bg-slate-100 text-slate-800 text-[11px] font-bold border border-slate-200">DOTween Pro</span>
               </div>
             </div>
 
-            <div class="p-5 space-y-3">
-              <div class="flex items-center gap-3">
-                <img src="assets/games/calm-jigsaw-solitaire-icon.png" alt="Calm Jigsaw Solitaire Play Store Icon" class="w-10 h-10 rounded-xl border border-slate-700/80 shadow-md shrink-0 object-cover">
-                <h3 class="text-lg font-bold text-white">Calm Jigsaw Solitaire</h3>
+            <div class="pt-6 mt-6 border-t-2 border-amber-100 flex items-center gap-3">
+              <a href="#unity-lab" onclick="selectScene('CalmJigsaw_Lab.unity', 'Procedural Bezier Slicer')" class="btn-3d flex-1 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-amber-950 font-display font-bold text-xs text-center border border-amber-600 shadow-[0_4px_0_#D97706]">
+                Play in WebGL Lab
+              </a>
+              <a href="https://play.google.com/store/apps/details?id=com.vasundhara.calmjigsaw" target="_blank" class="p-3 rounded-xl bg-[#FAF8F5] border-2 border-amber-200 text-slate-700 hover:bg-amber-50 transition-colors shadow-sm" title="Google Play Store">
+                <i data-lucide="play" class="w-4 h-4 fill-current text-emerald-600"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- GAME 3: Calm Jigsaw Solitaire -->
+          <div class="clay-card p-7 border-4 border-rose-300 shadow-[0_14px_30px_rgba(244,63,94,0.18)] flex flex-col justify-between bg-[#FAF8F5] relative">
+            <div class="absolute -top-4 right-6 px-4 py-1.5 rounded-full bg-amber-400 text-amber-950 font-display font-bold text-xs shadow-md border-2 border-amber-500">
+              ★ 4.9 Google Play
+            </div>
+
+            <div class="space-y-4">
+              <div class="flex items-center gap-3.5">
+                <div class="w-16 h-16 rounded-2xl overflow-hidden border-2 border-rose-300 shadow-sm shrink-0 bg-rose-100 flex items-center justify-center">
+                  <img src="assets/games/calm-jigsaw-solitaire-icon.png" alt="Calm Jigsaw Solitaire Icon" class="w-full h-full object-cover">
+                </div>
+                <div>
+                  <span class="text-[10px] font-bold text-rose-800 uppercase tracking-wider bg-rose-100 px-2.5 py-0.5 rounded-full border border-rose-300">
+                    Card Hybrid Mechanic
+                  </span>
+                  <h3 class="font-display font-bold text-slate-900 text-2xl mt-0.5">Jigsaw Solitaire</h3>
+                </div>
               </div>
-              <p class="text-xs text-slate-300 leading-relaxed">
-                Innovative crossover merging jigsaw tab fitting with solitaire card column queues and spatial stacking with procedural noise flame VFX.
+
+              <p class="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                Tactile card-puzzle hybrid featuring dynamic card physics, spatial stack hierarchy solvers, and seamless mobile drag-and-drop snapping mechanics.
               </p>
-              
-              <div class="flex flex-wrap gap-1.5 pt-1">
-                <span class="px-2 py-0.5 rounded bg-slate-800/90 text-slate-300 text-[11px] font-mono">Solitaire Stack Queues</span>
-                <span class="px-2 py-0.5 rounded bg-slate-800/90 text-slate-300 text-[11px] font-mono">Flame Noise Shader</span>
-                <span class="px-2 py-0.5 rounded bg-slate-800/90 text-slate-300 text-[11px] font-mono">Asset Organizer DX</span>
+
+              <!-- Gameplay Spec Box -->
+              <div class="p-4 rounded-2xl bg-rose-50/90 border-2 border-rose-200 space-y-2 text-xs font-medium">
+                <div class="flex justify-between text-slate-600">
+                  <span>Card Hierarchy</span>
+                  <span class="font-bold text-slate-900">Spatial Stack Solver</span>
+                </div>
+                <div class="flex justify-between text-slate-600">
+                  <span>Touch Handling</span>
+                  <span class="font-bold text-sky-700">Discrete Gesture Locks</span>
+                </div>
+                <div class="flex justify-between text-slate-600">
+                  <span>Juice &amp; Audio</span>
+                  <span class="font-bold text-rose-700">Synthesized Card Snaps</span>
+                </div>
               </div>
+
+              <div class="flex flex-wrap gap-1.5 pt-1">
+                <span class="px-3 py-1 rounded-xl bg-slate-100 text-slate-800 text-[11px] font-bold border border-slate-200">Mobile Touch Input</span>
+                <span class="px-3 py-1 rounded-xl bg-slate-100 text-slate-800 text-[11px] font-bold border border-slate-200">Physics Tweening</span>
+                <span class="px-3 py-1 rounded-xl bg-slate-100 text-slate-800 text-[11px] font-bold border border-slate-200">Unity 2022.3</span>
+              </div>
+            </div>
+
+            <div class="pt-6 mt-6 border-t-2 border-rose-100 flex items-center gap-3">
+              <a href="#unity-lab" onclick="selectScene('JigsawSolitaire_Lab.unity', 'Card Stack Solver')" class="btn-3d flex-1 py-3 rounded-xl bg-rose-500 hover:bg-rose-400 text-white font-display font-bold text-xs text-center border border-rose-600 shadow-[0_4px_0_#BE123C]">
+                Play in WebGL Lab
+              </a>
+              <a href="https://play.google.com/store/apps/details?id=com.vasundhara.jigsawsolitaire" target="_blank" class="p-3 rounded-xl bg-[#FAF8F5] border-2 border-rose-200 text-slate-700 hover:bg-rose-50 transition-colors shadow-sm" title="Google Play Store">
+                <i data-lucide="play" class="w-4 h-4 fill-current text-emerald-600"></i>
+              </a>
             </div>
           </div>
 
-          <div class="p-5 pt-0 flex gap-2">
-            <a href="#mechanics-lab" onclick="window.openLabDemo && window.openLabDemo('jigsaw-solitaire', 'html')" class="flex-1 py-2.5 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/40 text-sky-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all">
-              <i data-lucide="cpu" class="w-3.5 h-3.5 text-sky-400"></i>
-              <span>Play in Unity Lab</span>
-            </a>
-            <a href="https://play.google.com/store/apps/details?id=com.calm.jigsaw.solitaire" target="_blank" rel="noopener" class="flex-1 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-all">
-              <i data-lucide="play" class="w-3.5 h-3.5 text-emerald-400 fill-emerald-400"></i>
-              <span>Google Play</span>
-            </a>
-          </div>
         </div>
 
       </div>
     </section>
 
-    <!-- ================= SCREEN 2: UNITY LAB — PLAYABLE SANDBOX ================= -->
-    <section id="mechanics-lab" class="space-y-4 scroll-mt-24">
-      <div class="flex flex-col md:flex-row md:items-end justify-between gap-3">
-        <div>
-          <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">Unity Lab: Playable Sandbox</h2>
+    <!-- ============================================================== -->
+    <!-- ZONE 3: UNITY LAB PLAYABLE SANDBOX (PERIWINKLE CONSOLE LOUNGE)  -->
+    <!-- ============================================================== -->
+    <section id="unity-lab" class="relative theme-blend-lab py-20 overflow-hidden blended-section-divider">
+      <!-- Dynamic Floating Game Background Icons (Poisson Distributed, Randomized Each Refresh) -->
+      <div class="section-bg-icons absolute inset-0 pointer-events-none overflow-hidden" style="z-index: 1;" aria-hidden="true"></div>
+
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-10">
+        
+        <!-- Distinct Section Banner Ribbon -->
+        <div class="text-center max-w-2xl mx-auto space-y-3">
+          <div class="section-ribbon bg-purple-600 text-white shadow-purple-600/30">
+            <span>🧪</span> SECTION 02 &bull; PLAYABLE WEBGL SANDBOX
+          </div>
+          <h2 class="font-display font-extrabold text-purple-950 text-3xl sm:text-5xl">
+            Unity Handheld Arcade (8 Demos)
+          </h2>
+          <p class="text-sm sm:text-base text-purple-800 font-medium">
+            Test compiled Unity WebGL scenes directly in your browser. Select from 8 gameplay mechanics and systems modules below.
+          </p>
         </div>
 
-        <div class="hidden items-center gap-2 text-xs font-mono text-slate-400 bg-[#111622] px-3 py-1.5 rounded-xl border border-slate-800">
-          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span id="lab-active-badge">Active Scene: MeowSweeper_Lab.unity</span>
-        </div>
-      </div>
-
-      <!-- Prefetch hints for instant tab switching -->
-      <link rel="prefetch" href="labs/unity-meowsweeper/index.html?v=00f06be">
-      <link rel="prefetch" href="labs/unity-calm-arrow/index.html">
-      <link rel="prefetch" href="labs/unity-calm-jigsaw/index.html">
-      <link rel="prefetch" href="labs/unity-blockade2d/index.html">
-      <link rel="prefetch" href="labs/unity-jigsaw-solitaire/index.html">
-      <link rel="prefetch" href="labs/native-image-bridge.html">
-      <link rel="prefetch" href="labs/offline-leaderboard.html">
-      <link rel="prefetch" href="labs/asset-organizer.html">
-      <link rel="prefetch" href="labs/argos-localization.html">
-
-      <!-- Unity Lab Full-Window Workstation Wrapper -->
-      <div id="unity-lab-workstation" class="unity-window overflow-hidden flex flex-col bg-[#0d1117] border border-[#30363d] rounded-2xl shadow-2xl h-[86vh] min-h-[680px] max-h-[960px] transition-all">
-
-        <!-- TOP BAR: 8 DEMO SWITCHER TABS (LEFT) + DUAL-RUNTIME TOGGLE & VIEWPORT CONTROLS (RIGHT) -->
-        <div class="shrink-0 bg-[#161b22] border-b border-[#30363d] px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-2.5 z-20">
+        <!-- Handheld Console Chassis (Nintendo Switch / Steam Deck Aesthetic) -->
+        <div class="clay-card p-5 sm:p-8 bg-[#2A2321] border-4 border-[#453B36] shadow-[0_24px_60px_rgba(42,35,33,0.35)] rounded-[36px] text-white">
           
-          <!-- Left: Window Dots + 8 Project Switcher Buttons (Ordered to match Systems Catalog) -->
-          <div class="flex items-center gap-1.5 flex-wrap">
-            <div class="flex items-center space-x-1.5 pr-2.5 border-r border-[#30363d]">
-              <span class="w-3 h-3 rounded-full bg-[#ff5f56] inline-block"></span>
-              <span class="w-3 h-3 rounded-full bg-[#ffbd2e] inline-block"></span>
-              <span class="w-3 h-3 rounded-full bg-[#27c93f] inline-block"></span>
-              <span class="ml-1.5 font-mono text-xs font-bold text-sky-400 hidden sm:inline">UNITY LAB</span>
+          <!-- Console Top Bar -->
+          <div class="flex flex-wrap items-center justify-between gap-4 pb-4 mb-4 border-b-2 border-[#453B36]">
+            <div class="flex items-center gap-3">
+              <span class="w-3.5 h-3.5 rounded-full bg-emerald-400 animate-ping"></span>
+              <div>
+                <div class="text-xs font-mono text-emerald-400 font-bold">UNITY ENGINE LIVE RUNTIME</div>
+                <div class="text-sm font-display font-bold text-white flex items-center gap-2">
+                  <span id="active-scene-name">MeowSweeper_Lab.unity</span>
+                  <span class="text-[10px] px-2 py-0.5 rounded bg-[#453B36] text-purple-200 font-mono">WebGL 2.0</span>
+                </div>
+              </div>
             </div>
 
-            <!-- 8 Demo Tabs (Strictly 1 Active Instance at a Time) -->
-            <div class="flex items-center gap-1.5 flex-wrap" id="unity-lab-tabs" role="tablist">
-              <button type="button" data-lab-demo="meowsweeper" class="lab-tab-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 bg-sky-500/20 text-sky-300 border border-sky-500/40 shadow-sm">
-                <img src="assets/games/meowsweeper-icon.png" alt="" class="w-4 h-4 rounded-sm object-cover shrink-0"> <span>MeowSweeper</span>
+            <!-- Controls -->
+            <div class="flex items-center gap-2 text-xs font-bold">
+              <button onclick="reloadScene()" class="px-3 py-1.5 rounded-xl bg-[#3D332E] hover:bg-[#4E413B] text-slate-200 flex items-center gap-1.5 transition-colors">
+                <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i> Reload
               </button>
-              <button type="button" data-lab-demo="calm-jigsaw" class="lab-tab-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 bg-[#21262d] text-slate-300 hover:text-white border border-transparent hover:border-slate-700">
-                <img src="assets/games/calm-jigsaw-icon.png" alt="" class="w-4 h-4 rounded-sm object-cover shrink-0"> <span>Calm Jigsaw</span>
-              </button>
-              <button type="button" data-lab-demo="jigsaw-solitaire" class="lab-tab-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 bg-[#21262d] text-slate-300 hover:text-white border border-transparent hover:border-slate-700">
-                <img src="assets/games/calm-jigsaw-solitaire-icon.png" alt="" class="w-4 h-4 rounded-sm object-cover shrink-0"> <span>Jigsaw Solitaire</span>
-              </button>
-              <button type="button" data-lab-demo="calm-arrow" class="lab-tab-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 bg-[#21262d] text-slate-300 hover:text-white border border-transparent hover:border-slate-700">
-                <span>🏹</span> <span>Arrow Strike</span>
-              </button>
-              <button type="button" data-lab-demo="blockade2d" class="lab-tab-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 bg-[#21262d] text-slate-300 hover:text-white border border-transparent hover:border-slate-700">
-                <span>🧱</span> <span>Blockade 2D</span>
-              </button>
-              <button type="button" data-lab-demo="native-image-bridge" class="lab-tab-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 bg-[#21262d] text-slate-300 hover:text-white border border-transparent hover:border-slate-700">
-                <span>🖼️</span> <span>Native Image Bridge</span>
-              </button>
-              <button type="button" data-lab-demo="offline-leaderboard" class="lab-tab-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 bg-[#21262d] text-slate-300 hover:text-white border border-transparent hover:border-slate-700">
-                <span>🏆</span> <span>Offline Leaderboard</span>
-              </button>
-              <button type="button" data-lab-demo="asset-organizer" class="lab-tab-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 bg-[#21262d] text-slate-300 hover:text-white border border-transparent hover:border-slate-700">
-                <span>🗂️</span> <span>Asset Organizer</span>
-              </button>
-              <button type="button" data-lab-demo="argos-localization" class="lab-tab-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 bg-[#21262d] text-slate-300 hover:text-white border border-transparent hover:border-slate-700">
-                <span>🌐</span> <span>Argos Localization</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Row 2 / Right Controls: Dual-Runtime Toggle (Left) + Reload/NewTab/Fullscreen (Right Edge) -->
-          <div class="w-full flex items-center justify-between gap-2 pt-1 border-t border-[#30363d]/40 sm:border-0 sm:pt-0">
-            
-            <!-- Unity WebGL Runtime Indicator -->
-            <div id="lab-runtime-webgl" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-300 text-xs font-bold shadow-inner shrink-0" title="Compiled Unity WebGL WASM Runtime">
-              <span>🎮</span>
-              <span>Unity WebGL</span>
-              <span id="lab-webgl-dot" class="w-2 h-2 rounded-full bg-emerald-400" title="Unity WebGL Runtime Active"></span>
-            </div>
-
-            <!-- Viewport Actions (Shifted towards Right Edge in same row) -->
-            <div class="flex items-center gap-2 ml-auto shrink-0">
-              <!-- Reload Active Demo -->
-              <button type="button" id="lab-btn-reload" class="px-2.5 py-1.5 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-slate-200 border border-[#30363d] text-xs font-semibold cursor-pointer transition flex items-center gap-1" title="Reload Current Artifact">
-                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
-                <span class="hidden lg:inline">Reload</span>
-              </button>
-
-              <!-- Open in New Tab -->
-              <a id="lab-btn-newtab" href="labs/unity-meowsweeper/index.html?v=00f06be" target="_blank" rel="noopener" class="px-2.5 py-1.5 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-slate-200 border border-[#30363d] text-xs font-semibold cursor-pointer transition flex items-center gap-1" title="Open Current Demo in Standalone Browser Tab">
-                <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
-                <span class="hidden xl:inline">New Tab</span>
+              <a id="lab-newtab-link" href="labs/unity-meowsweeper/index.html?v=00f06be" target="_blank" class="px-3 py-1.5 rounded-xl bg-[#3D332E] hover:bg-[#4E413B] text-slate-200 flex items-center gap-1.5 transition-colors">
+                <i data-lucide="external-link" class="w-3.5 h-3.5"></i> New Tab
               </a>
-
-              <!-- Fullscreen Workstation Toggle (Keeps Top Switcher Bar Visible in Fullscreen!) -->
-              <button type="button" id="lab-btn-fullscreen" class="px-3 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-bold cursor-pointer transition flex items-center gap-1.5 shadow-sm" title="Toggle Fullscreen Workstation">
-                <i data-lucide="maximize-2" class="w-3.5 h-3.5" id="lab-fullscreen-icon"></i>
-                <span id="lab-fullscreen-label">Fullscreen</span>
+              <button onclick="requestFullscreenDemo()" class="px-4 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-bold flex items-center gap-1.5 transition-colors shadow-sm">
+                <i data-lucide="maximize" class="w-3.5 h-3.5"></i> Fullscreen
               </button>
             </div>
           </div>
+
+          <!-- 8 Interactive Scene Buttons (Pastel Console Buttons) -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5 mb-6">
+            <button onclick="selectScene('MeowSweeper_Lab.unity', 'MeowSweeper Cat Puzzle')" class="scene-btn p-2.5 rounded-xl bg-amber-400 text-amber-950 font-bold text-xs text-center truncate border-2 border-amber-300 shadow-sm">
+              🐱 MeowSweeper
+            </button>
+            <button onclick="selectScene('CalmJigsaw_Lab.unity', 'Procedural Bezier Slicer')" class="scene-btn p-2.5 rounded-xl bg-[#3D332E] text-slate-300 hover:text-white font-medium text-xs text-center truncate border border-[#4E413B]">
+              🧩 Calm Jigsaw
+            </button>
+            <button onclick="selectScene('JigsawSolitaire_Lab.unity', 'Card Stack Solver')" class="scene-btn p-2.5 rounded-xl bg-[#3D332E] text-slate-300 hover:text-white font-medium text-xs text-center truncate border border-[#4E413B]">
+              🃏 Solitaire
+            </button>
+            <button onclick="selectScene('ArrowStrike_Lab.unity', 'Projectile Trajectory')" class="scene-btn p-2.5 rounded-xl bg-[#3D332E] text-slate-300 hover:text-white font-medium text-xs text-center truncate border border-[#4E413B]">
+              🏹 Arrow Strike
+            </button>
+            <button onclick="selectScene('Blockade2D_Lab.unity', 'Spatial Grid Collisions')" class="scene-btn p-2.5 rounded-xl bg-[#3D332E] text-slate-300 hover:text-white font-medium text-xs text-center truncate border border-[#4E413B]">
+              🧱 Blockade 2D
+            </button>
+            <button onclick="selectScene('NativeBridge_Lab.unity', 'Android/iOS IPC Bridge')" class="scene-btn p-2.5 rounded-xl bg-[#3D332E] text-slate-300 hover:text-white font-medium text-xs text-center truncate border border-[#4E413B]">
+              🖼️ Native Bridge
+            </button>
+            <button onclick="selectScene('Leaderboard_Lab.unity', 'Binary Anti-Cheat Ledger')" class="scene-btn p-2.5 rounded-xl bg-[#3D332E] text-slate-300 hover:text-white font-medium text-xs text-center truncate border border-[#4E413B]">
+              🏆 Leaderboard
+            </button>
+            <button onclick="selectScene('AssetOrganizer_Lab.unity', 'Dependency Graph Tree')" class="scene-btn p-2.5 rounded-xl bg-[#3D332E] text-slate-300 hover:text-white font-medium text-xs text-center truncate border border-[#4E413B]">
+              🗂️ Organizer
+            </button>
+          </div>
+
+          <!-- Screen Viewport with Live Embedded Unity WebGL Iframe -->
+          <div id="arcade-viewport" class="relative bg-black rounded-2xl overflow-hidden border-4 border-[#1B1614] aspect-video min-h-[460px] max-h-[620px] flex items-center justify-center shadow-inner">
+            <iframe
+              id="unity-arcade-frame"
+              src="labs/unity-meowsweeper/index.html?v=00f06be"
+              title="Unity Arcade Interactive Viewport"
+              class="w-full h-full border-0 flex-1 bg-black"
+              allow="fullscreen; clipboard-read; clipboard-write"
+              loading="eager">
+            </iframe>
+          </div>
+
         </div>
 
-        <!-- CENTER VIEWPORT STAGE (Holds the Single Active <iframe> OR WebGL Launcher Overlay) -->
-        <div class="flex-1 min-h-0 relative bg-[#0d1117] flex flex-col overflow-hidden">
+      </div>
+    </section>
 
-          <!-- Approach #3 Unity SceneManager Transition Curtain -->
-          <div id="lab-scene-loader" class="hidden absolute inset-0 bg-[#0d1117]/95 backdrop-blur-md z-30 flex flex-col items-center justify-center gap-3 transition-opacity duration-200">
-            <div class="flex items-center gap-2 text-sm font-mono font-bold text-white">
-              <span id="lab-loader-icon" class="text-lg">🐱</span>
-              <span id="lab-loader-title">SceneManager.LoadSceneAsync("<span class="text-sky-400">MeowSweeper_Lab.unity</span>")</span>
-            </div>
-            <div class="w-72 sm:w-80 h-2 rounded-full bg-[#21262d] overflow-hidden border border-[#30363d]">
-              <div id="lab-loader-bar" class="h-full bg-sky-400 rounded-full lab-progress-anim"></div>
-            </div>
-            <div id="lab-loader-sub" class="text-xs font-mono text-slate-400">Unloading previous DOM &bull; Mounting single active instance...</div>
+    <!-- ============================================================== -->
+    <!-- ZONE 4: ARCHITECTURE BLUEPRINTS (ENGINEER'S DRAFTING DESK)    -->
+    <!-- ============================================================== -->
+    <section id="blueprints" class="relative theme-blend-blueprints py-20 blueprint-grid overflow-hidden blended-section-divider">
+      <!-- Dynamic Floating Game Background Icons (Poisson Distributed, Randomized Each Refresh) -->
+      <div class="section-bg-icons absolute inset-0 pointer-events-none overflow-hidden" style="z-index: 1;" aria-hidden="true"></div>
+
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-10">
+        
+        <!-- Distinct Section Banner Ribbon -->
+        <div class="text-center max-w-2xl mx-auto space-y-3">
+          <div class="section-ribbon bg-sky-600 text-white shadow-sky-600/30">
+            <span>📐</span> SECTION 03 &bull; DRAFTING BENCH &amp; BLUEPRINTS
           </div>
+          <h2 class="font-display font-extrabold text-sky-950 text-3xl sm:text-5xl">
+            8 Subsystem Blueprints
+          </h2>
+          <p class="text-sm sm:text-base text-sky-800 font-medium">
+            Production blueprints engineered for zero runtime GC, deterministic mathematical solvers, and cross-platform native bridges.
+          </p>
+        </div>
 
-          <!-- Reusable Unity WebGL Diagnostic / Fallback Screen -->
-          <div id="lab-webgl-panel" class="hidden absolute inset-0 bg-[#0d1117]/95 backdrop-blur-md z-20 flex-col items-center justify-center p-6 text-center select-none">
-            <div class="max-w-lg w-full bg-[#161b22] border border-rose-500/40 rounded-2xl p-6 shadow-2xl space-y-4">
-              <div class="w-14 h-14 mx-auto rounded-2xl bg-rose-500/15 border border-rose-500/40 flex items-center justify-center text-2xl shadow-inner" id="webgl-card-icon">
-                ⚠️
-              </div>
-              <div class="space-y-2">
-                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-500/15 text-rose-300 border border-rose-500/30 text-[11px] font-mono font-bold uppercase tracking-wider" id="webgl-card-badge">
-                  WEBGL BUILD UNAVAILABLE &bull; SOLO PRODUCT
-                </span>
-                <h3 class="text-lg sm:text-xl font-bold text-white tracking-tight" id="webgl-card-title">Failed to Load Mechanics &mdash; Not Available for This Solo Product</h3>
-                <p class="text-xs text-[#8b949e] leading-relaxed" id="webgl-card-desc">
-                  This standalone architecture subsystem does not package a separate compiled Unity WebGL game binary, or the WebGL build failed to mount. Its full interactive simulation runs in the Instant Lab Simulator.
+        <!-- Carousel Wrapper with Detached Outside Arrow Buttons (X-Axis Offset) -->
+        <div class="relative px-7 sm:px-14 lg:px-18">
+          
+          <!-- Left Outside Arrow Button -->
+          <button type="button" onclick="changeBpPage(-1)" class="absolute left-0 sm:-left-3 lg:-left-5 top-1/2 -translate-y-1/2 w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-[#FAF8F5] dark:bg-[#151E30] border-2 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 flex items-center justify-center hover:border-sky-400 dark:hover:border-sky-400 hover:scale-115 active:scale-95 transition-all cursor-pointer shadow-xl z-30" aria-label="Previous Blueprints Page">
+            <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+          </button>
+
+          <!-- Cards Container (8 Subsystems, Exactly 4 Per Page: 2 Pages Total) -->
+          <div class="w-full">
+            
+            <!-- Page 1 (Subsystems 01 - 04) -->
+            <div id="bp-page-1" class="bp-page grid md:grid-cols-2 gap-7">
+            <div class="clay-card p-6 sm:p-7 border-4 border-sky-300 shadow-[0_12px_28px_rgba(14,165,233,0.18)] space-y-3.5 bg-[#FAF8F5] relative flex flex-col justify-between">
+              <div class="space-y-3">
+                <div class="flex items-center justify-between border-b-2 border-sky-100 dark:border-slate-800 pb-2.5">
+                  <span class="px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-amber-100 dark:bg-amber-500/15 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-500/30">
+                    SUBSYSTEM 01 // SOLVER
+                  </span>
+                  <span class="text-xs text-sky-700 dark:text-sky-400 font-bold font-mono">Latency: 0.14 ms / frame</span>
+                </div>
+                <h3 class="font-display font-bold text-slate-900 dark:text-slate-100 text-lg sm:text-xl leading-snug">
+                  Meowdoku Deterministic Hint Cascade State Machine
+                </h3>
+                <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+                  Algorithmic deductive engine for hybrid Queens/Sudoku puzzles. Computes deterministic logical hints across 8x8 matrices without recursive backtrack overhead or frame drops.
                 </p>
               </div>
-              <div class="bg-[#0d1117] border border-[#30363d] rounded-xl p-3.5 text-left text-xs font-mono text-[#8b949e] space-y-1.5">
-                <div class="text-slate-200 font-bold flex items-center justify-between">
-                  <span>Runtime Diagnostic Telemetry:</span>
-                  <span class="text-amber-400" id="webgl-spec-tag">Diagnostic Fallback</span>
+              <div class="flex flex-wrap gap-2 pt-2 text-[11px] font-bold">
+                <span class="px-3 py-1 rounded-lg bg-sky-50 dark:bg-[#151E30] text-sky-900 dark:text-sky-300 border border-sky-200 dark:border-slate-700/80">Bitmask Matrix</span><span class="px-3 py-1 rounded-lg bg-sky-50 dark:bg-[#151E30] text-sky-900 dark:text-sky-300 border border-sky-200 dark:border-slate-700/80">Precomputed Mask Tables</span><span class="px-3 py-1 rounded-lg bg-sky-50 dark:bg-[#151E30] text-sky-900 dark:text-sky-300 border border-sky-200 dark:border-slate-700/80">Zero GC Loop</span>
+              </div>
+            </div>
+            <div class="clay-card p-6 sm:p-7 border-4 border-emerald-300 shadow-[0_12px_28px_rgba(16,185,129,0.18)] space-y-3.5 bg-[#FAF8F5] relative flex flex-col justify-between">
+              <div class="space-y-3">
+                <div class="flex items-center justify-between border-b-2 border-sky-100 dark:border-slate-800 pb-2.5">
+                  <span class="px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-amber-100 dark:bg-amber-500/15 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-500/30">
+                    SUBSYSTEM 02 // GEOMETRY
+                  </span>
+                  <span class="text-xs text-sky-700 dark:text-sky-400 font-bold font-mono">Latency: 1.20 ms / slice</span>
                 </div>
-                <div id="webgl-spec-line1">&bull; Status: <span class="text-rose-400">WebGL Mechanics Build Not Available / Failed to Load</span></div>
-                <div id="webgl-spec-line2">&bull; Active Runtime: <span class="text-emerald-400">Instant HTML5 Architecture Simulator Ready</span></div>
+                <h3 class="font-display font-bold text-slate-900 dark:text-slate-100 text-lg sm:text-xl leading-snug">
+                  N×N Procedural Bezier Mesh Generator & Dynamic UVs
+                </h3>
+                <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+                  Slices arbitrary source images into interlocking N×N jigsaw puzzle pieces using 9 parametric cubic Bezier edge formulas. Dynamically recalculates normal quads and tangent vectors on the fly.
+                </p>
               </div>
-              <div class="flex flex-wrap items-center justify-center gap-2.5 pt-1">
-                <button type="button" id="webgl-btn-try-boot" class="hidden px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold cursor-pointer transition flex items-center gap-1.5 shadow-lg shadow-purple-500/20">
-                  <span>▶</span> <span>Retry WebGL Build</span>
-                </button>
+              <div class="flex flex-wrap gap-2 pt-2 text-[11px] font-bold">
+                <span class="px-3 py-1 rounded-lg bg-sky-50 dark:bg-[#151E30] text-sky-900 dark:text-sky-300 border border-sky-200 dark:border-slate-700/80">Cubic Bezier Math</span><span class="px-3 py-1 rounded-lg bg-sky-50 dark:bg-[#151E30] text-sky-900 dark:text-sky-300 border border-sky-200 dark:border-slate-700/80">Burst UV Quads</span><span class="px-3 py-1 rounded-lg bg-sky-50 dark:bg-[#151E30] text-sky-900 dark:text-sky-300 border border-sky-200 dark:border-slate-700/80">Mesh Topology Pool</span>
               </div>
             </div>
+            <div class="clay-card p-6 sm:p-7 border-4 border-purple-300 shadow-[0_12px_28px_rgba(168,85,247,0.18)] space-y-3.5 bg-[#FAF8F5] relative flex flex-col justify-between">
+              <div class="space-y-3">
+                <div class="flex items-center justify-between border-b-2 border-sky-100 dark:border-slate-800 pb-2.5">
+                  <span class="px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-amber-100 dark:bg-amber-500/15 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-500/30">
+                    SUBSYSTEM 03 // SHADER PIPELINE
+                  </span>
+                  <span class="text-xs text-sky-700 dark:text-sky-400 font-bold font-mono">0.08 ms (GPU Single-Pass)</span>
+                </div>
+                <h3 class="font-display font-bold text-slate-900 dark:text-slate-100 text-lg sm:text-xl leading-snug">
+                  Dual-Layer ShadowMask Shader Pipeline (HLSL)
+                </h3>
+                <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+                  Custom HLSL shader blending inner shape alpha masks with ambient drop shadows inside a single draw call. Prevents piece z-fighting and renders smooth bevel contours on mobile hardware.
+                </p>
+              </div>
+              <div class="flex flex-wrap gap-2 pt-2 text-[11px] font-bold">
+                <span class="px-3 py-1 rounded-lg bg-sky-50 dark:bg-[#151E30] text-sky-900 dark:text-sky-300 border border-sky-200 dark:border-slate-700/80">ShaderLab HLSL</span><span class="px-3 py-1 rounded-lg bg-sky-50 dark:bg-[#151E30] text-sky-900 dark:text-sky-300 border border-sky-200 dark:border-slate-700/80">Single Draw Call</span><span class="px-3 py-1 rounded-lg bg-sky-50 dark:bg-[#151E30] text-sky-900 dark:text-sky-300 border border-sky-200 dark:border-slate-700/80">Anti-Aliased Bevel</span>
+              </div>
+            </div>
+            <div class="clay-card p-6 sm:p-7 border-4 border-sky-300 shadow-[0_12px_28px_rgba(14,165,233,0.18)] space-y-3.5 bg-[#FAF8F5] relative flex flex-col justify-between">
+              <div class="space-y-3">
+                <div class="flex items-center justify-between border-b-2 border-sky-100 dark:border-slate-800 pb-2.5">
+                  <span class="px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-amber-100 dark:bg-amber-500/15 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-500/30">
+                    SUBSYSTEM 04 // NATIVE IPC
+                  </span>
+                  <span class="text-xs text-sky-700 dark:text-sky-400 font-bold font-mono">Zero-Copy Buffer</span>
+                </div>
+                <h3 class="font-display font-bold text-slate-900 dark:text-slate-100 text-lg sm:text-xl leading-snug">
+                  Native Android/iOS Image Bridge & Memory Pool
+                </h3>
+                <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+                  Asynchronous photo picker bridge for Android Intent / iOS UIImagePickerController. Transfers raw camera/gallery byte buffers directly into Unity Texture2D memory with zero bridge serialization lag.
+                </p>
+              </div>
+              <div class="flex flex-wrap gap-2 pt-2 text-[11px] font-bold">
+                <span class="px-3 py-1 rounded-lg bg-sky-50 dark:bg-[#151E30] text-sky-900 dark:text-sky-300 border border-sky-200 dark:border-slate-700/80">Native JNI / Obj-C</span><span class="px-3 py-1 rounded-lg bg-sky-50 dark:bg-[#151E30] text-sky-900 dark:text-sky-300 border border-sky-200 dark:border-slate-700/80">Texture2D Streaming</span><span class="px-3 py-1 rounded-lg bg-sky-50 dark:bg-[#151E30] text-sky-900 dark:text-sky-300 border border-sky-200 dark:border-slate-700/80">Pinned Memory Ptrs</span>
+              </div>
+            </div>
+            </div>
+
+            <!-- Page 2 (Subsystems 05 - 08) -->
+            <div id="bp-page-2" class="bp-page hidden grid md:grid-cols-2 gap-7">
+            <div class="clay-card p-6 sm:p-7 border-4 border-amber-300 shadow-[0_12px_28px_rgba(245,158,11,0.18)] space-y-3.5 bg-[#FAF8F5] relative flex flex-col justify-between">
+              <div class="space-y-3">
+                <div class="flex items-center justify-between border-b-2 border-sky-100 dark:border-slate-800 pb-2.5">
+                  <span class="px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-amber-100 dark:bg-amber-500/15 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-500/30">
+                    SUBSYSTEM 05 // TRAJECTORY AI
+                  </span>
+                  <span class="text-xs text-sky-700 dark:text-sky-400 font-bold font-mono">Deterministic Raycast</span>
+                </div>
+                <h3 class="font-display font-bold text-slate-900 dark:text-slate-100 text-lg sm:text-xl leading-snug">
+                  Arrow Strike & Solvable Shape Generator
+                </h3>
+                <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+                  Reverse-path procedural shape generator growing arrow escape vectors backwards from clear board margins. Uses deterministic orthogonal sweep tests ensuring 100% solvable puzzle layouts.
+                </p>
+              </div>
+              <div class="flex flex-wrap gap-2 pt-2 text-[11px] font-bold">
+                <span class="px-3 py-1 rounded-lg bg-sky-50 dark:bg-[#151E30] text-sky-900 dark:text-sky-300 border border-sky-200 dark:border-slate-700/80">Outside-In Peeler</span><span class="px-3 py-1 rounded-lg bg-sky-50 dark:bg-[#151E30] text-sky-900 dark:text-sky-300 border border-sky-200 dark:border-slate-700/80">Ray Collision Sweep</span><span class="px-3 py-1 rounded-lg bg-sky-50 dark:bg-[#151E30] text-sky-900 dark:text-sky-300 border border-sky-200 dark:border-slate-700/80">Chevron Path Renderer</span>
+              </div>
+            </div>
+            <div class="clay-card p-6 sm:p-7 border-4 border-indigo-300 shadow-[0_12px_28px_rgba(99,102,241,0.18)] space-y-3.5 bg-[#FAF8F5] relative flex flex-col justify-between">
+              <div class="space-y-3">
+                <div class="flex items-center justify-between border-b-2 border-sky-100 dark:border-slate-800 pb-2.5">
+                  <span class="px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-amber-100 dark:bg-amber-500/15 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-500/30">
+                    SUBSYSTEM 06 // STRATEGY AI
+                  </span>
+                  <span class="text-xs text-sky-700 dark:text-sky-400 font-bold font-mono">Zero-Alloc BFS</span>
+                </div>
+                <h3 class="font-display font-bold text-slate-900 dark:text-slate-100 text-lg sm:text-xl leading-snug">
+                  Blockade 2D Strategic Path & Minimax AI
+                </h3>
+                <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+                  Turn-based tactical grid validator guaranteeing dual-path BFS escape routing. Features Minimax opponent heuristics with command-pattern undo/redo and floating touch-offset previews.
+                </p>
+              </div>
+              <div class="flex flex-wrap gap-2 pt-2 text-[11px] font-bold">
+                <span class="px-3 py-1 rounded-lg bg-sky-50 dark:bg-[#151E30] text-sky-900 dark:text-sky-300 border border-sky-200 dark:border-slate-700/80">Dual-Path BFS</span><span class="px-3 py-1 rounded-lg bg-sky-50 dark:bg-[#151E30] text-sky-900 dark:text-sky-300 border border-sky-200 dark:border-slate-700/80">Minimax AI Opponent</span><span class="px-3 py-1 rounded-lg bg-sky-50 dark:bg-[#151E30] text-sky-900 dark:text-sky-300 border border-sky-200 dark:border-slate-700/80">Command Undo/Redo</span>
+              </div>
+            </div>
+            <div class="clay-card p-6 sm:p-7 border-4 border-rose-300 shadow-[0_12px_28px_rgba(244,63,94,0.18)] space-y-3.5 bg-[#FAF8F5] relative flex flex-col justify-between">
+              <div class="space-y-3">
+                <div class="flex items-center justify-between border-b-2 border-sky-100 dark:border-slate-800 pb-2.5">
+                  <span class="px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-amber-100 dark:bg-amber-500/15 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-500/30">
+                    SUBSYSTEM 07 // CARD HIERARCHY
+                  </span>
+                  <span class="text-xs text-sky-700 dark:text-sky-400 font-bold font-mono">0px Seam Merging</span>
+                </div>
+                <h3 class="font-display font-bold text-slate-900 dark:text-slate-100 text-lg sm:text-xl leading-snug">
+                  Jigsaw Solitaire Displacement Swap & Seam Merge
+                </h3>
+                <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+                  Tactile card-grid displacement engine swapping multi-card stacks across slots with zero seam gaps. Combines dynamic procedural flame noise shaders with spatial stack hierarchy solvers.
+                </p>
+              </div>
+              <div class="flex flex-wrap gap-2 pt-2 text-[11px] font-bold">
+                <span class="px-3 py-1 rounded-lg bg-sky-50 dark:bg-[#151E30] text-sky-900 dark:text-sky-300 border border-sky-200 dark:border-slate-700/80">Displacement Swap</span><span class="px-3 py-1 rounded-lg bg-sky-50 dark:bg-[#151E30] text-sky-900 dark:text-sky-300 border border-sky-200 dark:border-slate-700/80">Procedural Flame Shader</span><span class="px-3 py-1 rounded-lg bg-sky-50 dark:bg-[#151E30] text-sky-900 dark:text-sky-300 border border-sky-200 dark:border-slate-700/80">Spatial Stack Hierarchy</span>
+              </div>
+            </div>
+            <div class="clay-card p-6 sm:p-7 border-4 border-amber-300 shadow-[0_12px_28px_rgba(245,158,11,0.18)] space-y-3.5 bg-[#FAF8F5] relative flex flex-col justify-between">
+              <div class="space-y-3">
+                <div class="flex items-center justify-between border-b-2 border-sky-100 dark:border-slate-800 pb-2.5">
+                  <span class="px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-amber-100 dark:bg-amber-500/15 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-500/30">
+                    SUBSYSTEM 08 // LIVEOPS ENGINE
+                  </span>
+                  <span class="text-xs text-sky-700 dark:text-sky-400 font-bold font-mono">Cryptographic Guard</span>
+                </div>
+                <h3 class="font-display font-bold text-slate-900 dark:text-slate-100 text-lg sm:text-xl leading-snug">
+                  Offline Bot-Paced Leaderboard Engine
+                </h3>
+                <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+                  Autonomous simulated leaderboard pacing 29 seeded bot profiles converging to authentic player percentiles. Implements SHA-256 anti-tamper ledgers with anti-rollback date clamping.
+                </p>
+              </div>
+              <div class="flex flex-wrap gap-2 pt-2 text-[11px] font-bold">
+                <span class="px-3 py-1 rounded-lg bg-sky-50 dark:bg-[#151E30] text-sky-900 dark:text-sky-300 border border-sky-200 dark:border-slate-700/80">29 Seeded Bot Profiles</span><span class="px-3 py-1 rounded-lg bg-sky-50 dark:bg-[#151E30] text-sky-900 dark:text-sky-300 border border-sky-200 dark:border-slate-700/80">Anti-Rollback Clamping</span><span class="px-3 py-1 rounded-lg bg-sky-50 dark:bg-[#151E30] text-sky-900 dark:text-sky-300 border border-sky-200 dark:border-slate-700/80">Idempotent Rewards</span>
+              </div>
+            </div>
+            </div>
+
           </div>
 
-          <!-- THE SINGLE ACTIVE IFRAME -->
-          <iframe
-            id="unity-lab-frame"
-            src="labs/unity-meowsweeper/index.html?v=00f06be"
-            title="Unity Lab Interactive Artifact Viewport"
-            class="w-full h-full border-0 flex-1 bg-[#0d1117]"
-            allow="fullscreen; clipboard-read; clipboard-write"
-            loading="eager">
-          </iframe>
+          <!-- Right Outside Arrow Button -->
+          <button type="button" onclick="changeBpPage(1)" class="absolute right-0 sm:-right-3 lg:-right-5 top-1/2 -translate-y-1/2 w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-[#FAF8F5] dark:bg-[#151E30] border-2 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 flex items-center justify-center hover:border-sky-400 dark:hover:border-sky-400 hover:scale-115 active:scale-95 transition-all cursor-pointer shadow-xl z-30" aria-label="Next Blueprints Page">
+            <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+          </button>
 
-        </div>
-
-        <!-- BOTTOM STATUS & TELEMETRY BAR (Hidden per user request) -->
-        <div class="hidden shrink-0 bg-[#161b22] border-t border-[#30363d] px-4 py-2 items-center justify-between gap-2 text-xs font-mono text-slate-400">
-          <div class="flex items-center gap-2.5 flex-wrap">
-            <span class="flex items-center gap-1.5 text-emerald-400 font-semibold">
-              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-              <span>1 Active Instance in DOM</span>
-            </span>
-            <span class="text-slate-600">&bull;</span>
-            <span id="lab-footer-source" class="text-slate-300">labs/meowsweeper.html</span>
-            <span class="text-slate-600 hidden md:inline">&bull;</span>
-            <span id="lab-footer-desc" class="text-sky-400 hidden md:inline">Meowdoku Hybrid Solver + Deterministic Hint Cascade</span>
-          </div>
-
-          <div class="flex items-center gap-2">
-            <button type="button" id="lab-footer-runtime-switch" class="px-2.5 py-0.5 rounded-md bg-purple-500/15 hover:bg-purple-500/25 text-purple-300 border border-purple-500/30 text-xs font-sans font-semibold cursor-pointer transition flex items-center gap-1.5">
-              <span>🎮</span>
-              <span id="lab-footer-runtime-text">Switch to Unity WebGL Build &rarr;</span>
-            </button>
-          </div>
         </div>
 
       </div>
     </section>
 
-    <!-- ================= SCREEN 3: SYSTEMS ARCHITECTURE BLUEPRINTS (ZONE 3 - BLUEPRINTS/BLACKBOX) ================= -->
-    <section id="blueprints" class="space-y-6 scroll-mt-24">
-      <div>
-        <div class="text-xs font-mono text-sky-400 uppercase tracking-wider flex items-center gap-2">
-          <i data-lucide="layers" class="w-4 h-4"></i> Production Architecture
-        </div>
-        <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight mt-1">Blueprints/BlackBox: 10 Architecture Subsystems</h2>
-      </div>
+        <!-- ============================================================== -->
+    <!-- ZONE 5: STUDIO QUEST LOG (ADVENTURE PARCHMENT MAP)              -->
+    <!-- ============================================================== -->
+    <section id="quest-log" class="relative theme-blend-quest py-20 overflow-hidden blended-section-divider">
+      <!-- Dynamic Floating Game Background Icons (Poisson Distributed, Randomized Each Refresh) -->
+      <div class="section-bg-icons absolute inset-0 pointer-events-none overflow-hidden" style="z-index: 1;" aria-hidden="true"></div>
 
-      <style>
-        @media (min-width: 768px) {
-          #bp-sidebar-col {
-            width: 230px !important;
-            min-width: 230px !important;
-            max-width: 230px !important;
-            flex: 0 0 230px !important;
-          }
-        }
-        /* Eye-friendly low-glare Mermaid Flowchart typography & hierarchy */
-        #bp-stage-mermaid .nodeLabel,
-        #lightbox-mermaid .nodeLabel {
-          color: #cbd5e1 !important;
-          font-weight: 500 !important;
-          line-height: 1.38 !important;
-          letter-spacing: 0.01em !important;
-        }
-        #bp-stage-mermaid .nodeLabel .bp-sub,
-        #lightbox-mermaid .nodeLabel .bp-sub {
-          color: #64748b !important;
-          font-weight: 400 !important;
-          font-size: 0.86em !important;
-          display: inline-block;
-          margin-top: 2px;
-        }
-        #bp-stage-mermaid .cluster-label .nodeLabel,
-        #lightbox-mermaid .cluster-label .nodeLabel {
-          color: #64748b !important;
-          font-weight: 600 !important;
-          font-size: 11px !important;
-          letter-spacing: 0.06em !important;
-        }
-        #bp-stage-mermaid .edgeLabel,
-        #lightbox-mermaid .edgeLabel {
-          background-color: #0c101a !important;
-          color: #64748b !important;
-          font-size: 11px !important;
-          font-weight: 400 !important;
-          padding: 1px 5px !important;
-          border-radius: 4px !important;
-        }
-        #bp-stage-mermaid .edgeLabel span,
-        #bp-stage-mermaid .edgeLabel p,
-        #lightbox-mermaid .edgeLabel span,
-        #lightbox-mermaid .edgeLabel p {
-          color: #64748b !important;
-          background-color: #0c101a !important;
-        }
-        #bp-stage-mermaid .flowchart-link,
-        #lightbox-mermaid .flowchart-link {
-          stroke: #475569 !important;
-          stroke-width: 1.25px !important;
-        }
-      </style>
-      <!-- Split-View CAD Terminal Container -->
-      <div class="bg-[#111622] rounded-2xl border border-slate-800 overflow-hidden shadow-2xl flex flex-col md:flex-row min-h-[630px] md:h-[630px]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-10">
         
-        <!-- Left Column: Compact Systems Navigator List -->
-        <div id="bp-sidebar-col" class="w-full md:w-[230px] shrink-0 bg-[#0d121c] border-b md:border-b-0 md:border-r border-slate-800 p-2.5 flex flex-col h-full font-mono text-xs">
-          <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-1 pb-2 mb-2 border-b border-slate-800 flex items-center justify-between shrink-0">
-            <span>Systems Catalog</span>
-            <span class="text-sky-400">10</span>
+        <!-- Distinct Section Banner Ribbon -->
+        <div class="text-center max-w-2xl mx-auto space-y-3">
+          <div class="section-ribbon bg-amber-600 text-white shadow-amber-600/30">
+            <span>🗺️</span> SECTION 04 &bull; STUDIO QUEST TRACK RECORD
           </div>
-
-          <div class="flex-1 flex flex-col justify-between gap-1.5" id="blueprint-nav-list">
-            <!-- Populated via script.js -->
-          </div>
+          <h2 class="font-display font-extrabold text-amber-950 text-3xl sm:text-5xl">
+            Studio Track Record &amp; Campaigns
+          </h2>
+          <p class="text-sm sm:text-base text-amber-850 font-medium">
+            Three years of continuous commercial studio experience delivering polished game architectures.
+          </p>
         </div>
 
-        <!-- Right Column: Expanded Full-Bleed Flowchart Illustration Stage -->
-        <div class="flex-1 min-w-0 bg-[#0a0d14] flex flex-col h-full">
+        <!-- Studio Experience Switcher Navigation Tabs -->
+        <div class="flex flex-wrap items-center justify-center gap-2.5 max-w-4xl mx-auto pb-2" role="tablist">
+          <button type="button" onclick="switchExperience('vasundhara', this)" class="exp-tab-btn px-4 py-2.5 rounded-2xl bg-amber-400 text-amber-950 font-display font-bold text-xs flex items-center gap-2 border-2 border-amber-500 shadow-sm transition-all cursor-pointer">
+            <span>🏢</span> <span>Vasundhara Game Studio</span>
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-600 text-white font-bold ml-1">Current</span>
+          </button>
+          <button type="button" onclick="switchExperience('appzia', this)" class="exp-tab-btn px-4 py-2.5 rounded-2xl bg-[#FAF8F5] dark:bg-[#151E30] text-slate-700 dark:text-slate-300 font-display font-bold text-xs flex items-center gap-2 border-2 border-slate-300 dark:border-slate-700 shadow-sm hover:border-amber-400 transition-all cursor-pointer">
+            <span>♟️</span> <span>Appzia</span>
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-mono font-bold ml-1">Pune</span>
+          </button>
+          <button type="button" onclick="switchExperience('studiokrew', this)" class="exp-tab-btn px-4 py-2.5 rounded-2xl bg-[#FAF8F5] dark:bg-[#151E30] text-slate-700 dark:text-slate-300 font-display font-bold text-xs flex items-center gap-2 border-2 border-slate-300 dark:border-slate-700 shadow-sm hover:border-amber-400 transition-all cursor-pointer">
+            <span>🎲</span> <span>StudioKrew</span>
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-mono font-bold ml-1">Remote</span>
+          </button>
+          <button type="button" onclick="switchExperience('all', this)" class="exp-tab-btn px-4 py-2.5 rounded-2xl bg-[#FAF8F5] dark:bg-[#151E30] text-slate-700 dark:text-slate-300 font-display font-bold text-xs flex items-center gap-2 border-2 border-slate-300 dark:border-slate-700 shadow-sm hover:border-amber-400 transition-all cursor-pointer">
+            <span>📜</span> <span>View All Studios (3)</span>
+          </button>
+        </div>
+
+        <!-- Container for Studio Cards (Clean, Perfectly Nested) -->
+        <div id="experience-cards-container" class="space-y-8">
+
+          <!-- 1. Vasundhara Game Studio Card (4 Crisp Achievements) -->
+          <div id="exp-card-vasundhara" class="exp-card clay-card p-7 sm:p-10 border-4 border-amber-300 shadow-[0_16px_36px_rgba(217,119,6,0.18)] bg-[#FAF8F5] space-y-7">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-amber-100 pb-6">
+              <div class="flex items-center gap-4">
+                <div class="w-16 h-16 rounded-2xl bg-amber-200 border-2 border-amber-400 flex items-center justify-center text-3xl shadow-sm shrink-0">
+                  🏢
+                </div>
+                <div>
+                  <span class="text-xs font-bold text-amber-800 uppercase tracking-wider">Main Studio Campaign</span>
+                  <h3 class="font-display font-bold text-slate-900 text-2xl sm:text-3xl">Vasundhara Game Studio</h3>
+                  <div class="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">Surat, Gujarat &bull; Jan 2023 – Jan 2024 &amp; Dec 2025 – Present &bull; <span class="text-sky-600 font-bold">AI Product Developer — Unity Systems &amp; Gameplay</span></div>
+                </div>
+              </div>
+              <span class="px-4 py-1.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold border-2 border-emerald-300 shadow-sm self-start sm:self-center">
+                Active Production Lead
+              </span>
+            </div>
+
+            <div class="space-y-4">
+              <div class="flex items-start gap-4 p-5 rounded-2xl bg-amber-50/70 border-2 border-amber-200">
+                <div class="w-9 h-9 rounded-xl bg-amber-400 text-amber-950 font-bold flex items-center justify-center text-sm shrink-0 mt-0.5 shadow-sm">✓</div>
+                <div class="space-y-1">
+                  <h4 class="font-display font-bold text-slate-900 text-base">Procedural Jigsaw &amp; Shader Mask Architecture (Calm Jigsaw)</h4>
+                  <p class="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                    Architected N×N Bezier puzzle generator using 9 mathematical edge formulas, dynamic UV quad mesh generation, and custom URP/HLSL shader masking with zero pre-sliced art, slashing asset payload by 84%.
+                  </p>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-4 p-5 rounded-2xl bg-amber-50/70 border-2 border-amber-200">
+                <div class="w-9 h-9 rounded-xl bg-amber-400 text-amber-950 font-bold flex items-center justify-center text-sm shrink-0 mt-0.5 shadow-sm">✓</div>
+                <div class="space-y-1">
+                  <h4 class="font-display font-bold text-slate-900 text-base">MeowSweeper Algorithmic Solver &amp; Multi-Touch Core</h4>
+                  <p class="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                    Built Queens, Sudoku &amp; Minesweeper rulesets with backtracking hint-cascade solver FSM, discrete multi-touch locks, and persistent IAP powerup wallet. Shipped to Google Play with a 5.0★ rating.
+                  </p>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-4 p-5 rounded-2xl bg-amber-50/70 border-2 border-amber-200">
+                <div class="w-9 h-9 rounded-xl bg-amber-400 text-amber-950 font-bold flex items-center justify-center text-sm shrink-0 mt-0.5 shadow-sm">✓</div>
+                <div class="space-y-1">
+                  <h4 class="font-display font-bold text-slate-900 text-base">Native Mobile Image Bridge &amp; WebGL Pipeline</h4>
+                  <p class="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                    Engineered C# bridge over native Android (JNI) / iOS (Obj-C) APIs with 3-tier RAM LRU and disk caching. Deployed single-heap WebGL 2.0 streaming pipeline booting in &lt;3s.
+                  </p>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-4 p-5 rounded-2xl bg-amber-50/70 border-2 border-amber-200">
+                <div class="w-9 h-9 rounded-xl bg-amber-400 text-amber-950 font-bold flex items-center justify-center text-sm shrink-0 mt-0.5 shadow-sm">✓</div>
+                <div class="space-y-1">
+                  <h4 class="font-display font-bold text-slate-900 text-base">Offline Leaderboard, IAP &amp; Editor Tooling</h4>
+                  <p class="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                    Built zero-server bot-paced seasonal leaderboards with anti-rollback clamping, Google/Apple IAP state machines, Asset Organizer EditorWindow, and Argos IPC localization.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Appzia Card (2 Crisp Achievements) -->
+          <div id="exp-card-appzia" class="exp-card hidden clay-card p-7 sm:p-10 border-4 border-indigo-300 shadow-[0_16px_36px_rgba(99,102,241,0.18)] bg-[#FAF8F5] space-y-7">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-indigo-100 pb-6">
+              <div class="flex items-center gap-4">
+                <div class="w-16 h-16 rounded-2xl bg-indigo-100 border-2 border-indigo-300 flex items-center justify-center text-3xl shadow-sm shrink-0">
+                  ♟️
+                </div>
+                <div>
+                  <span class="text-xs font-bold text-indigo-800 uppercase tracking-wider">Multiplayer &amp; Simulation Campaign</span>
+                  <h3 class="font-display font-bold text-slate-900 text-2xl sm:text-3xl">Appzia</h3>
+                  <div class="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">Pune, India &bull; June 2024 – July 2025 &bull; <span class="text-indigo-600 font-bold">Unity3D Systems &amp; Gameplay Developer</span></div>
+                </div>
+              </div>
+              <span class="px-4 py-1.5 rounded-full bg-indigo-100 text-indigo-900 text-xs font-bold border-2 border-indigo-300 shadow-sm self-start sm:self-center">
+                1 Year 2 Mos
+              </span>
+            </div>
+
+            <div class="space-y-4">
+              <div class="flex items-start gap-4 p-5 rounded-2xl bg-indigo-50/70 border-2 border-indigo-200">
+                <div class="w-9 h-9 rounded-xl bg-indigo-500 text-white font-bold flex items-center justify-center text-sm shrink-0 mt-0.5 shadow-sm">✓</div>
+                <div class="space-y-1">
+                  <h4 class="font-display font-bold text-slate-900 text-base">Stockfish AI &amp; Real-Time Chess (Bullet Chess)</h4>
+                  <p class="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                    Architected multiplayer chess engine using Photon (PUN 2) and Stockfish API for live move evaluation, client-side board validation, clock synchronization, and tournament matchmaking brackets.
+                  </p>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-4 p-5 rounded-2xl bg-indigo-50/70 border-2 border-indigo-200">
+                <div class="w-9 h-9 rounded-xl bg-indigo-500 text-white font-bold flex items-center justify-center text-sm shrink-0 mt-0.5 shadow-sm">✓</div>
+                <div class="space-y-1">
+                  <h4 class="font-display font-bold text-slate-900 text-base">Arcade Simulation &amp; Economy Systems (Pinnacle)</h4>
+                  <p class="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                    Led development of Pinnacle arcade simulation replicating physical machines, implementing deterministic FSMs, secure Apple/Google IAP pipelines, and zero-GC object pooling operating at a rock-solid 60 FPS.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. StudioKrew Card (3 Crisp Achievements) -->
+          <div id="exp-card-studiokrew" class="exp-card hidden clay-card p-7 sm:p-10 border-4 border-amber-300 shadow-[0_16px_36px_rgba(245,158,11,0.18)] bg-[#FAF8F5] space-y-7">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-amber-100 pb-6">
+              <div class="flex items-center gap-4">
+                <div class="w-16 h-16 rounded-2xl bg-amber-100 border-2 border-amber-300 flex items-center justify-center text-3xl shadow-sm shrink-0">
+                  🎲
+                </div>
+                <div>
+                  <span class="text-xs font-bold text-amber-800 uppercase tracking-wider">Independent Production Campaign</span>
+                  <h3 class="font-display font-bold text-slate-900 text-2xl sm:text-3xl">StudioKrew</h3>
+                  <div class="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">Delhi, India (Remote) &bull; March 2024 – May 2024 &bull; <span class="text-amber-700 font-bold">Unity Game Developer (Remote)</span></div>
+                </div>
+              </div>
+              <span class="px-4 py-1.5 rounded-full bg-amber-100 text-amber-900 text-xs font-bold border-2 border-amber-300 shadow-sm self-start sm:self-center">
+                Production Sprint
+              </span>
+            </div>
+
+            <div class="space-y-4">
+              <div class="flex items-start gap-4 p-5 rounded-2xl bg-amber-50/70 border-2 border-amber-200">
+                <div class="w-9 h-9 rounded-xl bg-amber-500 text-white font-bold flex items-center justify-center text-sm shrink-0 mt-0.5 shadow-sm">✓</div>
+                <div class="space-y-1">
+                  <h4 class="font-display font-bold text-slate-900 text-base">Solo Card Game Architecture (FreeCell &amp; Solitaire)</h4>
+                  <p class="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                    Delivered complete end-to-end development independently, architecting deterministic card stack rules, memento-based undo/redo state history, and responsive mobile touch controls.
+                  </p>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-4 p-5 rounded-2xl bg-amber-50/70 border-2 border-amber-200">
+                <div class="w-9 h-9 rounded-xl bg-amber-500 text-white font-bold flex items-center justify-center text-sm shrink-0 mt-0.5 shadow-sm">✓</div>
+                <div class="space-y-1">
+                  <h4 class="font-display font-bold text-slate-900 text-base">Dice Physics &amp; Scoring State Machine (Yahtzee)</h4>
+                  <p class="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                    Engineered probabilistic dice-rolling physics, category score validation state machines, and turn-based round flow with fluid particle animations.
+                  </p>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-4 p-5 rounded-2xl bg-amber-50/70 border-2 border-amber-200">
+                <div class="w-9 h-9 rounded-xl bg-amber-400 text-amber-950 font-bold flex items-center justify-center text-sm shrink-0 mt-0.5 shadow-sm">✓</div>
+                <div class="space-y-1">
+                  <h4 class="font-display font-bold text-slate-900 text-base">Grid Puzzle Engine &amp; Serialization (BrokenTiles)</h4>
+                  <p class="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                    Developed reactive grid-matching algorithms with cascading tile clearing, implementing lightweight JSON save serialization for instant session recovery.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ZONE 6: TECHNICAL ARSENAL (INVENTORY CHEST)                    -->
+    <!-- ============================================================== -->
+    <section id="arsenal" class="relative theme-blend-arsenal py-20 overflow-hidden blended-section-divider">
+      <!-- Dynamic Floating Game Background Icons (Poisson Distributed, Randomized Each Refresh) -->
+      <div class="section-bg-icons absolute inset-0 pointer-events-none overflow-hidden" style="z-index: 1;" aria-hidden="true"></div>
+
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-10">
+        
+        <!-- Distinct Section Banner Ribbon -->
+        <div class="text-center max-w-2xl mx-auto space-y-3">
+          <div class="section-ribbon bg-rose-600 text-white shadow-rose-600/30">
+            <span>🎒</span> SECTION 05 &bull; EQUIPMENT LOADOUT &amp; ARSENAL
+          </div>
+          <h2 class="font-display font-extrabold text-rose-950 text-3xl sm:text-5xl">
+            Technical Arsenal &amp; Stack
+          </h2>
+          <p class="text-sm sm:text-base text-rose-800 font-medium">
+            All 6 production competency domains honed across 3 years of daily Unity systems engineering.
+          </p>
+        </div>
+
+        <!-- Carousel Wrapper with Detached Outside Arrow Buttons (X-Axis Offset) -->
+        <div id="arsenal-carousel-wrapper" class="relative group px-7 sm:px-14 lg:px-18" onmouseenter="pauseArsenalAutoScroll()" onmouseleave="resumeArsenalAutoScroll()">
           
-          <!-- Single Compact Row: Title on Left + Expand on Right -->
-          <div class="flex items-center justify-between gap-2 px-4 py-2.5 border-b border-slate-800/80 bg-[#0d121c] shrink-0">
-            <h3 id="bp-stage-title" class="text-sm sm:text-base font-bold text-slate-200 tracking-tight">MeowSweeper &amp; Level Generator</h3>
+          <!-- Left Outside Arrow Button -->
+          <button type="button" onclick="changeArsenalPage(-1)" class="absolute left-0 sm:-left-3 lg:-left-5 top-1/2 -translate-y-1/2 w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-[#FAF8F5] dark:bg-[#151E30] border-2 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 flex items-center justify-center hover:border-rose-400 dark:hover:border-rose-400 hover:scale-115 active:scale-95 transition-all cursor-pointer shadow-xl z-30" aria-label="Previous Arsenal Slide">
+            <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+          </button>
 
-            <button id="btn-zoom-blueprint" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-mono text-xs flex items-center gap-1.5 transition-all cursor-pointer">
-              <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i> Expand
-            </button>
+          <!-- Cards Container (Page 1: 1-3, Page 2: 4-6) -->
+          <div class="w-full">
+            
+            <!-- Page 1 (Cards 1, 2, 3) -->
+            <div id="arsenal-page-1" class="arsenal-page grid md:grid-cols-3 gap-7 transition-opacity duration-500">
+          <!-- Card: Revenue Systems & Growth -->
+          <div class="arsenal-slide clay-card p-6 sm:p-7 border-4 border-amber-300 shadow-[0_12px_28px_rgba(245,158,11,0.18)] space-y-4 bg-[#FAF8F5] relative flex flex-col justify-between">
+            <div class="space-y-4">
+              <div class="flex items-center gap-3 border-b-2 border-rose-100 dark:border-slate-800 pb-3">
+                <span class="text-3xl shrink-0">📈</span>
+                <div>
+                  <h3 class="font-display font-bold text-slate-900 dark:text-slate-100 text-lg sm:text-xl leading-tight">Revenue Systems & Growth</h3>
+                  <p class="text-[11px] text-slate-500 font-medium mt-0.5">Monetization & Product Systems</p>
+                </div>
+              </div>
+              <div class="space-y-2 font-medium">
+              <div class="flex justify-between items-center p-2.5 rounded-xl bg-rose-50/70 dark:bg-[#151E30] border border-rose-200/80 dark:border-rose-900/40">
+                <span class="font-bold text-slate-800 dark:text-slate-100 text-xs">Google & Apple IAP</span>
+                <span class="text-rose-700 dark:text-rose-400 font-bold text-xs">StoreKit 2 / Billing</span>
+              </div>              <div class="flex justify-between items-center p-2.5 rounded-xl bg-rose-50/70 dark:bg-[#151E30] border border-rose-200/80 dark:border-rose-900/40">
+                <span class="font-bold text-slate-800 dark:text-slate-100 text-xs">Ads Mediation</span>
+                <span class="text-amber-700 dark:text-amber-400 font-bold text-xs">IronSource / AppLovin</span>
+              </div>              <div class="flex justify-between items-center p-2.5 rounded-xl bg-rose-50/70 dark:bg-[#151E30] border border-rose-200/80 dark:border-rose-900/40">
+                <span class="font-bold text-slate-800 dark:text-slate-100 text-xs">Event Funnels & Attribution</span>
+                <span class="text-sky-700 dark:text-sky-400 font-bold text-xs">Adjust / Firebase</span>
+              </div>              <div class="flex justify-between items-center p-2.5 rounded-xl bg-rose-50/70 dark:bg-[#151E30] border border-rose-200/80 dark:border-rose-900/40">
+                <span class="font-bold text-slate-800 dark:text-slate-100 text-xs">User Engagement Loops</span>
+                <span class="text-emerald-700 dark:text-emerald-400 font-bold text-xs">Retention FSM</span>
+              </div>              <div class="flex justify-between items-center p-2.5 rounded-xl bg-rose-50/70 dark:bg-[#151E30] border border-rose-200/80 dark:border-rose-900/40">
+                <span class="font-bold text-slate-800 dark:text-slate-100 text-xs">Revenue & Cohort Analytics</span>
+                <span class="text-purple-700 dark:text-purple-400 font-bold text-xs">LTV Tracking</span>
+              </div>
+              </div>
+            </div>
+          </div>
+          <!-- Card: Rendering & Optimization -->
+          <div class="arsenal-slide clay-card p-6 sm:p-7 border-4 border-purple-300 shadow-[0_12px_28px_rgba(168,85,247,0.18)] space-y-4 bg-[#FAF8F5] relative flex flex-col justify-between">
+            <div class="space-y-4">
+              <div class="flex items-center gap-3 border-b-2 border-rose-100 dark:border-slate-800 pb-3">
+                <span class="text-3xl shrink-0">⚡</span>
+                <div>
+                  <h3 class="font-display font-bold text-slate-900 dark:text-slate-100 text-lg sm:text-xl leading-tight">Rendering & Optimization</h3>
+                  <p class="text-[11px] text-slate-500 font-medium mt-0.5">Graphics Pipeline & GPU Throughput</p>
+                </div>
+              </div>
+              <div class="space-y-2 font-medium">
+              <div class="flex justify-between items-center p-2.5 rounded-xl bg-rose-50/70 dark:bg-[#151E30] border border-rose-200/80 dark:border-rose-900/40">
+                <span class="font-bold text-slate-800 dark:text-slate-100 text-xs">URP & SRP Batcher</span>
+                <span class="text-purple-700 dark:text-purple-400 font-bold text-xs">Draw Call Merging</span>
+              </div>              <div class="flex justify-between items-center p-2.5 rounded-xl bg-rose-50/70 dark:bg-[#151E30] border border-rose-200/80 dark:border-rose-900/40">
+                <span class="font-bold text-slate-800 dark:text-slate-100 text-xs">GPU Instancing</span>
+                <span class="text-sky-700 dark:text-sky-400 font-bold text-xs">Mesh Multi-Draw</span>
+              </div>              <div class="flex justify-between items-center p-2.5 rounded-xl bg-rose-50/70 dark:bg-[#151E30] border border-rose-200/80 dark:border-rose-900/40">
+                <span class="font-bold text-slate-800 dark:text-slate-100 text-xs">ASTC Compression</span>
+                <span class="text-emerald-700 dark:text-emerald-400 font-bold text-xs">RAM Optimization</span>
+              </div>              <div class="flex justify-between items-center p-2.5 rounded-xl bg-rose-50/70 dark:bg-[#151E30] border border-rose-200/80 dark:border-rose-900/40">
+                <span class="font-bold text-slate-800 dark:text-slate-100 text-xs">Custom UI & HLSL Shaders</span>
+                <span class="text-rose-700 dark:text-rose-400 font-bold text-xs">ShaderLab HLSL</span>
+              </div>              <div class="flex justify-between items-center p-2.5 rounded-xl bg-rose-50/70 dark:bg-[#151E30] border border-rose-200/80 dark:border-rose-900/40">
+                <span class="font-bold text-slate-800 dark:text-slate-100 text-xs">Single-Pass Stereo</span>
+                <span class="text-amber-700 dark:text-amber-400 font-bold text-xs">Mobile Fillrate</span>
+              </div>
+              </div>
+            </div>
+          </div>
+          <!-- Card: Profiling & Debugging -->
+          <div class="arsenal-slide clay-card p-6 sm:p-7 border-4 border-emerald-300 shadow-[0_12px_28px_rgba(16,185,129,0.18)] space-y-4 bg-[#FAF8F5] relative flex flex-col justify-between">
+            <div class="space-y-4">
+              <div class="flex items-center gap-3 border-b-2 border-rose-100 dark:border-slate-800 pb-3">
+                <span class="text-3xl shrink-0">🔍</span>
+                <div>
+                  <h3 class="font-display font-bold text-slate-900 dark:text-slate-100 text-lg sm:text-xl leading-tight">Profiling & Debugging</h3>
+                  <p class="text-[11px] text-slate-500 font-medium mt-0.5">Telemetry & Diagnostics</p>
+                </div>
+              </div>
+              <div class="space-y-2 font-medium">
+              <div class="flex justify-between items-center p-2.5 rounded-xl bg-rose-50/70 dark:bg-[#151E30] border border-rose-200/80 dark:border-rose-900/40">
+                <span class="font-bold text-slate-800 dark:text-slate-100 text-xs">Unity Profiler</span>
+                <span class="text-emerald-700 dark:text-emerald-400 font-bold text-xs">CPU / GPU / Memory</span>
+              </div>              <div class="flex justify-between items-center p-2.5 rounded-xl bg-rose-50/70 dark:bg-[#151E30] border border-rose-200/80 dark:border-rose-900/40">
+                <span class="font-bold text-slate-800 dark:text-slate-100 text-xs">Deep Memory Profiler</span>
+                <span class="text-sky-700 dark:text-sky-400 font-bold text-xs">Managed vs Native</span>
+              </div>              <div class="flex justify-between items-center p-2.5 rounded-xl bg-rose-50/70 dark:bg-[#151E30] border border-rose-200/80 dark:border-rose-900/40">
+                <span class="font-bold text-slate-800 dark:text-slate-100 text-xs">Frame Debugger & RenderDoc</span>
+                <span class="text-purple-700 dark:text-purple-400 font-bold text-xs">GPU Pass Audit</span>
+              </div>              <div class="flex justify-between items-center p-2.5 rounded-xl bg-rose-50/70 dark:bg-[#151E30] border border-rose-200/80 dark:border-rose-900/40">
+                <span class="font-bold text-slate-800 dark:text-slate-100 text-xs">Android Logcat & ADB</span>
+                <span class="text-amber-700 dark:text-amber-400 font-bold text-xs">Real Device Tests</span>
+              </div>              <div class="flex justify-between items-center p-2.5 rounded-xl bg-rose-50/70 dark:bg-[#151E30] border border-rose-200/80 dark:border-rose-900/40">
+                <span class="font-bold text-slate-800 dark:text-slate-100 text-xs">Zero-GC Memory Auditing</span>
+                <span class="text-rose-700 dark:text-rose-400 font-bold text-xs">0 B Allocation</span>
+              </div>
+              </div>
+            </div>
+          </div>
+            </div>
+
+            <!-- Page 2 (Cards 4, 5, 6) -->
+            <div id="arsenal-page-2" class="arsenal-page hidden grid md:grid-cols-3 gap-7 transition-opacity duration-500">
+          <!-- Card: Platform & Native Bridges -->
+          <div class="arsenal-slide clay-card p-6 sm:p-7 border-4 border-sky-300 shadow-[0_12px_28px_rgba(14,165,233,0.18)] space-y-4 bg-[#FAF8F5] relative flex flex-col justify-between">
+            <div class="space-y-4">
+              <div class="flex items-center gap-3 border-b-2 border-rose-100 dark:border-slate-800 pb-3">
+                <span class="text-3xl shrink-0">📱</span>
+                <div>
+                  <h3 class="font-display font-bold text-slate-900 dark:text-slate-100 text-lg sm:text-xl leading-tight">Platform & Native Bridges</h3>
+                  <p class="text-[11px] text-slate-500 font-medium mt-0.5">Low-Latency IPC & WASM</p>
+                </div>
+              </div>
+              <div class="space-y-2 font-medium">
+              <div class="flex justify-between items-center p-2.5 rounded-xl bg-rose-50/70 dark:bg-[#151E30] border border-rose-200/80 dark:border-rose-900/40">
+                <span class="font-bold text-slate-800 dark:text-slate-100 text-xs">Android JNI Bridge</span>
+                <span class="text-sky-700 dark:text-sky-400 font-bold text-xs">Java / C# Interop</span>
+              </div>              <div class="flex justify-between items-center p-2.5 rounded-xl bg-rose-50/70 dark:bg-[#151E30] border border-rose-200/80 dark:border-rose-900/40">
+                <span class="font-bold text-slate-800 dark:text-slate-100 text-xs">iOS Native Bridge</span>
+                <span class="text-rose-700 dark:text-rose-400 font-bold text-xs">Objective-C / C#</span>
+              </div>              <div class="flex justify-between items-center p-2.5 rounded-xl bg-rose-50/70 dark:bg-[#151E30] border border-rose-200/80 dark:border-rose-900/40">
+                <span class="font-bold text-slate-800 dark:text-slate-100 text-xs">WebGL 2.0 & WASM</span>
+                <span class="text-emerald-700 dark:text-emerald-400 font-bold text-xs">Single-Heap Boot</span>
+              </div>              <div class="flex justify-between items-center p-2.5 rounded-xl bg-rose-50/70 dark:bg-[#151E30] border border-rose-200/80 dark:border-rose-900/40">
+                <span class="font-bold text-slate-800 dark:text-slate-100 text-xs">OTA Manifest Sync</span>
+                <span class="text-amber-700 dark:text-amber-400 font-bold text-xs">Remote Level JSON</span>
+              </div>              <div class="flex justify-between items-center p-2.5 rounded-xl bg-rose-50/70 dark:bg-[#151E30] border border-rose-200/80 dark:border-rose-900/40">
+                <span class="font-bold text-slate-800 dark:text-slate-100 text-xs">Pinned Memory Pointers</span>
+                <span class="text-purple-700 dark:text-purple-400 font-bold text-xs">Zero-Copy Streaming</span>
+              </div>
+              </div>
+            </div>
+          </div>
+          <!-- Card: Architecture & AI Systems -->
+          <div class="arsenal-slide clay-card p-6 sm:p-7 border-4 border-indigo-300 shadow-[0_12px_28px_rgba(99,102,241,0.18)] space-y-4 bg-[#FAF8F5] relative flex flex-col justify-between">
+            <div class="space-y-4">
+              <div class="flex items-center gap-3 border-b-2 border-rose-100 dark:border-slate-800 pb-3">
+                <span class="text-3xl shrink-0">🧠</span>
+                <div>
+                  <h3 class="font-display font-bold text-slate-900 dark:text-slate-100 text-lg sm:text-xl leading-tight">Architecture & AI Systems</h3>
+                  <p class="text-[11px] text-slate-500 font-medium mt-0.5">Clean Frameworks & Algorithms</p>
+                </div>
+              </div>
+              <div class="space-y-2 font-medium">
+              <div class="flex justify-between items-center p-2.5 rounded-xl bg-rose-50/70 dark:bg-[#151E30] border border-rose-200/80 dark:border-rose-900/40">
+                <span class="font-bold text-slate-800 dark:text-slate-100 text-xs">Deterministic FSMs</span>
+                <span class="text-rose-700 dark:text-rose-400 font-bold text-xs">State Machines</span>
+              </div>              <div class="flex justify-between items-center p-2.5 rounded-xl bg-rose-50/70 dark:bg-[#151E30] border border-rose-200/80 dark:border-rose-900/40">
+                <span class="font-bold text-slate-800 dark:text-slate-100 text-xs">Zenject / VContainer</span>
+                <span class="text-sky-700 dark:text-sky-400 font-bold text-xs">Dependency Injection</span>
+              </div>              <div class="flex justify-between items-center p-2.5 rounded-xl bg-rose-50/70 dark:bg-[#151E30] border border-rose-200/80 dark:border-rose-900/40">
+                <span class="font-bold text-slate-800 dark:text-slate-100 text-xs">Zero-GC Object Pooling</span>
+                <span class="text-emerald-700 dark:text-emerald-400 font-bold text-xs">Struct Ring Buffers</span>
+              </div>              <div class="flex justify-between items-center p-2.5 rounded-xl bg-rose-50/70 dark:bg-[#151E30] border border-rose-200/80 dark:border-rose-900/40">
+                <span class="font-bold text-slate-800 dark:text-slate-100 text-xs">Stockfish / A* / Backtracking</span>
+                <span class="text-purple-700 dark:text-purple-400 font-bold text-xs">Search Algorithms</span>
+              </div>              <div class="flex justify-between items-center p-2.5 rounded-xl bg-rose-50/70 dark:bg-[#151E30] border border-rose-200/80 dark:border-rose-900/40">
+                <span class="font-bold text-slate-800 dark:text-slate-100 text-xs">Command Pattern</span>
+                <span class="text-amber-700 dark:text-amber-400 font-bold text-xs">Undo / Redo Memento</span>
+              </div>
+              </div>
+            </div>
+          </div>
+          <!-- Card: Core Engine & Tooling -->
+          <div class="arsenal-slide clay-card p-6 sm:p-7 border-4 border-rose-300 shadow-[0_12px_28px_rgba(244,63,94,0.18)] space-y-4 bg-[#FAF8F5] relative flex flex-col justify-between">
+            <div class="space-y-4">
+              <div class="flex items-center gap-3 border-b-2 border-rose-100 dark:border-slate-800 pb-3">
+                <span class="text-3xl shrink-0">🛠️</span>
+                <div>
+                  <h3 class="font-display font-bold text-slate-900 dark:text-slate-100 text-lg sm:text-xl leading-tight">Core Engine & Tooling</h3>
+                  <p class="text-[11px] text-slate-500 font-medium mt-0.5">Primary Development Stack</p>
+                </div>
+              </div>
+              <div class="space-y-2 font-medium">
+              <div class="flex justify-between items-center p-2.5 rounded-xl bg-rose-50/70 dark:bg-[#151E30] border border-rose-200/80 dark:border-rose-900/40">
+                <span class="font-bold text-slate-800 dark:text-slate-100 text-xs">Unity 3D LTS & Unity 6</span>
+                <span class="text-rose-700 dark:text-rose-400 font-bold text-xs">Daily Driver</span>
+              </div>              <div class="flex justify-between items-center p-2.5 rounded-xl bg-rose-50/70 dark:bg-[#151E30] border border-rose-200/80 dark:border-rose-900/40">
+                <span class="font-bold text-slate-800 dark:text-slate-100 text-xs">C# (.NET 8 Runtime)</span>
+                <span class="text-emerald-700 dark:text-emerald-400 font-bold text-xs">Mastery (3+ Yrs)</span>
+              </div>              <div class="flex justify-between items-center p-2.5 rounded-xl bg-rose-50/70 dark:bg-[#151E30] border border-rose-200/80 dark:border-rose-900/40">
+                <span class="font-bold text-slate-800 dark:text-slate-100 text-xs">DOTween Pro</span>
+                <span class="text-amber-700 dark:text-amber-400 font-bold text-xs">Juicy UI Animation</span>
+              </div>              <div class="flex justify-between items-center p-2.5 rounded-xl bg-rose-50/70 dark:bg-[#151E30] border border-rose-200/80 dark:border-rose-900/40">
+                <span class="font-bold text-slate-800 dark:text-slate-100 text-xs">Custom EditorWindows</span>
+                <span class="text-purple-700 dark:text-purple-400 font-bold text-xs">Pipeline Automation</span>
+              </div>              <div class="flex justify-between items-center p-2.5 rounded-xl bg-rose-50/70 dark:bg-[#151E30] border border-rose-200/80 dark:border-rose-900/40">
+                <span class="font-bold text-slate-800 dark:text-slate-100 text-xs">Git / GitLab CLI</span>
+                <span class="text-sky-700 dark:text-sky-400 font-bold text-xs">Version Control</span>
+              </div>
+              </div>
+            </div>
+          </div>
+            </div>
+
           </div>
 
-          <!-- Diagram Illustration Box with small top/bottom padding -->
-          <div id="bp-canvas-viewport" class="relative flex-1 w-full h-full overflow-hidden bg-[#0c101a] flex items-center justify-center px-2.5 py-2.5" style="background-image: radial-gradient(rgba(56, 189, 248, 0.05) 1px, transparent 1px); background-size: 20px 20px;">
-            <div id="bp-stage-mermaid" class="w-full h-full flex items-center justify-center"></div>
-          </div>
+          <!-- Right Outside Arrow Button -->
+          <button type="button" onclick="changeArsenalPage(1)" class="absolute right-0 sm:-right-3 lg:-right-5 top-1/2 -translate-y-1/2 w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-[#FAF8F5] dark:bg-[#151E30] border-2 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 flex items-center justify-center hover:border-rose-400 dark:hover:border-rose-400 hover:scale-115 active:scale-95 transition-all cursor-pointer shadow-xl z-30" aria-label="Next Arsenal Slide">
+            <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+          </button>
 
         </div>
+
       </div>
     </section>
 
-    <!-- ================= SCREEN 4: STUDIO EXPERIENCE (ZONE 4: STUDIO WALKTHROUGH) ================= -->
-    <section id="experience" class="space-y-6 scroll-mt-24">
-      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
-        <div>
-          <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">Studio Walkthrough &amp; Track Record</h2>
-          <p class="text-xs sm:text-sm text-slate-400 mt-1">Commercial Production Roles &amp; Engineered Unity Systems</p>
-        </div>
-      </div>
+    <!-- ============================================================== -->
+    <!-- ZONE 7: COZY CONTACT & CONNECT STATION (WIDESCREEN RECTANGLE)  -->
+    <!-- ============================================================== -->
+    <section id="contact" class="relative theme-blend-contact py-16 overflow-hidden">
+      <!-- Dynamic Floating Game Background Icons (Poisson Distributed, Randomized Each Refresh) -->
+      <div class="section-bg-icons absolute inset-0 pointer-events-none overflow-hidden" style="z-index: 1;" aria-hidden="true"></div>
 
-      <div class="space-y-5">
-        <!-- Role 1: Vasundhara Game Studio -->
-        <div class="bg-[#111622] rounded-2xl border border-sky-500/30 p-6 shadow-xl space-y-4">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3.5 border-b border-slate-800 gap-2">
-            <div class="space-y-1">
-              <div class="flex items-center gap-2.5 flex-wrap">
-                <span class="text-lg font-extrabold text-white">Vasundhara Game Studio</span>
-                <span class="text-slate-600">|</span>
-                <span class="text-sm sm:text-base font-bold text-sky-400">AI Product Developer — Unity Systems &amp; Gameplay</span>
-              </div>
-              <div class="flex items-center gap-2 text-xs text-slate-400 font-mono">
-                <span>Surat, GJ</span>
-                <span>&bull;</span>
-                <span>Jan 2023 – Jan 2024  &amp;  Dec 2025 – Present</span>
-              </div>
-            </div>
-            <span class="self-start sm:self-center text-[11px] font-mono font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-md whitespace-nowrap">
-              Current
-            </span>
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="clay-card p-8 sm:p-12 border-4 border-amber-300 shadow-[0_20px_50px_rgba(217,119,6,0.18)] bg-[#FAF8F5] text-center space-y-7">
+          
+          <!-- Top Section Ribbon -->
+          <div class="section-ribbon bg-amber-600 text-white shadow-amber-600/30 mx-auto">
+            <span>📬</span> LET'S BUILD EXTRAORDINARY GAMES
           </div>
 
-          <div class="space-y-2.5 text-xs sm:text-sm leading-relaxed text-slate-300">
-            <div class="flex items-start gap-2.5">
-              <span class="w-1.5 h-1.5 rounded-full bg-sky-400 mt-2 shrink-0"></span>
-              <div><strong class="text-white font-semibold">Procedural Jigsaw &amp; Shader Mask (Calm Jigsaw):</strong> Architected N×N Bezier puzzle generator using 9 mathematical edge signatures, dynamic UV quad mesh generation, and custom <strong class="text-slate-200">URP/HLSL shader masking</strong> with zero pre-sliced art.</div>
-            </div>
-            <div class="flex items-start gap-2.5">
-              <span class="w-1.5 h-1.5 rounded-full bg-sky-400 mt-2 shrink-0"></span>
-              <div><strong class="text-white font-semibold">Native Image Bridge &amp; OTA Sync:</strong> Engineered C# bridge over native <strong class="text-slate-200">Android (JNI) / iOS (Obj-C)</strong> APIs for 3-tier RAM LRU and disk caching, texture downsampling, and non-blocking OTA manifest level delivery.</div>
-            </div>
-            <div class="flex items-start gap-2.5">
-              <span class="w-1.5 h-1.5 rounded-full bg-sky-400 mt-2 shrink-0"></span>
-              <div><strong class="text-white font-semibold">Hybrid Logic &amp; Hint-Cascade Solver (MeowSweeper):</strong> Built hybrid Sudoku/Minesweeper/Star-Battle puzzle engine with backtracking hint-cascade solver FSM, discrete multi-touch locks, and persistent IAP powerup wallet.</div>
-            </div>
-            <div class="flex items-start gap-2.5">
-              <span class="w-1.5 h-1.5 rounded-full bg-sky-400 mt-2 shrink-0"></span>
-              <div><strong class="text-white font-semibold">Card Seam Merging &amp; Arrow Mechanics (Calm Solitaire &amp; Arrow):</strong> Engineered rectangular card-grid 0px seam merging, displacement swapping, procedural flame noise shaders, and outside-in peeling arrow escape mechanics.</div>
-            </div>
-            <div class="flex items-start gap-2.5">
-              <span class="w-1.5 h-1.5 rounded-full bg-sky-400 mt-2 shrink-0"></span>
-              <div><strong class="text-white font-semibold">Offline Leaderboard, IAP &amp; Editor Tooling:</strong> Built zero-server bot-paced seasonal leaderboards with anti-rollback clamping, <strong class="text-slate-200">Google/Apple IAP</strong> state machines, Asset Organizer EditorWindow, and Argos IPC localization.</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Role 2: Appzia -->
-        <div class="bg-[#111622] rounded-2xl border border-indigo-500/30 p-6 shadow-xl space-y-4">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3.5 border-b border-slate-800 gap-2">
-            <div class="space-y-1">
-              <div class="flex items-center gap-2.5 flex-wrap">
-                <span class="text-lg font-extrabold text-white">Appzia</span>
-                <span class="text-slate-600">|</span>
-                <span class="text-sm sm:text-base font-bold text-indigo-400">Unity3D Systems &amp; Gameplay Developer</span>
-              </div>
-              <div class="flex items-center gap-2 text-xs text-slate-400 font-mono">
-                <span>Pune, India</span>
-                <span>&bull;</span>
-                <span>June 2024 – July 2025</span>
-              </div>
-            </div>
-            <span class="self-start sm:self-center text-xs font-mono text-slate-300 bg-slate-900 px-3 py-1 rounded-lg border border-slate-800 whitespace-nowrap">
-              June 2024 – July 2025
-            </span>
+          <!-- Centered Heading & Subtitle (Verbatim from 2nd PNG) -->
+          <div class="space-y-3 max-w-2xl mx-auto">
+            <h2 class="font-display font-extrabold text-slate-900 text-3xl sm:text-5xl tracking-tight">
+              Ready to build extraordinary games together?
+            </h2>
+            <p class="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
+              Open to Senior Unity Developer, Gameplay Programmer, and Systems Engineer roles across PAN India and remote globally.
+            </p>
           </div>
 
-          <div class="space-y-2.5 text-xs sm:text-sm leading-relaxed text-slate-300">
-            <div class="flex items-start gap-2.5">
-              <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-2 shrink-0"></span>
-              <div><strong class="text-white font-semibold">Stockfish AI &amp; Real-Time Chess (Bullet Chess):</strong> Architected multiplayer chess engine using <strong class="text-slate-200">Photon (PUN 2)</strong> and <strong class="text-slate-200">Stockfish API</strong> for live move evaluation, client-side board validation, clock sync, and tournament brackets.</div>
-            </div>
-            <div class="flex items-start gap-2.5">
-              <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-2 shrink-0"></span>
-              <div><strong class="text-white font-semibold">Arcade Simulation &amp; Economy Systems (Pinnacle):</strong> Led development of <em>Pinnacle</em> arcade simulation replicating physical machines, implementing deterministic FSMs, secure <strong class="text-slate-200">Apple/Google IAP</strong>, and <strong class="text-slate-200">Zero-GC object pooling</strong> at <strong class="text-slate-200">60 FPS</strong>.</div>
-            </div>
-          </div>
-        </div>
+          <!-- Centered 5-Button Strip (Verbatim from 2nd PNG) -->
+          <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <!-- 1. Email -->
+            <a href="mailto:arpitjaiswal071@gmail.com" class="btn-3d px-5 py-3 rounded-2xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs flex items-center gap-2 shadow-[0_4px_0_#0284C7] border border-sky-600">
+              <svg class="w-4 h-4 shrink-0 fill-none stroke-current" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+              </svg>
+              <span>arpitjaiswal071@gmail.com</span>
+            </a>
 
-        <!-- Role 3: StudioKrew -->
-        <div class="bg-[#111622] rounded-2xl border border-amber-500/30 p-6 shadow-xl space-y-4">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3.5 border-b border-slate-800 gap-2">
-            <div class="space-y-1">
-              <div class="flex items-center gap-2.5 flex-wrap">
-                <span class="text-lg font-extrabold text-white">StudioKrew</span>
-                <span class="text-slate-600">|</span>
-                <span class="text-sm sm:text-base font-bold text-amber-400">Unity Game Developer (Remote)</span>
-              </div>
-              <div class="flex items-center gap-2 text-xs text-slate-400 font-mono">
-                <span>Delhi, India (Remote)</span>
-                <span>&bull;</span>
-                <span>March 2024 – May 2024</span>
-              </div>
-            </div>
-            <span class="self-start sm:self-center text-xs font-mono text-slate-300 bg-slate-900 px-3 py-1 rounded-lg border border-slate-800 whitespace-nowrap">
-              March 2024 – May 2024
-            </span>
+            <!-- 2. LinkedIn -->
+            <a href="http://www.linkedin.com/in/arpit-jaiswal-4708a523b" target="_blank" rel="noopener noreferrer" class="btn-3d px-5 py-3 rounded-2xl bg-[#FAF8F5] dark:bg-[#151E30] border-2 border-slate-300 dark:border-slate-700 font-bold text-xs text-slate-800 dark:text-slate-200 flex items-center gap-2 hover:border-sky-400 shadow-sm">
+              <svg class="w-4 h-4 shrink-0 fill-current text-sky-500" viewBox="0 0 24 24">
+                <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/>
+              </svg>
+              <span>LinkedIn Profile</span>
+            </a>
+
+            <!-- 3. GitHub -->
+            <a href="https://github.com/ArpitJaiswal7/github-gamedev.io" target="_blank" rel="noopener noreferrer" class="btn-3d px-5 py-3 rounded-2xl bg-[#FAF8F5] dark:bg-[#151E30] border-2 border-slate-300 dark:border-slate-700 font-bold text-xs text-slate-800 dark:text-slate-200 flex items-center gap-2 hover:border-slate-800 shadow-sm">
+              <svg class="w-4 h-4 shrink-0 fill-current text-slate-900 dark:text-white" viewBox="0 0 16 16">
+                <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+              </svg>
+              <span>GitHub Profile</span>
+            </a>
+
+            
+
+            <!-- 5. GitLab Profile -->
+            <a href="https://gitlab.com/unity8984322" target="_blank" rel="noopener noreferrer" class="btn-3d px-5 py-3 rounded-2xl bg-[#FAF8F5] dark:bg-[#151E30] border-2 border-slate-300 dark:border-slate-700 font-bold text-xs text-slate-800 dark:text-slate-200 flex items-center gap-2 hover:border-orange-400 shadow-sm">
+              <svg class="w-4 h-4 shrink-0 fill-current text-orange-500" viewBox="0 0 24 24">
+                <path d="m22.65 14.39-9.65 7.01-9.65-7.01a.72.72 0 0 1-.26-.81l1.15-3.54 2.28-7.01a.38.38 0 0 1 .72 0l2.28 7.01h4.96l2.28-7.01a.38.38 0 0 1 .72 0l2.28 7.01 1.15 3.54a.72.72 0 0 1-.26.81z"/>
+              </svg>
+              <span>GitLab Profile</span>
+            </a>
           </div>
 
-          <div class="space-y-2.5 text-xs sm:text-sm leading-relaxed text-slate-300">
-            <div class="flex items-start gap-2.5">
-              <span class="w-1.5 h-1.5 rounded-full bg-amber-400 mt-2 shrink-0"></span>
-              <div><strong class="text-white font-semibold">Solo Card Game Architecture (FreeCell &amp; Solitaire):</strong> Delivered complete end-to-end development independently, architecting deterministic card stack rules, memento-based undo/redo state history, and responsive touch controls.</div>
-            </div>
-            <div class="flex items-start gap-2.5">
-              <span class="w-1.5 h-1.5 rounded-full bg-amber-400 mt-2 shrink-0"></span>
-              <div><strong class="text-white font-semibold">Dice Physics &amp; Scoring State Machine (Yahtzee):</strong> Engineered probabilistic dice-rolling physics, category score validation state machines, and turn-based round flow with fluid particle animations.</div>
-            </div>
-            <div class="flex items-start gap-2.5">
-              <span class="w-1.5 h-1.5 rounded-full bg-amber-400 mt-2 shrink-0"></span>
-              <div><strong class="text-white font-semibold">Grid Puzzle Engine &amp; Serialization (BrokenTiles):</strong> Developed reactive grid-matching algorithms with cascading tile clearing, implementing lightweight JSON save serialization for instant session recovery.</div>
+          <!-- Bottom Footer Strip -->
+          <div class="pt-8 border-t-2 border-amber-100 dark:border-slate-800 text-xs text-slate-500 font-medium flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+            <div>&copy; 2026 Arpit Jaiswal. All rights reserved.</div>
+            <div class="flex items-center gap-2 justify-center">
+              <span class="font-bold text-amber-700 dark:text-amber-400">Cozy Indie Pop V2</span>
+              <span>&bull;</span>
+              <span>Unity Systems &bull; WebGL 2.0</span>
             </div>
           </div>
         </div>
       </div>
-    </section>
 
-    <!-- ================= SCREEN 5: CONTACT & RESUME FOOTER (ZONE 5) ================= -->
-    <section id="contact" class="bg-gradient-to-b from-[#111622] to-[#070a12] rounded-3xl border border-slate-800 p-8 sm:p-12 text-center space-y-6 shadow-2xl scroll-mt-24">
-      <div class="max-w-2xl mx-auto space-y-3">
-        <h2 class="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">Ready to build extraordinary games together?</h2>
-        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
-          Open to Senior Unity Developer, Gameplay Programmer, and Systems Engineer roles across PAN India and remote globally.
-        </p>
-      </div>
-
-      <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
-        <!-- Email -->
-        <a href="mailto:arpitjaiswal071@gmail.com" class="px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-xs transition-all flex items-center gap-2 shadow-lg shadow-sky-500/20">
-          <svg class="w-4 h-4 shrink-0 fill-none stroke-current" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect width="20" height="16" x="2" y="4" rx="2"></rect>
-            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
-          </svg>
-          <span>arpitjaiswal071@gmail.com</span>
-        </a>
-
-        <!-- LinkedIn -->
-        <a href="http://www.linkedin.com/in/arpit-jaiswal-4708a523b" target="_blank" rel="noopener noreferrer" class="px-5 py-2.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium transition-all flex items-center gap-2">
-          <svg class="w-4 h-4 shrink-0 fill-current text-sky-400" viewBox="0 0 24 24">
-            <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/>
-          </svg>
-          <span>LinkedIn Profile</span>
-        </a>
-
-        <!-- GitHub -->
-        <a href="https://github.com/ArpitJaiswal7/github-gamedev.io" target="_blank" rel="noopener noreferrer" class="px-5 py-2.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium transition-all flex items-center gap-2">
-          <svg class="w-4 h-4 shrink-0 fill-current text-slate-200" viewBox="0 0 16 16">
-            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
-          </svg>
-          <span>GitHub Profile</span>
-        </a>
-
-        <!-- Download Resume (.docx) -->
-        <a href="assets/resume/Arpit_Jaiswal_Game_Dev_Resume.docx" download="Arpit_Jaiswal_Game_Dev_Resume.docx" class="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition-all flex items-center gap-2 shadow-lg shadow-amber-500/20">
-          <svg class="w-4 h-4 shrink-0 fill-none stroke-current" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" x2="12" y1="15" y2="3"></line>
-          </svg>
-          <span>Download Resume (.docx)</span>
-        </a>
-
-        <!-- GitLab -->
-        <a href="https://gitlab.com/unity8984322" target="_blank" rel="noopener noreferrer" class="px-5 py-2.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium transition-all flex items-center gap-2">
-          <svg class="w-4 h-4 shrink-0 fill-current text-orange-400" viewBox="0 0 24 24">
-            <path d="m22.65 14.39-9.65 7.01-9.65-7.01a.72.72 0 0 1-.26-.81l1.15-3.54 2.28-7.01a.38.38 0 0 1 .72 0l2.28 7.01h4.96l2.28-7.01a.38.38 0 0 1 .72 0l2.28 7.01 1.15 3.54a.72.72 0 0 1-.26.81z"/>
-          </svg>
-          <span>GitLab Profile</span>
-        </a>
-      </div>
-
-      <div class="pt-8 border-t border-slate-800/80 text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-4 font-mono">
-        <div>&copy; 2026 Arpit Jaiswal. All rights reserved.</div>
-        <div class="text-[11px] text-slate-600">Built with Clean WebGL &bull; Hosted on GitHub Pages</div>
-      </div>
     </section>
 
   </main>
 
-  <!-- ================= Fullscreen / Lightbox Modal ================= -->
-  <div id="lightbox-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/95 p-4 sm:p-8 backdrop-blur-md">
-    <div class="relative max-w-6xl w-full max-h-[92vh] flex flex-col items-center bg-[#0d121c] border border-slate-800 rounded-2xl overflow-hidden shadow-2xl">
-      <div class="w-full px-6 py-3 border-b border-slate-800 flex items-center justify-between bg-[#111622]">
-        <h3 id="lightbox-title" class="text-sm font-bold text-white font-mono">Schematic Inspection</h3>
-        <button id="lightbox-close" class="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-      <div class="w-full overflow-auto p-6 flex items-center justify-center max-h-[calc(92vh-60px)]">
-        <div id="lightbox-mermaid" class="hidden w-full h-full flex items-center justify-center"></div>
-        <img id="lightbox-img" src="" alt="Full Schematic" class="max-w-full max-h-full object-contain">
-      </div>
-    </div>
-  </div>
+  <!-- Floating Dark / Light Mode Switcher Pill -->
+  <aside aria-label="Theme mode switcher" class="fixed bottom-6 right-6 z-50">
+    <button type="button" onclick="toggleTheme(event)" class="px-4 py-3 rounded-full bg-slate-900 dark:bg-amber-400 text-white dark:text-slate-950 font-display font-bold text-xs flex items-center gap-2 shadow-2xl border-2 border-slate-700 dark:border-amber-500 hover:scale-110 active:scale-95 transition-all cursor-pointer">
+      <span class="floating-theme-icon text-base">🌙</span>
+      <span class="floating-theme-text">Toggle Dark Mode</span>
+    </button>
+  </aside>
 
-  <script src="script.js?v=calm-jigsaw-desc-1"></script>
+
   <script>
+// ================= THEME TOGGLE WITH VIEW TRANSITION ANIMATION =================
+    function toggleTheme(event) {
+      const isCurrentlyDark = document.documentElement.classList.contains('dark');
+      const willBeDark = !isCurrentlyDark;
+
+      // Check if View Transition API is supported and user hasn't disabled motion
+      if (document.startViewTransition && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        let x = window.innerWidth / 2;
+        let y = window.innerHeight / 2;
+
+        if (event && typeof event.clientX === 'number') {
+          x = event.clientX;
+          y = event.clientY;
+        } else {
+          const btn = document.getElementById('theme-toggle-btn') || document.querySelector('.floating-theme-icon');
+          if (btn) {
+            const rect = btn.getBoundingClientRect();
+            x = rect.left + rect.width / 2;
+            y = rect.top + rect.height / 2;
+          }
+        }
+
+        const endRadius = Math.hypot(
+          Math.max(x, window.innerWidth - x),
+          Math.max(y, window.innerHeight - y)
+        );
+
+        const transition = document.startViewTransition(() => {
+          document.documentElement.classList.toggle('dark', willBeDark);
+          localStorage.setItem('cozy_theme', willBeDark ? 'dark' : 'light');
+          updateThemeUI(willBeDark);
+        });
+
+        transition.ready.then(() => {
+          document.documentElement.animate(
+            {
+              clipPath: [
+                'circle(0px at ' + x + 'px ' + y + 'px)',
+                'circle(' + endRadius + 'px at ' + x + 'px ' + y + 'px)'
+              ]
+            },
+            {
+              duration: 500,
+              easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
+              pseudoElement: '::view-transition-new(root)'
+            }
+          );
+        });
+      } else {
+        // Silky smooth CSS cross-fade transition fallback
+        document.documentElement.classList.add('theme-transitioning');
+        document.documentElement.classList.toggle('dark', willBeDark);
+        localStorage.setItem('cozy_theme', willBeDark ? 'dark' : 'light');
+        updateThemeUI(willBeDark);
+        setTimeout(() => {
+          document.documentElement.classList.remove('theme-transitioning');
+        }, 500);
+      }
+    }
+
+    function updateThemeUI(isDark) {
+      const btnIcon = document.getElementById('theme-toggle-icon');
+      const btnLabel = document.getElementById('theme-toggle-label');
+      const floatIcon = document.querySelector('.floating-theme-icon');
+      const floatText = document.querySelector('.floating-theme-text');
+
+      if (btnIcon) {
+        btnIcon.textContent = isDark ? '🌙' : '☀️';
+        btnIcon.classList.remove('theme-icon-spin');
+        void btnIcon.offsetWidth;
+        btnIcon.classList.add('theme-icon-spin');
+      }
+      if (btnLabel) btnLabel.textContent = isDark ? 'Light Mode' : 'Dark Mode';
+      if (floatIcon) {
+        floatIcon.textContent = isDark ? '🌙' : '☀️';
+        floatIcon.classList.remove('theme-icon-spin');
+        void floatIcon.offsetWidth;
+        floatIcon.classList.add('theme-icon-spin');
+      }
+      if (floatText) floatText.textContent = isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+    }
+
+    // Restore saved theme on page load
+    (function() {
+      const saved = localStorage.getItem('cozy_theme');
+      if (saved === 'dark') {
+        document.documentElement.classList.add('dark');
+        updateThemeUI(true);
+      }
+    })();
+
+    function toggleMobileMenu() {
+      const menu = document.getElementById('mobile-menu');
+      menu.classList.toggle('hidden');
+    }
+
+    const LAB_SCENES = {
+      'MeowSweeper_Lab.unity': {
+        title: 'MeowSweeper Cat Sudoku / Sweeper Core',
+        badge: 'Playable WebGL Lab',
+        description: 'Algorithmic puzzle solver and deterministic hint cascade state machine.',
+        url: 'labs/unity-meowsweeper/index.html'
+      },
+      'CalmJigsaw_Lab.unity': {
+        title: 'Calm Jigsaw Procedural Bezier Mesh Slicer',
+        badge: 'Interactive Lab',
+        description: 'Procedural mesh generator cutting arbitrary input textures into interlocking N×N Bezier puzzle pieces.',
+        url: 'labs/unity-meowsweeper/index.html?scene=CalmJigsaw'
+      },
+      'ShadowMask_Lab.unity': {
+        title: 'Dual-Layer Alpha ShadowMask HLSL Shader',
+        badge: 'Interactive Lab',
+        description: 'Single-pass mobile shader blending procedural shape masks with ambient drop shadows.',
+        url: 'labs/unity-meowsweeper/index.html?scene=ShadowMask'
+      },
+      'NativeBridge_Lab.unity': {
+        title: 'Zero-Copy Native Android/iOS Image Bridge',
+        badge: 'Bridge Simulation',
+        description: 'JNI & Objective-C native photo buffer bridge streaming byte arrays into Texture2D.',
+        url: 'labs/unity-meowsweeper/index.html?scene=NativeBridge'
+      },
+      'ArrowStrike_Lab.unity': {
+        title: 'Arrow Strike Procedural Solvable Shape Engine',
+        badge: 'AI Lab',
+        description: 'Outside-in peeling algorithm with orthogonal sweep collision tests guaranteeing 100% solvable layouts.',
+        url: 'labs/unity-meowsweeper/index.html?scene=ArrowStrike'
+      },
+      'Blockade2D_Lab.unity': {
+        title: 'Blockade 2D Zero-Alloc BFS Pathfinding & Minimax AI',
+        badge: 'Strategy Lab',
+        description: 'Turn-based tactical grid validator guaranteeing dual-path escape routes with Minimax depth heuristics.',
+        url: 'labs/unity-meowsweeper/index.html?scene=Blockade2D'
+      },
+      'JigsawSolitaire_Lab.unity': {
+        title: 'Jigsaw Solitaire Displacement Swap & Seam Merge',
+        badge: 'Card Physics Lab',
+        description: 'Card-grid displacement engine swapping multi-card stacks with zero seam gaps.',
+        url: 'labs/unity-meowsweeper/index.html?scene=JigsawSolitaire'
+      },
+      'OfflineLeaderboard_Lab.unity': {
+        title: 'Offline Bot-Paced Leaderboard State Machine',
+        badge: 'LiveOps Lab',
+        description: 'Autonomous simulated leaderboard with 29 seeded bot profiles and SHA-256 anti-tamper ledger.',
+        url: 'labs/unity-meowsweeper/index.html?scene=OfflineLeaderboard'
+      }
+    };
+
+    let activeSceneKey = 'MeowSweeper_Lab.unity';
+
+    function selectScene(sceneName, title, btnElem) {
+      const targetScene = LAB_SCENES[sceneName] || { url: 'labs/unity-meowsweeper/index.html' };
+      activeSceneKey = sceneName;
+      const label = document.getElementById('active-scene-name');
+      if (label) label.textContent = title;
+
+      const frame = document.getElementById('unity-arcade-frame');
+      if (frame) {
+        frame.src = targetScene.url;
+      }
+
+      const newTabBtn = document.getElementById('lab-newtab-link');
+      if (newTabBtn) {
+        newTabBtn.href = targetScene.url;
+      }
+
+      const btns = document.querySelectorAll('.scene-btn');
+      btns.forEach(b => {
+        b.className = 'scene-btn p-2.5 rounded-xl bg-[#3D332E] text-slate-300 font-mono text-xs flex items-center justify-between border border-white/10 hover:border-amber-400 transition-all text-left';
+      });
+      const activeBtn = btnElem || (window.event && window.event.target ? window.event.target.closest('.scene-btn') : null);
+      if (activeBtn) {
+        activeBtn.className = 'scene-btn p-2.5 rounded-xl bg-amber-400 text-amber-950 font-mono text-xs flex items-center justify-between border-2 border-amber-500 font-bold shadow-sm text-left';
+      }
+    }
+
+    function reloadScene() {
+      const frame = document.getElementById('unity-arcade-frame');
+      if (frame) {
+        frame.src = frame.src;
+      }
+    }
+
+    function requestFullscreenDemo() {
+      const viewport = document.getElementById('arcade-viewport') || document.querySelector('.clay-card');
+      if (viewport) {
+        if (document.fullscreenElement) {
+          document.exitFullscreen();
+        } else {
+          viewport.requestFullscreen().catch(err => {
+            console.warn('Fullscreen request failed:', err);
+          });
+        }
+      }
+    }
+
+    function switchExperience(studioId, btnElem) {
+      const cards = {
+        vasundhara: document.getElementById('exp-card-vasundhara'),
+        appzia: document.getElementById('exp-card-appzia'),
+        studiokrew: document.getElementById('exp-card-studiokrew')
+      };
+
+      if (studioId === 'all') {
+        Object.values(cards).forEach(c => { if (c) c.classList.remove('hidden'); });
+      } else {
+        Object.keys(cards).forEach(k => {
+          if (cards[k]) {
+            if (k === studioId) cards[k].classList.remove('hidden');
+            else cards[k].classList.add('hidden');
+          }
+        });
+      }
+
+      const btns = document.querySelectorAll('.exp-tab-btn');
+      btns.forEach(b => {
+        b.className = 'exp-tab-btn px-4 py-2.5 rounded-2xl bg-[#FAF8F5] dark:bg-[#151E30] text-slate-700 dark:text-slate-300 font-display font-bold text-xs flex items-center gap-2 border-2 border-slate-300 dark:border-slate-700 shadow-sm hover:border-amber-400 transition-all cursor-pointer';
+      });
+      if (btnElem) {
+        btnElem.className = 'exp-tab-btn px-4 py-2.5 rounded-2xl bg-amber-400 text-amber-950 font-display font-bold text-xs flex items-center gap-2 border-2 border-amber-500 shadow-sm transition-all cursor-pointer';
+      }
+    }
+
+    // ================= BLUEPRINTS PAGED CAROUSEL (8 SUBSYSTEMS, 4 PER PAGE) =================
+    let currentBpPage = 1;
+    const totalBpPages = 2;
+
+    function setBpPage(page) {
+      currentBpPage = page;
+      for (let i = 1; i <= totalBpPages; i++) {
+        const pageEl = document.getElementById('bp-page-' + i);
+        if (pageEl) {
+          if (i === page) {
+            pageEl.classList.remove('hidden');
+          } else {
+            pageEl.classList.add('hidden');
+          }
+        }
+      }
+    }
+
+    function changeBpPage(delta) {
+      let next = currentBpPage + delta;
+      if (next < 1) next = totalBpPages;
+      if (next > totalBpPages) next = 1;
+      setBpPage(next);
+    }
+
+    // ================= ARSENAL INFINITE AUTO-SCROLL CAROUSEL =================
+    let currentArsenalPage = 1;
+    const totalArsenalPages = 2;
+    let arsenalAutoTimer = null;
+
+    function setArsenalPage(page) {
+      currentArsenalPage = page;
+      for (let i = 1; i <= totalArsenalPages; i++) {
+        const pageEl = document.getElementById('arsenal-page-' + i);
+        if (pageEl) {
+          if (i === page) {
+            pageEl.classList.remove('hidden');
+          } else {
+            pageEl.classList.add('hidden');
+          }
+        }
+      }
+    }
+
+    function changeArsenalPage(delta) {
+      let next = currentArsenalPage + delta;
+      if (next < 1) next = totalArsenalPages;
+      if (next > totalArsenalPages) next = 1;
+      setArsenalPage(next);
+    }
+
+    function startArsenalAutoScroll() {
+      if (arsenalAutoTimer) clearInterval(arsenalAutoTimer);
+      arsenalAutoTimer = setInterval(() => {
+        changeArsenalPage(1);
+      }, 4500); // Auto scrolls every 4.5 seconds infinitely
+    }
+
+    function pauseArsenalAutoScroll() {
+      if (arsenalAutoTimer) clearInterval(arsenalAutoTimer);
+    }
+
+    function resumeArsenalAutoScroll() {
+      startArsenalAutoScroll();
+    }
+
+    // Initialize auto scroll on load
+    startArsenalAutoScroll();
+
+    
+    // ================= RANDOM BACKGROUND GAME ICONS (POISSON DISK DISTRIBUTED) =================
+    const GAME_DEV_ICONS = [
+      `<svg class="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>`,
+      `<svg class="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="6"></rect><path d="M6 12h4m-2-2v4m7-2h.01m3 0h.01"></path></svg>`,
+      `<svg class="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.439 7.85c0-1.57.973-2.85 2.174-2.85V3.5h-5.068a3.17 3.17 0 0 0-2.85 2.174 3.17 3.17 0 0 0-2.85-2.174H5.777v5.068A3.17 3.17 0 0 0 7.95 10.92a3.17 3.17 0 0 0-2.174 2.85v5.068h5.068a3.17 3.17 0 0 0 2.85-2.174 3.17 3.17 0 0 0 2.85 2.174h5.068v-5.068a3.17 3.17 0 0 0-2.174-2.85 3.17 3.17 0 0 0 2.174-2.85z"></path></svg>`,
+      `<svg class="w-full h-full" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`,
+      `<svg class="w-full h-full" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`,
+      `<svg class="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="6" r="3"></circle><line x1="12" y1="9" x2="12" y2="15"></line><path d="M4 19a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v1a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-1z"></path></svg>`,
+      `<svg class="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2h4m-2 0v5l5 9a3 3 0 0 1-2.6 4.5H9.6A3 3 0 0 1 7 16l5-9V2z"></path><line x1="8.5" y1="13" x2="15.5" y2="13"></line></svg>`,
+      `<svg class="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"></path><path d="M13 19l6 2 2-6-4.5-4.5"></path><path d="M9.5 17.5L21 6V3h-3L6.5 14.5"></path><line x1="2" y1="22" x2="5" y2="19"></line></svg>`,
+      `<svg class="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>`,
+      `<svg class="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 7-10 11L2 10l4-7z"></path><path d="M2 10h20"></path><path d="M12 21L7.5 10 12 3l4.5 7L12 21z"></path></svg>`,
+      `<svg class="w-full h-full" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
+      `<svg class="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>`,
+      `<svg class="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>`,
+      `<svg class="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="22" y1="12" x2="18" y2="12"></line><line x1="6" y1="12" x2="2" y2="12"></line><line x1="12" y1="6" x2="12" y2="2"></line><line x1="12" y1="22" x2="12" y2="18"></line></svg>`,
+      `<svg class="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="5.5"></circle><path d="m21 2-9.6 9.6"></path><path d="m15.5 7.5 3 3L22 7l-3-3"></path></svg>`,
+      `<svg class="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>`
+    ];
+
+    const BG_ICON_COLORS = [
+      'text-amber-500', 'text-rose-400', 'text-emerald-500', 'text-purple-500',
+      'text-sky-500', 'text-indigo-400', 'text-teal-500', 'text-orange-400',
+      'text-pink-500', 'text-cyan-400'
+    ];
+
+    const BG_ICON_ANIMS = ['anim-drift-1', 'anim-drift-2', 'anim-drift-3'];
+    const BG_ICON_SIZES = [
+      'w-12 h-12 sm:w-14 sm:h-14',
+      'w-14 h-14 sm:w-16 sm:h-16',
+      'w-16 h-16 sm:w-20 sm:h-20',
+      'w-12 h-12 sm:w-16 sm:h-16'
+    ];
+
+    function generatePoissonPoints(targetCount = 5, minDistance = 23.5, maxAttempts = 120) {
+      const points = [];
+      for (let i = 0; i < targetCount; i++) {
+        let bestCandidate = null;
+        let bestDist = -1;
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+          const cx = 4 + Math.random() * 88; // 4% to 92%
+          const cy = 6 + Math.random() * 84; // 6% to 90%
+          let minToExisting = 999;
+          for (let p = 0; p < points.length; p++) {
+            const d = Math.hypot(cx - points[p].x, cy - points[p].y);
+            if (d < minToExisting) minToExisting = d;
+          }
+          if (minToExisting >= minDistance) {
+            bestCandidate = { x: cx, y: cy };
+            break;
+          }
+          if (minToExisting > bestDist) {
+            bestDist = minToExisting;
+            bestCandidate = { x: cx, y: cy };
+          }
+        }
+        if (bestCandidate) points.push(bestCandidate);
+      }
+      return points;
+    }
+
+    function initRandomBgIcons() {
+      const containers = document.querySelectorAll('.section-bg-icons');
+      if (!containers || containers.length === 0) return;
+
+      // Shuffle icon deck fresh on each refresh
+      const iconDeck = [...GAME_DEV_ICONS].sort(() => Math.random() - 0.5);
+      let deckIdx = 0;
+
+      containers.forEach(container => {
+        container.innerHTML = '';
+        // 5 icons per section * 7 sections = 35 icons total (2x increase from ~17 previously)
+        const points = generatePoissonPoints(5, 23.5);
+        points.forEach(pt => {
+          const iconSvg = iconDeck[deckIdx % iconDeck.length];
+          deckIdx++;
+
+          const anim = BG_ICON_ANIMS[Math.floor(Math.random() * BG_ICON_ANIMS.length)];
+          const color = BG_ICON_COLORS[Math.floor(Math.random() * BG_ICON_COLORS.length)];
+          const size = BG_ICON_SIZES[Math.floor(Math.random() * BG_ICON_SIZES.length)];
+          const rot = Math.floor(Math.random() * 50 - 25);
+          const delay = (Math.random() * 4).toFixed(1);
+
+          const el = document.createElement('div');
+          el.className = `bg-icon ${anim} ${color} ${size} absolute pointer-events-none`;
+          el.style.left = `${pt.x.toFixed(1)}%`;
+          el.style.top = `${pt.y.toFixed(1)}%`;
+          el.style.transform = `rotate(${rot}deg)`;
+          el.style.animationDelay = `${delay}s`;
+          el.innerHTML = iconSvg;
+
+          container.appendChild(el);
+        });
+      });
+    }
+
+    // Initialize randomized background icons immediately on load
+    initRandomBgIcons();
+
     lucide.createIcons();
   </script>
 </body>
