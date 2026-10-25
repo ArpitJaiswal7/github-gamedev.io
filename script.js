@@ -271,6 +271,16 @@ const UNITY_LAB_MANIFEST = {
     unitySpecs: 'Unity 6000.3.14f1 (C# / WebGL 2.0 WASM) • Procedural Jigsaw & Powerups',
     desc: 'Procedural N×N Bezier Jigsaw + Full Viewport Board & Right Piece Drawer (Unity WebGL WASM)'
   },
+  'blockade2d': {
+    icon: '🧱',
+    title: 'Blockade 2D',
+    scene: 'MainGame.unity',
+    htmlUrl: 'labs/blockade2d.html',
+    webglUrl: 'labs/unity-blockade2d/index.html',
+    hasWebgl: true,
+    unitySpecs: 'Unity 6000.3.14f1 (C# / WebGL 2.0 WASM) • BFS Path Validation & Minimax AI',
+    desc: 'Strategic grid board game with hold-and-drop blocker placement (+Y touch offset), fair-play BFS path verification, heuristic AI bot, and match replay'
+  },
   'jigsaw-solitaire': {
     icon: '🃏',
     title: 'Calm Jigsaw Solitaire',
@@ -935,6 +945,53 @@ const blueprintsData = [
   class LevelMgr,ArrowCtrl coreNode
   class ShapeCfg,PeelGen,GridSys,BonkRebound,StepAnim adjNode
   class VictoryHUD intNode`
+  },
+  {
+    id: 'sheet-14',
+    sheetNum: 'Sheet 14 — Live Mermaid',
+    title: 'Blockade 2D & Strategic Path AI',
+    domain: 'Core Gameplay & Spatial Algorithms',
+    engine: 'Unity 6000.3.14f1 (WebGL WASM)',
+    labDemo: 'blockade2d',
+    mermaidFlowchart: `flowchart TB
+  subgraph Inputs["CORE MODEL & COMMAND PATTERN"]
+    direction LR
+    GameState["GameState.cs<br/><span class='bp-sub'>(Pawn Positions & Wall Inventory)</span>"]
+    CmdPattern["CommandHistory.cs<br/><span class='bp-sub'>(ExecuteCommand & Undo/Redo)</span>"]
+    MoveValidator["MoveValidator.cs<br/><span class='bp-sub'>(Orthogonal & Jump Deflection)</span>"]
+  end
+
+  subgraph Core["RULE VALIDATION & AI OPPONENT"]
+    direction LR
+    GameEngine["GameEngine.cs<br/><span class='bp-sub'>(Turn Coordination & Win State)</span>"]
+    WallValidator["WallValidator.cs<br/><span class='bp-sub'>(BFS Dual-Path Guarantee)</span>"]
+    AIBot["MinimaxAI.cs<br/><span class='bp-sub'>(Shortest Path Heuristic Evaluation)</span>"]
+  end
+
+  subgraph Runtime["PRESENTATION & TOUCH UX LAYER"]
+    direction LR
+    MatchCoord["MatchCoordinator.cs<br/><span class='bp-sub'>(Input Router & Camera Framing)</span>"]
+    WallCtrl["WallPlacementController.cs<br/><span class='bp-sub'>(+Y Touch Offset Floating Preview)</span>"]
+    BoardView["BoardView.cs<br/><span class='bp-sub'>(Prefab Instantiation & Grid Math)</span>"]
+  end
+
+  GameState -->|"ActivePlayer & State"| GameEngine
+  CmdPattern -->|"RecordTurnCommand"| GameEngine
+  MoveValidator -->|"IsLegalPawnMove"| GameEngine
+
+  GameEngine <-->|"ValidateWallPlacement(BFS)"| WallValidator
+  GameEngine <-->|"SelectBestAction()"| AIBot
+
+  MatchCoord -->|"TryMovePawn / TryPlaceWall"| GameEngine
+  WallCtrl -->|"previewTargetWorld (+Y Offset)"| BoardView
+  BoardView -->|"IntersectionToWorldPosition"| WallCtrl
+
+  classDef coreNode fill:#1c1610,stroke:#a16207,stroke-width:1.5px,color:#cbd5e1
+  classDef adjNode fill:#111722,stroke:#284160,stroke-width:1.25px,color:#cbd5e1
+  classDef intNode fill:#0e131d,stroke:#334155,stroke-width:1.25px,stroke-dasharray: 4 4,color:#94a3b8
+
+  class GameEngine,WallValidator,AIBot coreNode
+  class GameState,CmdPattern,MoveValidator,MatchCoord,WallCtrl,BoardView adjNode`
   },
   {
     id: 'sheet-02',

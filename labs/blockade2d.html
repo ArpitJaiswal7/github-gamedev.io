@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blockade 2D: Strategic Grid & Blocker AI — Unity 6 WebGL Architecture Showcase — Arpit Jaiswal</title>
+  <meta name="description" content="Portfolio Showcase for Blockade 2D — Quoridor-inspired 2D strategic board game in Unity 6 WebGL with fair-play BFS path non-trapping validation, heuristic AI counter-move bot, hold-and-drop blocker placement (+Y touch offset), and command-pattern match replay.">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              page: '#090d16',
+              card: '#0f172a',
+              cardHover: '#162238',
+              border: '#1e293b',
+              cyan: '#38bdf8',
+              amber: '#f59e0b',
+              emerald: '#10b981',
+              rose: '#f43f5e',
+              indigo: '#6366f1'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    body {
+      background-color: #090d16;
+      background-image:
+        radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.12) 0%, transparent 55%),
+        radial-gradient(circle at 90% 40%, rgba(99, 102, 241, 0.08) 0%, transparent 45%);
+    }
+
+    .game-frame-glow {
+      box-shadow: 0 0 50px -10px rgba(56, 189, 248, 0.22), 0 20px 40px -15px rgba(0, 0, 0, 0.85);
+    }
+
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #0b1120; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+  </style>
+</head>
+<body class="min-h-screen text-slate-200 antialiased font-sans selection:bg-sky-500/30 selection:text-sky-200">
+
+  <!-- TOP NAVIGATION HEADER -->
+  <header class="sticky top-0 z-50 backdrop-blur-xl bg-slate-950/80 border-b border-slate-800/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="../index.html" class="flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-slate-800 hover:border-slate-700 bg-slate-900/60">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i>
+          <span>Portfolio</span>
+        </a>
+        <div class="h-4 w-px bg-slate-800"></div>
+        <div class="flex items-center gap-2">
+          <span class="text-xl">🧱</span>
+          <h1 class="text-base font-bold text-white tracking-tight flex items-center gap-2">
+            <span>Blockade 2D</span>
+            <span class="text-[11px] font-mono px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/20 font-normal">Unity 6 WebGL</span>
+          </h1>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2.5">
+        <button id="btn-fullscreen" type="button" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 transition-all cursor-pointer">
+          <i data-lucide="maximize" class="w-3.5 h-3.5 text-sky-400"></i>
+          <span class="hidden sm:inline">Fullscreen</span>
+        </button>
+        <button id="btn-reload-frame" type="button" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 transition-all cursor-pointer">
+          <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-slate-400"></i>
+          <span class="hidden sm:inline">Reload Game</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-8">
+
+    <!-- HERO & WEBGL GAME DISPLAY -->
+    <section class="space-y-4">
+      <div class="relative w-full aspect-[16/10] sm:aspect-[16/10] max-h-[760px] min-h-[520px] bg-slate-950 rounded-2xl border border-slate-800/90 overflow-hidden game-frame-glow">
+        <iframe
+          id="blockade-iframe"
+          src="unity-blockade2d/index.html"
+          class="w-full h-full border-0"
+          allow="fullscreen; autoplay"
+          title="Blockade 2D Unity WebGL Game"
+        ></iframe>
+      </div>
+
+      <!-- Quick Game Controls & Legend -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
+        <div class="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center gap-3">
+          <span class="w-8 h-8 rounded-lg bg-sky-500/20 border border-sky-500/40 flex items-center justify-center text-sky-400 font-bold shrink-0">P1</span>
+          <div>
+            <div class="font-bold text-white">Player 1 (Blue)</div>
+            <div class="text-[11px] text-slate-400">Starts bottom row • Goal: reach top row (row 8)</div>
+          </div>
+        </div>
+        <div class="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center gap-3">
+          <span class="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 font-bold shrink-0">🤖</span>
+          <div>
+            <div class="font-bold text-white">AI Bot / Player 2 (Orange)</div>
+            <div class="text-[11px] text-slate-400">Starts top row • Goal: reach bottom row (row 0)</div>
+          </div>
+        </div>
+        <div class="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center gap-3">
+          <span class="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-bold shrink-0">🧱</span>
+          <div>
+            <div class="font-bold text-white">Hold & Drop Blockers</div>
+            <div class="text-[11px] text-slate-400">+Y Touch offset floats preview above finger</div>
+          </div>
+        </div>
+        <div class="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center gap-3">
+          <span class="w-8 h-8 rounded-lg bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400 font-bold shrink-0">⚖️</span>
+          <div>
+            <div class="font-bold text-white">Fair-Play BFS Engine</div>
+            <div class="text-[11px] text-slate-400">Guarantees &ge;1 open route for both players</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ARCHITECTURAL DEEP DIVE -->
+    <section class="space-y-6">
+      <div class="border-b border-slate-800 pb-3 flex items-center justify-between">
+        <h2 class="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+          <i data-lucide="cpu" class="w-5 h-5 text-sky-400"></i>
+          <span>Architecture & Technical Highlights</span>
+        </h2>
+        <span class="text-xs font-mono text-slate-400">Unity 6000.3.14f1 • C# Standalone Engine</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Feature 1 -->
+        <div class="p-5 rounded-2xl bg-slate-900/70 border border-slate-800/90 space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 font-bold">
+            <i data-lucide="git-branch" class="w-5 h-5"></i>
+          </div>
+          <h3 class="font-bold text-white text-base">Pure Domain-Driven Core (`Blockade2D.Core`)</h3>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Zero Unity dependencies in core logic. Board model, jump mechanics (orthogonal jumps, jump-over-opponent, diagonal jump deflection), BFS pathfinding, and command history compile cleanly to a standalone .NET Standard DLL with 100% test coverage.
+          </p>
+          <div class="pt-2 flex flex-wrap gap-1.5 text-[10px] font-mono text-sky-300">
+            <span class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700">Clean Architecture</span>
+            <span class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700">14 Unit Tests</span>
+          </div>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="p-5 rounded-2xl bg-slate-900/70 border border-slate-800/90 space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 font-bold">
+            <i data-lucide="shield-check" class="w-5 h-5"></i>
+          </div>
+          <h3 class="font-bold text-white text-base">BFS Non-Trapping Fair Play Rule</h3>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Every proposed blocker placement simulates wall addition and runs a dual Breadth-First Search for both Player 1 and Player 2. Any wall placement that completely walls off either player from their goal row is instantly rejected, shaking the preview in red.
+          </p>
+          <div class="pt-2 flex flex-wrap gap-1.5 text-[10px] font-mono text-amber-300">
+            <span class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700">O(V + E) BFS Search</span>
+            <span class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700">Wall Conflict Matrix</span>
+          </div>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="p-5 rounded-2xl bg-slate-900/70 border border-slate-800/90 space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold">
+            <i data-lucide="smartphone" class="w-5 h-5"></i>
+          </div>
+          <h3 class="font-bold text-white text-base">Mobile Touch Offset (+Y Floating Preview)</h3>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Eliminated touch finger obstruction on mobile and tablet screens. While dragging blockers, the preview automatically projects +1.6 world units above the finger/input coordinate, snapping cleanly to grid intersections so the target is always 100% visible.
+          </p>
+          <div class="pt-2 flex flex-wrap gap-1.5 text-[10px] font-mono text-emerald-300">
+            <span class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700">Hold & Drop UX</span>
+            <span class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700">Dynamic UI Scaling</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-slate-800/80 bg-slate-950/90 py-8 mt-12 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 space-y-2">
+      <p>Blockade 2D &copy; 2026 Arpit Jaiswal. Engineered with Unity 6, C#, and WebGL WebAssembly.</p>
+      <p><a href="../index.html" class="text-sky-400 hover:text-sky-300 underline underline-offset-4">Back to Game Development Portfolio</a></p>
+    </div>
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    // Reload iframe
+    const iframe = document.getElementById('blockade-iframe');
+    document.getElementById('btn-reload-frame').addEventListener('click', () => {
+      iframe.src = 'unity-blockade2d/index.html?t=' + Date.now();
+    });
+
+    // Fullscreen toggle
+    document.getElementById('btn-fullscreen').addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        iframe.requestFullscreen().catch(err => {
+          alert(`Error attempting to enable fullscreen: ${err.message}`);
+        });
+      } else {
+        document.exitFullscreen();
+      }
+    });
+  </script>
+</body>
+</html>
