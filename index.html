@@ -1263,10 +1263,18 @@
 
         </div>
 
-        <!-- Blueprints Animated Countdown Page Indicator Dots -->
-        <div class="flex items-center justify-center gap-2.5 pt-7" id="bp-carousel-indicator">
-          <button type="button" onclick="setBpPage(1)" id="bp-dot-1" class="carousel-dot h-2.5 rounded-full bg-amber-400 shadow-sm cursor-pointer" style="width: 48px;" aria-label="Blueprints Page 1" title="Blueprints Page 1"></button>
-          <button type="button" onclick="setBpPage(2)" id="bp-dot-2" class="carousel-dot h-2.5 rounded-full bg-slate-300 dark:bg-slate-700 hover:bg-slate-400 cursor-pointer" style="width: 10px;" aria-label="Blueprints Page 2" title="Blueprints Page 2"></button>
+        <!-- Blueprints Animated Countdown Page Indicator Dots (Directional Outside Shrink) -->
+        <div class="flex items-center justify-center pt-7 select-none" id="bp-carousel-indicator">
+          <!-- Left Lane (right-aligned for Dot 1; shrinks from outside left) -->
+          <div class="flex justify-end items-center" style="width: 52px;">
+            <button type="button" onclick="setBpPage(1)" id="bp-dot-1" class="carousel-dot h-2.5 rounded-full bg-amber-400 shadow-sm cursor-pointer" style="width: 48px;" aria-label="Blueprints Page 1" title="Blueprints Page 1"></button>
+          </div>
+          <!-- Fixed Inner Gap (10px) -->
+          <div style="width: 10px;"></div>
+          <!-- Right Lane (left-aligned for Dot 2; shrinks from outside right) -->
+          <div class="flex justify-start items-center" style="width: 52px;">
+            <button type="button" onclick="setBpPage(2)" id="bp-dot-2" class="carousel-dot h-2.5 rounded-full bg-slate-300 dark:bg-slate-700 hover:bg-slate-400 cursor-pointer" style="width: 10px;" aria-label="Blueprints Page 2" title="Blueprints Page 2"></button>
+          </div>
         </div>
 
       </div>
@@ -1703,10 +1711,18 @@
 
         </div>
 
-        <!-- Arsenal Animated Countdown Page Indicator Dots -->
-        <div class="flex items-center justify-center gap-2.5 pt-7" id="arsenal-carousel-indicator">
-          <button type="button" onclick="setArsenalPage(1)" id="arsenal-dot-1" class="carousel-dot h-2.5 rounded-full bg-amber-400 shadow-sm cursor-pointer" style="width: 48px;" aria-label="Arsenal Page 1" title="Arsenal Page 1"></button>
-          <button type="button" onclick="setArsenalPage(2)" id="arsenal-dot-2" class="carousel-dot h-2.5 rounded-full bg-slate-300 dark:bg-slate-700 hover:bg-slate-400 cursor-pointer" style="width: 10px;" aria-label="Arsenal Page 2" title="Arsenal Page 2"></button>
+        <!-- Arsenal Animated Countdown Page Indicator Dots (Directional Outside Shrink) -->
+        <div class="flex items-center justify-center pt-7 select-none" id="arsenal-carousel-indicator">
+          <!-- Left Lane (right-aligned for Dot 1; shrinks from outside left) -->
+          <div class="flex justify-end items-center" style="width: 52px;">
+            <button type="button" onclick="setArsenalPage(1)" id="arsenal-dot-1" class="carousel-dot h-2.5 rounded-full bg-amber-400 shadow-sm cursor-pointer" style="width: 48px;" aria-label="Arsenal Page 1" title="Arsenal Page 1"></button>
+          </div>
+          <!-- Fixed Inner Gap (10px) -->
+          <div style="width: 10px;"></div>
+          <!-- Right Lane (left-aligned for Dot 2; shrinks from outside right) -->
+          <div class="flex justify-start items-center" style="width: 52px;">
+            <button type="button" onclick="setArsenalPage(2)" id="arsenal-dot-2" class="carousel-dot h-2.5 rounded-full bg-slate-300 dark:bg-slate-700 hover:bg-slate-400 cursor-pointer" style="width: 10px;" aria-label="Arsenal Page 2" title="Arsenal Page 2"></button>
+          </div>
         </div>
 
       </div>
