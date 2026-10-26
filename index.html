@@ -55,25 +55,43 @@
       transition: all 0.3s ease;
     }
     
-    @keyframes driftSlow1 {
-      0% { transform: translateY(0px) rotate(0deg); }
-      50% { transform: translateY(-24px) rotate(8deg); }
-      100% { transform: translateY(0px) rotate(0deg); }
-    }
-    @keyframes driftSlow2 {
-      0% { transform: translateY(0px) rotate(0deg); }
-      50% { transform: translateY(-30px) rotate(-10deg); }
-      100% { transform: translateY(0px) rotate(0deg); }
-    }
-    @keyframes driftSlow3 {
-      0% { transform: translateY(0px) rotate(0deg) scale(1); }
-      50% { transform: translateY(-18px) rotate(15deg) scale(1.08); }
-      100% { transform: translateY(0px) rotate(0deg) scale(1); }
+    /* ================= RAINING DOWN BACKGROUND GAME ICONS ================= */
+    @keyframes rainFall {
+      0% {
+        top: -16%;
+        opacity: 0;
+      }
+      8% {
+        opacity: 0.72;
+      }
+      92% {
+        opacity: 0.72;
+      }
+      100% {
+        top: 114%;
+        opacity: 0;
+      }
     }
 
-    .anim-drift-1 { animation: driftSlow1 7s ease-in-out infinite; }
-    .anim-drift-2 { animation: driftSlow2 9s ease-in-out infinite 1.5s; }
-    .anim-drift-3 { animation: driftSlow3 8s ease-in-out infinite 3s; }
+    @keyframes rainSway1 {
+      0% { transform: translateX(-16px) rotate(-20deg); }
+      50% { transform: translateX(16px) rotate(18deg); }
+      100% { transform: translateX(-16px) rotate(-20deg); }
+    }
+    @keyframes rainSway2 {
+      0% { transform: translateX(18px) rotate(22deg); }
+      50% { transform: translateX(-18px) rotate(-16deg); }
+      100% { transform: translateX(18px) rotate(22deg); }
+    }
+    @keyframes rainSway3 {
+      0% { transform: translateX(-12px) rotate(-12deg) scale(0.94); }
+      50% { transform: translateX(14px) rotate(20deg) scale(1.06); }
+      100% { transform: translateX(-12px) rotate(-12deg) scale(0.94); }
+    }
+
+    .anim-rain-1 { animation: rainSway1 4.5s ease-in-out infinite; }
+    .anim-rain-2 { animation: rainSway2 5.5s ease-in-out infinite; }
+    .anim-rain-3 { animation: rainSway3 5.0s ease-in-out infinite; }
 
     /* ================= 3D CLAYMORPHIC BUTTONS & CARDS ================= */
     .clay-card {
@@ -959,10 +977,10 @@
             <span>🧪</span> SECTION 02 &bull; PLAYABLE WEBGL SANDBOX
           </div>
           <h2 class="font-display font-extrabold text-purple-950 text-3xl sm:text-5xl">
-            Unity Handheld Arcade (8 Demos)
+            Unity Handheld Arcade
           </h2>
           <p class="text-sm sm:text-base text-purple-800 font-medium">
-            Test compiled Unity WebGL scenes directly in your browser. Select from 8 gameplay mechanics and systems modules below.
+            Try out blueprints of my games systems and mechanics
           </p>
         </div>
 
@@ -1044,7 +1062,7 @@
     <!-- ============================================================== -->
     <!-- ZONE 4: ARCHITECTURE BLUEPRINTS (ENGINEER'S DRAFTING DESK)    -->
     <!-- ============================================================== -->
-    <section id="blueprints" class="relative theme-blend-blueprints py-20 blueprint-grid overflow-hidden blended-section-divider">
+    <section id="blueprints" onmouseenter="pauseBpAutoScroll()" onmouseleave="resumeBpAutoScroll()" class="relative theme-blend-blueprints py-20 blueprint-grid overflow-hidden blended-section-divider">
       <!-- Dynamic Floating Game Background Icons (Poisson Distributed, Randomized Each Refresh) -->
       <div class="section-bg-icons absolute inset-0 pointer-events-none overflow-hidden" style="z-index: 1;" aria-hidden="true"></div>
 
@@ -1236,11 +1254,28 @@
 
           </div>
 
-          <!-- Right Outside Arrow Button -->
-          <button type="button" onclick="changeBpPage(1)" class="absolute right-0 sm:-right-3 lg:-right-5 top-1/2 -translate-y-1/2 w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-[#FAF8F5] dark:bg-[#151E30] border-2 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 flex items-center justify-center hover:border-sky-400 dark:hover:border-sky-400 hover:scale-115 active:scale-95 transition-all cursor-pointer shadow-xl z-30" aria-label="Next Blueprints Page">
-            <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+          <!-- Right Outside Arrow Button with Animated Countdown Ring -->
+          <button type="button" onclick="changeBpPage(1)" class="relative absolute right-0 sm:-right-3 lg:-right-5 top-1/2 -translate-y-1/2 w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-[#FAF8F5] dark:bg-[#151E30] border-2 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 flex items-center justify-center hover:border-sky-400 dark:hover:border-sky-400 hover:scale-115 active:scale-95 transition-all cursor-pointer shadow-xl z-30" aria-label="Next Blueprints Page">
+            <svg class="absolute inset-0 w-full h-full -rotate-90 pointer-events-none rounded-full" viewBox="0 0 52 52">
+              <circle cx="26" cy="26" r="23" fill="none" stroke="currentColor" stroke-width="2.5" class="text-sky-500/20"></circle>
+              <circle id="bp-ring-progress" cx="26" cy="26" r="23" fill="none" stroke="currentColor" stroke-width="2.5" stroke-dasharray="144.5" stroke-dashoffset="144.5" stroke-linecap="round" class="text-sky-500 transition-all ease-linear"></circle>
+            </svg>
+            <svg class="w-5 h-5 sm:w-6 sm:h-6 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
           </button>
 
+        </div>
+
+        <!-- Blueprints Page Indicators & Auto-Scroll Countdown Bar -->
+        <div class="flex flex-col items-center justify-center gap-2.5 pt-7" id="bp-carousel-indicator">
+          <!-- Countdown Progress Track (0 to 100%) -->
+          <div class="w-36 sm:w-44 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden shadow-inner relative" title="Time remaining until next page auto-scroll">
+            <div id="bp-progress-bar" class="h-full bg-gradient-to-r from-sky-400 via-amber-400 to-sky-500 rounded-full transition-all ease-linear" style="width: 0%;"></div>
+          </div>
+          <!-- Animated Page Dots -->
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="setBpPage(1)" id="bp-dot-1" class="carousel-dot h-2.5 rounded-full transition-all duration-300 w-8 bg-amber-400 shadow-sm cursor-pointer" aria-label="Blueprints Page 1"></button>
+            <button type="button" onclick="setBpPage(2)" id="bp-dot-2" class="carousel-dot h-2.5 rounded-full transition-all duration-300 w-2.5 bg-slate-300 dark:bg-slate-700 hover:bg-slate-400 cursor-pointer" aria-label="Blueprints Page 2"></button>
+          </div>
         </div>
 
       </div>
@@ -1270,7 +1305,10 @@
 
         <!-- Studio Experience Switcher Navigation Tabs -->
         <div class="flex flex-wrap items-center justify-center gap-2.5 max-w-4xl mx-auto pb-2" role="tablist">
-          <button type="button" onclick="switchExperience('vasundhara', this)" class="exp-tab-btn px-4 py-2.5 rounded-2xl bg-amber-400 text-amber-950 font-display font-bold text-xs flex items-center gap-2 border-2 border-amber-500 shadow-sm transition-all cursor-pointer">
+          <button type="button" onclick="switchExperience('all', this)" class="exp-tab-btn px-4 py-2.5 rounded-2xl bg-amber-400 text-amber-950 font-display font-bold text-xs flex items-center gap-2 border-2 border-amber-500 shadow-sm transition-all cursor-pointer">
+            <span>📜</span> <span>View All Studios (3)</span>
+          </button>
+          <button type="button" onclick="switchExperience('vasundhara', this)" class="exp-tab-btn px-4 py-2.5 rounded-2xl bg-[#FAF8F5] dark:bg-[#151E30] text-slate-700 dark:text-slate-300 font-display font-bold text-xs flex items-center gap-2 border-2 border-slate-300 dark:border-slate-700 shadow-sm hover:border-amber-400 transition-all cursor-pointer">
             <span>🏢</span> <span>Vasundhara Game Studio</span>
             <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-600 text-white font-bold ml-1">Current</span>
           </button>
@@ -1281,9 +1319,6 @@
           <button type="button" onclick="switchExperience('studiokrew', this)" class="exp-tab-btn px-4 py-2.5 rounded-2xl bg-[#FAF8F5] dark:bg-[#151E30] text-slate-700 dark:text-slate-300 font-display font-bold text-xs flex items-center gap-2 border-2 border-slate-300 dark:border-slate-700 shadow-sm hover:border-amber-400 transition-all cursor-pointer">
             <span>🎲</span> <span>StudioKrew</span>
             <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-mono font-bold ml-1">Remote</span>
-          </button>
-          <button type="button" onclick="switchExperience('all', this)" class="exp-tab-btn px-4 py-2.5 rounded-2xl bg-[#FAF8F5] dark:bg-[#151E30] text-slate-700 dark:text-slate-300 font-display font-bold text-xs flex items-center gap-2 border-2 border-slate-300 dark:border-slate-700 shadow-sm hover:border-amber-400 transition-all cursor-pointer">
-            <span>📜</span> <span>View All Studios (3)</span>
           </button>
         </div>
 
@@ -1352,7 +1387,7 @@
           </div>
 
           <!-- 2. Appzia Card (2 Crisp Achievements) -->
-          <div id="exp-card-appzia" class="exp-card hidden clay-card p-7 sm:p-10 border-4 border-indigo-300 shadow-[0_16px_36px_rgba(99,102,241,0.18)] bg-[#FAF8F5] space-y-7">
+          <div id="exp-card-appzia" class="exp-card clay-card p-7 sm:p-10 border-4 border-indigo-300 shadow-[0_16px_36px_rgba(99,102,241,0.18)] bg-[#FAF8F5] space-y-7">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-indigo-100 pb-6">
               <div class="flex items-center gap-4">
                 <div class="w-16 h-16 rounded-2xl bg-indigo-100 border-2 border-indigo-300 flex items-center justify-center text-3xl shadow-sm shrink-0">
@@ -1393,7 +1428,7 @@
           </div>
 
           <!-- 3. StudioKrew Card (3 Crisp Achievements) -->
-          <div id="exp-card-studiokrew" class="exp-card hidden clay-card p-7 sm:p-10 border-4 border-amber-300 shadow-[0_16px_36px_rgba(245,158,11,0.18)] bg-[#FAF8F5] space-y-7">
+          <div id="exp-card-studiokrew" class="exp-card clay-card p-7 sm:p-10 border-4 border-amber-300 shadow-[0_16px_36px_rgba(245,158,11,0.18)] bg-[#FAF8F5] space-y-7">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-amber-100 pb-6">
               <div class="flex items-center gap-4">
                 <div class="w-16 h-16 rounded-2xl bg-amber-100 border-2 border-amber-300 flex items-center justify-center text-3xl shadow-sm shrink-0">
@@ -1450,7 +1485,7 @@
 
     <!-- ZONE 6: TECHNICAL ARSENAL (INVENTORY CHEST)                    -->
     <!-- ============================================================== -->
-    <section id="arsenal" class="relative theme-blend-arsenal py-20 overflow-hidden blended-section-divider">
+    <section id="arsenal" onmouseenter="pauseArsenalAutoScroll()" onmouseleave="resumeArsenalAutoScroll()" class="relative theme-blend-arsenal py-20 overflow-hidden blended-section-divider">
       <!-- Dynamic Floating Game Background Icons (Poisson Distributed, Randomized Each Refresh) -->
       <div class="section-bg-icons absolute inset-0 pointer-events-none overflow-hidden" style="z-index: 1;" aria-hidden="true"></div>
 
@@ -1670,11 +1705,28 @@
 
           </div>
 
-          <!-- Right Outside Arrow Button -->
-          <button type="button" onclick="changeArsenalPage(1)" class="absolute right-0 sm:-right-3 lg:-right-5 top-1/2 -translate-y-1/2 w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-[#FAF8F5] dark:bg-[#151E30] border-2 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 flex items-center justify-center hover:border-rose-400 dark:hover:border-rose-400 hover:scale-115 active:scale-95 transition-all cursor-pointer shadow-xl z-30" aria-label="Next Arsenal Slide">
-            <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+          <!-- Right Outside Arrow Button with Animated Countdown Ring -->
+          <button type="button" onclick="changeArsenalPage(1)" class="relative absolute right-0 sm:-right-3 lg:-right-5 top-1/2 -translate-y-1/2 w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-[#FAF8F5] dark:bg-[#151E30] border-2 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 flex items-center justify-center hover:border-rose-400 dark:hover:border-rose-400 hover:scale-115 active:scale-95 transition-all cursor-pointer shadow-xl z-30" aria-label="Next Arsenal Slide">
+            <svg class="absolute inset-0 w-full h-full -rotate-90 pointer-events-none rounded-full" viewBox="0 0 52 52">
+              <circle cx="26" cy="26" r="23" fill="none" stroke="currentColor" stroke-width="2.5" class="text-rose-500/20"></circle>
+              <circle id="arsenal-ring-progress" cx="26" cy="26" r="23" fill="none" stroke="currentColor" stroke-width="2.5" stroke-dasharray="144.5" stroke-dashoffset="144.5" stroke-linecap="round" class="text-rose-500 transition-all ease-linear"></circle>
+            </svg>
+            <svg class="w-5 h-5 sm:w-6 sm:h-6 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
           </button>
 
+        </div>
+
+        <!-- Arsenal Page Indicators & Auto-Scroll Countdown Bar -->
+        <div class="flex flex-col items-center justify-center gap-2.5 pt-7" id="arsenal-carousel-indicator">
+          <!-- Countdown Progress Track (0 to 100%) -->
+          <div class="w-36 sm:w-44 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden shadow-inner relative" title="Time remaining until next page auto-scroll">
+            <div id="arsenal-progress-bar" class="h-full bg-gradient-to-r from-amber-400 via-rose-400 to-amber-500 rounded-full transition-all ease-linear" style="width: 0%;"></div>
+          </div>
+          <!-- Animated Page Dots -->
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="setArsenalPage(1)" id="arsenal-dot-1" class="carousel-dot h-2.5 rounded-full transition-all duration-300 w-8 bg-amber-400 shadow-sm cursor-pointer" aria-label="Arsenal Page 1"></button>
+            <button type="button" onclick="setArsenalPage(2)" id="arsenal-dot-2" class="carousel-dot h-2.5 rounded-full transition-all duration-300 w-2.5 bg-slate-300 dark:bg-slate-700 hover:bg-slate-400 cursor-pointer" aria-label="Arsenal Page 2"></button>
+          </div>
         </div>
 
       </div>
@@ -2005,9 +2057,26 @@
       }
     }
 
-    // ================= BLUEPRINTS PAGED CAROUSEL (8 SUBSYSTEMS, 4 PER PAGE) =================
+        // ================= BLUEPRINTS PAGED CAROUSEL WITH AUTO-SCROLL & PROGRESS =================
     let currentBpPage = 1;
     const totalBpPages = 2;
+    const bpDurationMs = 5000;
+    let bpElapsedMs = 0;
+    let bpTimer = null;
+    let bpPaused = false;
+
+    function updateBpDots(page) {
+      for (let i = 1; i <= totalBpPages; i++) {
+        const dot = document.getElementById('bp-dot-' + i);
+        if (dot) {
+          if (i === page) {
+            dot.className = 'carousel-dot h-2.5 rounded-full transition-all duration-300 w-8 bg-amber-400 shadow-sm cursor-pointer';
+          } else {
+            dot.className = 'carousel-dot h-2.5 rounded-full transition-all duration-300 w-2.5 bg-slate-300 dark:bg-slate-700 hover:bg-slate-400 cursor-pointer';
+          }
+        }
+      }
+    }
 
     function setBpPage(page) {
       currentBpPage = page;
@@ -2021,6 +2090,9 @@
           }
         }
       }
+      updateBpDots(page);
+      bpElapsedMs = 0;
+      updateBpProgressUI(0);
     }
 
     function changeBpPage(delta) {
@@ -2030,10 +2102,55 @@
       setBpPage(next);
     }
 
-    // ================= ARSENAL INFINITE AUTO-SCROLL CAROUSEL =================
+    function updateBpProgressUI(pct) {
+      const bar = document.getElementById('bp-progress-bar');
+      const ring = document.getElementById('bp-ring-progress');
+      if (bar) bar.style.width = pct + '%';
+      if (ring) {
+        const offset = 144.5 * (1 - pct / 100);
+        ring.style.strokeDashoffset = offset;
+      }
+    }
+
+    function startBpAutoScroll() {
+      if (bpTimer) clearInterval(bpTimer);
+      const stepMs = 50;
+      bpTimer = setInterval(() => {
+        if (bpPaused) return;
+        bpElapsedMs += stepMs;
+        const pct = Math.min(100, (bpElapsedMs / bpDurationMs) * 100);
+        updateBpProgressUI(pct);
+        if (bpElapsedMs >= bpDurationMs) {
+          bpElapsedMs = 0;
+          changeBpPage(1);
+        }
+      }, stepMs);
+    }
+
+    function pauseBpAutoScroll() { bpPaused = true; }
+    function resumeBpAutoScroll() { bpPaused = false; }
+    startBpAutoScroll();
+
+    // ================= ARSENAL PAGED CAROUSEL WITH AUTO-SCROLL & PROGRESS =================
     let currentArsenalPage = 1;
     const totalArsenalPages = 2;
+    const arsenalDurationMs = 4500;
+    let arsenalElapsedMs = 0;
     let arsenalAutoTimer = null;
+    let arsenalPaused = false;
+
+    function updateArsenalDots(page) {
+      for (let i = 1; i <= totalArsenalPages; i++) {
+        const dot = document.getElementById('arsenal-dot-' + i);
+        if (dot) {
+          if (i === page) {
+            dot.className = 'carousel-dot h-2.5 rounded-full transition-all duration-300 w-8 bg-amber-400 shadow-sm cursor-pointer';
+          } else {
+            dot.className = 'carousel-dot h-2.5 rounded-full transition-all duration-300 w-2.5 bg-slate-300 dark:bg-slate-700 hover:bg-slate-400 cursor-pointer';
+          }
+        }
+      }
+    }
 
     function setArsenalPage(page) {
       currentArsenalPage = page;
@@ -2047,6 +2164,9 @@
           }
         }
       }
+      updateArsenalDots(page);
+      arsenalElapsedMs = 0;
+      updateArsenalProgressUI(0);
     }
 
     function changeArsenalPage(delta) {
@@ -2056,26 +2176,36 @@
       setArsenalPage(next);
     }
 
+    function updateArsenalProgressUI(pct) {
+      const bar = document.getElementById('arsenal-progress-bar');
+      const ring = document.getElementById('arsenal-ring-progress');
+      if (bar) bar.style.width = pct + '%';
+      if (ring) {
+        const offset = 144.5 * (1 - pct / 100);
+        ring.style.strokeDashoffset = offset;
+      }
+    }
+
     function startArsenalAutoScroll() {
       if (arsenalAutoTimer) clearInterval(arsenalAutoTimer);
+      const stepMs = 50;
       arsenalAutoTimer = setInterval(() => {
-        changeArsenalPage(1);
-      }, 4500); // Auto scrolls every 4.5 seconds infinitely
+        if (arsenalPaused) return;
+        arsenalElapsedMs += stepMs;
+        const pct = Math.min(100, (arsenalElapsedMs / arsenalDurationMs) * 100);
+        updateArsenalProgressUI(pct);
+        if (arsenalElapsedMs >= arsenalDurationMs) {
+          arsenalElapsedMs = 0;
+          changeArsenalPage(1);
+        }
+      }, stepMs);
     }
 
-    function pauseArsenalAutoScroll() {
-      if (arsenalAutoTimer) clearInterval(arsenalAutoTimer);
-    }
-
-    function resumeArsenalAutoScroll() {
-      startArsenalAutoScroll();
-    }
-
-    // Initialize auto scroll on load
+    function pauseArsenalAutoScroll() { arsenalPaused = true; }
+    function resumeArsenalAutoScroll() { arsenalPaused = false; }
     startArsenalAutoScroll();
 
-    
-    // ================= RANDOM BACKGROUND GAME ICONS (POISSON DISK DISTRIBUTED) =================
+    // ================= RAINING BACKGROUND GAME ICONS (POISSON COLUMNS, TOP TO BOTTOM LOOP) =================
     const GAME_DEV_ICONS = [
       `<svg class="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>`,
       `<svg class="w-full h-full" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="6"></rect><path d="M6 12h4m-2-2v4m7-2h.01m3 0h.01"></path></svg>`,
@@ -2101,7 +2231,6 @@
       'text-pink-500', 'text-cyan-400'
     ];
 
-    const BG_ICON_ANIMS = ['anim-drift-1', 'anim-drift-2', 'anim-drift-3'];
     const BG_ICON_SIZES = [
       'w-12 h-12 sm:w-14 sm:h-14',
       'w-14 h-14 sm:w-16 sm:h-16',
@@ -2109,69 +2238,72 @@
       'w-12 h-12 sm:w-16 sm:h-16'
     ];
 
-    function generatePoissonPoints(targetCount = 5, minDistance = 23.5, maxAttempts = 120) {
-      const points = [];
+    function generatePoissonColumns(targetCount = 5, minColDist = 16.0) {
+      const cols = [];
       for (let i = 0; i < targetCount; i++) {
-        let bestCandidate = null;
-        let bestDist = -1;
-        for (let attempt = 0; attempt < maxAttempts; attempt++) {
-          const cx = 4 + Math.random() * 88; // 4% to 92%
-          const cy = 6 + Math.random() * 84; // 6% to 90%
-          let minToExisting = 999;
-          for (let p = 0; p < points.length; p++) {
-            const d = Math.hypot(cx - points[p].x, cy - points[p].y);
-            if (d < minToExisting) minToExisting = d;
+        let bestX = null;
+        let maxMinD = -1;
+        for (let attempt = 0; attempt < 80; attempt++) {
+          const cx = 5 + Math.random() * 86;
+          let minD = 999;
+          for (let c = 0; c < cols.length; c++) {
+            const d = Math.abs(cx - cols[c]);
+            if (d < minD) minD = d;
           }
-          if (minToExisting >= minDistance) {
-            bestCandidate = { x: cx, y: cy };
+          if (minD >= minColDist) {
+            bestX = cx;
             break;
           }
-          if (minToExisting > bestDist) {
-            bestDist = minToExisting;
-            bestCandidate = { x: cx, y: cy };
+          if (minD > maxMinD) {
+            maxMinD = minD;
+            bestX = cx;
           }
         }
-        if (bestCandidate) points.push(bestCandidate);
+        if (bestX !== null) cols.push(bestX);
       }
-      return points;
+      return cols;
     }
 
     function initRandomBgIcons() {
       const containers = document.querySelectorAll('.section-bg-icons');
       if (!containers || containers.length === 0) return;
 
-      // Shuffle icon deck fresh on each refresh
       const iconDeck = [...GAME_DEV_ICONS].sort(() => Math.random() - 0.5);
       let deckIdx = 0;
 
       containers.forEach(container => {
         container.innerHTML = '';
-        // 5 icons per section * 7 sections = 35 icons total (2x increase from ~17 previously)
-        const points = generatePoissonPoints(5, 23.5);
-        points.forEach(pt => {
+        // 5 icons per section * 7 sections = 35 icons total
+        // Separated columns so icons rain in distinct lanes
+        const columns = generatePoissonColumns(5, 17.0);
+
+        columns.forEach((colX, i) => {
           const iconSvg = iconDeck[deckIdx % iconDeck.length];
           deckIdx++;
 
-          const anim = BG_ICON_ANIMS[Math.floor(Math.random() * BG_ICON_ANIMS.length)];
+          const sways = ['anim-rain-1', 'anim-rain-2', 'anim-rain-3'];
+          const sway = sways[i % sways.length];
           const color = BG_ICON_COLORS[Math.floor(Math.random() * BG_ICON_COLORS.length)];
           const size = BG_ICON_SIZES[Math.floor(Math.random() * BG_ICON_SIZES.length)];
-          const rot = Math.floor(Math.random() * 50 - 25);
-          const delay = (Math.random() * 4).toFixed(1);
+
+          // Paced raining duration between 5.5s and 7.8s
+          const fallDur = (5.5 + (i * 0.5) + Math.random() * 0.8).toFixed(1);
+          // Negative initial delays stagger icons across the section height immediately on load
+          const fallDelay = (-(i * 1.4) - Math.random() * 1.2).toFixed(1);
 
           const el = document.createElement('div');
-          el.className = `bg-icon ${anim} ${color} ${size} absolute pointer-events-none`;
-          el.style.left = `${pt.x.toFixed(1)}%`;
-          el.style.top = `${pt.y.toFixed(1)}%`;
-          el.style.transform = `rotate(${rot}deg)`;
-          el.style.animationDelay = `${delay}s`;
-          el.innerHTML = iconSvg;
+          el.className = `bg-icon ${color} ${size} absolute pointer-events-none`;
+          el.style.left = `${colX.toFixed(1)}%`;
+          el.style.animation = `rainFall ${fallDur}s linear infinite`;
+          el.style.animationDelay = `${fallDelay}s`;
+          el.innerHTML = `<div class="${sway} w-full h-full">${iconSvg}</div>`;
 
           container.appendChild(el);
         });
       });
     }
 
-    // Initialize randomized background icons immediately on load
+    // Initialize randomized raining background icons immediately on load
     initRandomBgIcons();
 
     lucide.createIcons();
