@@ -836,7 +836,7 @@
             </div>
 
             <div class="pt-6 mt-6 border-t-2 border-emerald-100 dark:border-emerald-900/50 flex items-center gap-3">
-              <a href="#unity-lab" onclick="selectScene('MeowSweeper_Lab.unity', 'MeowSweeper Cat Puzzle')" class="btn-3d flex-1 py-3 rounded-xl bg-sky-500 hover:bg-sky-400 text-white font-display font-bold text-xs text-center border border-sky-600 shadow-[0_4px_0_#0284C7] flex items-center justify-center">
+              <a href="#unity-lab" onclick="selectScene('MeowSweeper_Lab.unity', 'MeowSweeper Cat Puzzle')" class="btn-3d flex-1 py-3 rounded-xl bg-sky-500 hover:bg-sky-400 text-white font-display font-extrabold text-base tracking-wider text-center border border-sky-600 shadow-[0_4px_0_#0284C7] flex items-center justify-center">
                 PLAY
               </a>
               <a href="https://play.google.com/store/apps/details?id=com.meow.sweeper.sudoku.puzzle.game" target="_blank" rel="noopener noreferrer" class="p-2.5 sm:p-3 rounded-xl bg-[#FAF8F5] border-2 border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-emerald-400 dark:bg-[#151E30] dark:border-slate-700 dark:hover:bg-[#1D283E] dark:hover:border-emerald-400 transition-all shadow-sm flex items-center justify-center group" title="View MeowSweeper on Google Play Store">
@@ -892,7 +892,7 @@
             </div>
 
             <div class="pt-6 mt-6 border-t-2 border-amber-100 dark:border-amber-900/50 flex items-center gap-3">
-              <a href="#unity-lab" onclick="selectScene('CalmJigsaw_Lab.unity', 'Procedural Bezier Slicer')" class="btn-3d flex-1 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-amber-950 font-display font-bold text-xs text-center border border-amber-600 shadow-[0_4px_0_#D97706] flex items-center justify-center">
+              <a href="#unity-lab" onclick="selectScene('CalmJigsaw_Lab.unity', 'Procedural Bezier Slicer')" class="btn-3d flex-1 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-amber-950 font-display font-extrabold text-base tracking-wider text-center border border-amber-600 shadow-[0_4px_0_#D97706] flex items-center justify-center">
                 PLAY
               </a>
               <a href="https://play.google.com/store/apps/details?id=com.calm.jigsaw.puzzle" target="_blank" rel="noopener noreferrer" class="p-2.5 sm:p-3 rounded-xl bg-[#FAF8F5] border-2 border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-amber-400 dark:bg-[#151E30] dark:border-slate-700 dark:hover:bg-[#1D283E] dark:hover:border-amber-400 transition-all shadow-sm flex items-center justify-center group" title="View Calm Jigsaw on Google Play Store">
@@ -948,7 +948,7 @@
             </div>
 
             <div class="pt-6 mt-6 border-t-2 border-rose-100 dark:border-rose-900/50 flex items-center gap-3">
-              <a href="#unity-lab" onclick="selectScene('JigsawSolitaire_Lab.unity', 'Card Stack Solver')" class="btn-3d flex-1 py-3 rounded-xl bg-rose-500 hover:bg-rose-400 text-white font-display font-bold text-xs text-center border border-rose-600 shadow-[0_4px_0_#BE123C] flex items-center justify-center">
+              <a href="#unity-lab" onclick="selectScene('JigsawSolitaire_Lab.unity', 'Card Stack Solver')" class="btn-3d flex-1 py-3 rounded-xl bg-rose-500 hover:bg-rose-400 text-white font-display font-extrabold text-base tracking-wider text-center border border-rose-600 shadow-[0_4px_0_#BE123C] flex items-center justify-center">
                 PLAY
               </a>
               <a href="https://play.google.com/store/apps/details?id=com.calm.jigsaw.solitaire" target="_blank" rel="noopener noreferrer" class="p-2.5 sm:p-3 rounded-xl bg-[#FAF8F5] border-2 border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-rose-400 dark:bg-[#151E30] dark:border-slate-700 dark:hover:bg-[#1D283E] dark:hover:border-rose-400 transition-all shadow-sm flex items-center justify-center group" title="View Jigsaw Solitaire on Google Play Store">
@@ -1062,7 +1062,7 @@
     <!-- ============================================================== -->
     <!-- ZONE 4: ARCHITECTURE BLUEPRINTS (ENGINEER'S DRAFTING DESK)    -->
     <!-- ============================================================== -->
-    <section id="blueprints" onmouseenter="pauseBpAutoScroll()" onmouseleave="resumeBpAutoScroll()" class="relative theme-blend-blueprints py-20 blueprint-grid overflow-hidden blended-section-divider">
+    <section id="blueprints" class="relative theme-blend-blueprints py-20 blueprint-grid overflow-hidden blended-section-divider">
       <!-- Dynamic Floating Game Background Icons (Poisson Distributed, Randomized Each Refresh) -->
       <div class="section-bg-icons absolute inset-0 pointer-events-none overflow-hidden" style="z-index: 1;" aria-hidden="true"></div>
 
@@ -1254,13 +1254,9 @@
 
           </div>
 
-          <!-- Right Outside Arrow Button with Animated Countdown Ring -->
+          <!-- Right Outside Arrow Button -->
           <button type="button" onclick="changeBpPage(1)" class="absolute right-0 sm:-right-3 lg:-right-5 top-1/2 -translate-y-1/2 w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-[#FAF8F5] dark:bg-[#151E30] border-2 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 flex items-center justify-center hover:border-sky-400 dark:hover:border-sky-400 hover:scale-115 active:scale-95 transition-all cursor-pointer shadow-xl z-30" aria-label="Next Blueprints Page">
-            <svg class="absolute inset-0 w-full h-full -rotate-90 pointer-events-none rounded-full" viewBox="0 0 52 52">
-              <circle cx="26" cy="26" r="23" fill="none" stroke="currentColor" stroke-width="2.5" class="text-sky-500/20"></circle>
-              <circle id="bp-ring-progress" cx="26" cy="26" r="23" fill="none" stroke="currentColor" stroke-width="2.5" stroke-dasharray="144.5" stroke-dashoffset="0" stroke-linecap="round" class="text-sky-500 transition-all ease-linear" style="stroke-dashoffset: 0;"></circle>
-            </svg>
-            <svg class="w-5 h-5 sm:w-6 sm:h-6 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+            <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
           </button>
 
         </div>
@@ -1485,7 +1481,7 @@
 
     <!-- ZONE 6: TECHNICAL ARSENAL (INVENTORY CHEST)                    -->
     <!-- ============================================================== -->
-    <section id="arsenal" onmouseenter="pauseArsenalAutoScroll()" onmouseleave="resumeArsenalAutoScroll()" class="relative theme-blend-arsenal py-20 overflow-hidden blended-section-divider">
+    <section id="arsenal" class="relative theme-blend-arsenal py-20 overflow-hidden blended-section-divider">
       <!-- Dynamic Floating Game Background Icons (Poisson Distributed, Randomized Each Refresh) -->
       <div class="section-bg-icons absolute inset-0 pointer-events-none overflow-hidden" style="z-index: 1;" aria-hidden="true"></div>
 
@@ -1505,7 +1501,7 @@
         </div>
 
         <!-- Carousel Wrapper with Detached Outside Arrow Buttons (X-Axis Offset) -->
-        <div id="arsenal-carousel-wrapper" class="relative group px-7 sm:px-14 lg:px-18" onmouseenter="pauseArsenalAutoScroll()" onmouseleave="resumeArsenalAutoScroll()">
+        <div id="arsenal-carousel-wrapper" class="relative group px-7 sm:px-14 lg:px-18">
           
           <!-- Left Outside Arrow Button -->
           <button type="button" onclick="changeArsenalPage(-1)" class="absolute left-0 sm:-left-3 lg:-left-5 top-1/2 -translate-y-1/2 w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-[#FAF8F5] dark:bg-[#151E30] border-2 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 flex items-center justify-center hover:border-rose-400 dark:hover:border-rose-400 hover:scale-115 active:scale-95 transition-all cursor-pointer shadow-xl z-30" aria-label="Previous Arsenal Slide">
@@ -1705,13 +1701,9 @@
 
           </div>
 
-          <!-- Right Outside Arrow Button with Animated Countdown Ring -->
+          <!-- Right Outside Arrow Button -->
           <button type="button" onclick="changeArsenalPage(1)" class="absolute right-0 sm:-right-3 lg:-right-5 top-1/2 -translate-y-1/2 w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-[#FAF8F5] dark:bg-[#151E30] border-2 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 flex items-center justify-center hover:border-rose-400 dark:hover:border-rose-400 hover:scale-115 active:scale-95 transition-all cursor-pointer shadow-xl z-30" aria-label="Next Arsenal Slide">
-            <svg class="absolute inset-0 w-full h-full -rotate-90 pointer-events-none rounded-full" viewBox="0 0 52 52">
-              <circle cx="26" cy="26" r="23" fill="none" stroke="currentColor" stroke-width="2.5" class="text-rose-500/20"></circle>
-              <circle id="arsenal-ring-progress" cx="26" cy="26" r="23" fill="none" stroke="currentColor" stroke-width="2.5" stroke-dasharray="144.5" stroke-dashoffset="0" stroke-linecap="round" class="text-rose-500 transition-all ease-linear" style="stroke-dashoffset: 0;"></circle>
-            </svg>
-            <svg class="w-5 h-5 sm:w-6 sm:h-6 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+            <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
           </button>
 
         </div>
@@ -2057,49 +2049,13 @@
       }
     }
 
-        // ================= BLUEPRINTS PAGED CAROUSEL WITH AUTO-SCROLL & PROGRESS =================
-        // ================= HEIGHT LOCK FOR CAROUSELS (PREVENTS ANY SCREEN JUMP/JITTER) =================
-    function lockCarouselHeights() {
-      // Blueprints lock
-      const bpWrapper = document.getElementById('bp-pages-wrapper');
-      const bp1 = document.getElementById('bp-page-1');
-      const bp2 = document.getElementById('bp-page-2');
-      if (bpWrapper && bp1 && bp2) {
-        const isBp1Hidden = bp1.classList.contains('hidden');
-        const isBp2Hidden = bp2.classList.contains('hidden');
-        bp1.classList.remove('hidden');
-        bp2.classList.remove('hidden');
-        const maxBpH = Math.max(bp1.offsetHeight, bp2.offsetHeight);
-        bpWrapper.style.minHeight = maxBpH + 'px';
-        if (isBp1Hidden) bp1.classList.add('hidden');
-        if (isBp2Hidden) bp2.classList.add('hidden');
-      }
-
-      // Arsenal lock
-      const arWrapper = document.getElementById('arsenal-pages-wrapper');
-      const ar1 = document.getElementById('arsenal-page-1');
-      const ar2 = document.getElementById('arsenal-page-2');
-      if (arWrapper && ar1 && ar2) {
-        const isAr1Hidden = ar1.classList.contains('hidden');
-        const isAr2Hidden = ar2.classList.contains('hidden');
-        ar1.classList.remove('hidden');
-        ar2.classList.remove('hidden');
-        const maxArH = Math.max(ar1.offsetHeight, ar2.offsetHeight);
-        arWrapper.style.minHeight = maxArH + 'px';
-        if (isAr1Hidden) ar1.classList.add('hidden');
-        if (isAr2Hidden) ar2.classList.add('hidden');
-      }
-    }
-
-    window.addEventListener('resize', lockCarouselHeights, { passive: true });
-
-    // ================= BLUEPRINTS PAGED CAROUSEL (5 SEC TIMER, DEPLETING 100% TO 0%) =================
+        // ================= BLUEPRINTS PAGED CAROUSEL (5 SEC TIMER, DEPLETING 100% TO 0%) =================
     let currentBpPage = 1;
     const totalBpPages = 2;
     const bpDurationMs = 5000; // Exactly 5 seconds
     let bpElapsedMs = 0;
     let bpTimer = null;
-    let bpPaused = false;
+    let bpLastTime = performance.now();
 
     function updateBpDots(page) {
       for (let i = 1; i <= totalBpPages; i++) {
@@ -2128,7 +2084,8 @@
       }
       updateBpDots(page);
       bpElapsedMs = 0;
-      updateBpProgressUI(100); // Reset to 100% fill
+      bpLastTime = performance.now();
+      updateBpProgressUI(100);
     }
 
     function changeBpPage(delta) {
@@ -2138,24 +2095,23 @@
       setBpPage(next);
     }
 
-    // Depletes from 100% down to 0%
+    // Depletes from 100% down to 0% (Countdown Progress Bar)
     function updateBpProgressUI(remainingPct) {
       const bar = document.getElementById('bp-progress-bar');
-      const ring = document.getElementById('bp-ring-progress');
       if (bar) bar.style.width = remainingPct + '%';
-      if (ring) {
-        // Circumference = 144.5. Offset = 0 (100% full), Offset = 144.5 (0% empty)
-        const offset = 144.5 * (1 - remainingPct / 100);
-        ring.style.strokeDashoffset = offset.toFixed(1);
-      }
     }
 
     function startBpAutoScroll() {
       if (bpTimer) clearInterval(bpTimer);
+      bpLastTime = performance.now();
       const stepMs = 50;
       bpTimer = setInterval(() => {
-        if (bpPaused) return;
-        bpElapsedMs += stepMs;
+        const now = performance.now();
+        // Clamp delta to prevent runaways while keeping real clock accuracy
+        const delta = Math.min(250, Math.max(0, now - bpLastTime));
+        bpLastTime = now;
+        bpElapsedMs += delta;
+
         const remainingFraction = Math.max(0, 1 - (bpElapsedMs / bpDurationMs));
         const remainingPct = remainingFraction * 100;
         updateBpProgressUI(remainingPct);
@@ -2166,8 +2122,6 @@
       }, stepMs);
     }
 
-    function pauseBpAutoScroll() { bpPaused = true; }
-    function resumeBpAutoScroll() { bpPaused = false; }
     updateBpProgressUI(100);
     startBpAutoScroll();
 
@@ -2177,7 +2131,7 @@
     const arsenalDurationMs = 5000; // Exactly 5 seconds
     let arsenalElapsedMs = 0;
     let arsenalAutoTimer = null;
-    let arsenalPaused = false;
+    let arsenalLastTime = performance.now();
 
     function updateArsenalDots(page) {
       for (let i = 1; i <= totalArsenalPages; i++) {
@@ -2206,7 +2160,8 @@
       }
       updateArsenalDots(page);
       arsenalElapsedMs = 0;
-      updateArsenalProgressUI(100); // Reset to 100% fill
+      arsenLastTime = performance.now();
+      updateArsenalProgressUI(100);
     }
 
     function changeArsenalPage(delta) {
@@ -2216,24 +2171,23 @@
       setArsenalPage(next);
     }
 
-    // Depletes from 100% down to 0% (Red outline ring)
+    // Depletes from 100% down to 0% (Countdown Progress Bar)
     function updateArsenalProgressUI(remainingPct) {
       const bar = document.getElementById('arsenal-progress-bar');
-      const ring = document.getElementById('arsenal-ring-progress');
       if (bar) bar.style.width = remainingPct + '%';
-      if (ring) {
-        // Circumference = 144.5. Offset = 0 (100% full), Offset = 144.5 (0% empty)
-        const offset = 144.5 * (1 - remainingPct / 100);
-        ring.style.strokeDashoffset = offset.toFixed(1);
-      }
     }
 
     function startArsenalAutoScroll() {
       if (arsenalAutoTimer) clearInterval(arsenalAutoTimer);
+      arsenalLastTime = performance.now();
       const stepMs = 50;
       arsenalAutoTimer = setInterval(() => {
-        if (arsenalPaused) return;
-        arsenalElapsedMs += stepMs;
+        const now = performance.now();
+        // Clamp delta to prevent runaways while keeping real clock accuracy
+        const delta = Math.min(250, Math.max(0, now - arsenalLastTime));
+        arsenalLastTime = now;
+        arsenalElapsedMs += delta;
+
         const remainingFraction = Math.max(0, 1 - (arsenalElapsedMs / arsenalDurationMs));
         const remainingPct = remainingFraction * 100;
         updateArsenalProgressUI(remainingPct);
@@ -2244,10 +2198,16 @@
       }, stepMs);
     }
 
-    function pauseArsenalAutoScroll() { arsenalPaused = true; }
-    function resumeArsenalAutoScroll() { arsenalPaused = false; }
     updateArsenalProgressUI(100);
     startArsenalAutoScroll();
+
+    // Prevent background tab freeze / timing skew
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        bpLastTime = performance.now();
+        arsenalLastTime = performance.now();
+      }
+    });
 
     // ================= HEADER NAVIGATION SCROLL SPY (FOCUS HIGHLIGHT IN MIDDLE) =================
     const SPY_SECTIONS = ['shipped-games', 'unity-lab', 'blueprints', 'quest-log', 'arsenal'];
