@@ -162,8 +162,22 @@
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6) !important;
     }
 
-    .dark nav a {
+    .dark nav a:not(.active-nav-link) {
       color: #94A3B8 !important;
+    }
+
+    /* Active Header Nav Link High-Contrast Highlight (Contrasting Yellow Family) */
+    header nav a.nav-link.active-nav-link {
+      background-color: #4338CA !important; /* Deep Royal Indigo */
+      color: #FFFFFF !important;
+      border-color: #6366F1 !important;
+      box-shadow: 0 4px 12px rgba(67, 56, 202, 0.35) !important;
+    }
+    .dark header nav a.nav-link.active-nav-link {
+      background-color: #4F46E5 !important; /* Electric Indigo */
+      color: #FFFFFF !important;
+      border-color: #818CF8 !important;
+      box-shadow: 0 0 14px rgba(99, 102, 241, 0.5) !important;
     }
     .dark nav a:hover {
       background-color: rgba(255, 255, 255, 0.08) !important;
@@ -723,39 +737,56 @@
 
           <!-- Right: Hero Console Showcase Card -->
           <div class="lg:col-span-5 flex justify-center">
-            <div class="w-full max-w-md clay-card p-6 border-4 border-amber-300/80 shadow-[0_16px_40px_rgba(217,119,6,0.18)] relative bg-[#FAF8F5]">
-              <div class="flex items-center justify-between border-b-2 border-amber-100 pb-3 mb-4">
-                <div class="flex items-center gap-2">
-                  <span class="w-3.5 h-3.5 rounded-full bg-amber-400"></span>
-                  <span class="w-3.5 h-3.5 rounded-full bg-emerald-400"></span>
-                  <span class="w-3.5 h-3.5 rounded-full bg-sky-400"></span>
-                  <span class="text-xs font-bold text-slate-600 font-mono ml-1">Unity 6 LTS Sandbox</span>
+            <div class="w-full max-w-md space-y-2.5">
+
+              <!-- Title Header: In Production -->
+              <div class="flex items-center justify-between px-1">
+                <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-100 dark:bg-amber-950/70 border-2 border-amber-300 dark:border-amber-600/70 text-amber-950 dark:text-amber-300 text-xs font-display font-extrabold shadow-sm">
+                  <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+                  <span>IN PRODUCTION</span>
                 </div>
-                <span class="text-xs font-bold text-emerald-800 bg-emerald-100 px-3 py-1 rounded-full border border-emerald-300">120 FPS</span>
+                <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 font-mono tracking-wider">Next Release // 2026</span>
               </div>
 
-              <!-- Inside Game Preview -->
-              <div class="rounded-2xl bg-gradient-to-br from-amber-50 via-sky-50 to-emerald-50 border-2 border-amber-200 p-5 text-center space-y-4">
-                <div class="py-2">
-                  <div class="inline-block p-4 rounded-3xl bg-[#FAF8F5] shadow-md border-2 border-amber-200">
-                    <div class="text-5xl">🐱🧩</div>
+              <!-- Clay Console Window: Blockade 2D -->
+              <div class="clay-card p-6 border-4 border-amber-300/80 shadow-[0_16px_40px_rgba(217,119,6,0.18)] relative bg-[#FAF8F5]">
+                <div class="flex items-center justify-between border-b-2 border-amber-100 pb-3 mb-4">
+                  <div class="flex items-center gap-2">
+                    <span class="w-3.5 h-3.5 rounded-full bg-rose-500"></span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-amber-400"></span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-emerald-400"></span>
+                    <span class="text-xs font-bold text-slate-600 dark:text-slate-300 font-mono ml-1">Unity 6 LTS Sandbox</span>
                   </div>
-                  <h3 class="font-display font-bold text-slate-900 text-xl mt-3">MeowSweeper &amp; Calm Jigsaw</h3>
-                  <p class="text-xs text-slate-600 mt-1 max-w-xs mx-auto">
-                    Algorithmic Queens, Sudoku &amp; Minesweeper logic combined with procedural Bezier quad mesh shaders.
-                  </p>
+                  <span class="text-xs font-bold text-emerald-800 bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 px-3 py-1 rounded-full border border-emerald-300 dark:border-emerald-700/60">120 FPS</span>
                 </div>
 
-                <div class="flex flex-wrap justify-center gap-1.5 text-[11px] font-bold">
-                  <span class="px-3 py-1 rounded-xl bg-[#FAF8F5] text-amber-900 border border-amber-200 shadow-sm">Deterministic Solvers</span>
-                  <span class="px-3 py-1 rounded-xl bg-[#FAF8F5] text-emerald-900 border border-emerald-200 shadow-sm">HLSL ShadowMask</span>
-                  <span class="px-3 py-1 rounded-xl bg-[#FAF8F5] text-sky-900 border border-sky-200 shadow-sm">Discrete Touch Locks</span>
-                </div>
-              </div>
+                <!-- Inside Game Preview: Blockade 2D -->
+                <div class="rounded-2xl bg-gradient-to-br from-amber-50 via-sky-50 to-emerald-50 border-2 border-amber-200 p-5 text-center space-y-4">
+                  <div class="py-2">
+                    <div class="inline-block p-4 rounded-3xl bg-[#FAF8F5] shadow-md border-2 border-amber-200">
+                      <div class="text-5xl select-none">🛡️🧱</div>
+                    </div>
+                    <h3 class="font-display font-bold text-slate-900 text-xl mt-3">Blockade 2D</h3>
+                    <p class="text-xs text-slate-600 mt-1 max-w-xs mx-auto">
+                      Turn-based tactical grid validator guaranteeing dual-path BFS escape routing with Minimax depth heuristics.
+                    </p>
+                  </div>
 
-              <div class="mt-4 pt-3 border-t-2 border-amber-100 flex items-center justify-between text-xs text-slate-500 font-medium">
-                <span>Android &bull; iOS &bull; WebGL 2.0</span>
-                <span class="text-slate-900 font-bold">Vasundhara Studio</span>
+                  <div class="flex flex-wrap justify-center gap-1.5 text-[11px] font-bold">
+                    <span class="px-3 py-1 rounded-xl bg-[#FAF8F5] text-amber-900 border border-amber-200 shadow-sm">Dual-Path BFS</span>
+                    <span class="px-3 py-1 rounded-xl bg-[#FAF8F5] text-emerald-900 border border-emerald-200 shadow-sm">Minimax Strategy AI</span>
+                    <span class="px-3 py-1 rounded-xl bg-[#FAF8F5] text-sky-900 border border-sky-200 shadow-sm">Command Undo/Redo</span>
+                  </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-t-2 border-amber-100 flex items-center justify-between text-xs text-slate-500 font-medium">
+                  <span>Android &bull; iOS &bull; WebGL 2.0</span>
+                  <a href="#unity-lab" onclick="selectScene('Blockade2D_Lab.unity', 'Spatial Grid Collisions')" class="text-sky-600 hover:text-sky-500 dark:text-sky-400 font-bold hover:underline flex items-center gap-1">
+                    <span>Vasundhara Studio</span>
+                    <span>&bull;</span>
+                    <span class="text-amber-600 dark:text-amber-400 font-extrabold">In Production</span>
+                  </a>
+                </div>
               </div>
             </div>
           </div>
@@ -2296,7 +2327,7 @@
       navLinks.forEach(link => {
         const href = link.getAttribute('href');
         if (href === '#' + activeId) {
-          link.className = 'nav-link px-3 py-2 rounded-xl bg-amber-400 text-amber-950 font-bold border-2 border-amber-500 shadow-sm transition-all flex items-center gap-1.5 whitespace-nowrap';
+          link.className = 'nav-link active-nav-link px-3 py-2 rounded-xl bg-indigo-600 dark:bg-indigo-600 text-white font-extrabold border-2 border-indigo-400 dark:border-indigo-400 shadow-[0_2px_10px_rgba(79,70,229,0.35)] transition-all flex items-center gap-1.5 whitespace-nowrap';
         } else {
           link.className = 'nav-link px-3 py-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center gap-1.5 whitespace-nowrap';
         }
