@@ -2049,7 +2049,42 @@
       }
     }
 
-        // ================= BLUEPRINTS PAGED CAROUSEL (5 SEC TIMER, DEPLETING 100% TO 0%) =================
+    // ================= HEIGHT LOCK FOR CAROUSELS (PREVENTS ANY SCREEN JUMP/JITTER) =================
+    function lockCarouselHeights() {
+      // Blueprints lock
+      const bpWrapper = document.getElementById('bp-pages-wrapper');
+      const bp1 = document.getElementById('bp-page-1');
+      const bp2 = document.getElementById('bp-page-2');
+      if (bpWrapper && bp1 && bp2) {
+        const isBp1Hidden = bp1.classList.contains('hidden');
+        const isBp2Hidden = bp2.classList.contains('hidden');
+        bp1.classList.remove('hidden');
+        bp2.classList.remove('hidden');
+        const maxBpH = Math.max(bp1.offsetHeight, bp2.offsetHeight);
+        bpWrapper.style.minHeight = maxBpH + 'px';
+        if (isBp1Hidden) bp1.classList.add('hidden');
+        if (isBp2Hidden) bp2.classList.add('hidden');
+      }
+
+      // Arsenal lock
+      const arWrapper = document.getElementById('arsenal-pages-wrapper');
+      const ar1 = document.getElementById('arsenal-page-1');
+      const ar2 = document.getElementById('arsenal-page-2');
+      if (arWrapper && ar1 && ar2) {
+        const isAr1Hidden = ar1.classList.contains('hidden');
+        const isAr2Hidden = ar2.classList.contains('hidden');
+        ar1.classList.remove('hidden');
+        ar2.classList.remove('hidden');
+        const maxArH = Math.max(ar1.offsetHeight, ar2.offsetHeight);
+        arWrapper.style.minHeight = maxArH + 'px';
+        if (isAr1Hidden) ar1.classList.add('hidden');
+        if (isAr2Hidden) ar2.classList.add('hidden');
+      }
+    }
+
+    window.addEventListener('resize', lockCarouselHeights, { passive: true });
+
+            // ================= BLUEPRINTS PAGED CAROUSEL (5 SEC TIMER, DEPLETING 100% TO 0%) =================
     let currentBpPage = 1;
     const totalBpPages = 2;
     const bpDurationMs = 5000; // Exactly 5 seconds
