@@ -2508,7 +2508,7 @@
       });
 
       // Get references to the 5 sub-progress bar fills
-      const subFills = Array.from(subProgWrap.querySelectorAll('div > div'));
+      const subFills = Array.from(subProgWrap.querySelectorAll('.bg-amber-400'));
 
       function paintDots() {
         mechanicDots.forEach((d, i) => {
@@ -2516,9 +2516,21 @@
           d.className = active
             ? 'carousel-dot h-2.5 rounded-full bg-amber-400 shadow-sm cursor-pointer'
             : 'carousel-dot h-2.5 rounded-full bg-slate-300 dark:bg-slate-700 hover:bg-slate-400 cursor-pointer';
-          d.style.transition = 'width 0.25s ease, background-color 0.2s';
+          d.style.transition = active
+            ? 'width 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s'
+            : 'width 0.25s ease, background-color 0.2s';
           d.style.width = (active ? maxW : minW) + 'px';
         });
+      }
+
+      // Active mechanic page button smoothly shortens across the 5 slides, then hands over to next page
+      function updatePageDotProgress(totalPageProgressFraction) {
+        const remaining = Math.max(0, 1 - totalPageProgressFraction);
+        const activeDot = mechanicDots[currentMechanic];
+        if (activeDot) {
+          activeDot.style.transition = 'width 0.05s linear, background-color 0.2s';
+          activeDot.style.width = (minW + (maxW - minW) * remaining).toFixed(1) + 'px';
+        }
       }
 
       function updateSubProgress(slideProgressFraction) {
@@ -2656,6 +2668,10 @@
           slideElapsedMs += delta;
           const fraction = Math.min(1, slideElapsedMs / SLIDE_DURATION_MS);
           updateSubProgress(fraction);
+
+          // Animate the active page dot shortening in sync with all 5 slides
+          const totalPageProgress = (currentSlide + fraction) / TOTAL_SLIDES_PER_MECHANIC;
+          updatePageDotProgress(totalPageProgress);
 
           if (slideElapsedMs >= SLIDE_DURATION_MS) {
             advanceNextSlide();
