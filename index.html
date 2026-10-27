@@ -813,8 +813,8 @@
                 <!-- Snapshot Stage: two image slots that slide past each other -->
                 <div id="reel-stage" class="reel-stage block relative aspect-video rounded-2xl overflow-hidden bg-[#0b0f17] border-2 border-amber-200 dark:border-slate-800 group cursor-pointer select-none" role="link" tabindex="0" aria-label="Open this game in the Unity Lab">
                   <!-- Two sliding slots for butter-smooth directional transitions -->
-                  <img id="reel-slot-0" class="reel-slot" src="assets/previews/01-meowsweeper-1.jpg" alt="Gameplay preview snapshot" />
-                  <img id="reel-slot-1" class="reel-slot" src="assets/previews/01-meowsweeper-2.jpg" alt="Gameplay preview snapshot" style="transform: translateX(100%);" />
+                  <img id="reel-slot-0" class="reel-slot" src="assets/previews/01-meowsweeper-1.jpg" alt="Gameplay preview snapshot" style="transform: translateX(0); z-index: 2;" />
+                  <img id="reel-slot-1" class="reel-slot" src="assets/previews/01-meowsweeper-2.jpg" alt="Gameplay preview snapshot" style="transform: translateX(100%); z-index: 1;" />
 
                   <!-- 5-Segment Story Progress Bar (Snapchat/Instagram style) -->
                   <div id="reel-sub-progress" class="absolute top-2.5 left-3 right-3 z-20 flex items-center gap-1.5 pointer-events-none">
@@ -2466,6 +2466,14 @@
       const tagTones = ['text-amber-900 border-amber-200', 'text-emerald-900 border-emerald-200', 'text-sky-900 border-sky-200'];
       const minW = 10, maxW = 48;
 
+      // Eagerly preload all 40 snapshot images into browser cache so transitions are instant
+      order.forEach((item) => {
+        for (let s = 1; s <= TOTAL_SLIDES_PER_MECHANIC; s++) {
+          const img = new Image();
+          img.src = 'assets/previews/' + item.id + '-' + s + '.jpg';
+        }
+      });
+
       const slot0 = document.getElementById('reel-slot-0');
       const slot1 = document.getElementById('reel-slot-1');
       const slots = [slot0, slot1];
@@ -2524,72 +2532,96 @@
           }
         });
 
-        // Also update slide counter
         const scEl = document.getElementById('reel-slide-counter');
         if (scEl) {
           scEl.textContent = 'Snapshot ' + (currentSlide + 1) + '/5';
         }
       }
 
-      function paintCaption(i) {
-        const clip = order[i];
-        document.getElementById('reel-title').textContent = clip.title;
-        document.getElementById('reel-desc').textContent = clip.desc;
-        document.getElementById('reel-scene').textContent = clip.scene;
-        document.getElementById('reel-status').textContent = clip.status;
-        document.getElementById('reel-status-dot').className = 'w-2.5 h-2.5 rounded-full animate-pulse ' + clip.dot;
-        document.getElementById('reel-platform').textContent = clip.platform;
-        document.getElementById('reel-counter').textContent =
-          'Mechanic ' + String(i + 1).padStart(2, '0') + '/' + String(order.length).padStart(2, '0');
-        const tags = document.getElementById('reel-tags');
-        tags.innerHTML = '';
-        clip.tags.forEach((t, k) => {
-          const s = document.createElement('span');
-          s.className = 'px-3 py-1 rounded-xl bg-[#FAF8F5] dark:bg-[#151E30] text-slate-800 dark:text-slate-200 border border-amber-200 dark:border-slate-700 shadow-sm ' + tagTones[k % tagTones.length];
-          s.textContent = t;
-          tags.appendChild(s);
-        });
+      function updateHeaderAndCaption(mechIdx, isNewMech) {
+        const clip = order[mechIdx];
+        // Synchronous immediate top-bar updates (never delayed by setTimeout!)
+        const sceneEl = document.getElementById('reel-scene');
+        if (sceneEl) sceneEl.textContent = clip.scene;
+        const statusEl = document.getElementById('reel-status');
+        if (statusEl) statusEl.textContent = clip.status;
+        const dotEl = document.getElementById('reel-status-dot');
+        if (dotEl) dotEl.className = 'w-2.5 h-2.5 rounded-full animate-pulse ' + clip.dot;
+        const platEl = document.getElementById('reel-platform');
+        if (platEl) platEl.textContent = clip.platform;
+        const counterEl = document.getElementById('reel-counter');
+        if (counterEl) {
+          counterEl.textContent = 'Mechanic ' + String(mechIdx + 1).padStart(2, '0') + '/' + String(order.length).padStart(2, '0');
+        }
+        const scEl = document.getElementById('reel-slide-counter');
+        if (scEl) {
+          scEl.textContent = 'Snapshot ' + (currentSlide + 1) + '/5';
+        }
+
+        // Synchronous caption updates: title, desc, and tags always match mechanic immediately!
+        if (isNewMech) {
+          const titleEl = document.getElementById('reel-title');
+          if (titleEl) titleEl.textContent = clip.title;
+          const descEl = document.getElementById('reel-desc');
+          if (descEl) descEl.textContent = clip.desc;
+          const tags = document.getElementById('reel-tags');
+          if (tags) {
+            tags.innerHTML = '';
+            clip.tags.forEach((t, k) => {
+              const s = document.createElement('span');
+              s.className = 'px-3 py-1 rounded-xl bg-[#FAF8F5] dark:bg-[#151E30] text-slate-800 dark:text-slate-200 border border-amber-200 dark:border-slate-700 shadow-sm ' + tagTones[k % tagTones.length];
+              s.textContent = t;
+              tags.appendChild(s);
+            });
+          }
+        }
       }
 
       function showMechanicAndSlide(mechIdx, slideIdx, dir) {
-        const isMechanicChanging = (mechIdx !== currentMechanic);
-        currentMechanic = (mechIdx + order.length) % order.length;
-        currentSlide = (slideIdx + TOTAL_SLIDES_PER_MECHANIC) % TOTAL_SLIDES_PER_MECHANIC;
+        const targetMech = (mechIdx + order.length) % order.length;
+        const targetSlide = (slideIdx + TOTAL_SLIDES_PER_MECHANIC) % TOTAL_SLIDES_PER_MECHANIC;
+        const isMechanicChanging = (targetMech !== currentMechanic);
+
+        currentMechanic = targetMech;
+        currentSlide = targetSlide;
         slideElapsedMs = 0;
         lastTickTime = performance.now();
 
         const outgoing = slots[front];
         const incoming = slots[1 - front];
-        incoming.src = getSnapshotUrl(currentMechanic, currentSlide);
+        const targetUrl = getSnapshotUrl(currentMechanic, currentSlide);
+
+        incoming.src = targetUrl;
+        incoming.alt = order[currentMechanic].title + ' preview snapshot ' + (currentSlide + 1);
 
         // Slide animation: incoming starts at +dir*100%, moves to 0; outgoing moves to -dir*100%
+        incoming.style.zIndex = '2';
+        outgoing.style.zIndex = '1';
+
         incoming.style.transition = 'none';
         incoming.style.transform = 'translateX(' + (dir * 100) + '%)';
         void incoming.offsetWidth; // Force layout reflow
-        incoming.style.transition = 'transform 0.55s cubic-bezier(0.22, 0.8, 0.24, 1)';
-        outgoing.style.transition = 'transform 0.55s cubic-bezier(0.22, 0.8, 0.24, 1)';
+
+        const slideTiming = 'transform 0.48s cubic-bezier(0.22, 0.8, 0.24, 1)';
+        incoming.style.transition = slideTiming;
+        outgoing.style.transition = slideTiming;
+
         incoming.style.transform = 'translateX(0)';
         outgoing.style.transform = 'translateX(' + (-dir * 100) + '%)';
 
         front = 1 - front;
 
+        // Reset outgoing slot z-index after transition completes
+        setTimeout(() => {
+          outgoing.style.zIndex = '0';
+          outgoing.style.transition = 'none';
+        }, 500);
+
+        updateHeaderAndCaption(currentMechanic, isMechanicChanging);
         if (isMechanicChanging) {
-          const caption = document.getElementById('reel-caption');
-          caption.classList.add('is-fading');
-          setTimeout(() => {
-            paintCaption(currentMechanic);
-            caption.classList.remove('is-fading');
-          }, 250);
           paintDots();
         }
-
         updateSubProgress(0);
-
-        // Preload next slide in background
-        const nextS = (currentSlide + 1) % TOTAL_SLIDES_PER_MECHANIC;
-        const nextM = (nextS === 0) ? (currentMechanic + 1) % order.length : currentMechanic;
-        const preloadImg = new Image();
-        preloadImg.src = getSnapshotUrl(nextM, nextS);
       }
 
       // Next / Previous step helpers
@@ -2679,18 +2711,27 @@
         });
       }
 
-      // Hover to study screenshot
-      const reelCard = document.getElementById('reel');
-      if (reelCard) {
-        reelCard.addEventListener('mouseenter', () => { hovering = true; });
-        reelCard.addEventListener('mouseleave', () => { hovering = false; lastTickTime = performance.now(); });
-      }
+      // Only pause on hover when hovering directly on the image stage with a mouse (never entire card or touches)
+      stage.addEventListener('pointerenter', (e) => {
+        if (e.pointerType === 'mouse') {
+          hovering = true;
+        }
+      });
+      stage.addEventListener('pointerleave', (e) => {
+        if (e.pointerType === 'mouse') {
+          hovering = false;
+          lastTickTime = performance.now();
+        }
+      });
+      stage.addEventListener('touchstart', () => { hovering = false; }, { passive: true });
+      stage.addEventListener('touchend', () => { hovering = false; lastTickTime = performance.now(); }, { passive: true });
 
-      // Pause when offscreen or tab hidden
+      // Robust visibility & screen observer (threshold 0.05 so partial scroll never halts auto-advance)
       new IntersectionObserver((entries) => {
-        onScreen = entries[0].isIntersecting;
+        const ent = entries[0];
+        onScreen = ent.isIntersecting && ent.intersectionRatio > 0.05;
         lastTickTime = performance.now();
-      }, { threshold: 0.25 }).observe(stage);
+      }, { threshold: [0, 0.05, 0.2] }).observe(stage);
 
       document.addEventListener('visibilitychange', () => {
         if (!document.hidden) lastTickTime = performance.now();
@@ -2699,8 +2740,11 @@
       // Initial state
       slots[0].src = getSnapshotUrl(0, 0);
       slots[0].style.transform = 'translateX(0)';
+      slots[0].style.zIndex = '2';
+      slots[1].src = getSnapshotUrl(0, 1);
       slots[1].style.transform = 'translateX(100%)';
-      paintCaption(0);
+      slots[1].style.zIndex = '1';
+      updateHeaderAndCaption(0, true);
       paintDots();
       updateSubProgress(0);
       requestAnimationFrame(reelTick);
