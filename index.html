@@ -668,14 +668,8 @@
         </a>
       </nav>
 
-      <!-- Right Action: Master Resume Button, Theme Toggle & Cozy SFX Audio Toggle -->
+      <!-- Right Action: Master Resume Button & Theme Toggle -->
       <div class="flex items-center gap-2 sm:gap-2.5 shrink-0">
-        <!-- Cozy Game SFX Audio Toggle Button (Web Audio API) -->
-        <button id="sfx-toggle-btn" type="button" onclick="toggleCozySFX(event)" class="px-3 py-2 rounded-2xl bg-[#FAF8F5] dark:bg-[#1A2334] border-2 border-amber-300 dark:border-amber-500/50 text-slate-800 dark:text-amber-300 font-display font-bold text-xs flex items-center gap-1.5 shadow-sm hover:scale-105 active:scale-95 transition-all cursor-pointer whitespace-nowrap shrink-0" title="Enable Cozy Game Sound Effects" aria-label="Toggle Cozy SFX">
-          <span id="sfx-toggle-icon" class="text-base leading-none inline-block">🔇</span>
-          <span id="sfx-toggle-label" class="text-[11px] font-bold font-mono text-slate-500 dark:text-slate-400 hidden sm:inline">SFX: OFF</span>
-        </button>
-
         <!-- Interactive Theme Toggle Button -->
         <button id="theme-toggle-btn" type="button" onclick="toggleTheme(event)" class="px-3.5 py-2 rounded-2xl bg-[#FAF8F5] dark:bg-[#1A2334] border-2 border-amber-300 dark:border-amber-500/50 text-slate-800 dark:text-amber-300 font-display font-bold text-xs flex items-center gap-2 shadow-sm hover:scale-105 active:scale-95 transition-all cursor-pointer whitespace-nowrap shrink-0" title="Toggle Light / Dark Mode">
           <span id="theme-toggle-icon" class="text-xl leading-none inline-block">🌙</span>
@@ -696,11 +690,7 @@
     </div>
 
     <!-- Mobile Dropdown Menu -->
-    <div id="mobile-menu" class="hidden xl:hidden px-4 pt-2 pb-6 bg-[#FDFBF7] dark:bg-[#0E1526] border-b-2 border-[#EFE5D7] dark:border-slate-800 space-y-2">
-      <button type="button" onclick="toggleCozySFX(event)" class="w-full px-4 py-3 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border-2 border-amber-200 dark:border-amber-700/60 font-bold text-sm text-amber-950 dark:text-amber-300 flex items-center justify-between">
-        <span class="flex items-center gap-2"><span>🔊</span> <span>Cozy Game Audio Effects</span></span>
-        <span id="mobile-sfx-label" class="text-xs font-mono px-2 py-0.5 rounded bg-amber-200 dark:bg-amber-800">OFF</span>
-      </button>
+    <div id="mobile-menu" class="hidden xl:hidden px-4 pt-2 pb-6 bg-[#FDFBF7] border-b-2 border-[#EFE5D7] space-y-2">
       <a href="#about" onclick="toggleMobileMenu()" class="block px-4 py-3 rounded-2xl bg-orange-50 border-2 border-orange-200 font-bold text-sm text-orange-950 flex items-center gap-3">
         <span>👋</span> About Me
       </a>
@@ -2003,220 +1993,6 @@
 
 
   <script>
-    // ================= COZY GAME AUDIO SFX ENGINE (ZERO EXTERNAL ASSETS / WEB AUDIO API) =================
-    const CozyAudio = (function() {
-      let ctx = null;
-      let enabled = false;
-      let lastHoverTime = 0;
-
-      function getContext() {
-        if (!ctx) {
-          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-          if (AudioContextClass) {
-            ctx = new AudioContextClass();
-          }
-        }
-        if (ctx && ctx.state === 'suspended') {
-          ctx.resume();
-        }
-        return ctx;
-      }
-
-      function init() {
-        try {
-          enabled = (localStorage.getItem('cozy_sfx') === 'enabled');
-        } catch (e) {
-          enabled = false;
-        }
-        updateUI();
-        attachInteractiveListeners();
-      }
-
-      function toggle(event) {
-        if (event) event.stopPropagation();
-        enabled = !enabled;
-        try {
-          localStorage.setItem('cozy_sfx', enabled ? 'enabled' : 'disabled');
-        } catch (e) {}
-        updateUI();
-        if (enabled) {
-          getContext();
-          playStartup();
-        }
-        return enabled;
-      }
-
-      function updateUI() {
-        const icon = document.getElementById('sfx-toggle-icon');
-        const label = document.getElementById('sfx-toggle-label');
-        const mobileLabel = document.getElementById('mobile-sfx-label');
-        const btn = document.getElementById('sfx-toggle-btn');
-
-        if (icon) icon.textContent = enabled ? '🔊' : '🔇';
-        if (label) {
-          label.textContent = enabled ? 'SFX: ON' : 'SFX: OFF';
-          label.className = enabled
-            ? 'text-[11px] font-bold font-mono text-emerald-600 dark:text-emerald-400 hidden sm:inline'
-            : 'text-[11px] font-bold font-mono text-slate-500 dark:text-slate-400 hidden sm:inline';
-        }
-        if (mobileLabel) {
-          mobileLabel.textContent = enabled ? 'ON' : 'OFF';
-          mobileLabel.className = enabled
-            ? 'text-xs font-mono px-2.5 py-0.5 rounded bg-emerald-300 dark:bg-emerald-700 text-emerald-950 dark:text-white font-bold'
-            : 'text-xs font-mono px-2 py-0.5 rounded bg-amber-200 dark:bg-amber-800 text-amber-950 dark:text-amber-200';
-        }
-        if (btn) {
-          btn.title = enabled ? 'Mute Cozy Sound Effects' : 'Enable Cozy Sound Effects (Procedural Web Audio API)';
-          if (enabled) {
-            btn.classList.add('border-emerald-400', 'bg-emerald-50/70', 'dark:bg-emerald-950/40');
-            btn.classList.remove('border-amber-300');
-          } else {
-            btn.classList.remove('border-emerald-400', 'bg-emerald-50/70', 'dark:bg-emerald-950/40');
-            btn.classList.add('border-amber-300');
-          }
-        }
-      }
-
-      // Procedural Sound 1: Soft Wooden Bubble Pop (Hover)
-      function pop(freq = 560) {
-        if (!enabled) return;
-        const now = performance.now();
-        if (now - lastHoverTime < 60) return;
-        lastHoverTime = now;
-
-        const c = getContext();
-        if (!c) return;
-        try {
-          const osc = c.createOscillator();
-          const gain = c.createGain();
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(freq, c.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(freq * 0.72, c.currentTime + 0.04);
-          gain.gain.setValueAtTime(0.04, c.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.04);
-          osc.connect(gain);
-          gain.connect(c.destination);
-          osc.start();
-          osc.stop(c.currentTime + 0.045);
-        } catch (e) {}
-      }
-
-      // Procedural Sound 2: Tactile Button Thud (Click)
-      function click() {
-        if (!enabled) return;
-        const c = getContext();
-        if (!c) return;
-        try {
-          const osc = c.createOscillator();
-          const gain = c.createGain();
-          osc.type = 'triangle';
-          osc.frequency.setValueAtTime(260, c.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(95, c.currentTime + 0.05);
-          gain.gain.setValueAtTime(0.08, c.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.05);
-          osc.connect(gain);
-          gain.connect(c.destination);
-          osc.start();
-          osc.stop(c.currentTime + 0.055);
-        } catch (e) {}
-      }
-
-      // Procedural Sound 3: Marimba Slide Pip (Snapshot Advance)
-      function slide(isUp = true) {
-        if (!enabled) return;
-        const c = getContext();
-        if (!c) return;
-        try {
-          const freq = isUp ? 620 : 480;
-          const osc = c.createOscillator();
-          const gain = c.createGain();
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(freq, c.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(freq * 1.18, c.currentTime + 0.06);
-          gain.gain.setValueAtTime(0.045, c.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.06);
-          osc.connect(gain);
-          gain.connect(c.destination);
-          osc.start();
-          osc.stop(c.currentTime + 0.065);
-        } catch (e) {}
-      }
-
-      // Procedural Sound 4: Cozy Major Triad Chord (E5 -> G#5 -> B5 Startup / Level-Up)
-      function playStartup() {
-        const c = getContext();
-        if (!c) return;
-        const notes = [659.25, 830.61, 987.77];
-        notes.forEach((freq, i) => {
-          setTimeout(() => {
-            if (!c || !enabled) return;
-            try {
-              const osc = c.createOscillator();
-              const gain = c.createGain();
-              osc.type = 'sine';
-              osc.frequency.setValueAtTime(freq, c.currentTime);
-              gain.gain.setValueAtTime(0.06, c.currentTime);
-              gain.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.2);
-              osc.connect(gain);
-              gain.connect(c.destination);
-              osc.start();
-              osc.stop(c.currentTime + 0.21);
-            } catch (e) {}
-          }, i * 75);
-        });
-      }
-
-      // Procedural Sound 5: Cosmic Light/Dark Whoosh
-      function whoosh() {
-        if (!enabled) return;
-        const c = getContext();
-        if (!c) return;
-        try {
-          const osc = c.createOscillator();
-          const gain = c.createGain();
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(340, c.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(740, c.currentTime + 0.12);
-          gain.gain.setValueAtTime(0.05, c.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.12);
-          osc.connect(gain);
-          gain.connect(c.destination);
-          osc.start();
-          osc.stop(c.currentTime + 0.13);
-        } catch (e) {}
-      }
-
-      function attachInteractiveListeners() {
-        document.addEventListener('click', (e) => {
-          const target = e.target.closest('button, .btn-3d, .carousel-dot, [role="button"], a[href^="#"]');
-          if (target && target.id !== 'sfx-toggle-btn') {
-            click();
-          }
-        }, { passive: true });
-
-        document.addEventListener('mouseover', (e) => {
-          const target = e.target.closest('button, .btn-3d, .carousel-dot, .clay-card');
-          if (target) {
-            pop(540);
-          }
-        }, { passive: true });
-      }
-
-      return {
-        init,
-        toggle,
-        pop,
-        click,
-        slide,
-        whoosh,
-        playStartup
-      };
-    })();
-
-    function toggleCozySFX(event) {
-      CozyAudio.toggle(event);
-    }
-
 // ================= THEME TOGGLE WITH VIEW TRANSITION ANIMATION =================
     function toggleTheme(event) {
       const isCurrentlyDark = document.documentElement.classList.contains('dark');
@@ -2244,7 +2020,6 @@
           Math.max(y, window.innerHeight - y)
         );
 
-        CozyAudio.whoosh();
         const transition = document.startViewTransition(() => {
           document.documentElement.classList.toggle('dark', willBeDark);
           localStorage.setItem('cozy_theme', willBeDark ? 'dark' : 'light');
@@ -2856,11 +2631,6 @@
 
         updateHeaderAndCaption(currentMechanic, isMechanicChanging);
         if (isMechanicChanging) {
-          CozyAudio.playStartup();
-        } else {
-          CozyAudio.slide(true);
-        }
-        if (isMechanicChanging) {
           paintDots();
         }
         updateSubProgress(0);
@@ -3155,7 +2925,6 @@
 
     // Initialize randomized raining background icons immediately on load
     initRandomBgIcons();
-    CozyAudio.init();
 
     lucide.createIcons();
   </script>
