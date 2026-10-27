@@ -542,6 +542,21 @@
     .dark #about .about-fact { background: #0B101C !important; border-color: rgba(56, 189, 248, 0.25) !important; }
     .dark #about .about-heading { color: #F8FAFC !important; }
     .dark #about .about-sub { color: #FDBA74 !important; }
+
+    /* Hero gameplay reel: two video slots slide past each other; caption fades between clips */
+    .reel-slot {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.65s cubic-bezier(0.22, 0.8, 0.24, 1);
+    }
+    .reel-caption { transition: opacity 0.25s ease; }
+    .reel-caption.is-fading { opacity: 0; }
+    @media (prefers-reduced-motion: reduce) {
+      .reel-slot, .reel-caption { transition: none; }
+    }
     .theme-blend-lab {
       background: linear-gradient(to bottom, #F3EEFD 0%, #ECE5FD 50%, #EDF6FD 100%);
     }
@@ -704,13 +719,13 @@
         <div class="grid lg:grid-cols-12 gap-10 items-center">
           
           <!-- Left: Hero Headline -->
-          <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
+          <div class="lg:col-span-7 xl:col-span-6 space-y-6 text-center lg:text-left">
             <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-100 border-2 border-amber-300 text-amber-950 text-xs font-bold shadow-sm">
               <span>✨</span>
               <span>SENIOR UNITY &amp; GAMEPLAY SYSTEMS DEVELOPER</span>
             </div>
 
-            <h1 class="font-display font-extrabold text-slate-900 text-4xl sm:text-6xl tracking-tight leading-[1.12]">
+            <h1 class="font-display font-extrabold text-slate-900 text-4xl sm:text-6xl xl:text-[3.3rem] tracking-tight leading-[1.12]">
               Crafting Delightful, <br class="hidden sm:inline">
               <span class="text-amber-600 relative">
                 High-Performance
@@ -757,56 +772,54 @@
             </div>
           </div>
 
-          <!-- Right: Hero Console Showcase Card -->
-          <div class="lg:col-span-5 flex justify-center">
-            <div class="w-full max-w-md space-y-2.5">
+          <!-- Right: Gameplay Preview Reel (8 shuffled 10 s clips, auto-advancing) -->
+          <div class="lg:col-span-5 xl:col-span-6 flex justify-center">
+            <div id="reel" class="w-full max-w-xl space-y-2.5">
 
-              <!-- Title Header: In Production -->
+              <!-- Title Header: per-clip status -->
               <div class="flex items-center justify-between px-1">
                 <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-100 dark:bg-amber-950/70 border-2 border-amber-300 dark:border-amber-600/70 text-amber-950 dark:text-amber-300 text-xs font-display font-extrabold shadow-sm">
-                  <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
-                  <span>IN PRODUCTION</span>
+                  <span id="reel-status-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span id="reel-status">GAMEPLAY PREVIEW</span>
                 </div>
-                <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 font-mono tracking-wider">Next Release // 2026</span>
+                <span id="reel-counter" class="text-[11px] font-bold text-slate-500 dark:text-slate-400 font-mono tracking-wider">Preview // 01 of 08</span>
               </div>
 
-              <!-- Clay Console Window: Blockade 2D -->
-              <div class="clay-card p-6 border-4 border-amber-300/80 shadow-[0_16px_40px_rgba(217,119,6,0.18)] relative bg-[#FAF8F5]">
+              <!-- Clay Console Window: Gameplay Reel -->
+              <div class="clay-card p-5 border-4 border-amber-300/80 shadow-[0_16px_40px_rgba(217,119,6,0.18)] relative bg-[#FAF8F5]">
                 <div class="flex items-center justify-between border-b-2 border-amber-100 pb-3 mb-4">
-                  <div class="flex items-center gap-2">
-                    <span class="w-3.5 h-3.5 rounded-full bg-rose-500"></span>
-                    <span class="w-3.5 h-3.5 rounded-full bg-amber-400"></span>
-                    <span class="w-3.5 h-3.5 rounded-full bg-emerald-400"></span>
-                    <span class="text-xs font-bold text-slate-600 dark:text-slate-300 font-mono ml-1">Unity 6 LTS Sandbox</span>
+                  <div class="flex items-center gap-2 min-w-0">
+                    <span class="w-3.5 h-3.5 rounded-full bg-rose-500 shrink-0"></span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-amber-400 shrink-0"></span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-emerald-400 shrink-0"></span>
+                    <span id="reel-scene" class="text-xs font-bold text-slate-600 dark:text-slate-300 font-mono ml-1 truncate">MeowSweeper_Lab.unity</span>
                   </div>
-                  <span class="text-xs font-bold text-emerald-800 bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 px-3 py-1 rounded-full border border-emerald-300 dark:border-emerald-700/60">120 FPS</span>
+                  <span class="text-xs font-bold text-emerald-800 bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 px-3 py-1 rounded-full border border-emerald-300 dark:border-emerald-700/60 whitespace-nowrap shrink-0">LIVE GAMEPLAY</span>
                 </div>
 
-                <!-- Inside Game Preview: Blockade 2D -->
-                <div class="rounded-2xl bg-gradient-to-br from-amber-50 via-sky-50 to-emerald-50 border-2 border-amber-200 p-5 text-center space-y-4">
-                  <div class="py-2">
-                    <div class="inline-block p-4 rounded-3xl bg-[#FAF8F5] shadow-md border-2 border-amber-200">
-                      <div class="text-5xl select-none">🛡️🧱</div>
-                    </div>
-                    <h3 class="font-display font-bold text-slate-900 text-xl mt-3">Blockade 2D</h3>
-                    <p class="text-xs text-slate-600 mt-1 max-w-xs mx-auto">
-                      Turn-based tactical grid validator guaranteeing dual-path BFS escape routing with Minimax depth heuristics.
-                    </p>
-                  </div>
-
-                  <div class="flex flex-wrap justify-center gap-1.5 text-[11px] font-bold">
-                    <span class="px-3 py-1 rounded-xl bg-[#FAF8F5] text-amber-900 border border-amber-200 shadow-sm">Dual-Path BFS</span>
-                    <span class="px-3 py-1 rounded-xl bg-[#FAF8F5] text-emerald-900 border border-emerald-200 shadow-sm">Minimax Strategy AI</span>
-                    <span class="px-3 py-1 rounded-xl bg-[#FAF8F5] text-sky-900 border border-sky-200 shadow-sm">Command Undo/Redo</span>
-                  </div>
+                <!-- Video Stage: two slots that slide past each other -->
+                <div id="reel-stage" class="reel-stage block relative aspect-video rounded-2xl overflow-hidden bg-[#0b0f17] border-2 border-amber-200 group cursor-pointer" role="link" tabindex="0" aria-label="Open this game in the Unity Lab">
+                  <video class="reel-slot" muted playsinline preload="auto" aria-hidden="true"></video>
+                  <video class="reel-slot" muted playsinline preload="none" aria-hidden="true"></video>
+                  <button type="button" id="reel-toggle" class="absolute top-2.5 left-2.5 z-10 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 text-white text-xs font-bold flex items-center justify-center" aria-label="Pause gameplay previews" title="Pause previews">❚❚</button>
+                  <span class="absolute bottom-2.5 right-2.5 z-10 px-3 py-1.5 rounded-xl bg-black/65 text-white text-[11px] font-bold opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">▶ Play it in the Unity Lab</span>
                 </div>
+
+                <!-- Caption (fades between clips) -->
+                <div id="reel-caption" class="reel-caption text-center pt-4 space-y-2">
+                  <h3 id="reel-title" class="font-display font-bold text-slate-900 text-xl">MeowSweeper</h3>
+                  <p id="reel-desc" class="text-xs text-slate-600 max-w-sm mx-auto min-h-[2.5rem]"></p>
+                  <div id="reel-tags" class="flex flex-wrap justify-center gap-1.5 text-[11px] font-bold"></div>
+                </div>
+
+                <!-- Page Indicator Dots (active pill shrinks while the next one grows) -->
+                <div id="reel-dots" class="flex items-center justify-center gap-2 pt-4 select-none"></div>
 
                 <div class="mt-4 pt-3 border-t-2 border-amber-100 flex items-center justify-between text-xs text-slate-500 font-medium">
-                  <span>Android &bull; iOS &bull; WebGL 2.0</span>
-                  <a href="#unity-lab" onclick="selectScene('Blockade2D_Lab.unity', 'Spatial Grid Collisions')" class="text-sky-600 hover:text-sky-500 dark:text-sky-400 font-bold hover:underline flex items-center gap-1">
-                    <span>Vasundhara Studio</span>
-                    <span>&bull;</span>
-                    <span class="text-amber-600 dark:text-amber-400 font-extrabold">In Production</span>
+                  <span id="reel-platform">Google Play &bull; Android</span>
+                  <a href="#unity-lab" id="reel-open" class="text-sky-600 hover:text-sky-500 dark:text-sky-400 font-bold hover:underline flex items-center gap-1">
+                    <span>Open in Unity Lab</span>
+                    <span>&rarr;</span>
                   </a>
                 </div>
               </div>
@@ -2392,6 +2405,210 @@
 
     setArsenalPage(1);
     startArsenalAutoScroll();
+
+    // ================= HERO GAMEPLAY REEL (8 SHUFFLED 10 S CLIPS, AUTO-ADVANCING) =================
+    const REEL_CLIPS = [
+      { id: '01-meowsweeper', title: 'MeowSweeper', scene: 'MeowSweeper_Lab.unity', status: 'SHIPPED • ★ 5.0 GOOGLE PLAY', dot: 'bg-emerald-500', platform: 'Google Play • Android',
+        desc: 'Queens × Sudoku × Minesweeper logic puzzle, solved live with the deterministic hint-cascade solver.', tags: ['Hint Cascade FSM', 'Zero-GC Solver', 'Multi-Touch Input'] },
+      { id: '02-calm-jigsaw', title: 'Calm Jigsaw', scene: 'CalmJigsaw_Lab.unity', status: 'SHIPPED • ★ 4.8 GOOGLE PLAY', dot: 'bg-emerald-500', platform: 'Google Play • Android',
+        desc: 'Pieces cut at runtime by the N×N Bezier mesh generator, snapping into place with edge filtering.', tags: ['Bezier Mesh Gen', 'Dynamic UVs', 'HLSL Shadow Mask'] },
+      { id: '03-jigsaw-solitaire', title: 'Jigsaw Solitaire', scene: 'JigsawSolitaire_Lab.unity', status: 'SHIPPED • ★ 4.9 GOOGLE PLAY', dot: 'bg-emerald-500', platform: 'Google Play • Android',
+        desc: 'Card-grid swaps where correct neighbours seam-merge and then move together as one group.', tags: ['Displacement Swap', 'Seam Merge', 'Group Drag'] },
+      { id: '04-arrow-strike', title: 'Arrow Strike', scene: 'ArrowStrike_Lab.unity', status: 'PLAYABLE LAB', dot: 'bg-sky-500', platform: 'Unity • WebGL 2.0',
+        desc: 'Procedurally generated arrow shapes that are always solvable, cleared from the outside in.', tags: ['Solvable Generator', 'Ray Collision Sweep', 'Outside-In Peeling'] },
+      { id: '05-blockade-2d', title: 'Blockade 2D', scene: 'Blockade2D_Lab.unity', status: 'IN PRODUCTION • 2026', dot: 'bg-amber-500', platform: 'Android • iOS • WebGL 2.0',
+        desc: 'Turn-based grid duel against a Minimax AI, with every wall validated by dual-path BFS.', tags: ['Dual-Path BFS', 'Minimax Strategy AI', 'Command Undo'] },
+      { id: '06-native-image-bridge', title: 'Native Image Bridge', scene: 'NativeBridge_Lab.unity', status: 'BRIDGE SIMULATION', dot: 'bg-sky-500', platform: 'Android JNI • iOS Obj-C',
+        desc: 'Native photo pipeline with progressive transcoding, resolution tiers and ROM / cache storage.', tags: ['JNI / Obj-C Bridge', 'LRU Cache Tiers', 'Texture2D Streaming'] },
+      { id: '07-offline-leaderboard', title: 'Offline Leaderboard', scene: 'Leaderboard_Lab.unity', status: 'LIVEOPS LAB', dot: 'bg-sky-500', platform: 'Unity • WebGL 2.0',
+        desc: 'Zero-server seasonal leaderboard with bot pacing, rank overtakes and anti-rollback clamping.', tags: ['Bot-Paced Seasons', 'Anti-Rollback Clamp', 'SHA-256 Ledger'] },
+      { id: '08-asset-organizer', title: 'Asset Organizer', scene: 'AssetOrganizer_Lab.unity', status: 'EDITOR TOOL', dot: 'bg-sky-500', platform: 'Unity Editor Package',
+        desc: 'Unity editor package for tagging, pinning and grouping project assets.', tags: ['EditorWindow UI', 'Tag Badges', 'Drag & Drop Groups'] }
+    ];
+
+    (function initGameplayReel() {
+      const stage = document.getElementById('reel-stage');
+      const dotsWrap = document.getElementById('reel-dots');
+      if (!stage || !dotsWrap) return;
+
+      // Fisher-Yates shuffle so every visit sees a different order
+      const order = REEL_CLIPS.slice();
+      for (let i = order.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [order[i], order[j]] = [order[j], order[i]];
+      }
+
+      // Previews always autoplay muted; reduced-motion users get cuts instead of slides (CSS) and everyone gets a pause button
+      const slots = Array.from(stage.querySelectorAll('.reel-slot'));
+      const toggle = document.getElementById('reel-toggle');
+      let userPaused = false;
+      const tagTones = ['text-amber-900 border-amber-200', 'text-emerald-900 border-emerald-200', 'text-sky-900 border-sky-200'];
+      const minW = 10, maxW = 48;
+      let front = 0;          // index into slots of the visible video
+      let current = 0;        // index into order of the visible clip
+      let onScreen = true;
+      let hovering = false;
+
+      const clipSrc = i => 'assets/previews/' + order[i].id + '.mp4';
+      const clipPoster = i => 'assets/previews/' + order[i].id + '.jpg';
+      const nextIndex = i => (i + 1) % order.length;
+
+      function load(slot, i) {
+        if (slot.dataset.clip === String(i)) return;
+        slot.dataset.clip = String(i);
+        slot.poster = clipPoster(i);
+        slot.src = clipSrc(i);
+        slot.preload = 'auto';
+      }
+
+      function canPlay() {
+        return !userPaused && onScreen && !document.hidden;
+      }
+
+      function playFront() {
+        const v = slots[front];
+        if (canPlay()) v.play().catch(() => {});
+        else v.pause();
+      }
+
+      // Dots: same pill style as the Blueprints / Arsenal carousels
+      const dots = order.map((clip, i) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.setAttribute('aria-label', 'Show ' + clip.title + ' preview');
+        b.title = clip.title;
+        b.addEventListener('click', () => showClip(i, i < current ? -1 : 1));
+        dotsWrap.appendChild(b);
+        return b;
+      });
+
+      function paintDots() {
+        dots.forEach((d, i) => {
+          const active = i === current;
+          d.className = active
+            ? 'carousel-dot h-2.5 rounded-full bg-amber-400 shadow-sm cursor-pointer'
+            : 'carousel-dot h-2.5 rounded-full bg-slate-300 dark:bg-slate-700 hover:bg-slate-400 cursor-pointer';
+          d.style.transition = 'width 0.25s ease, background-color 0.2s';
+          d.style.width = (active ? maxW : minW) + 'px';
+        });
+      }
+
+      // Active pill shrinks 48px -> 10px over the clip while the next dot grows 10px -> 48px in lockstep
+      function paintProgress() {
+        const v = slots[front];
+        if (v.duration > 0) {
+          const remaining = Math.max(0, 1 - v.currentTime / v.duration);
+          const a = dots[current], n = dots[nextIndex(current)];
+          a.style.transition = 'width 0.05s linear, background-color 0.2s';
+          a.style.width = (minW + (maxW - minW) * remaining).toFixed(1) + 'px';
+          if (n !== a) {
+            n.style.transition = 'width 0.05s linear, background-color 0.2s';
+            n.style.width = (minW + (maxW - minW) * (1 - remaining)).toFixed(1) + 'px';
+          }
+        }
+        requestAnimationFrame(paintProgress);
+      }
+
+      function paintCaption(i) {
+        const clip = order[i];
+        document.getElementById('reel-title').textContent = clip.title;
+        document.getElementById('reel-desc').textContent = clip.desc;
+        document.getElementById('reel-scene').textContent = clip.scene;
+        document.getElementById('reel-status').textContent = clip.status;
+        document.getElementById('reel-status-dot').className = 'w-2.5 h-2.5 rounded-full animate-pulse ' + clip.dot;
+        document.getElementById('reel-platform').textContent = clip.platform;
+        document.getElementById('reel-counter').textContent =
+          'Preview // ' + String(i + 1).padStart(2, '0') + ' of ' + String(order.length).padStart(2, '0');
+        const tags = document.getElementById('reel-tags');
+        tags.innerHTML = '';
+        clip.tags.forEach((t, k) => {
+          const s = document.createElement('span');
+          s.className = 'px-3 py-1 rounded-xl bg-[#FAF8F5] border shadow-sm ' + tagTones[k % tagTones.length];
+          s.textContent = t;
+          tags.appendChild(s);
+        });
+      }
+
+      function showClip(i, dir) {
+        if (i === current && slots[front].dataset.clip === String(i)) return;
+        const outgoing = slots[front];
+        const incoming = slots[1 - front];
+        load(incoming, i);
+        incoming.currentTime = 0;
+
+        // Park the incoming slot off-stage without animating, then slide both
+        incoming.style.transition = 'none';
+        incoming.style.transform = 'translateX(' + (dir * 100) + '%)';
+        void incoming.offsetWidth;
+        incoming.style.transition = '';
+        incoming.style.transform = 'translateX(0)';
+        outgoing.style.transform = 'translateX(' + (-dir * 100) + '%)';
+        outgoing.pause();
+
+        const caption = document.getElementById('reel-caption');
+        caption.classList.add('is-fading');
+        setTimeout(() => { paintCaption(i); caption.classList.remove('is-fading'); }, 250);
+
+        front = 1 - front;
+        current = i;
+        paintDots();
+        playFront();
+
+        // Once the slide finishes, preload the following clip into the now-hidden slot
+        setTimeout(() => { if (slots[1 - front] === outgoing) load(outgoing, nextIndex(current)); }, 700);
+      }
+
+      slots.forEach(v => {
+        v.muted = true;
+        v.addEventListener('ended', () => {
+          if (v !== slots[front]) return;
+          if (hovering) { v.currentTime = 0; playFront(); }   // hold the current game while hovered
+          else showClip(nextIndex(current), 1);
+        });
+        v.addEventListener('error', () => {
+          if (v === slots[front]) setTimeout(() => showClip(nextIndex(current), 1), 2500);
+        });
+      });
+
+      toggle.addEventListener('click', e => {
+        e.stopPropagation();
+        userPaused = !userPaused;
+        toggle.textContent = userPaused ? '▶' : '❚❚';
+        toggle.setAttribute('aria-label', userPaused ? 'Play gameplay previews' : 'Pause gameplay previews');
+        toggle.title = userPaused ? 'Play previews' : 'Pause previews';
+        playFront();
+      });
+      stage.addEventListener('click', () => selectScene(order[current].scene, order[current].title));
+      stage.addEventListener('keydown', e => {
+        if (e.target === stage && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault();
+          selectScene(order[current].scene, order[current].title);
+        }
+      });
+      document.getElementById('reel-open').addEventListener('click', e => {
+        e.preventDefault();
+        selectScene(order[current].scene, order[current].title);
+      });
+
+      const reel = document.getElementById('reel');
+      reel.addEventListener('mouseenter', () => { hovering = true; });
+      reel.addEventListener('mouseleave', () => { hovering = false; });
+
+      new IntersectionObserver(entries => {
+        onScreen = entries[0].isIntersecting;
+        playFront();
+      }, { threshold: 0.25 }).observe(stage);
+      document.addEventListener('visibilitychange', playFront);
+
+      // First clip shows immediately; the second starts loading in the background
+      slots[1].style.transform = 'translateX(100%)';
+      load(slots[0], 0);
+      load(slots[1], nextIndex(0));
+      paintCaption(0);
+      paintDots();
+      playFront();
+      requestAnimationFrame(paintProgress);
+    })();
 
     // Prevent background tab freeze / timing skew
     document.addEventListener('visibilitychange', () => {
