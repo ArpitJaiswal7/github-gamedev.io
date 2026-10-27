@@ -10,7 +10,7 @@
   <link rel="preload" href="labs/unity-meowsweeper/Build/unity-meowsweeper.wasm?v=00f06be" as="fetch" type="application/wasm" crossorigin>
   <link rel="preload" href="labs/unity-meowsweeper/Build/unity-meowsweeper.data?v=00f06be" as="fetch" crossorigin>
 
-  <title>Arpit Jaiswal | Cozy Indie Game Dev & Unity Systems Portfolio</title>
+  <title>Arpit Jaiswal | Senior Unity & Gameplay Systems Developer</title>
   <!-- Tailwind CSS -->
       <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -523,9 +523,25 @@
     .theme-blend-hero {
       background: linear-gradient(to bottom, #FDFBF7 0%, #FFF7EC 50%, #F3FAF5 100%);
     }
+    .theme-blend-about {
+      background: linear-gradient(to bottom, #F3FAF5 0%, #FBF6EA 50%, #F3FAF5 100%);
+    }
     .theme-blend-shipped {
       background: linear-gradient(to bottom, #F3FAF5 0%, #E8F6ED 50%, #F3EEFD 100%);
     }
+    section[id] {
+      scroll-margin-top: 5rem;
+    }
+    .about-chip {
+      background: #FAF8F5;
+      border: 1px solid #FCD9A8;
+      color: #7C2D12;
+    }
+    .dark #about { background: linear-gradient(to bottom, #0D1322 0%, #0E1526 50%, #0D1322 100%) !important; }
+    .dark #about .about-chip { background: #151E30 !important; border-color: rgba(255, 255, 255, 0.14) !important; color: #E2E8F0 !important; }
+    .dark #about .about-fact { background: #0B101C !important; border-color: rgba(56, 189, 248, 0.25) !important; }
+    .dark #about .about-heading { color: #F8FAFC !important; }
+    .dark #about .about-sub { color: #FDBA74 !important; }
     .theme-blend-lab {
       background: linear-gradient(to bottom, #F3EEFD 0%, #ECE5FD 50%, #EDF6FD 100%);
     }
@@ -588,39 +604,42 @@
 
   <!-- ================= TOP NAVIGATION BAR ================= -->
   <header class="sticky top-0 z-50 w-full backdrop-blur-md bg-[#FDFBF7]/95 border-b-2 border-[#D9C8B4] shadow-[0_4px_16px_rgba(180,140,100,0.12)] transition-colors">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-      
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+
       <!-- Brand Logo -->
-      <a href="#" class="flex items-center gap-3 group">
+      <a href="#" class="flex items-center gap-3 group shrink-0">
         <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-amber-200 border-2 border-amber-400 flex items-center justify-center text-amber-900 shadow-sm group-hover:rotate-6 transition-all shrink-0">
           <svg class="w-6 h-6 text-amber-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="6"></rect><path d="M6 12h4m-2-2v4m7-2h.01m3 0h.01"></path></svg>
         </div>
         <div class="flex flex-col">
           <div class="flex items-center gap-2">
-            <span class="font-display font-bold text-slate-900 text-lg sm:text-xl tracking-tight">Arpit Jaiswal</span>
-            <span class="hidden sm:inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+            <span class="font-display font-bold text-slate-900 text-lg sm:text-xl tracking-tight whitespace-nowrap">Arpit Jaiswal</span>
+            <span class="hidden 2xl:inline-block whitespace-nowrap px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
               ● Ready to Build
             </span>
           </div>
-          <span class="text-xs text-slate-500 font-medium">Senior Unity &amp; Gameplay Systems Developer</span>
+          <span class="text-xs text-slate-500 font-medium whitespace-nowrap">Senior Unity &amp; Gameplay Systems Developer</span>
         </div>
       </a>
 
       <!-- Desktop Nav with Dynamic Focus Highlight Scroll Spy -->
-      <nav class="hidden lg:flex items-center gap-2 xl:gap-3 font-bold text-xs text-slate-600 dark:text-slate-300">
-        <a href="#shipped-games" class="nav-link px-3 py-2 rounded-xl hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center gap-1.5 whitespace-nowrap">
+      <nav class="hidden xl:flex flex-1 min-w-0 items-center justify-center gap-0.5 font-bold text-xs text-slate-600 dark:text-slate-300">
+        <a href="#about" class="nav-link px-2.5 py-2 rounded-xl hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center gap-1.5 whitespace-nowrap">
+          <span>👋</span> About
+        </a>
+        <a href="#shipped-games" class="nav-link px-2.5 py-2 rounded-xl hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center gap-1.5 whitespace-nowrap">
           <span>🎮</span> Shipped Games
         </a>
-        <a href="#unity-lab" class="nav-link px-3 py-2 rounded-xl hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center gap-1.5 whitespace-nowrap">
+        <a href="#unity-lab" class="nav-link px-2.5 py-2 rounded-xl hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center gap-1.5 whitespace-nowrap">
           <span>🧪</span> Unity Lab
         </a>
-        <a href="#blueprints" class="nav-link px-3 py-2 rounded-xl hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center gap-1.5 whitespace-nowrap">
+        <a href="#blueprints" class="nav-link px-2.5 py-2 rounded-xl hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center gap-1.5 whitespace-nowrap">
           <span>📐</span> Blueprints
         </a>
-        <a href="#quest-log" class="nav-link px-3 py-2 rounded-xl hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center gap-1.5 whitespace-nowrap">
+        <a href="#quest-log" class="nav-link px-2.5 py-2 rounded-xl hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center gap-1.5 whitespace-nowrap">
           <span>🗺️</span> Studio Quest
         </a>
-        <a href="#arsenal" class="nav-link px-3 py-2 rounded-xl hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center gap-1.5 whitespace-nowrap">
+        <a href="#arsenal" class="nav-link px-2.5 py-2 rounded-xl hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center gap-1.5 whitespace-nowrap">
           <span>🎒</span> Arsenal
         </a>
       </nav>
@@ -630,7 +649,7 @@
         <!-- Interactive Theme Toggle Button -->
         <button id="theme-toggle-btn" type="button" onclick="toggleTheme(event)" class="px-3.5 py-2 rounded-2xl bg-[#FAF8F5] dark:bg-[#1A2334] border-2 border-amber-300 dark:border-amber-500/50 text-slate-800 dark:text-amber-300 font-display font-bold text-xs flex items-center gap-2 shadow-sm hover:scale-105 active:scale-95 transition-all cursor-pointer whitespace-nowrap shrink-0" title="Toggle Light / Dark Mode">
           <span id="theme-toggle-icon" class="text-xl leading-none inline-block">🌙</span>
-          <span id="theme-toggle-label" class="hidden sm:inline">Dark Mode</span>
+          <span id="theme-toggle-label" class="hidden">Dark Mode</span>
         </button>
         <a href="https://arpitjaiswal7.github.io/github-gamedev.io/resume_arpit_jaiswal.html" target="_blank" rel="noopener noreferrer" class="btn-3d whitespace-nowrap px-3.5 py-2.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-display font-bold text-xs flex items-center gap-2 shadow-[0_4px_0_#D97706] border border-amber-500 shrink-0">
           <i data-lucide="file-text" class="w-4 h-4 shrink-0"></i>
@@ -639,7 +658,7 @@
         </a>
 
         <!-- Mobile Menu Toggle -->
-        <button onclick="toggleMobileMenu()" class="lg:hidden w-10 h-10 rounded-2xl bg-[#FAF8F5] dark:bg-[#1A2334] border-2 border-[#EFE5D7] dark:border-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 shadow-sm shrink-0">
+        <button onclick="toggleMobileMenu()" class="xl:hidden w-10 h-10 rounded-2xl bg-[#FAF8F5] dark:bg-[#1A2334] border-2 border-[#EFE5D7] dark:border-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 shadow-sm shrink-0">
           <i data-lucide="menu" class="w-5 h-5"></i>
         </button>
       </div>
@@ -647,7 +666,10 @@
     </div>
 
     <!-- Mobile Dropdown Menu -->
-    <div id="mobile-menu" class="hidden md:hidden px-4 pt-2 pb-6 bg-[#FDFBF7] border-b-2 border-[#EFE5D7] space-y-2">
+    <div id="mobile-menu" class="hidden xl:hidden px-4 pt-2 pb-6 bg-[#FDFBF7] border-b-2 border-[#EFE5D7] space-y-2">
+      <a href="#about" onclick="toggleMobileMenu()" class="block px-4 py-3 rounded-2xl bg-orange-50 border-2 border-orange-200 font-bold text-sm text-orange-950 flex items-center gap-3">
+        <span>👋</span> About Me
+      </a>
       <a href="#shipped-games" onclick="toggleMobileMenu()" class="block px-4 py-3 rounded-2xl bg-emerald-50 border-2 border-emerald-200 font-bold text-sm text-emerald-950 flex items-center gap-3">
         <span>🎮</span> Commercial Shipped Titles
       </a>
@@ -685,7 +707,7 @@
           <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
             <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-100 border-2 border-amber-300 text-amber-950 text-xs font-bold shadow-sm">
               <span>✨</span>
-              <span>COZY CRAFTER &bull; SENIOR GAMEPLAY SYSTEMS ARCHITECT</span>
+              <span>SENIOR UNITY &amp; GAMEPLAY SYSTEMS DEVELOPER</span>
             </div>
 
             <h1 class="font-display font-extrabold text-slate-900 text-4xl sm:text-6xl tracking-tight leading-[1.12]">
@@ -787,6 +809,88 @@
                     <span class="text-amber-600 dark:text-amber-400 font-extrabold">In Production</span>
                   </a>
                 </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- ZONE 1.5: ABOUT ME                                              -->
+    <!-- ============================================================== -->
+    <section id="about" class="relative theme-blend-about py-20 overflow-hidden blended-section-divider">
+      <div class="section-bg-icons absolute inset-0 pointer-events-none overflow-hidden" style="z-index: 1;" aria-hidden="true"></div>
+
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-10">
+
+        <div class="text-center max-w-3xl mx-auto space-y-3">
+          <div class="section-ribbon bg-orange-500 text-white shadow-orange-500/30">
+            <span>👋</span> ABOUT ME
+          </div>
+          <h2 class="about-heading font-display font-extrabold text-slate-900 text-3xl sm:text-5xl">
+            The Developer Behind the Games
+          </h2>
+          <p class="about-sub text-sm sm:text-base text-orange-800 font-medium">
+            Who I am, what I build, and what I'm looking for next.
+          </p>
+        </div>
+
+        <div class="grid lg:grid-cols-12 gap-8 items-stretch">
+
+          <!-- Left: Profile Card -->
+          <div class="lg:col-span-4">
+            <div class="clay-card h-full p-6 sm:p-7 border-2 border-orange-200 shadow-[0_8px_0_#FED7AA] flex flex-col items-center text-center gap-5">
+              <!-- Avatar placeholder: swap this div for an <img> when a photo is available -->
+              <div class="w-28 h-28 rounded-full bg-gradient-to-br from-amber-300 via-orange-300 to-rose-300 border-4 border-white shadow-lg flex items-center justify-center font-display font-extrabold text-4xl text-amber-950">
+                AJ
+              </div>
+              <div>
+                <h3 class="font-display font-bold text-slate-900 text-2xl">Arpit Jaiswal</h3>
+                <p class="text-sm text-slate-600 font-medium mt-1">Senior Unity &amp; Gameplay Systems Developer</p>
+              </div>
+
+              <div class="w-full space-y-2.5 text-left text-sm">
+                <div class="about-fact flex items-center justify-between gap-3 px-4 py-2.5 rounded-2xl bg-[#FFF7EC] border-2 border-orange-100">
+                  <span class="text-slate-500 font-bold text-xs uppercase tracking-wider">Experience</span>
+                  <span class="text-slate-800 font-bold">3+ yrs &bull; 3 studios</span>
+                </div>
+                <div class="about-fact flex items-center justify-between gap-3 px-4 py-2.5 rounded-2xl bg-[#F3FAF5] border-2 border-emerald-100">
+                  <span class="text-slate-500 font-bold text-xs uppercase tracking-wider">Shipped</span>
+                  <span class="text-slate-800 font-bold">3 Google Play games</span>
+                </div>
+                <div class="about-fact flex items-center justify-between gap-3 px-4 py-2.5 rounded-2xl bg-[#F3EEFD] border-2 border-purple-100">
+                  <span class="text-slate-500 font-bold text-xs uppercase tracking-wider">Education</span>
+                  <span class="text-slate-800 font-bold">MCA &bull; B.Sc. CS</span>
+                </div>
+                <div class="about-fact flex items-center justify-between gap-3 px-4 py-2.5 rounded-2xl bg-[#EDF6FD] border-2 border-sky-100">
+                  <span class="text-slate-500 font-bold text-xs uppercase tracking-wider">Open to</span>
+                  <span class="text-slate-800 font-bold">PAN India &bull; Remote</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Story -->
+          <div class="lg:col-span-8">
+            <div class="clay-card h-full p-6 sm:p-9 border-2 border-amber-200 shadow-[0_8px_0_#FDE68A] flex flex-col justify-center gap-5">
+              <p class="text-base sm:text-lg text-slate-600 font-medium leading-relaxed">
+                I'm a Unity developer focused on the systems that make a game feel effortless to play. Over 3+ years across <strong class="text-slate-800">Vasundhara Game Studio</strong>, <strong class="text-slate-800">Appzia</strong> and <strong class="text-slate-800">StudioKrew</strong>, I've built puzzle, card, arcade and multiplayer games: rule engines and hint solvers, procedural mesh generation, native mobile bridges, and in-app purchase flows.
+              </p>
+              <p class="text-base sm:text-lg text-slate-600 font-medium leading-relaxed">
+                Three of those games are live on Google Play. The playable labs on this page are small Unity WebGL demos of the systems and mechanics behind them, so you can try the ideas yourself.
+              </p>
+              <p class="text-base sm:text-lg text-slate-600 font-medium leading-relaxed">
+                I hold an MCA and a B.Sc. in Computer Science, and I'm now looking for Senior Unity and gameplay-systems roles where I can own features from design through to a polished release.
+              </p>
+
+              <div class="flex flex-wrap gap-2 pt-2 text-[12px] font-bold">
+                <span class="about-chip px-3.5 py-1.5 rounded-xl">🧩 Puzzle &amp; card games</span>
+                <span class="about-chip px-3.5 py-1.5 rounded-xl">♟️ Multiplayer (Photon)</span>
+                <span class="about-chip px-3.5 py-1.5 rounded-xl">📱 Native mobile bridges</span>
+                <span class="about-chip px-3.5 py-1.5 rounded-xl">💰 IAP &amp; monetization</span>
+                <span class="about-chip px-3.5 py-1.5 rounded-xl">⚡ Performance &amp; profiling</span>
               </div>
             </div>
           </div>
@@ -2166,15 +2270,19 @@
       setBpPage(next);
     }
 
-    // Active dot steadily reduces its width from 48px down to 10px as auto-scroll timer runs down
+    // Active dot shrinks 48px -> 10px as the timer runs down while the next dot grows 10px -> 48px in lockstep
     function updateBpProgressUI(remainingFraction) {
+      const minW = 10;
+      const maxW = 48;
       const activeDot = document.getElementById('bp-dot-' + currentBpPage);
+      const nextDot = document.getElementById('bp-dot-' + (currentBpPage % totalBpPages + 1));
       if (activeDot) {
         activeDot.style.transition = 'width 0.05s linear, background-color 0.2s';
-        const minW = 10;
-        const maxW = 48;
-        const currentW = minW + (maxW - minW) * remainingFraction;
-        activeDot.style.width = currentW.toFixed(1) + 'px';
+        activeDot.style.width = (minW + (maxW - minW) * remainingFraction).toFixed(1) + 'px';
+      }
+      if (nextDot && nextDot !== activeDot) {
+        nextDot.style.transition = 'width 0.05s linear, background-color 0.2s';
+        nextDot.style.width = (minW + (maxW - minW) * (1 - remainingFraction)).toFixed(1) + 'px';
       }
     }
 
@@ -2221,7 +2329,7 @@
         }
       }
       arsenalElapsedMs = 0;
-      arsenLastTime = performance.now();
+      arsenalLastTime = performance.now();
 
       // Active dot expands into a 48px rectangle with spring feel; inactive dot contracts to 10px circle
       for (let i = 1; i <= totalArsenalPages; i++) {
@@ -2247,15 +2355,19 @@
       setArsenalPage(next);
     }
 
-    // Active dot steadily reduces its width from 48px down to 10px as auto-scroll timer runs down
+    // Active dot shrinks 48px -> 10px as the timer runs down while the next dot grows 10px -> 48px in lockstep
     function updateArsenalProgressUI(remainingFraction) {
+      const minW = 10;
+      const maxW = 48;
       const activeDot = document.getElementById('arsenal-dot-' + currentArsenalPage);
+      const nextDot = document.getElementById('arsenal-dot-' + (currentArsenalPage % totalArsenalPages + 1));
       if (activeDot) {
         activeDot.style.transition = 'width 0.05s linear, background-color 0.2s';
-        const minW = 10;
-        const maxW = 48;
-        const currentW = minW + (maxW - minW) * remainingFraction;
-        activeDot.style.width = currentW.toFixed(1) + 'px';
+        activeDot.style.width = (minW + (maxW - minW) * remainingFraction).toFixed(1) + 'px';
+      }
+      if (nextDot && nextDot !== activeDot) {
+        nextDot.style.transition = 'width 0.05s linear, background-color 0.2s';
+        nextDot.style.width = (minW + (maxW - minW) * (1 - remainingFraction)).toFixed(1) + 'px';
       }
     }
 
@@ -2290,7 +2402,7 @@
     });
 
     // ================= HEADER NAVIGATION SCROLL SPY (FOCUS HIGHLIGHT IN MIDDLE) =================
-    const SPY_SECTIONS = ['shipped-games', 'unity-lab', 'blueprints', 'quest-log', 'arsenal'];
+    const SPY_SECTIONS = ['about', 'shipped-games', 'unity-lab', 'blueprints', 'quest-log', 'arsenal'];
 
     function updateHeaderActiveLink() {
       const centerY = window.innerHeight * 0.45;
@@ -2327,9 +2439,9 @@
       navLinks.forEach(link => {
         const href = link.getAttribute('href');
         if (href === '#' + activeId) {
-          link.className = 'nav-link active-nav-link px-3 py-2 rounded-xl bg-indigo-600 dark:bg-indigo-600 text-white font-extrabold border-2 border-indigo-400 dark:border-indigo-400 shadow-[0_2px_10px_rgba(79,70,229,0.35)] transition-all flex items-center gap-1.5 whitespace-nowrap';
+          link.className = 'nav-link active-nav-link px-2.5 py-2 rounded-xl bg-indigo-600 dark:bg-indigo-600 text-white font-extrabold border-2 border-indigo-400 dark:border-indigo-400 shadow-[0_2px_10px_rgba(79,70,229,0.35)] transition-all flex items-center gap-1.5 whitespace-nowrap';
         } else {
-          link.className = 'nav-link px-3 py-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center gap-1.5 whitespace-nowrap';
+          link.className = 'nav-link px-2.5 py-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center gap-1.5 whitespace-nowrap';
         }
       });
     }
