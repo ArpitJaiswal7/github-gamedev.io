@@ -7,10 +7,19 @@
  * 2. Instant local aggregation + Supabase REST API & Discord webhook integration.
  * 3. Stealth Developer Mode toggle (hidden from regular visitors, activated via URL param, hotkey Ctrl+Shift+D, or stealth triple-click).
  * 4. Automatic & Persistent Developer Traffic Exclusion: Ignores visits and clicks from developer's own devices/laptop.
+ * 5. External testing simulator support (?external=1 forces tracking even on developer devices).
  */
 
 (function () {
   'use strict';
+
+  // ⚙️ GLOBAL CLOUD CONFIGURATION (Shared by all external visitors)
+  // Fill these in to stream live data from all external devices into your dashboard / Discord
+  const CLOUD_CONFIG = {
+    supabaseUrl: '',      // e.g. 'https://xyz.supabase.co'
+    supabaseAnonKey: '',  // e.g. 'eyJhbGciOiJIUzI1NiIsIn...'
+    discordWebhook: ''    // e.g. 'https://discord.com/api/webhooks/...'
+  };
 
   const STORAGE_KEYS = {
     EVENTS: '_gamedev_telemetry_events',
@@ -24,6 +33,11 @@
 
   // Check if traffic from this browser / device should be excluded from telemetry
   function isTrafficExcluded() {
+    // 🧪 TESTING BYPASS: If testing with ?external=1 or ?test_visitor=1, always track as external
+    if (window.location.search.includes('external=1') || window.location.search.includes('test_visitor=1')) {
+      return false;
+    }
+
     // 1. Local development environments (localhost, 127.0.0.1, file protocol)
     const host = window.location.hostname || '';
     if (host === 'localhost' || host === '127.0.0.1' || host === '' || window.location.protocol === 'file:') {
@@ -101,12 +115,17 @@
     }
   }
 
-  // Get cloud configuration
+  // Get cloud configuration (merges local settings with embedded cloud defaults)
   function getConfig() {
     try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEYS.CONFIG) || '{}');
+      const local = JSON.parse(localStorage.getItem(STORAGE_KEYS.CONFIG) || '{}');
+      return {
+        supabaseUrl: local.supabaseUrl || CLOUD_CONFIG.supabaseUrl,
+        supabaseAnonKey: local.supabaseAnonKey || CLOUD_CONFIG.supabaseAnonKey,
+        discordWebhook: local.discordWebhook || CLOUD_CONFIG.discordWebhook
+      };
     } catch (e) {
-      return {};
+      return CLOUD_CONFIG;
     }
   }
 
@@ -278,7 +297,6 @@
     // 🛡️ EXCLUSION CHECK: Ignore visits & interactions from developer's own laptop/browser
     const isForced = metadata && metadata.force === true;
     if (!isForced && isTrafficExcluded()) {
-      // Silently bypass developer tracking to keep metrics genuine
       return null;
     }
 

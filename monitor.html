@@ -495,9 +495,46 @@
     }
 
     // Refresh telemetry and redraw charts
-    function refreshData() {
-      const stats = JSON.parse(localStorage.getItem(window.GameDevTelemetry.STORAGE_KEYS.STATS) || '{}');
-      const events = JSON.parse(localStorage.getItem(window.GameDevTelemetry.STORAGE_KEYS.EVENTS) || '[]');
+    async function refreshData() {
+      const cfg = window.GameDevTelemetry.getConfig();
+      let stats = JSON.parse(localStorage.getItem(window.GameDevTelemetry.STORAGE_KEYS.STATS) || '{}');
+      let events = JSON.parse(localStorage.getItem(window.GameDevTelemetry.STORAGE_KEYS.EVENTS) || '[]');
+
+      // Optional Cloud Sync with Supabase if configured
+      if (cfg.supabaseUrl && cfg.supabaseAnonKey) {
+        try {
+          const resp = await fetch(`${cfg.supabaseUrl}/rest/v1/site_telemetry?select=*&order=created_at.desc&limit=250`, {
+            headers: {
+              'apikey': cfg.supabaseAnonKey,
+              'Authorization': `Bearer ${cfg.supabaseAnonKey}`
+            }
+          });
+          if (resp.ok) {
+            const cloudRows = await resp.json();
+            if (cloudRows && cloudRows.length > 0) {
+              events = cloudRows.map(r => ({
+                id: 'sb_' + (r.id || Math.random().toString(36)),
+                timestamp: r.created_at || new Date().toISOString(),
+                type: r.event_type || 'page_view',
+                page: r.page_path || '/',
+                referrer: r.referrer || 'Direct',
+                device: r.device_type || 'Desktop',
+                platform: r.platform || 'Unknown',
+                metadata: r.metadata || {}
+              }));
+              const totalViews = events.filter(e => e.type === 'page_view').length;
+              const totalRes = events.filter(e => e.type === 'resume_open').length;
+              const totalPlays = events.filter(e => e.type === 'game_play').length;
+              stats.pageViews = totalViews;
+              stats.resumeOpens = totalRes;
+              stats.gamePlays = totalPlays;
+              stats.totalVisitors = new Set(events.map(e => e.id)).size || totalViews;
+            }
+          }
+        } catch (e) {
+          console.debug('Cloud fetch fallback to local:', e);
+        }
+      }
 
       // 1. KPI Counts
       const visitors = stats.totalVisitors || 482;
