@@ -4,10 +4,11 @@
  * 
  * Capabilities:
  * 1. Respectful zero-cookie visitor & telemetry tracking (page views, resume opens, game plays).
- * 2. Instant local aggregation + Supabase REST API & Discord webhook integration.
- * 3. Stealth Developer Mode toggle (hidden from regular visitors, activated via URL param, hotkey Ctrl+Shift+D, or stealth triple-click).
- * 4. Automatic & Persistent Developer Traffic Exclusion: Ignores visits and clicks from developer's own devices/laptop.
- * 5. Hard Clean Slate: Unconditionally purges all legacy / historical / test data.
+ * 2. Automatic & privacy-friendly IP Geolocation resolution (city, region, country, flag emoji with zero user prompts).
+ * 3. Instant local aggregation + Supabase REST API & Discord webhook integration.
+ * 4. Stealth Developer Mode toggle (hidden from regular visitors, activated via URL param, hotkey Ctrl+Shift+D, or stealth triple-click).
+ * 5. Automatic & Persistent Developer Traffic Exclusion: Ignores visits and clicks from developer's own devices/laptop.
+ * 6. Hard Clean Slate: Unconditionally purges all legacy / historical / test data.
  */
 
 (function () {
@@ -27,8 +28,85 @@
     DEV_MODE: 'gamedev_dev_mode',
     EXCLUDE_ME: 'gamedev_exclude_me',
     SESSION_ID: '_gamedev_sid',
+    GEO_CACHE: '_gamedev_geo_cache',
     CLEAN_FLAG: '_gamedev_clean_slate_v3'
   };
+
+  // Cached Geolocation Object
+  let cachedGeo = null;
+
+  // Asynchronously resolve visitor city and country via zero-prompt IP lookup
+  async function resolveVisitorGeo() {
+    if (cachedGeo) return cachedGeo;
+
+    // Check session cache
+    try {
+      const stored = sessionStorage.getItem(STORAGE_KEYS.GEO_CACHE);
+      if (stored) {
+        cachedGeo = JSON.parse(stored);
+        return cachedGeo;
+      }
+    } catch (e) {}
+
+    // 1. Primary IP Geo provider: ipwho.is (CORS-friendly, zero API key required)
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2500);
+      const res = await fetch('https://ipwho.is/', { signal: controller.signal, cache: 'force-cache' });
+      clearTimeout(timeoutId);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success !== false) {
+          cachedGeo = {
+            city: data.city || 'Unknown City',
+            region: data.region || '',
+            country: data.country || 'Global Visitor',
+            countryCode: data.country_code || '',
+            flag: data.flag && data.flag.emoji ? data.flag.emoji : '📍'
+          };
+          try {
+            sessionStorage.setItem(STORAGE_KEYS.GEO_CACHE, JSON.stringify(cachedGeo));
+          } catch (e) {}
+          return cachedGeo;
+        }
+      }
+    } catch (err) {}
+
+    // 2. Secondary fallback: freeipapi.com
+    try {
+      const controller2 = new AbortController();
+      const timeoutId2 = setTimeout(() => controller2.abort(), 2000);
+      const res2 = await fetch('https://freeipapi.com/api/json', { signal: controller2.signal });
+      clearTimeout(timeoutId2);
+      if (res2.ok) {
+        const d2 = await res2.json();
+        cachedGeo = {
+          city: d2.cityName || 'Unknown City',
+          region: d2.regionName || '',
+          country: d2.countryName || 'Global Visitor',
+          countryCode: d2.countryCode || '',
+          flag: '📍'
+        };
+        try {
+          sessionStorage.setItem(STORAGE_KEYS.GEO_CACHE, JSON.stringify(cachedGeo));
+        } catch (e) {}
+        return cachedGeo;
+      }
+    } catch (e2) {}
+
+    // Default fallback if offline or blocked
+    cachedGeo = {
+      city: 'Unknown City',
+      region: '',
+      country: 'Global Visitor',
+      countryCode: '',
+      flag: '🌐'
+    };
+    return cachedGeo;
+  }
+
+  // Pre-warm geo lookup immediately on script load
+  resolveVisitorGeo();
 
   // Hard Reset: Unconditionally wipes all data and sets pure zero state
   function resetAllData() {
@@ -42,6 +120,8 @@
       dailyTrend: [{ date: todayLabel, visitors: 0, resumeOpens: 0, plays: 0 }],
       referrers: {},
       devices: {},
+      cities: {},
+      countries: {},
       games: {}
     };
     try {
@@ -62,7 +142,6 @@
     } catch (e) {}
   }
 
-  // Execute purge immediately
   enforceCleanSlate();
 
   // Check if traffic from this browser / device should be excluded from telemetry
@@ -91,7 +170,6 @@
     return false;
   }
 
-  // Set exclusion flag
   function setExcluded(excluded) {
     if (excluded) {
       localStorage.setItem(STORAGE_KEYS.EXCLUDE_ME, 'true');
@@ -100,7 +178,6 @@
     }
   }
 
-  // Generate or retrieve session ID
   function getSessionId() {
     let sid = sessionStorage.getItem(STORAGE_KEYS.SESSION_ID);
     if (!sid) {
@@ -110,7 +187,6 @@
     return sid;
   }
 
-  // Parse device category
   function getDeviceType() {
     const ua = navigator.userAgent || '';
     if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) return 'Tablet';
@@ -118,7 +194,6 @@
     return 'Desktop';
   }
 
-  // Parse OS / Platform
   function getPlatform() {
     const ua = navigator.userAgent || '';
     if (/Windows/i.test(ua)) return 'Windows';
@@ -129,7 +204,6 @@
     return 'Unknown';
   }
 
-  // Clean referrer into recognizable professional source
   function getCleanReferrer() {
     const ref = document.referrer || '';
     if (!ref) return 'Direct / Portfolio Link';
@@ -149,7 +223,6 @@
     }
   }
 
-  // Get cloud configuration
   function getConfig() {
     try {
       const local = JSON.parse(localStorage.getItem(STORAGE_KEYS.CONFIG) || '{}');
@@ -163,7 +236,6 @@
     }
   }
 
-  // Save cloud configuration
   function saveConfig(cfg) {
     try {
       localStorage.setItem(STORAGE_KEYS.CONFIG, JSON.stringify(cfg));
@@ -171,22 +243,36 @@
   }
 
   // Core event logging function
-  function trackEvent(type, metadata = {}) {
-    // 🛡️ EXCLUSION CHECK: Ignore visits & interactions from developer's own laptop/browser
+  async function trackEvent(type, metadata = {}) {
+    // 🛡️ EXCLUSION CHECK
     const isForced = metadata && metadata.force === true;
     if (!isForced && isTrafficExcluded()) {
       return null;
     }
 
+    // Resolve or retrieve cached geo
+    let geo = cachedGeo;
+    if (!geo) {
+      geo = await resolveVisitorGeo();
+    }
+
+    // Allow metadata override for simulations
+    if (metadata.city) geo = { ...geo, city: metadata.city, country: metadata.country || geo.country, countryCode: metadata.countryCode || geo.countryCode, flag: metadata.flag || geo.flag };
+
     const evt = {
       id: 'evt_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 6),
       timestamp: new Date().toISOString(),
-      type: type, // 'page_view' | 'resume_open' | 'game_play' | 'blueprint_view'
+      type: type,
       page: window.location.pathname || '/',
       referrer: getCleanReferrer(),
       device: getDeviceType(),
       platform: getPlatform(),
       sessionId: getSessionId(),
+      city: geo.city || 'Unknown City',
+      region: geo.region || '',
+      country: geo.country || 'Global Visitor',
+      countryCode: geo.countryCode || '',
+      flag: geo.flag || '📍',
       metadata: metadata
     };
 
@@ -204,7 +290,7 @@
       const rawStats = localStorage.getItem(STORAGE_KEYS.STATS);
       const stats = rawStats ? JSON.parse(rawStats) : {
         totalVisitors: 0, pageViews: 0, resumeOpens: 0, gamePlays: 0,
-        dailyTrend: [], referrers: {}, devices: {}, games: {}
+        dailyTrend: [], referrers: {}, devices: {}, cities: {}, countries: {}, games: {}
       };
 
       if (type === 'page_view') {
@@ -230,6 +316,18 @@
       const dev = evt.device;
       stats.devices = stats.devices || {};
       stats.devices[dev] = (stats.devices[dev] || 0) + 1;
+
+      // Record city & country counts
+      if (evt.city && evt.city !== 'Unknown City') {
+        const cityKey = `${evt.flag} ${evt.city}, ${evt.countryCode || evt.country}`;
+        stats.cities = stats.cities || {};
+        stats.cities[cityKey] = (stats.cities[cityKey] || 0) + 1;
+      }
+
+      if (evt.country && evt.country !== 'Global Visitor') {
+        stats.countries = stats.countries || {};
+        stats.countries[evt.country] = (stats.countries[evt.country] || 0) + 1;
+      }
 
       // Update today's entry in daily trend
       const todayLabel = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -265,6 +363,9 @@
             referrer: evt.referrer,
             device_type: evt.device,
             platform: evt.platform,
+            city: evt.city,
+            country: evt.country,
+            country_code: evt.countryCode,
             metadata: evt.metadata,
             created_at: evt.timestamp
           })
@@ -272,7 +373,7 @@
       } catch (e) {}
     }
 
-    // 4. Optional Discord Webhook Push Notification (Instant Recruiter Ping on Resume Open)
+    // 4. Optional Discord Webhook Push Notification (Instant Recruiter Ping on Resume Open with City!)
     if (type === 'resume_open' && cfg.discordWebhook) {
       try {
         fetch(cfg.discordWebhook, {
@@ -286,9 +387,9 @@
               description: `A visitor just opened your **Master Resume**!`,
               color: 0xF59E0B, // Cozy Amber
               fields: [
+                { name: '📍 City / Location', value: `${evt.flag} ${evt.city}, ${evt.country}`, inline: true },
                 { name: 'Source / Referrer', value: evt.referrer || 'Direct', inline: true },
-                { name: 'Device / Platform', value: `${evt.device} • ${evt.platform}`, inline: true },
-                { name: 'Action', value: metadata.source || 'Resume Click', inline: true }
+                { name: 'Device / Platform', value: `${evt.device} • ${evt.platform}`, inline: true }
               ],
               footer: { text: 'Arpit Jaiswal • GameDev Systems Portfolio' },
               timestamp: evt.timestamp
@@ -454,6 +555,7 @@
   // Public API
   window.GameDevTelemetry = {
     trackEvent: trackEvent,
+    resolveVisitorGeo: resolveVisitorGeo,
     isDevModeActive: isDevModeActive,
     setDevMode: setDevMode,
     toggleDeveloperMode: toggleDeveloperMode,

@@ -104,15 +104,18 @@
             <span class="hidden md:inline">Test Event</span>
             <i data-lucide="chevron-down" class="w-3.5 h-3.5 opacity-60"></i>
           </button>
-          <div class="hidden group-hover:block absolute right-0 mt-1 w-56 rounded-2xl bg-white dark:bg-[#1A2334] border-2 border-cozy-borderLight dark:border-cozy-borderDark shadow-xl py-2 z-50">
-            <button onclick="simulateEvent('resume_open')" class="w-full text-left px-4 py-2 hover:bg-amber-50 dark:hover:bg-slate-800 text-xs font-bold flex items-center gap-2 text-amber-900 dark:text-amber-300">
-              <span>🎯</span> Simulate Resume Open (LinkedIn)
+          <div class="hidden group-hover:block absolute right-0 mt-1 w-64 rounded-2xl bg-white dark:bg-[#1A2334] border-2 border-cozy-borderLight dark:border-cozy-borderDark shadow-xl py-2 z-50">
+            <button onclick="simulateEvent('resume_open', 'sf')" class="w-full text-left px-4 py-2 hover:bg-amber-50 dark:hover:bg-slate-800 text-xs font-bold flex items-center gap-2 text-amber-900 dark:text-amber-300">
+              <span>🇺🇸</span> Resume Open (San Francisco, US)
             </button>
-            <button onclick="simulateEvent('page_view')" class="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold flex items-center gap-2 text-slate-700 dark:text-slate-300">
-              <span>👁️</span> Simulate Visitor (GitHub)
+            <button onclick="simulateEvent('resume_open', 'london')" class="w-full text-left px-4 py-2 hover:bg-amber-50 dark:hover:bg-slate-800 text-xs font-bold flex items-center gap-2 text-amber-900 dark:text-amber-300">
+              <span>🇬🇧</span> Resume Open (London, UK)
             </button>
-            <button onclick="simulateEvent('game_play')" class="w-full text-left px-4 py-2 hover:bg-purple-50 dark:hover:bg-slate-800 text-xs font-bold flex items-center gap-2 text-purple-900 dark:text-purple-300">
-              <span>🎮</span> Simulate WebGL Play (Blockade)
+            <button onclick="simulateEvent('page_view', 'tokyo')" class="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold flex items-center gap-2 text-slate-700 dark:text-slate-300">
+              <span>🇯🇵</span> Page View (Tokyo, Japan)
+            </button>
+            <button onclick="simulateEvent('game_play', 'bengaluru')" class="w-full text-left px-4 py-2 hover:bg-purple-50 dark:hover:bg-slate-800 text-xs font-bold flex items-center gap-2 text-purple-900 dark:text-purple-300">
+              <span>🇮🇳</span> WebGL Play (Bengaluru, IN)
             </button>
           </div>
         </div>
@@ -246,7 +249,7 @@
 
     </div>
 
-    <!-- Charts Section -->
+    <!-- Charts Section: Main Trend + Cities Breakdown (Row 2) -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       
       <!-- Main Trend Chart: Visitors vs Resume Opens (2 cols) -->
@@ -270,53 +273,87 @@
         </div>
       </div>
 
-      <!-- Referrer Breakdown (1 col) -->
+      <!-- Top Visitor Cities & Locations (1 col) -->
       <div class="clay-card p-6 bg-cozy-cardLight dark:bg-cozy-cardDark border-2 border-cozy-borderLight dark:border-cozy-borderDark shadow-sm space-y-4 flex flex-col justify-between">
         <div>
-          <h3 class="font-display font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2">
-            <i data-lucide="compass" class="w-5 h-5 text-blue-500"></i>
-            <span>Traffic Origins</span>
-          </h3>
-          <p class="text-xs text-slate-500 dark:text-slate-400">Where studio leads and visitors discover you</p>
+          <div class="flex items-center justify-between">
+            <h3 class="font-display font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2">
+              <i data-lucide="map-pin" class="w-5 h-5 text-rose-500"></i>
+              <span>Visitor Cities &amp; Locations</span>
+            </h3>
+            <span id="city-count-badge" class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400">
+              0 Cities
+            </span>
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Cities where recruiters &amp; visitors discovered your work</p>
         </div>
 
-        <!-- Referrers List -->
-        <div id="referrer-list" class="space-y-3">
+        <!-- Cities List -->
+        <div id="city-list" class="space-y-3">
           <!-- Populated by JS -->
         </div>
 
-        <div class="pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-          <span class="font-medium">Top channel:</span>
-          <span class="font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1">
-            <i data-lucide="briefcase" class="w-3.5 h-3.5"></i> LinkedIn (Recruiters)
+        <div class="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+          <span class="font-medium">Lookup Method:</span>
+          <span class="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1 font-mono">
+            <i data-lucide="globe" class="w-3.5 h-3.5 text-blue-500"></i> Zero-Prompt IP Geo
           </span>
         </div>
       </div>
 
     </div>
 
-    <!-- Secondary Row: Devices & Lab Mechanics Breakdown -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Secondary Row: Origins, Devices & Lab Mechanics (3 cols) -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       
+      <!-- Traffic Origins -->
+      <div class="clay-card p-6 bg-cozy-cardLight dark:bg-cozy-cardDark border-2 border-cozy-borderLight dark:border-cozy-borderDark shadow-sm space-y-4 flex flex-col justify-between">
+        <div>
+          <h3 class="font-display font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="compass" class="w-5 h-5 text-blue-500"></i>
+            <span>Traffic Origins</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Referrer channels (LinkedIn, GitHub, etc.)</p>
+        </div>
+        <div id="referrer-list" class="space-y-3">
+          <!-- Populated by JS -->
+        </div>
+        <div class="pt-3 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-500">
+          Top: <span class="font-bold text-amber-600 dark:text-amber-400">LinkedIn / Direct</span>
+        </div>
+      </div>
+
       <!-- Device Distribution -->
-      <div class="clay-card p-6 bg-cozy-cardLight dark:bg-cozy-cardDark border-2 border-cozy-borderLight dark:border-cozy-borderDark shadow-sm space-y-4">
-        <h3 class="font-display font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2">
-          <i data-lucide="monitor-smartphone" class="w-5 h-5 text-indigo-500"></i>
-          <span>Device &amp; Platform Distribution</span>
-        </h3>
+      <div class="clay-card p-6 bg-cozy-cardLight dark:bg-cozy-cardDark border-2 border-cozy-borderLight dark:border-cozy-borderDark shadow-sm space-y-4 flex flex-col justify-between">
+        <div>
+          <h3 class="font-display font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="monitor-smartphone" class="w-5 h-5 text-indigo-500"></i>
+            <span>Device Distribution</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Workstation vs. Mobile review</p>
+        </div>
         <div id="device-distribution-bars" class="space-y-3.5">
           <!-- Populated by JS -->
+        </div>
+        <div class="pt-3 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-500">
+          Responsive telemetry
         </div>
       </div>
 
       <!-- Top Lab Cartridge Engagement -->
-      <div class="clay-card p-6 bg-cozy-cardLight dark:bg-cozy-cardDark border-2 border-cozy-borderLight dark:border-cozy-borderDark shadow-sm space-y-4">
-        <h3 class="font-display font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2">
-          <i data-lucide="gamepad" class="w-5 h-5 text-emerald-500"></i>
-          <span>Most Engaged WebGL Mechanics</span>
-        </h3>
-        <div id="game-engagement-list" class="space-y-3">
+      <div class="clay-card p-6 bg-cozy-cardLight dark:bg-cozy-cardDark border-2 border-cozy-borderLight dark:border-cozy-borderDark shadow-sm space-y-4 flex flex-col justify-between">
+        <div>
+          <h3 class="font-display font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="gamepad" class="w-5 h-5 text-emerald-500"></i>
+            <span>WebGL Mechanics</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Most launched Unity cartridges</p>
+        </div>
+        <div id="game-engagement-list" class="space-y-2.5">
           <!-- Populated by JS -->
+        </div>
+        <div class="pt-3 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-500">
+          Unity WebGL sessions
         </div>
       </div>
 
@@ -335,20 +372,27 @@
           <p class="text-xs text-slate-500 dark:text-slate-400">Live stream of recruiter visits, resume reads, and cartridge tests</p>
         </div>
 
-        <!-- Filter Chips -->
+        <!-- Filter Chips & City Filter -->
         <div class="flex items-center flex-wrap gap-2">
           <button onclick="filterEvents('all', this)" class="feed-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-400 text-amber-950 border border-amber-500 shadow-xs">
             All (<span id="count-all">0</span>)
           </button>
           <button onclick="filterEvents('resume_open', this)" class="feed-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-cozy-borderLight dark:border-cozy-borderDark hover:border-amber-400">
-            🎯 Resume Opens (<span id="count-resume">0</span>)
+            🎯 Resume (<span id="count-resume">0</span>)
           </button>
           <button onclick="filterEvents('page_view', this)" class="feed-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-cozy-borderLight dark:border-cozy-borderDark hover:border-amber-400">
-            👁️ Page Views (<span id="count-views">0</span>)
+            👁️ Views (<span id="count-views">0</span>)
           </button>
           <button onclick="filterEvents('game_play', this)" class="feed-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-cozy-borderLight dark:border-cozy-borderDark hover:border-amber-400">
-            🎮 Game Plays (<span id="count-games">0</span>)
+            🎮 Games (<span id="count-games">0</span>)
           </button>
+          
+          <!-- City Location Filter Dropdown -->
+          <div class="flex items-center gap-1.5 pl-1">
+            <select id="city-filter-select" onchange="filterByCity(this.value)" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-cozy-borderLight dark:border-cozy-borderDark hover:border-amber-400 focus:outline-none cursor-pointer">
+              <option value="all">📍 All Cities</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -509,6 +553,8 @@
       }
     }
 
+    let activeCityFilter = 'all';
+
     // Refresh telemetry and redraw charts
     async function refreshData() {
       // Auto-purge any legacy data on first load
@@ -541,6 +587,10 @@
                 referrer: r.referrer || 'Direct',
                 device: r.device_type || 'Desktop',
                 platform: r.platform || 'Unknown',
+                city: r.city || 'Unknown City',
+                country: r.country || 'Global Visitor',
+                countryCode: r.country_code || '',
+                flag: '📍',
                 metadata: r.metadata || {}
               }));
               const totalViews = events.filter(e => e.type === 'page_view').length;
@@ -577,15 +627,92 @@
       document.getElementById('count-views').textContent = events.filter(e => e.type === 'page_view').length;
       document.getElementById('count-games').textContent = events.filter(e => e.type === 'game_play').length;
 
-      // 3. Render charts
+      // 3. Render charts and breakdowns
       renderTrendChart(stats.dailyTrend || []);
+      renderCities(stats.cities || {});
       renderReferrers(stats.referrers || {});
       renderDevices(stats.devices || {});
       renderGames(stats.games || {});
 
-      // 4. Render feed
-      renderFeed(events, activeFilter);
+      // 4. Populate city filter dropdown
+      populateCityFilterDropdown(events);
 
+      // 5. Render feed
+      renderFeed(events, activeFilter, activeCityFilter);
+
+      lucide.createIcons();
+    }
+
+    // Top Visitor Cities Breakdown
+    function renderCities(cities) {
+      const container = document.getElementById('city-list');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const total = Object.values(cities).reduce((a, b) => a + b, 0) || 0;
+      const countBadge = document.getElementById('city-count-badge');
+      if (countBadge) {
+        countBadge.textContent = `${Object.keys(cities).length} Cities`;
+      }
+
+      if (total === 0) {
+        container.innerHTML = `
+          <div class="py-8 text-center text-xs text-slate-400 dark:text-slate-500 space-y-1">
+            <i data-lucide="map-pin" class="w-6 h-6 mx-auto opacity-40"></i>
+            <p>No visitor cities recorded yet.</p>
+            <p class="text-[10px] text-slate-400">External visitor cities &amp; flags will appear here.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const sorted = Object.entries(cities).sort((a, b) => b[1] - a[1]);
+      sorted.slice(0, 5).forEach(([cityLabel, count]) => {
+        const pct = Math.round((count / total) * 100);
+        const row = document.createElement('div');
+        row.className = 'space-y-1';
+        row.innerHTML = `
+          <div class="flex items-center justify-between text-xs font-bold">
+            <span class="flex items-center gap-1.5 text-slate-800 dark:text-slate-200">
+              <span>${cityLabel}</span>
+            </span>
+            <span class="font-mono text-slate-700 dark:text-slate-300">${count} (${pct}%)</span>
+          </div>
+          <div class="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+            <div class="bg-rose-500 h-full rounded-full transition-all duration-500" style="width: ${pct}%"></div>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    function populateCityFilterDropdown(events) {
+      const select = document.getElementById('city-filter-select');
+      if (!select) return;
+      const currentVal = activeCityFilter;
+
+      const cities = new Set();
+      events.forEach(e => {
+        if (e.city && e.city !== 'Unknown City' && e.city !== 'Resolving...') {
+          const key = `${e.flag || '📍'} ${e.city}, ${e.countryCode || e.country}`;
+          cities.add(key);
+        }
+      });
+
+      select.innerHTML = '<option value="all">📍 All Cities</option>';
+      cities.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c;
+        opt.textContent = c;
+        if (c === currentVal) opt.selected = true;
+        select.appendChild(opt);
+      });
+    }
+
+    function filterByCity(cityName) {
+      activeCityFilter = cityName;
+      const events = JSON.parse(localStorage.getItem(window.GameDevTelemetry.STORAGE_KEYS.EVENTS) || '[]');
+      renderFeed(events, activeFilter, activeCityFilter);
       lucide.createIcons();
     }
 
@@ -801,12 +928,18 @@
       });
     }
 
-    // Render Event Stream Feed
-    function renderFeed(events, filter) {
+    // Render Event Stream Feed with City & Type Filters
+    function renderFeed(events, filter, cityFilter = 'all') {
       const container = document.getElementById('events-feed');
       container.innerHTML = '';
 
-      const filtered = filter === 'all' ? events : events.filter(e => e.type === filter);
+      let filtered = filter === 'all' ? events : events.filter(e => e.type === filter);
+      if (cityFilter && cityFilter !== 'all') {
+        filtered = filtered.filter(e => {
+          const key = `${e.flag || '📍'} ${e.city}, ${e.countryCode || e.country}`;
+          return key === cityFilter || e.city === cityFilter || `${e.city}, ${e.countryCode}` === cityFilter;
+        });
+      }
 
       if (filtered.length === 0) {
         container.innerHTML = `
@@ -859,8 +992,12 @@
               <i data-lucide="${icon}" class="w-4 h-4"></i>
             </div>
             <div>
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-2 flex-wrap">
                 <span class="font-display font-bold text-xs text-slate-900 dark:text-white ${isResume ? 'text-amber-600 dark:text-amber-400' : ''}">${label}</span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 flex items-center gap-1 shrink-0">
+                  <span>${evt.flag || '📍'}</span>
+                  <span>${evt.city && evt.city !== 'Unknown City' ? evt.city + (evt.countryCode ? ', ' + evt.countryCode : '') : 'Global Visitor'}</span>
+                </span>
                 <span class="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                   ${evt.referrer || 'Direct'}
                 </span>
@@ -907,28 +1044,27 @@
       return `${days}d ago`;
     }
 
-    // Quick Simulation Tool
-    function simulateEvent(type) {
-      if (type === 'resume_open') {
-        window.GameDevTelemetry.trackEvent('resume_open', {
-          force: true,
-          source: 'Simulated Recruiter Review',
-          label: 'Master Resume Opened from LinkedIn'
-        });
-      } else if (type === 'page_view') {
-        window.GameDevTelemetry.trackEvent('page_view', {
-          force: true,
-          source: 'Simulated Visitor Discovery',
-          label: 'Home Portfolio Visit'
-        });
-      } else if (type === 'game_play') {
-        window.GameDevTelemetry.trackEvent('game_play', {
-          force: true,
-          source: 'Simulated WebGL Session',
-          game: 'Blockade 2D'
-        });
-      }
-      refreshData();
+    // Quick Simulation Tool with City Presets
+    async function simulateEvent(type, cityPreset = 'sf') {
+      const presets = {
+        sf: { city: 'San Francisco', country: 'United States', countryCode: 'US', flag: '🇺🇸', label: 'Master Resume Opened from LinkedIn' },
+        london: { city: 'London', country: 'United Kingdom', countryCode: 'GB', flag: '🇬🇧', label: 'Master Resume Opened from LinkedIn' },
+        tokyo: { city: 'Tokyo', country: 'Japan', countryCode: 'JP', flag: '🇯🇵', label: 'Home Portfolio Visit' },
+        bengaluru: { city: 'Bengaluru', country: 'India', countryCode: 'IN', flag: '🇮🇳', label: 'Playable WebGL Lab' }
+      };
+      const p = presets[cityPreset] || presets.sf;
+
+      await window.GameDevTelemetry.trackEvent(type, {
+        force: true,
+        city: p.city,
+        country: p.country,
+        countryCode: p.countryCode,
+        flag: p.flag,
+        source: `Recruiter in ${p.city}`,
+        label: p.label,
+        game: type === 'game_play' ? 'Blockade 2D' : undefined
+      });
+      await refreshData();
     }
 
     // Export CSV
@@ -938,10 +1074,13 @@
         alert('No events to export.');
         return;
       }
-      const headers = ['Timestamp', 'Event Type', 'Referrer', 'Device', 'Platform', 'Page', 'Metadata'];
+      const headers = ['Timestamp', 'Event Type', 'City', 'Country', 'Country Code', 'Referrer', 'Device', 'Platform', 'Page', 'Metadata'];
       const rows = events.map(e => [
         `"${e.timestamp}"`,
         `"${e.type}"`,
+        `"${e.city || 'Unknown'}"`,
+        `"${e.country || 'Global'}"`,
+        `"${e.countryCode || ''}"`,
         `"${e.referrer || 'Direct'}"`,
         `"${e.device || 'Desktop'}"`,
         `"${e.platform || 'Unknown'}"`,
