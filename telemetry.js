@@ -7,7 +7,7 @@
  * 2. Instant local aggregation + Supabase REST API & Discord webhook integration.
  * 3. Stealth Developer Mode toggle (hidden from regular visitors, activated via URL param, hotkey Ctrl+Shift+D, or stealth triple-click).
  * 4. Automatic & Persistent Developer Traffic Exclusion: Ignores visits and clicks from developer's own devices/laptop.
- * 5. Clean Slate Monitoring: Starts completely fresh from 0 for genuine live tracking.
+ * 5. Hard Clean Slate: Unconditionally purges all legacy / historical / test data.
  */
 
 (function () {
@@ -27,8 +27,43 @@
     DEV_MODE: 'gamedev_dev_mode',
     EXCLUDE_ME: 'gamedev_exclude_me',
     SESSION_ID: '_gamedev_sid',
-    RETURNING: '_gamedev_returning'
+    CLEAN_FLAG: '_gamedev_clean_slate_v3'
   };
+
+  // Hard Reset: Unconditionally wipes all data and sets pure zero state
+  function resetAllData() {
+    const todayLabel = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const zeroStats = {
+      totalVisitors: 0,
+      pageViews: 0,
+      resumeOpens: 0,
+      gamePlays: 0,
+      avgDuration: '0s',
+      dailyTrend: [{ date: todayLabel, visitors: 0, resumeOpens: 0, plays: 0 }],
+      referrers: {},
+      devices: {},
+      games: {}
+    };
+    try {
+      localStorage.setItem(STORAGE_KEYS.STATS, JSON.stringify(zeroStats));
+      localStorage.setItem(STORAGE_KEYS.EVENTS, JSON.stringify([]));
+      sessionStorage.removeItem(STORAGE_KEYS.SESSION_ID);
+      sessionStorage.removeItem('_gamedev_counted_visitor');
+    } catch (e) {}
+  }
+
+  // Mandatory one-time automatic purge of all legacy / test data across any browser visiting the site
+  function enforceCleanSlate() {
+    try {
+      if (localStorage.getItem(STORAGE_KEYS.CLEAN_FLAG) !== 'purged') {
+        resetAllData();
+        localStorage.setItem(STORAGE_KEYS.CLEAN_FLAG, 'purged');
+      }
+    } catch (e) {}
+  }
+
+  // Execute purge immediately
+  enforceCleanSlate();
 
   // Check if traffic from this browser / device should be excluded from telemetry
   function isTrafficExcluded() {
@@ -114,7 +149,7 @@
     }
   }
 
-  // Get cloud configuration (merges local settings with embedded cloud defaults)
+  // Get cloud configuration
   function getConfig() {
     try {
       const local = JSON.parse(localStorage.getItem(STORAGE_KEYS.CONFIG) || '{}');
@@ -135,53 +170,8 @@
     } catch (e) {}
   }
 
-  // Clean Reset: Starts counters strictly at 0
-  function resetAllData() {
-    const todayLabel = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    const cleanStats = {
-      totalVisitors: 0,
-      pageViews: 0,
-      resumeOpens: 0,
-      gamePlays: 0,
-      avgDuration: '0s',
-      dailyTrend: [{ date: todayLabel, visitors: 0, resumeOpens: 0, plays: 0 }],
-      referrers: {},
-      devices: {},
-      games: {}
-    };
-    try {
-      localStorage.setItem(STORAGE_KEYS.STATS, JSON.stringify(cleanStats));
-      localStorage.setItem(STORAGE_KEYS.EVENTS, JSON.stringify([]));
-      sessionStorage.removeItem(STORAGE_KEYS.SESSION_ID);
-      sessionStorage.removeItem('_gamedev_counted_visitor');
-    } catch (e) {}
-  }
-
-  // Ensure clean baseline data structure
-  function ensureCleanData() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEYS.STATS);
-      if (!raw) {
-        resetAllData();
-        return;
-      }
-      const existing = JSON.parse(raw);
-      // Auto-purge old mock baseline if present
-      if (existing.totalVisitors === 482 || existing.pageViews === 1420 || existing.resumeOpens === 138) {
-        resetAllData();
-      }
-    } catch (e) {
-      resetAllData();
-    }
-  }
-
-  // Auto-clean on initial script execution
-  ensureCleanData();
-
   // Core event logging function
   function trackEvent(type, metadata = {}) {
-    ensureCleanData();
-
     // 🛡️ EXCLUSION CHECK: Ignore visits & interactions from developer's own laptop/browser
     const isForced = metadata && metadata.force === true;
     if (!isForced && isTrafficExcluded()) {
@@ -313,7 +303,6 @@
 
   // Developer Mode Controller
   function initDeveloperMode() {
-    // 1. Check URL parameters (?dev=1 or ?admin=1 or ?exclude=1)
     try {
       const params = new URLSearchParams(window.location.search);
       if (params.has('dev') || params.has('admin') || params.has('exclude')) {
@@ -329,10 +318,8 @@
       localStorage.setItem(STORAGE_KEYS.EXCLUDE_ME, 'true');
     }
 
-    // 2. Synchronize UI visibility
     syncDevButtons();
 
-    // 3. Secret Keyboard Shortcut: Ctrl + Shift + D (or Alt + Shift + D)
     window.addEventListener('keydown', function (e) {
       if ((e.ctrlKey || e.metaKey || e.altKey) && e.shiftKey && (e.key === 'D' || e.key === 'd')) {
         e.preventDefault();
@@ -340,7 +327,6 @@
       }
     });
 
-    // 4. Stealth Triple-Click on Header Brand Logo to toggle Dev Mode
     const brandElem = document.querySelector('header a[href="#"], header a[href="/"]');
     if (brandElem) {
       let clickCount = 0;
@@ -425,9 +411,7 @@
     }, 2800);
   }
 
-  // Auto-bind automatic telemetry events
   function initEventBindings() {
-    // 1. Page view
     const isResumePage = window.location.pathname.includes('resume');
     if (isResumePage) {
       trackEvent('resume_open', {
@@ -441,7 +425,6 @@
       });
     }
 
-    // 2. Intercept clicks on any Master Resume button / link
     document.addEventListener('click', function (e) {
       const link = e.target.closest('a');
       if (!link) return;
@@ -457,7 +440,6 @@
         });
       }
 
-      // Check for WebGL play actions
       if (link.getAttribute('onclick') && link.getAttribute('onclick').includes('loadGame') ||
           link.classList.contains('play-game-btn') ||
           link.id === 'load-webgl-btn') {
@@ -469,7 +451,7 @@
     }, true);
   }
 
-  // Public API exposed on window.GameDevTelemetry
+  // Public API
   window.GameDevTelemetry = {
     trackEvent: trackEvent,
     isDevModeActive: isDevModeActive,
@@ -483,7 +465,6 @@
     STORAGE_KEYS: STORAGE_KEYS
   };
 
-  // Run on DOM ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
       initDeveloperMode();

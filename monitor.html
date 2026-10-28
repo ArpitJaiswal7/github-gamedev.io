@@ -117,6 +117,12 @@
           </div>
         </div>
 
+        <!-- Reset / Zero Data Button -->
+        <button onclick="wipeEverythingClean()" class="px-3 py-2 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border-2 border-rose-200 dark:border-rose-800 hover:border-rose-400 text-rose-700 dark:text-rose-400 font-display font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all" title="Wipe all recorded numbers and reset to pure 0">
+          <i data-lucide="trash-2" class="w-4 h-4"></i>
+          <span class="hidden md:inline">Reset to 0</span>
+        </button>
+
         <!-- Cloud Settings Modal Trigger -->
         <button onclick="openSettingsModal()" class="px-3 py-2 rounded-2xl bg-cozy-cardLight dark:bg-cozy-cardDark border-2 border-cozy-borderLight dark:border-cozy-borderDark hover:border-amber-400 font-display font-bold text-xs flex items-center gap-1.5 shadow-sm text-slate-700 dark:text-slate-200" title="Cloud Settings & Discord Webhook">
           <i data-lucide="settings" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
@@ -494,8 +500,23 @@
       }
     }
 
+    // Hard wipe function
+    function wipeEverythingClean() {
+      if (confirm('Permanently reset all counters to 0 and clear all recorded activity?')) {
+        window.GameDevTelemetry.resetAllData();
+        refreshData();
+        alert('All recorded numbers and history have been wiped clean to 0!');
+      }
+    }
+
     // Refresh telemetry and redraw charts
     async function refreshData() {
+      // Auto-purge any legacy data on first load
+      if (localStorage.getItem('_gamedev_clean_slate_v3') !== 'purged') {
+        window.GameDevTelemetry.resetAllData();
+        localStorage.setItem('_gamedev_clean_slate_v3', 'purged');
+      }
+
       const cfg = window.GameDevTelemetry.getConfig();
       let stats = JSON.parse(localStorage.getItem(window.GameDevTelemetry.STORAGE_KEYS.STATS) || '{}');
       let events = JSON.parse(localStorage.getItem(window.GameDevTelemetry.STORAGE_KEYS.EVENTS) || '[]');
