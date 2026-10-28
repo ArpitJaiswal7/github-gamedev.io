@@ -675,6 +675,11 @@
           <span id="theme-toggle-icon" class="text-xl leading-none inline-block">🌙</span>
           <span id="theme-toggle-label" class="hidden">Dark Mode</span>
         </button>
+        <!-- Developer Dashboard Button (Hidden from regular visitors; revealed via ?dev=1 or Ctrl+Shift+D) -->
+        <a id="dev-monitor-btn" href="dashboard.html" class="hidden items-center gap-1.5 px-3 py-2 rounded-2xl bg-slate-900 text-amber-300 border-2 border-amber-400 font-display font-bold text-xs shadow-sm hover:scale-105 active:scale-95 transition-all whitespace-nowrap shrink-0 group" title="Developer Telemetry Dashboard">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>⚡ Dev Monitor</span>
+        </a>
         <a href="https://arpitjaiswal7.github.io/github-gamedev.io/resume_arpit_jaiswal.html" target="_blank" rel="noopener noreferrer" class="btn-3d whitespace-nowrap px-3.5 py-2.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-display font-bold text-xs flex items-center gap-2 shadow-[0_4px_0_#D97706] border border-amber-500 shrink-0">
           <i data-lucide="file-text" class="w-4 h-4 shrink-0"></i>
           <span>Master Resume</span>
@@ -691,6 +696,15 @@
 
     <!-- Mobile Dropdown Menu -->
     <div id="mobile-menu" class="hidden xl:hidden px-4 pt-2 pb-6 bg-[#FDFBF7] border-b-2 border-[#EFE5D7] space-y-2">
+      <!-- Developer Mobile Link (Hidden from regular visitors) -->
+      <a id="dev-monitor-mobile-link" href="dashboard.html" class="hidden px-4 py-3 rounded-2xl bg-slate-900 border-2 border-amber-400 font-bold text-sm text-amber-300 items-center justify-between">
+        <span class="flex items-center gap-2.5">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>⚡ Dev Monitor Dashboard</span>
+        </span>
+        <i data-lucide="chevron-right" class="w-4 h-4 text-amber-400"></i>
+      </a>
+
       <a href="#about" onclick="toggleMobileMenu()" class="block px-4 py-3 rounded-2xl bg-orange-50 border-2 border-orange-200 font-bold text-sm text-orange-950 flex items-center gap-3">
         <span>👋</span> About Me
       </a>
@@ -2928,5 +2942,7 @@
 
     lucide.createIcons();
   </script>
+  <!-- Website Telemetry & Visitor Monitor Engine -->
+  <script src="telemetry.js"></script>
 </body>
 </html>
