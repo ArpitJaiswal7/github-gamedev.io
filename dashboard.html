@@ -86,6 +86,10 @@
               <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse-slow"></span>
               Live Beacon
             </span>
+            <span id="dev-excluded-badge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold font-mono bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700" title="Visits from your device are excluded from telemetry">
+              <i data-lucide="shield-check" class="w-3.5 h-3.5 text-amber-600"></i>
+              Your Laptop Excluded
+            </span>
           </div>
           <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Real-time visitor analytics &bull; Master Resume conversions &bull; Gameplay engagement</p>
         </div>
@@ -420,6 +424,20 @@
           </label>
           <input id="cfg-supabase-key" type="password" placeholder="eyJhbGciOiJIUzI1NiIsIn..." class="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs font-mono text-slate-800 dark:text-slate-200 focus:outline-none focus:border-amber-400">
         </div>
+      </div>
+
+      <!-- Exclude This Laptop Switch -->
+      <div class="pt-2 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+        <div>
+          <span class="block text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+            <i data-lucide="shield" class="w-3.5 h-3.5 text-amber-500"></i>
+            <span>Exclude Your Laptop / Browser</span>
+          </span>
+          <span class="text-[11px] text-slate-500">Ignore your own visits &amp; testing from polluting live metrics</span>
+        </div>
+        <button id="cfg-exclude-toggle" onclick="toggleExcludeFromModal()" class="px-3 py-1.5 rounded-xl font-display font-bold text-xs bg-emerald-400 text-emerald-950 shadow-sm">
+          Active (Excluded)
+        </button>
       </div>
 
       <!-- Developer Mode Switch -->
@@ -805,16 +823,19 @@
     function simulateEvent(type) {
       if (type === 'resume_open') {
         window.GameDevTelemetry.trackEvent('resume_open', {
+          force: true,
           source: 'Simulated Recruiter Review',
           label: 'Master Resume Opened from LinkedIn'
         });
       } else if (type === 'page_view') {
         window.GameDevTelemetry.trackEvent('page_view', {
+          force: true,
           source: 'Simulated Visitor Discovery',
           label: 'Home Portfolio Visit'
         });
       } else if (type === 'game_play') {
         window.GameDevTelemetry.trackEvent('game_play', {
+          force: true,
           source: 'Simulated WebGL Session',
           game: 'Blockade 2D'
         });
@@ -865,12 +886,33 @@
       document.getElementById('cfg-supabase-url').value = cfg.supabaseUrl || '';
       document.getElementById('cfg-supabase-key').value = cfg.supabaseAnonKey || '';
       
+      const isEx = window.GameDevTelemetry.isTrafficExcluded();
+      const exBtn = document.getElementById('cfg-exclude-toggle');
+      if (exBtn) {
+        exBtn.textContent = isEx ? 'Active (Excluded)' : 'Disabled (Tracking)';
+        exBtn.className = isEx ? 'px-3 py-1.5 rounded-xl font-display font-bold text-xs bg-emerald-400 text-emerald-950 shadow-sm' : 'px-3 py-1.5 rounded-xl font-display font-bold text-xs bg-slate-300 dark:bg-slate-700 text-slate-800 dark:text-slate-200';
+      }
+
       const devActive = window.GameDevTelemetry.isDevModeActive();
       const btn = document.getElementById('cfg-dev-toggle');
       btn.textContent = devActive ? 'Active (Visible)' : 'Disabled (Hidden)';
       btn.className = devActive ? 'px-3 py-1.5 rounded-xl font-display font-bold text-xs bg-emerald-400 text-emerald-950 shadow-sm' : 'px-3 py-1.5 rounded-xl font-display font-bold text-xs bg-slate-300 dark:bg-slate-700 text-slate-800 dark:text-slate-200';
 
       document.getElementById('settings-modal').classList.remove('hidden');
+    }
+
+    function toggleExcludeFromModal() {
+      const nextEx = !window.GameDevTelemetry.isTrafficExcluded();
+      window.GameDevTelemetry.setExcluded(nextEx);
+      const exBtn = document.getElementById('cfg-exclude-toggle');
+      if (exBtn) {
+        exBtn.textContent = nextEx ? 'Active (Excluded)' : 'Disabled (Tracking)';
+        exBtn.className = nextEx ? 'px-3 py-1.5 rounded-xl font-display font-bold text-xs bg-emerald-400 text-emerald-950 shadow-sm' : 'px-3 py-1.5 rounded-xl font-display font-bold text-xs bg-slate-300 dark:bg-slate-700 text-slate-800 dark:text-slate-200';
+      }
+      const badge = document.getElementById('dev-excluded-badge');
+      if (badge) {
+        badge.style.display = nextEx ? 'inline-flex' : 'none';
+      }
     }
 
     function closeSettingsModal() {

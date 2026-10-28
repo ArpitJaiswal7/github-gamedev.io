@@ -6,6 +6,7 @@
  * 1. Respectful zero-cookie visitor & telemetry tracking (page views, resume opens, game plays).
  * 2. Instant local aggregation + Supabase REST API & Discord webhook integration.
  * 3. Stealth Developer Mode toggle (hidden from regular visitors, activated via URL param, hotkey Ctrl+Shift+D, or stealth triple-click).
+ * 4. Automatic & Persistent Developer Traffic Exclusion: Ignores visits and clicks from developer's own devices/laptop.
  */
 
 (function () {
@@ -16,9 +17,40 @@
     STATS: '_gamedev_telemetry_stats',
     CONFIG: '_gamedev_telemetry_config',
     DEV_MODE: 'gamedev_dev_mode',
+    EXCLUDE_ME: 'gamedev_exclude_me',
     SESSION_ID: '_gamedev_sid',
     RETURNING: '_gamedev_returning'
   };
+
+  // Check if traffic from this browser / device should be excluded from telemetry
+  function isTrafficExcluded() {
+    // 1. Local development environments (localhost, 127.0.0.1, file protocol)
+    const host = window.location.hostname || '';
+    if (host === 'localhost' || host === '127.0.0.1' || host === '' || window.location.protocol === 'file:') {
+      return true;
+    }
+
+    // 2. Explicit developer exclusion flag stored in localStorage
+    if (localStorage.getItem(STORAGE_KEYS.EXCLUDE_ME) === 'true') {
+      return true;
+    }
+
+    // 3. Developer mode active on this browser
+    if (localStorage.getItem(STORAGE_KEYS.DEV_MODE) === 'true') {
+      return true;
+    }
+
+    return false;
+  }
+
+  // Set exclusion flag
+  function setExcluded(excluded) {
+    if (excluded) {
+      localStorage.setItem(STORAGE_KEYS.EXCLUDE_ME, 'true');
+    } else {
+      localStorage.removeItem(STORAGE_KEYS.EXCLUDE_ME);
+    }
+  }
 
   // Generate or retrieve session ID
   function getSessionId() {
@@ -200,7 +232,6 @@
     for (let i = 6; i >= 0; i--) {
       const d = new Date(now - i * dayMs);
       const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-      // Realistic weekday traffic pattern
       const baseVisitors = [42, 58, 64, 78, 85, 72, 83][6 - i];
       const baseResume = [12, 16, 21, 24, 28, 19, 22][6 - i];
       const basePlays = [8, 14, 18, 15, 20, 11, 16][6 - i];
@@ -243,6 +274,13 @@
   // Core event logging function
   function trackEvent(type, metadata = {}) {
     ensureSeedData();
+
+    // 🛡️ EXCLUSION CHECK: Ignore visits & interactions from developer's own laptop/browser
+    const isForced = metadata && metadata.force === true;
+    if (!isForced && isTrafficExcluded()) {
+      // Silently bypass developer tracking to keep metrics genuine
+      return null;
+    }
 
     const evt = {
       id: 'evt_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 6),
@@ -369,17 +407,23 @@
 
   // Developer Mode Controller
   function initDeveloperMode() {
-    // 1. Check URL parameters (?dev=1 or ?admin=1)
+    // 1. Check URL parameters (?dev=1 or ?admin=1 or ?exclude=1)
     try {
       const params = new URLSearchParams(window.location.search);
-      if (params.has('dev') || params.has('admin')) {
+      if (params.has('dev') || params.has('admin') || params.has('exclude')) {
         localStorage.setItem(STORAGE_KEYS.DEV_MODE, 'true');
+        localStorage.setItem(STORAGE_KEYS.EXCLUDE_ME, 'true');
         // Clean URL without reloading page
         const newUrl = window.location.pathname + (window.location.hash || '');
         window.history.replaceState({}, document.title, newUrl);
-        showDevToast('⚡ Developer Mode Active: Monitor Button Visible');
+        showDevToast('🛡️ Developer Mode & Traffic Exclusion Active');
       }
     } catch (e) {}
+
+    // If dev mode is already active, ensure exclusion flag is set
+    if (localStorage.getItem(STORAGE_KEYS.DEV_MODE) === 'true') {
+      localStorage.setItem(STORAGE_KEYS.EXCLUDE_ME, 'true');
+    }
 
     // 2. Synchronize UI visibility
     syncDevButtons();
@@ -417,6 +461,7 @@
   function setDevMode(active) {
     if (active) {
       localStorage.setItem(STORAGE_KEYS.DEV_MODE, 'true');
+      localStorage.setItem(STORAGE_KEYS.EXCLUDE_ME, 'true');
     } else {
       localStorage.removeItem(STORAGE_KEYS.DEV_MODE);
     }
@@ -427,9 +472,9 @@
     const nextState = !isDevModeActive();
     setDevMode(nextState);
     if (nextState) {
-      showDevToast('⚡ Developer Mode Enabled: Monitor Button Visible');
+      showDevToast('🛡️ Developer Mode Active (Your Visits Excluded)');
     } else {
-      showDevToast('🔒 Developer Mode Disabled: Monitor Button Hidden');
+      showDevToast('🔒 Developer Mode Disabled');
     }
   }
 
@@ -526,6 +571,8 @@
     isDevModeActive: isDevModeActive,
     setDevMode: setDevMode,
     toggleDeveloperMode: toggleDeveloperMode,
+    isTrafficExcluded: isTrafficExcluded,
+    setExcluded: setExcluded,
     getConfig: getConfig,
     saveConfig: saveConfig,
     STORAGE_KEYS: STORAGE_KEYS
