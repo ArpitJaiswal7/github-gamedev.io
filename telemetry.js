@@ -7,14 +7,13 @@
  * 2. Instant local aggregation + Supabase REST API & Discord webhook integration.
  * 3. Stealth Developer Mode toggle (hidden from regular visitors, activated via URL param, hotkey Ctrl+Shift+D, or stealth triple-click).
  * 4. Automatic & Persistent Developer Traffic Exclusion: Ignores visits and clicks from developer's own devices/laptop.
- * 5. External testing simulator support (?external=1 forces tracking even on developer devices).
+ * 5. Clean Slate Monitoring: Starts completely fresh from 0 for genuine live tracking.
  */
 
 (function () {
   'use strict';
 
   // ⚙️ GLOBAL CLOUD CONFIGURATION (Shared by all external visitors)
-  // Fill these in to stream live data from all external devices into your dashboard / Discord
   const CLOUD_CONFIG = {
     supabaseUrl: '',      // e.g. 'https://xyz.supabase.co'
     supabaseAnonKey: '',  // e.g. 'eyJhbGciOiJIUzI1NiIsIn...'
@@ -136,163 +135,52 @@
     } catch (e) {}
   }
 
-  // Seed realistic baseline telemetry if none exists
-  function ensureSeedData() {
-    const existing = localStorage.getItem(STORAGE_KEYS.EVENTS);
-    if (existing && existing.length > 50) return;
-
-    const now = Date.now();
-    const dayMs = 86400000;
-    const seedEvents = [
-      {
-        id: 'evt_seed_1',
-        timestamp: new Date(now - 1000 * 60 * 4).toISOString(),
-        type: 'resume_open',
-        page: '/resume_arpit_jaiswal.html',
-        referrer: 'LinkedIn',
-        device: 'Desktop',
-        platform: 'macOS',
-        metadata: { source: 'Header Master Resume Button', label: 'Senior Gameplay Systems Review' }
-      },
-      {
-        id: 'evt_seed_2',
-        timestamp: new Date(now - 1000 * 60 * 18).toISOString(),
-        type: 'game_play',
-        page: '/',
-        referrer: 'GitHub',
-        device: 'Desktop',
-        platform: 'Windows',
-        metadata: { game: 'Blockade 2D (Mobile Arcade Strategy)' }
-      },
-      {
-        id: 'evt_seed_3',
-        timestamp: new Date(now - 1000 * 60 * 35).toISOString(),
-        type: 'page_view',
-        page: '/',
-        referrer: 'LinkedIn',
-        device: 'Desktop',
-        platform: 'Windows',
-        metadata: { section: 'Commercial Shipped Titles' }
-      },
-      {
-        id: 'evt_seed_4',
-        timestamp: new Date(now - 1000 * 60 * 95).toISOString(),
-        type: 'resume_open',
-        page: '/resume_arpit_jaiswal.html',
-        referrer: 'Direct / Portfolio Link',
-        device: 'Mobile',
-        platform: 'iOS',
-        metadata: { source: 'Direct URL Visit', label: 'Candidate Evaluation' }
-      },
-      {
-        id: 'evt_seed_5',
-        timestamp: new Date(now - 1000 * 60 * 160).toISOString(),
-        type: 'game_play',
-        page: '/',
-        referrer: 'LinkedIn',
-        device: 'Desktop',
-        platform: 'Windows',
-        metadata: { game: 'Queens Hint (Bitboard Solver)' }
-      },
-      {
-        id: 'evt_seed_6',
-        timestamp: new Date(now - dayMs * 1).toISOString(),
-        type: 'resume_open',
-        page: '/resume_arpit_jaiswal.html',
-        referrer: 'LinkedIn',
-        device: 'Desktop',
-        platform: 'macOS',
-        metadata: { source: 'Header Master Resume Button' }
-      },
-      {
-        id: 'evt_seed_7',
-        timestamp: new Date(now - dayMs * 1.5).toISOString(),
-        type: 'page_view',
-        page: '/',
-        referrer: 'Google Search',
-        device: 'Desktop',
-        platform: 'Linux',
-        metadata: { section: 'Architecture Blueprints' }
-      },
-      {
-        id: 'evt_seed_8',
-        timestamp: new Date(now - dayMs * 2).toISOString(),
-        type: 'game_play',
-        page: '/',
-        referrer: 'GitHub',
-        device: 'Desktop',
-        platform: 'Windows',
-        metadata: { game: 'Jigsaw Solitaire' }
-      },
-      {
-        id: 'evt_seed_9',
-        timestamp: new Date(now - dayMs * 2.5).toISOString(),
-        type: 'resume_open',
-        page: '/resume_arpit_jaiswal.html',
-        referrer: 'LinkedIn',
-        device: 'Desktop',
-        platform: 'Windows',
-        metadata: { source: 'Header Master Resume Button' }
-      },
-      {
-        id: 'evt_seed_10',
-        timestamp: new Date(now - dayMs * 3).toISOString(),
-        type: 'resume_open',
-        page: '/resume_arpit_jaiswal.html',
-        referrer: 'Twitter / X',
-        device: 'Mobile',
-        platform: 'Android',
-        metadata: { source: 'Portfolio Link' }
-      }
-    ];
-
-    // Build baseline daily trend for past 7 days
-    const dailyTrend = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date(now - i * dayMs);
-      const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-      const baseVisitors = [42, 58, 64, 78, 85, 72, 83][6 - i];
-      const baseResume = [12, 16, 21, 24, 28, 19, 22][6 - i];
-      const basePlays = [8, 14, 18, 15, 20, 11, 16][6 - i];
-      dailyTrend.push({ date: label, visitors: baseVisitors, resumeOpens: baseResume, plays: basePlays });
-    }
-
-    const baselineStats = {
-      totalVisitors: 482,
-      pageViews: 1420,
-      resumeOpens: 138,
-      gamePlays: 94,
-      avgDuration: '2m 45s',
-      dailyTrend: dailyTrend,
-      referrers: {
-        'LinkedIn': 202,
-        'GitHub': 134,
-        'Direct / Portfolio Link': 88,
-        'Google Search': 38,
-        'Twitter / X': 20
-      },
-      devices: {
-        'Desktop': 328,
-        'Mobile': 134,
-        'Tablet': 20
-      },
-      games: {
-        'Blockade 2D': 42,
-        'Queens Hint': 28,
-        'Jigsaw Solitaire': 14,
-        'Meowsweeper': 10
-      }
+  // Clean Reset: Starts counters strictly at 0
+  function resetAllData() {
+    const todayLabel = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const cleanStats = {
+      totalVisitors: 0,
+      pageViews: 0,
+      resumeOpens: 0,
+      gamePlays: 0,
+      avgDuration: '0s',
+      dailyTrend: [{ date: todayLabel, visitors: 0, resumeOpens: 0, plays: 0 }],
+      referrers: {},
+      devices: {},
+      games: {}
     };
-
     try {
-      localStorage.setItem(STORAGE_KEYS.EVENTS, JSON.stringify(seedEvents));
-      localStorage.setItem(STORAGE_KEYS.STATS, JSON.stringify(baselineStats));
+      localStorage.setItem(STORAGE_KEYS.STATS, JSON.stringify(cleanStats));
+      localStorage.setItem(STORAGE_KEYS.EVENTS, JSON.stringify([]));
+      sessionStorage.removeItem(STORAGE_KEYS.SESSION_ID);
+      sessionStorage.removeItem('_gamedev_counted_visitor');
     } catch (e) {}
   }
 
+  // Ensure clean baseline data structure
+  function ensureCleanData() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEYS.STATS);
+      if (!raw) {
+        resetAllData();
+        return;
+      }
+      const existing = JSON.parse(raw);
+      // Auto-purge old mock baseline if present
+      if (existing.totalVisitors === 482 || existing.pageViews === 1420 || existing.resumeOpens === 138) {
+        resetAllData();
+      }
+    } catch (e) {
+      resetAllData();
+    }
+  }
+
+  // Auto-clean on initial script execution
+  ensureCleanData();
+
   // Core event logging function
   function trackEvent(type, metadata = {}) {
-    ensureSeedData();
+    ensureCleanData();
 
     // 🛡️ EXCLUSION CHECK: Ignore visits & interactions from developer's own laptop/browser
     const isForced = metadata && metadata.force === true;
@@ -317,7 +205,7 @@
       const rawEvents = localStorage.getItem(STORAGE_KEYS.EVENTS);
       const events = rawEvents ? JSON.parse(rawEvents) : [];
       events.unshift(evt);
-      if (events.length > 300) events.length = 300; // Cap at 300 most recent
+      if (events.length > 300) events.length = 300;
       localStorage.setItem(STORAGE_KEYS.EVENTS, JSON.stringify(events));
     } catch (e) {}
 
@@ -325,7 +213,7 @@
     try {
       const rawStats = localStorage.getItem(STORAGE_KEYS.STATS);
       const stats = rawStats ? JSON.parse(rawStats) : {
-        totalVisitors: 1, pageViews: 0, resumeOpens: 0, gamePlays: 0,
+        totalVisitors: 0, pageViews: 0, resumeOpens: 0, gamePlays: 0,
         dailyTrend: [], referrers: {}, devices: {}, games: {}
       };
 
@@ -358,7 +246,7 @@
       stats.dailyTrend = stats.dailyTrend || [];
       let todayEntry = stats.dailyTrend[stats.dailyTrend.length - 1];
       if (!todayEntry || todayEntry.date !== todayLabel) {
-        todayEntry = { date: todayLabel, visitors: 1, resumeOpens: 0, plays: 0 };
+        todayEntry = { date: todayLabel, visitors: 0, resumeOpens: 0, plays: 0 };
         stats.dailyTrend.push(todayEntry);
         if (stats.dailyTrend.length > 14) stats.dailyTrend.shift();
       }
@@ -431,14 +319,12 @@
       if (params.has('dev') || params.has('admin') || params.has('exclude')) {
         localStorage.setItem(STORAGE_KEYS.DEV_MODE, 'true');
         localStorage.setItem(STORAGE_KEYS.EXCLUDE_ME, 'true');
-        // Clean URL without reloading page
         const newUrl = window.location.pathname + (window.location.hash || '');
         window.history.replaceState({}, document.title, newUrl);
         showDevToast('🛡️ Developer Mode & Traffic Exclusion Active');
       }
     } catch (e) {}
 
-    // If dev mode is already active, ensure exclusion flag is set
     if (localStorage.getItem(STORAGE_KEYS.DEV_MODE) === 'true') {
       localStorage.setItem(STORAGE_KEYS.EXCLUDE_ME, 'true');
     }
@@ -591,6 +477,7 @@
     toggleDeveloperMode: toggleDeveloperMode,
     isTrafficExcluded: isTrafficExcluded,
     setExcluded: setExcluded,
+    resetAllData: resetAllData,
     getConfig: getConfig,
     saveConfig: saveConfig,
     STORAGE_KEYS: STORAGE_KEYS

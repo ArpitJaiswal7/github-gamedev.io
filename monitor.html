@@ -536,11 +536,11 @@
         }
       }
 
-      // 1. KPI Counts
-      const visitors = stats.totalVisitors || 482;
-      const resumeOpens = stats.resumeOpens || 138;
-      const pageViews = stats.pageViews || 1420;
-      const gamePlays = stats.gamePlays || 94;
+      // 1. KPI Counts (Clean baseline starting at zero)
+      const visitors = stats.totalVisitors || 0;
+      const resumeOpens = stats.resumeOpens || 0;
+      const pageViews = stats.pageViews || 0;
+      const gamePlays = stats.gamePlays || 0;
 
       document.getElementById('metric-visitors').textContent = visitors.toLocaleString();
       document.getElementById('metric-resume-opens').textContent = resumeOpens.toLocaleString();
@@ -665,7 +665,16 @@
       const container = document.getElementById('referrer-list');
       container.innerHTML = '';
 
-      const total = Object.values(referrers).reduce((a, b) => a + b, 0) || 1;
+      const total = Object.values(referrers).reduce((a, b) => a + b, 0) || 0;
+      if (total === 0) {
+        container.innerHTML = `
+          <div class="py-8 text-center text-xs text-slate-400 dark:text-slate-500 space-y-1">
+            <i data-lucide="compass" class="w-6 h-6 mx-auto opacity-40"></i>
+            <p>No external traffic sources recorded yet.</p>
+          </div>
+        `;
+        return;
+      }
       const sorted = Object.entries(referrers).sort((a, b) => b[1] - a[1]);
 
       const colors = {
@@ -703,7 +712,16 @@
       const container = document.getElementById('device-distribution-bars');
       container.innerHTML = '';
 
-      const total = Object.values(devices).reduce((a, b) => a + b, 0) || 1;
+      const total = Object.values(devices).reduce((a, b) => a + b, 0) || 0;
+      if (total === 0) {
+        container.innerHTML = `
+          <div class="py-8 text-center text-xs text-slate-400 dark:text-slate-500 space-y-1">
+            <i data-lucide="laptop" class="w-6 h-6 mx-auto opacity-40"></i>
+            <p>Awaiting external device data.</p>
+          </div>
+        `;
+        return;
+      }
       const items = [
         { label: 'Desktop (Workstations & Studios)', icon: 'laptop', key: 'Desktop', color: 'bg-blue-500' },
         { label: 'Mobile (Phones & Recruiters on the go)', icon: 'smartphone', key: 'Mobile', color: 'bg-emerald-500' },
@@ -771,9 +789,21 @@
 
       if (filtered.length === 0) {
         container.innerHTML = `
-          <div class="py-12 text-center space-y-2">
-            <i data-lucide="inbox" class="w-8 h-8 mx-auto text-slate-400"></i>
-            <p class="text-xs font-bold text-slate-500">No events found for this filter.</p>
+          <div class="py-12 text-center space-y-3">
+            <div class="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 mx-auto flex items-center justify-center shadow-xs">
+              <i data-lucide="shield-check" class="w-6 h-6"></i>
+            </div>
+            <div>
+              <p class="font-display font-bold text-sm text-slate-800 dark:text-white">Clean Dashboard: Ready &amp; Monitoring</p>
+              <p class="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto mt-1">
+                Your laptop visits and testing are excluded. When someone else visits your portfolio or opens your Master Resume, live events will stream here in real-time.
+              </p>
+            </div>
+            <div class="pt-2">
+              <button onclick="simulateEvent('resume_open')" class="px-3.5 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-display font-bold text-xs inline-flex items-center gap-1.5 shadow-sm">
+                <span>🧪 Test a Simulated Visitor</span>
+              </button>
+            </div>
           </div>
         `;
         return;
@@ -909,10 +939,9 @@
     }
 
     function confirmReset() {
-      if (confirm('Are you sure you want to clear your current local telemetry history?')) {
-        localStorage.removeItem(window.GameDevTelemetry.STORAGE_KEYS.EVENTS);
-        localStorage.removeItem(window.GameDevTelemetry.STORAGE_KEYS.STATS);
-        location.reload();
+      if (confirm('Are you sure you want to reset the dashboard to a completely clean slate (0 visitors, 0 resume opens)?')) {
+        window.GameDevTelemetry.resetAllData();
+        refreshData();
       }
     }
 
