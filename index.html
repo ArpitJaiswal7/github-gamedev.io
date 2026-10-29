@@ -33,11 +33,15 @@
       --text-subtle: #6D645D;
     }
 
+    html, body {
+      max-width: 100vw;
+      overflow-x: hidden;
+    }
+
     body {
       background-color: var(--bg-cream);
       font-family: 'Quicksand', sans-serif;
       color: var(--text-dark);
-      overflow-x: hidden;
       margin: 0;
       padding: 0;
     }
@@ -628,21 +632,21 @@
 
   <!-- ================= TOP NAVIGATION BAR ================= -->
   <header class="sticky top-0 z-50 w-full backdrop-blur-md bg-[#FDFBF7]/95 border-b-2 border-[#D9C8B4] shadow-[0_4px_16px_rgba(180,140,100,0.12)] transition-colors">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-2 sm:gap-4">
 
       <!-- Brand Logo -->
-      <a href="#" class="flex items-center gap-3 group shrink-0">
-        <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-amber-200 border-2 border-amber-400 flex items-center justify-center text-amber-900 shadow-sm group-hover:rotate-6 transition-all shrink-0">
-          <svg class="w-6 h-6 text-amber-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="6"></rect><path d="M6 12h4m-2-2v4m7-2h.01m3 0h.01"></path></svg>
+      <a href="#" class="flex items-center gap-2 sm:gap-3 group shrink min-w-0">
+        <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-amber-200 border-2 border-amber-400 flex items-center justify-center text-amber-900 shadow-sm group-hover:rotate-6 transition-all shrink-0">
+          <svg class="w-5 h-5 sm:w-6 sm:h-6 text-amber-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="6"></rect><path d="M6 12h4m-2-2v4m7-2h.01m3 0h.01"></path></svg>
         </div>
-        <div class="flex flex-col">
+        <div class="flex flex-col min-w-0">
           <div class="flex items-center gap-2">
-            <span class="font-display font-bold text-slate-900 text-lg sm:text-xl tracking-tight whitespace-nowrap">Arpit Jaiswal</span>
+            <span class="font-display font-bold text-slate-900 text-base sm:text-xl tracking-tight whitespace-nowrap">Arpit Jaiswal</span>
             <span class="hidden 2xl:inline-block whitespace-nowrap px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
               ● Ready to Build
             </span>
           </div>
-          <span class="text-xs text-slate-500 font-medium whitespace-nowrap">Senior Unity &amp; Gameplay Systems Developer</span>
+          <span class="hidden sm:inline-block text-xs text-slate-500 font-medium whitespace-nowrap">Senior Unity &amp; Gameplay Systems Developer</span>
         </div>
       </a>
 
@@ -669,10 +673,10 @@
       </nav>
 
       <!-- Right Action: Master Resume Button & Theme Toggle -->
-      <div class="flex items-center gap-2 sm:gap-2.5 shrink-0">
+      <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
         <!-- Interactive Theme Toggle Button -->
-        <button id="theme-toggle-btn" type="button" onclick="toggleTheme(event)" class="px-3.5 py-2 rounded-2xl bg-[#FAF8F5] dark:bg-[#1A2334] border-2 border-amber-300 dark:border-amber-500/50 text-slate-800 dark:text-amber-300 font-display font-bold text-xs flex items-center gap-2 shadow-sm hover:scale-105 active:scale-95 transition-all cursor-pointer whitespace-nowrap shrink-0" title="Toggle Light / Dark Mode">
-          <span id="theme-toggle-icon" class="text-xl leading-none inline-block">🌙</span>
+        <button id="theme-toggle-btn" type="button" onclick="toggleTheme(event)" class="w-9 h-9 sm:w-auto px-0 sm:px-3.5 py-2 rounded-2xl bg-[#FAF8F5] dark:bg-[#1A2334] border-2 border-amber-300 dark:border-amber-500/50 text-slate-800 dark:text-amber-300 font-display font-bold text-xs flex items-center justify-center sm:gap-2 shadow-sm hover:scale-105 active:scale-95 transition-all cursor-pointer whitespace-nowrap shrink-0" title="Toggle Light / Dark Mode">
+          <span id="theme-toggle-icon" class="text-base sm:text-xl leading-none inline-block">🌙</span>
           <span id="theme-toggle-label" class="hidden">Dark Mode</span>
         </button>
         <!-- Developer Dashboard Button (Hidden from regular visitors; revealed via ?dev=1 or Ctrl+Shift+D) -->
@@ -680,14 +684,14 @@
           <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
           <span>⚡ Dev Monitor</span>
         </a>
-        <a href="https://arpitjaiswal7.github.io/github-gamedev.io/resume_arpit_jaiswal.html" target="_blank" rel="noopener noreferrer" class="btn-3d whitespace-nowrap px-3.5 py-2.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-display font-bold text-xs flex items-center gap-2 shadow-[0_4px_0_#D97706] border border-amber-500 shrink-0">
-          <i data-lucide="file-text" class="w-4 h-4 shrink-0"></i>
-          <span>Master Resume</span>
-          <i data-lucide="external-link" class="w-3.5 h-3.5 opacity-70 shrink-0"></i>
+        <a href="https://arpitjaiswal7.github.io/github-gamedev.io/resume_arpit_jaiswal.html" target="_blank" rel="noopener noreferrer" class="btn-3d whitespace-nowrap px-2.5 sm:px-3.5 py-2 sm:py-2.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-display font-bold text-xs flex items-center gap-1.5 sm:gap-2 shadow-[0_4px_0_#D97706] border border-amber-500 shrink-0">
+          <i data-lucide="file-text" class="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0"></i>
+          <span><span class="hidden sm:inline">Master </span>Resume</span>
+          <i data-lucide="external-link" class="hidden sm:inline-block w-3.5 h-3.5 opacity-70 shrink-0"></i>
         </a>
 
         <!-- Mobile Menu Toggle -->
-        <button onclick="toggleMobileMenu()" class="xl:hidden w-10 h-10 rounded-2xl bg-[#FAF8F5] dark:bg-[#1A2334] border-2 border-[#EFE5D7] dark:border-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 shadow-sm shrink-0">
+        <button onclick="toggleMobileMenu()" class="xl:hidden w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-[#FAF8F5] dark:bg-[#1A2334] border-2 border-[#EFE5D7] dark:border-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 shadow-sm shrink-0">
           <i data-lucide="menu" class="w-5 h-5"></i>
         </button>
       </div>
@@ -696,6 +700,15 @@
 
     <!-- Mobile Dropdown Menu -->
     <div id="mobile-menu" class="hidden xl:hidden px-4 pt-2 pb-6 bg-[#FDFBF7] border-b-2 border-[#EFE5D7] space-y-2">
+      <!-- Direct Mobile Resume Access -->
+      <a href="https://arpitjaiswal7.github.io/github-gamedev.io/resume_arpit_jaiswal.html" target="_blank" rel="noopener noreferrer" class="block px-4 py-3 rounded-2xl bg-amber-400 hover:bg-amber-300 border-2 border-amber-500 font-bold text-sm text-amber-950 flex items-center justify-between shadow-sm">
+        <span class="flex items-center gap-2.5">
+          <span>📄</span>
+          <span>Master Resume (Full PDF &amp; Systems)</span>
+        </span>
+        <i data-lucide="external-link" class="w-4 h-4 text-amber-950"></i>
+      </a>
+
       <!-- Developer Mobile Link (Hidden from regular visitors) -->
       <a id="dev-monitor-mobile-link" href="dashboard.html" class="hidden px-4 py-3 rounded-2xl bg-slate-900 border-2 border-amber-400 font-bold text-sm text-amber-300 items-center justify-between">
         <span class="flex items-center gap-2.5">
@@ -739,20 +752,20 @@
       <div class="section-bg-icons absolute inset-0 pointer-events-none overflow-hidden" style="z-index: 1;" aria-hidden="true"></div>
 
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div class="grid lg:grid-cols-12 gap-10 items-center">
+        <div class="grid lg:grid-cols-12 gap-8 lg:gap-10 items-center min-w-0">
           
           <!-- Left: Hero Headline -->
-          <div class="lg:col-span-7 xl:col-span-6 space-y-6 text-center lg:text-left">
-            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-100 border-2 border-amber-300 text-amber-950 text-xs font-bold shadow-sm">
+          <div class="lg:col-span-7 xl:col-span-6 space-y-6 text-center lg:text-left min-w-0 w-full">
+            <div class="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-amber-100 border-2 border-amber-300 text-amber-950 text-[10px] sm:text-xs font-bold shadow-sm max-w-full">
               <span>✨</span>
-              <span>SENIOR UNITY &amp; GAMEPLAY SYSTEMS DEVELOPER</span>
+              <span class="tracking-wide">SENIOR UNITY &amp; GAMEPLAY SYSTEMS DEVELOPER</span>
             </div>
 
-            <h1 class="font-display font-extrabold text-slate-900 text-4xl sm:text-6xl xl:text-[3.3rem] tracking-tight leading-[1.12]">
+            <h1 class="font-display font-extrabold text-slate-900 text-3xl sm:text-5xl xl:text-[3.3rem] tracking-tight leading-[1.14] break-words">
               Crafting Delightful, <br class="hidden sm:inline">
-              <span class="text-amber-600 relative">
+              <span class="text-amber-600 relative inline-block">
                 High-Performance
-                <svg class="absolute -bottom-2 left-0 w-full h-4 text-amber-400 -z-10" viewBox="0 0 100 20" preserveAspectRatio="none">
+                <svg class="absolute -bottom-1 sm:-bottom-2 left-0 w-full h-3 sm:h-4 text-amber-400 -z-10" viewBox="0 0 100 20" preserveAspectRatio="none">
                   <path d="M0,15 Q50,0 100,15" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
                 </svg>
               </span>
@@ -796,8 +809,8 @@
           </div>
 
           <!-- Right: Gameplay Preview Reel (5 sliding snapshots per mechanic, auto-advancing across all 8 mechanics) -->
-          <div class="lg:col-span-5 xl:col-span-6 flex justify-center">
-            <div id="reel" class="w-full max-w-xl space-y-2.5">
+          <div class="lg:col-span-5 xl:col-span-6 flex justify-center min-w-0 w-full">
+            <div id="reel" class="w-full max-w-xl space-y-2.5 min-w-0">
 
               <!-- Title Header: per-clip status & dual counters -->
               <div class="flex items-center justify-between px-1">
@@ -821,7 +834,7 @@
                     <span class="w-3.5 h-3.5 rounded-full bg-emerald-400 shrink-0"></span>
                     <span id="reel-scene" class="text-xs font-bold text-slate-600 dark:text-slate-300 font-mono ml-1 truncate">MeowSweeper_Lab.unity</span>
                   </div>
-                  <span class="text-xs font-bold text-emerald-800 bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 px-3 py-1 rounded-full border border-emerald-300 dark:border-emerald-700/60 whitespace-nowrap shrink-0">5 SNAPSHOT WALKTHROUGH</span>
+                  <span class="text-[9px] sm:text-[11px] font-bold text-emerald-800 bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full border border-emerald-300 dark:border-emerald-700/60 whitespace-nowrap shrink-0"><span class="hidden sm:inline">5 SNAPSHOT </span>WALKTHROUGH</span>
                 </div>
 
                 <!-- Snapshot Stage: two image slots that slide past each other -->
@@ -1175,7 +1188,7 @@
         </div>
 
         <!-- Handheld Console Chassis (Nintendo Switch / Steam Deck Aesthetic) -->
-        <div class="clay-card p-5 sm:p-8 bg-[#2A2321] border-4 border-[#453B36] shadow-[0_24px_60px_rgba(42,35,33,0.35)] rounded-[36px] text-white">
+        <div class="clay-card p-3.5 sm:p-8 bg-[#2A2321] border-4 border-[#453B36] shadow-[0_24px_60px_rgba(42,35,33,0.35)] rounded-[24px] sm:rounded-[36px] text-white">
           
           <!-- Console Top Bar -->
           <div class="flex flex-wrap items-center justify-between gap-4 pb-4 mb-4 border-b-2 border-[#453B36]">
@@ -1233,7 +1246,7 @@
           </div>
 
           <!-- Screen Viewport with Live Embedded Unity WebGL Iframe -->
-          <div id="arcade-viewport" class="relative bg-black rounded-2xl overflow-hidden border-4 border-[#1B1614] aspect-video min-h-[460px] max-h-[620px] flex items-center justify-center shadow-inner">
+          <div id="arcade-viewport" class="relative bg-black rounded-2xl overflow-hidden border-4 border-[#1B1614] aspect-video min-h-[200px] sm:min-h-[460px] max-h-[620px] flex items-center justify-center shadow-inner w-full">
             <iframe
               id="unity-arcade-frame"
               src="labs/unity-meowsweeper/index.html?v=00f06be"
@@ -1998,10 +2011,10 @@
   </main>
 
   <!-- Floating Dark / Light Mode Switcher Pill -->
-  <aside aria-label="Theme mode switcher" class="fixed bottom-6 right-6 z-50">
-    <button type="button" onclick="toggleTheme(event)" class="px-4 py-3 rounded-full bg-slate-900 dark:bg-amber-400 text-white dark:text-slate-950 font-display font-bold text-xs flex items-center gap-2 shadow-2xl border-2 border-slate-700 dark:border-amber-500 hover:scale-110 active:scale-95 transition-all cursor-pointer">
-      <span class="floating-theme-icon text-base">🌙</span>
-      <span class="floating-theme-text">Toggle Dark Mode</span>
+  <aside aria-label="Theme mode switcher" class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50">
+    <button type="button" onclick="toggleTheme(event)" class="p-3 sm:px-4 sm:py-3 rounded-full bg-slate-900 dark:bg-amber-400 text-white dark:text-slate-950 font-display font-bold text-xs flex items-center justify-center gap-2 shadow-2xl border-2 border-slate-700 dark:border-amber-500 hover:scale-110 active:scale-95 transition-all cursor-pointer" title="Toggle Light / Dark Mode">
+      <span class="floating-theme-icon text-base leading-none">🌙</span>
+      <span class="floating-theme-text hidden sm:inline">Toggle Dark Mode</span>
     </button>
   </aside>
 
