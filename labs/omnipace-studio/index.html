@@ -1,0 +1,3790 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OmniPace Control Center | Universal Game Pacing & LiveOps Director</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          },
+          colors: {
+            omni: {
+              50: '#f0fdf4',
+              500: '#10b981',
+              600: '#059669',
+              900: '#064e3b'
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #090d16;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
+  </style>
+</head>
+<body class="bg-[#050811] text-slate-100 min-h-screen font-sans selection:bg-emerald-500 selection:text-white flex flex-col">
+
+  <!-- ========================================================================= -->
+  <!-- 🌐 TOP APP HEADER: BRANDING, GAME & VAULT SWITCHERS, STATUS, STUDIO LINK -->
+  <!-- ========================================================================= -->
+  <header class="sticky top-0 z-50 bg-[#090d16]/95 backdrop-blur-md border-b border-slate-800/80 shadow-lg px-4 sm:px-6 py-3">
+    <div class="max-w-[1720px] mx-auto flex flex-col lg:flex-row items-center justify-between gap-3">
+      
+      <!-- Brand & Product Title -->
+      <div class="flex items-center gap-3.5 w-full lg:w-auto justify-between lg:justify-start">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-600 via-teal-500 to-cyan-400 p-[1.5px] shadow-lg shadow-emerald-500/20">
+            <div class="w-full h-full bg-[#0b101d] rounded-2xl flex items-center justify-center">
+              <i data-lucide="compass" class="w-5 h-5 text-emerald-400"></i>
+            </div>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-base sm:text-lg font-black tracking-tight text-white flex items-center gap-1.5">
+                OMNIPACE
+              </span>
+              <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                LiveOps Director
+              </span>
+            </div>
+            <p class="text-[11px] text-slate-400 font-medium">Universal Game Pacing & Progression Architecture</p>
+          </div>
+        </div>
+
+        <!-- Mobile Studio Link Icon -->
+        <a href="/" class="lg:hidden p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold border border-slate-700" title="Go to Level Studio">
+          <i data-lucide="sparkles" class="w-4 h-4 text-amber-400"></i>
+        </a>
+      </div>
+
+      <!-- Controls: Game Selector, Vault Era, Server Status, Studio Switcher -->
+      <div class="flex flex-wrap items-center gap-2.5 w-full lg:w-auto justify-end">
+        
+        <!-- Multi-Game Switcher -->
+        <div class="flex items-center gap-1.5 bg-slate-900/90 border border-slate-700/80 rounded-xl px-2.5 py-1.5 shadow-sm">
+          <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+            <i data-lucide="gamepad-2" class="w-3.5 h-3.5 text-blue-400"></i> Game:
+          </span>
+          <select id="selectActiveGame" onchange="onDashboardGameChange(this.value)" class="bg-transparent text-xs font-bold text-slate-100 focus:outline-none cursor-pointer pr-1">
+            <option value="blast" class="bg-slate-900 text-slate-100" selected>💥 This is Blast!</option>
+            <option value="meowsweeper" class="bg-slate-900 text-slate-100">🐱 Meowsweeper</option>
+            <option value="arrowstrike" class="bg-slate-900 text-slate-100">🏹 ArrowStrike</option>
+          </select>
+        </div>
+
+        <!-- Era / Vault Selector -->
+        <div class="flex items-center gap-1.5 bg-slate-900/90 border border-slate-700/80 rounded-xl px-2.5 py-1.5 shadow-sm">
+          <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+            <i data-lucide="layers" class="w-3.5 h-3.5 text-purple-400"></i> Era:
+          </span>
+          <select id="selectActiveVault" onchange="onDashboardVaultChange(this.value)" class="bg-transparent text-xs font-bold text-slate-100 focus:outline-none cursor-pointer pr-1">
+            <option value="vault_v1" class="bg-slate-900 text-slate-100" selected>Vault V1 (Core Production)</option>
+            <option value="vault_v2" class="bg-slate-900 text-slate-100">Vault V2 (Season 2 / Redesign)</option>
+            <option value="vault_staging" class="bg-slate-900 text-slate-100">Vault Staging (Internal QA)</option>
+          </select>
+        </div>
+
+        <!-- Server Connection Badge -->
+        <div id="badgeServerStatus" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-medium font-mono shadow-sm">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="badgeServerText">Online (8080)</span>
+        </div>
+
+        <!-- Direct Jump to Level Studio -->
+        <a href="/" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-bold border border-slate-700 transition shadow-sm group">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400 group-hover:rotate-12 transition-transform"></i>
+          <span>Level Studio</span>
+        </a>
+
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- 🧭 PHASE 1 PRIMARY NAVIGATION TABS (VAULT, JOURNEY, COHORT, SIMULATOR)     -->
+    <!-- ========================================================================= -->
+    <div class="max-w-[1720px] mx-auto mt-3 pt-2.5 border-t border-slate-800/60 flex items-center justify-between overflow-x-auto gap-4">
+      <nav class="flex items-center gap-2">
+        
+        <button id="tabBtn_vault" onclick="switchDashboardTab('vault')" class="px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-2 transition cursor-pointer bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 shadow-sm">
+          <i data-lucide="archive" class="w-3.5 h-3.5"></i>
+          <span>Vault & Batches</span>
+          <span id="badgeVaultCount" class="text-[10px] font-mono px-1.5 py-0.2 rounded-md bg-emerald-500/20 text-emerald-200">0</span>
+        </button>
+
+        <button id="tabBtn_journeys" onclick="switchDashboardTab('journeys')" class="px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-2 transition cursor-pointer bg-slate-900/60 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200">
+          <i data-lucide="map" class="w-3.5 h-3.5 text-blue-400"></i>
+          <span>Journey Builder</span>
+          <span id="badgeJourneyCount" class="text-[10px] font-mono px-1.5 py-0.2 rounded-md bg-blue-500/20 text-blue-200">0</span>
+        </button>
+
+        <button id="tabBtn_cohorts" onclick="switchDashboardTab('cohorts')" class="px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-2 transition cursor-pointer bg-slate-900/60 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200">
+          <i data-lucide="target" class="w-3.5 h-3.5 text-amber-400"></i>
+          <span>Cohort & DDA Rules</span>
+          <span id="badgeCohortCount" class="text-[10px] font-mono px-1.5 py-0.2 rounded-md bg-amber-500/20 text-amber-200">0</span>
+        </button>
+
+        <button id="tabBtn_simulator" onclick="switchDashboardTab('simulator')" class="px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-2 transition cursor-pointer bg-slate-900/60 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200">
+          <i data-lucide="flask-conical" class="w-3.5 h-3.5 text-purple-400"></i>
+          <span>Live Resolver Simulator</span>
+        </button>
+
+      </nav>
+
+      <!-- Active Game Scope Indicator -->
+      <div class="hidden md:flex items-center gap-2 text-xs font-mono text-slate-400 whitespace-nowrap">
+        <span class="text-slate-500">Target Path:</span>
+        <span id="labelDashboardScopePath" class="text-emerald-400 font-semibold bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
+          backend/games/blast/vault_v1/
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- 📋 MAIN WORKSPACE: PANELS A, B, C, D                                      -->
+  <!-- ========================================================================= -->
+  <main class="flex-1 max-w-[1720px] mx-auto w-full p-4 sm:p-6 flex flex-col gap-6">
+
+    <!-- ======================================================================= -->
+    <!-- 🗄️ PANEL A: VAULT & BATCHES EXPLORER (STEP 3)                             -->
+    <!-- ======================================================================= -->
+    <div id="panel_vault" class="flex flex-col gap-6">
+      
+      <!-- Top Action & Filter Bar -->
+      <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-5 rounded-2xl bg-slate-900/70 border border-slate-800/80 shadow-md">
+        <div>
+          <div class="flex items-center gap-2.5">
+            <h2 class="text-xl font-black text-white tracking-tight flex items-center gap-2">
+              <i data-lucide="archive" class="w-5 h-5 text-emerald-400"></i>
+              Vault & Batches Explorer
+            </h2>
+            <span class="text-xs px-2.5 py-0.5 rounded-full font-mono font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+              Immutable Content Layer
+            </span>
+          </div>
+          <p class="text-xs text-slate-400 mt-1 max-w-2xl">
+            Compiled level variant batches (<code class="text-emerald-300">frg</code>, <code class="text-blue-300">clb</code>, <code class="text-amber-300">tgt</code>). Batches are write-once to guarantee deterministic CDN caching, instant client downloads, and zero runtime mutation.
+          </p>
+        </div>
+
+        <!-- Quick Action Buttons -->
+        <div class="flex flex-wrap items-center gap-2.5 w-full md:w-auto justify-end">
+          <button onclick="loadDashboardOverview()" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 flex items-center gap-1.5 transition">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-slate-400"></i>
+            <span>Refresh</span>
+          </button>
+
+          <button onclick="openExportModal()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold shadow-lg shadow-emerald-500/20 flex items-center gap-2 transition">
+            <i data-lucide="package-plus" class="w-4 h-4"></i>
+            <span>Export Studio Levels as New Batch</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Live KPI / Summary Stats Grid -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <!-- Archetypes Count -->
+        <div class="p-4 rounded-2xl bg-slate-900/50 border border-slate-800/80 flex items-center gap-3.5">
+          <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+            <i data-lucide="git-branch" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div id="statArchetypesCount" class="text-xl font-black font-mono text-white">0</div>
+            <div class="text-[11px] text-slate-400 font-medium">Difficulty Archetypes</div>
+          </div>
+        </div>
+
+        <!-- Batches Count -->
+        <div class="p-4 rounded-2xl bg-slate-900/50 border border-slate-800/80 flex items-center gap-3.5">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+            <i data-lucide="boxes" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div id="statBatchesCount" class="text-xl font-black font-mono text-white">0</div>
+            <div class="text-[11px] text-slate-400 font-medium">Total Batches</div>
+          </div>
+        </div>
+
+        <!-- Production Locked -->
+        <div class="p-4 rounded-2xl bg-slate-900/50 border border-slate-800/80 flex items-center gap-3.5">
+          <div class="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
+            <i data-lucide="lock" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div id="statLockedCount" class="text-xl font-black font-mono text-white">0</div>
+            <div class="text-[11px] text-slate-400 font-medium">Locked (Immutable)</div>
+          </div>
+        </div>
+
+        <!-- Packaged Levels -->
+        <div class="p-4 rounded-2xl bg-slate-900/50 border border-slate-800/80 flex items-center gap-3.5">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+            <i data-lucide="layers" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div id="statTotalLevels" class="text-xl font-black font-mono text-white">0</div>
+            <div class="text-[11px] text-slate-400 font-medium">Total Packaged Levels</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Archetype Containers Area -->
+      <div id="vaultArchetypesContainer" class="flex flex-col gap-6">
+        <div class="p-12 text-center text-slate-400 bg-slate-900/30 rounded-2xl border border-slate-800 flex flex-col items-center justify-center gap-2">
+          <div class="w-8 h-8 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin"></div>
+          <span class="text-xs">Loading vault and batch repositories...</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ======================================================================= -->
+    <!-- 🗺️ PANEL B: VISUAL JOURNEY BUILDER (STEP 4)                              -->
+    <!-- ======================================================================= -->
+    <div id="panel_journeys" class="hidden flex-col gap-6">
+      
+      <!-- Top Action & Selection Bar -->
+      <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-5 rounded-2xl bg-slate-900/70 border border-slate-800/80 shadow-md">
+        <div>
+          <div class="flex items-center gap-2.5">
+            <h2 class="text-xl font-black text-white tracking-tight flex items-center gap-2">
+              <i data-lucide="map" class="w-5 h-5 text-blue-400"></i>
+              Visual Journey Builder
+            </h2>
+            <span class="text-xs px-2.5 py-0.5 rounded-full font-mono font-semibold bg-blue-500/15 text-blue-300 border border-blue-500/30">
+              Progression Routing
+            </span>
+          </div>
+          <p class="text-xs text-slate-400 mt-1 max-w-2xl">
+            Configure stage routes by connecting stage ranges (e.g. Stages 1-20, 21-80) to archetype batches. Journeys allow A/B testing entirely different progression curves without code changes.
+          </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2.5 w-full md:w-auto justify-end">
+          <!-- Journey Selector Dropdown -->
+          <div class="flex items-center gap-1.5 bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5">
+            <span class="text-xs font-bold text-slate-400">Select:</span>
+            <select id="selectActiveJourney" onchange="onSelectJourney(this.value)" class="bg-transparent text-xs font-bold text-blue-300 focus:outline-none cursor-pointer">
+              <!-- Dynamically populated -->
+            </select>
+          </div>
+
+          <button onclick="createNewJourney()" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 flex items-center gap-1.5 transition">
+            <i data-lucide="plus" class="w-3.5 h-3.5 text-blue-400"></i>
+            <span>New Journey</span>
+          </button>
+
+          <button onclick="saveActiveJourney()" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-lg shadow-blue-500/20 flex items-center gap-1.5 transition">
+            <i data-lucide="save" class="w-3.5 h-3.5"></i>
+            <span>Save Journey</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Active Journey Metadata Editor -->
+      <div class="p-5 sm:p-6 rounded-3xl bg-slate-900/40 border border-slate-800/80 shadow-md flex flex-col gap-4">
+        <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+          <i data-lucide="sliders" class="w-4 h-4 text-blue-400"></i>
+          Journey Metadata & Target Scope
+        </h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+          <div>
+            <label class="block text-slate-400 font-semibold mb-1">Journey ID (File Name):</label>
+            <input type="text" id="journeyInputId" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-blue-300 font-mono font-bold focus:outline-none focus:border-blue-500" placeholder="e.g. journey_sawtooth">
+          </div>
+          <div>
+            <label class="block text-slate-400 font-semibold mb-1">Display Label:</label>
+            <input type="text" id="journeyInputLabel" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 font-bold focus:outline-none focus:border-blue-500" placeholder="e.g. Sawtooth Waves Journey">
+          </div>
+          <div>
+            <label class="block text-slate-400 font-semibold mb-1">Default Target Cohort:</label>
+            <select id="journeySelectTargetCohort" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-blue-500">
+              <option value="cohort_core">cohort_core (Balanced)</option>
+              <option value="cohort_casual">cohort_casual (Forgiving)</option>
+              <option value="cohort_veteran">cohort_veteran (Tight Friction)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="text-xs">
+          <label class="block text-slate-400 font-semibold mb-1">Description & Strategic Intent:</label>
+          <input type="text" id="journeyInputDesc" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-slate-300 focus:outline-none focus:border-blue-500" placeholder="e.g. Chapter-based progression with rhythmic climax peaks...">
+        </div>
+      </div>
+
+      <!-- Visual Progression Timeline Preview -->
+      <div class="p-5 sm:p-6 rounded-3xl bg-slate-900/40 border border-slate-800/80 shadow-md flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+            <i data-lucide="git-commit" class="w-4 h-4 text-emerald-400"></i>
+            Progression Phase Timeline
+          </h3>
+          <span id="journeyValidationBadge" class="text-[11px] font-mono px-2.5 py-0.5 rounded-full font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+            <i data-lucide="check" class="w-3 h-3"></i> Valid Continuous Route
+          </span>
+        </div>
+
+        <!-- Visual colored horizontal timeline -->
+        <div id="journeyVisualTimeline" class="w-full h-8 rounded-xl bg-slate-950 border border-slate-800 flex overflow-hidden p-1 gap-1">
+          <!-- Dynamically filled with colored phase segments -->
+        </div>
+      </div>
+
+      <!-- Phase Table / Rows Editor -->
+      <div class="p-5 sm:p-6 rounded-3xl bg-slate-900/40 border border-slate-800/80 shadow-md flex flex-col gap-4">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-800/60">
+          <div>
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <i data-lucide="list-ordered" class="w-4 h-4 text-blue-400"></i>
+              Phase Routing Sequence
+            </h3>
+            <p class="text-[11px] text-slate-400 mt-0.5">Stages are sequentially evaluated in order. Each stage resolves to its assigned archetype batch.</p>
+          </div>
+
+          <button onclick="addJourneyPhase()" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 flex items-center gap-1.5 transition">
+            <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-emerald-400"></i>
+            <span>Add Phase</span>
+          </button>
+        </div>
+
+        <div id="journeyPhasesContainer" class="flex flex-col gap-3">
+          <!-- Dynamic Phase Rows Injected Here -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ======================================================================= -->
+    <!-- 🎯 PANEL C: COHORT & DDA RULES (STEP 5)                                 -->
+    <!-- ======================================================================= -->
+    <div id="panel_cohorts" class="hidden flex-col gap-6">
+      
+      <!-- Top Action & Selection Bar -->
+      <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-5 rounded-2xl bg-slate-900/70 border border-slate-800/80 shadow-md">
+        <div>
+          <div class="flex items-center gap-2.5">
+            <h2 class="text-xl font-black text-white tracking-tight flex items-center gap-2">
+              <i data-lucide="target" class="w-5 h-5 text-amber-400"></i>
+              Cohort & DDA Policy Tuner
+            </h2>
+            <span class="text-xs px-2.5 py-0.5 rounded-full font-mono font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30">
+              Player Dynamic Balancing
+            </span>
+          </div>
+          <p class="text-xs text-slate-400 mt-1 max-w-2xl">
+            Define dynamic difficulty adjustment (DDA) policies per cohort. Governs baseline seed selection (<code class="text-emerald-300">frg</code>, <code class="text-blue-300">clb</code>, <code class="text-amber-300">tgt</code>) and silent pity streak thresholds.
+          </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2.5 w-full md:w-auto justify-end">
+          <!-- Cohort Selector Dropdown -->
+          <div class="flex items-center gap-1.5 bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5">
+            <span class="text-xs font-bold text-slate-400">Select:</span>
+            <select id="selectActiveCohort" onchange="onSelectCohort(this.value)" class="bg-transparent text-xs font-bold text-amber-300 focus:outline-none cursor-pointer">
+              <!-- Dynamically populated -->
+            </select>
+          </div>
+
+          <button onclick="createNewCohort()" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 flex items-center gap-1.5 transition">
+            <i data-lucide="plus" class="w-3.5 h-3.5 text-amber-400"></i>
+            <span>New Cohort</span>
+          </button>
+
+          <button onclick="saveActiveCohort()" class="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold shadow-lg shadow-amber-500/20 flex items-center gap-1.5 transition">
+            <i data-lucide="save" class="w-3.5 h-3.5"></i>
+            <span>Save Cohort Policy</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Cohort Metadata -->
+      <div class="p-5 sm:p-6 rounded-3xl bg-slate-900/40 border border-slate-800/80 shadow-md flex flex-col gap-4">
+        <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+          <i data-lucide="user-check" class="w-4 h-4 text-amber-400"></i>
+          Cohort Identity & Profile
+        </h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <div>
+            <label class="block text-slate-400 font-semibold mb-1">Cohort ID (File Name):</label>
+            <input type="text" id="cohortInputId" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-amber-300 font-mono font-bold focus:outline-none focus:border-amber-500" placeholder="e.g. cohort_core">
+          </div>
+          <div>
+            <label class="block text-slate-400 font-semibold mb-1">Display Label:</label>
+            <input type="text" id="cohortInputLabel" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 font-bold focus:outline-none focus:border-amber-500" placeholder="e.g. Core / Balanced Cohort">
+          </div>
+        </div>
+
+        <div class="text-xs">
+          <label class="block text-slate-400 font-semibold mb-1">Cohort Persona Description:</label>
+          <input type="text" id="cohortInputDesc" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-slate-300 focus:outline-none focus:border-amber-500" placeholder="e.g. Standard players; starts calibrated and provides gentle pity on repeated fails...">
+        </div>
+      </div>
+
+      <!-- Dynamic Policies Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <!-- 1. Default Seed Policy -->
+        <div class="p-5 rounded-3xl bg-slate-900/40 border border-slate-800/80 shadow-md flex flex-col justify-between gap-4">
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center border border-blue-500/20">
+                <i data-lucide="play" class="w-4 h-4"></i>
+              </div>
+              <h4 class="text-sm font-bold text-white">Default Starting Seed</h4>
+            </div>
+            <p class="text-xs text-slate-400">Baseline variant delivered to the player on their first attempt at any stage.</p>
+          </div>
+
+          <div class="flex flex-col gap-2 text-xs">
+            <label class="flex items-center gap-3 p-3 rounded-2xl bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700">
+              <input type="radio" name="cohortDefaultSeed" value="frg" class="accent-emerald-500" onchange="updateCohortJsonPreview()">
+              <div>
+                <span class="font-bold text-emerald-300">frg (Forgiving)</span>
+                <p class="text-[11px] text-slate-400">+40% buffer moves; low friction comfort</p>
+              </div>
+            </label>
+
+            <label class="flex items-center gap-3 p-3 rounded-2xl bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700">
+              <input type="radio" name="cohortDefaultSeed" value="clb" class="accent-blue-500" checked onchange="updateCohortJsonPreview()">
+              <div>
+                <span class="font-bold text-blue-300">clb (Calibrated)</span>
+                <p class="text-[11px] text-slate-400">+25% standard buffer; fair engagement</p>
+              </div>
+            </label>
+
+            <label class="flex items-center gap-3 p-3 rounded-2xl bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700">
+              <input type="radio" name="cohortDefaultSeed" value="tgt" class="accent-amber-500" onchange="updateCohortJsonPreview()">
+              <div>
+                <span class="font-bold text-amber-300">tgt (Tight)</span>
+                <p class="text-[11px] text-slate-400">+12% mastery buffer; high friction</p>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- 2. Silent Pity Policy -->
+        <div class="p-5 rounded-3xl bg-slate-900/40 border border-slate-800/80 shadow-md flex flex-col justify-between gap-4">
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
+                <i data-lucide="shield-check" class="w-4 h-4"></i>
+              </div>
+              <h4 class="text-sm font-bold text-white">Silent Pity Mechanism</h4>
+            </div>
+            <p class="text-xs text-slate-400">Silently swaps to an easier seed variant after consecutive losses to prevent player churn.</p>
+          </div>
+
+          <div class="flex flex-col gap-3 text-xs">
+            <div>
+              <label class="block text-slate-400 font-semibold mb-1">Trigger after Loss Streak:</label>
+              <input type="number" id="cohortInputPityStreak" min="1" max="10" value="2" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono font-bold focus:outline-none focus:border-emerald-500" oninput="updateCohortJsonPreview()">
+              <span class="text-[11px] text-slate-500 mt-0.5 block">Activates when player fails N times on same stage</span>
+            </div>
+
+            <div>
+              <label class="block text-slate-400 font-semibold mb-1">Target Pity Seed:</label>
+              <select id="cohortSelectPitySeed" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-emerald-300 font-bold focus:outline-none focus:border-emerald-500" onchange="updateCohortJsonPreview()">
+                <option value="frg" selected>frg (Forgiving Seed)</option>
+                <option value="clb">clb (Calibrated Seed)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Win-Streak Mastery Challenge -->
+        <div class="p-5 rounded-3xl bg-slate-900/40 border border-slate-800/80 shadow-md flex flex-col justify-between gap-4">
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center border border-purple-500/20">
+                <i data-lucide="zap" class="w-4 h-4"></i>
+              </div>
+              <h4 class="text-sm font-bold text-white">Win-Streak Challenge</h4>
+            </div>
+            <p class="text-xs text-slate-400">Tests player mastery by elevating friction when they are on an exceptional win streak.</p>
+          </div>
+
+          <div class="flex flex-col gap-3 text-xs">
+            <div>
+              <label class="block text-slate-400 font-semibold mb-1">Trigger on Win Streak of:</label>
+              <input type="number" id="cohortInputWinStreak" min="1" max="999" value="6" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono font-bold focus:outline-none focus:border-purple-500" oninput="updateCohortJsonPreview()">
+              <span class="text-[11px] text-slate-500 mt-0.5 block">Set 999 to disable win-streak challenge</span>
+            </div>
+
+            <div>
+              <label class="block text-slate-400 font-semibold mb-1">Target Challenge Seed:</label>
+              <select id="cohortSelectChallengeSeed" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-purple-300 font-bold focus:outline-none focus:border-purple-500" onchange="updateCohortJsonPreview()">
+                <option value="tgt" selected>tgt (Tight Mastery Seed)</option>
+                <option value="clb">clb (Calibrated Seed)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Generated Policy JSON Inspection -->
+      <div class="p-5 rounded-3xl bg-slate-900/40 border border-slate-800/80 shadow-md flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <h4 class="text-xs font-bold text-slate-400 flex items-center gap-1.5">
+            <i data-lucide="file-code" class="w-3.5 h-3.5 text-amber-400"></i>
+            Live Cohort Policy JSON
+          </h4>
+          <span class="text-[11px] font-mono text-slate-500">Auto-updated on policy edit</span>
+        </div>
+        <pre id="cohortJsonPreview" class="p-4 rounded-2xl bg-slate-950 border border-slate-800 font-mono text-xs text-amber-300 overflow-x-auto max-h-48"></pre>
+      </div>
+
+    </div>
+
+    <!-- ======================================================================= -->
+    <!-- 🧪 PANEL D: LIVE RUNTIME SIMULATOR (STEP 6)                              -->
+    <!-- ======================================================================= -->
+    <div id="panel_simulator" class="hidden flex-col gap-6">
+      
+      <!-- Top Action & Description -->
+      <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-5 rounded-2xl bg-slate-900/70 border border-slate-800/80 shadow-md">
+        <div>
+          <div class="flex items-center gap-2.5">
+            <h2 class="text-xl font-black text-white tracking-tight flex items-center gap-2">
+              <i data-lucide="flask-conical" class="w-5 h-5 text-purple-400"></i>
+              Live Runtime Resolver Simulator
+            </h2>
+            <span class="text-xs px-2.5 py-0.5 rounded-full font-mono font-semibold bg-purple-500/15 text-purple-300 border border-purple-500/30">
+              Client Resolution Engine
+            </span>
+          </div>
+          <p class="text-xs text-slate-400 mt-1 max-w-2xl">
+            Simulate exact client-side runtime logic: matches Stage # to Journey Phase, resolves Archetype Batch, and evaluates Cohort DDA pity rules in real-time.
+          </p>
+        </div>
+
+        <!-- Quick Presets -->
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="text-xs font-bold text-slate-400">Presets:</span>
+          <button onclick="applySimPreset('onboarding')" class="px-2.5 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition">Stage 1 New</button>
+          <button onclick="applySimPreset('pity')" class="px-2.5 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-300 text-xs font-semibold border border-emerald-500/30 transition">Pity Swap</button>
+          <button onclick="applySimPreset('streak')" class="px-2.5 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-purple-300 text-xs font-semibold border border-purple-500/30 transition">Hot Streak</button>
+        </div>
+      </div>
+
+      <!-- Simulator Inputs & Interactive Controls -->
+      <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        
+        <!-- Controls Column (2 cols) -->
+        <div class="lg:col-span-2 p-5 sm:p-6 rounded-3xl bg-slate-900/40 border border-slate-800/80 shadow-md flex flex-col gap-4">
+          <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+            <i data-lucide="sliders-horizontal" class="w-4 h-4 text-purple-400"></i>
+            Simulation Parameters
+          </h3>
+
+          <!-- Stage Number Slider & Input -->
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-semibold text-slate-300">Stage Number:</span>
+              <span id="simDisplayStage" class="text-base font-black font-mono text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/30">1</span>
+            </div>
+            <input type="range" id="simSliderStage" min="1" max="200" value="1" class="w-full accent-purple-500 cursor-pointer" oninput="onSimInputChanged()">
+          </div>
+
+          <!-- Journey Selector -->
+          <div class="text-xs">
+            <label class="block font-semibold text-slate-400 mb-1">Active Journey:</label>
+            <select id="simSelectJourney" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-purple-500" onchange="onSimInputChanged()">
+              <!-- Dynamically populated -->
+            </select>
+          </div>
+
+          <!-- Cohort Selector -->
+          <div class="text-xs">
+            <label class="block font-semibold text-slate-400 mb-1">Player Cohort:</label>
+            <select id="simSelectCohort" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-purple-500" onchange="onSimInputChanged()">
+              <!-- Dynamically populated -->
+            </select>
+          </div>
+
+          <!-- Consecutive Fails Stepper -->
+          <div class="text-xs">
+            <div class="flex items-center justify-between mb-1">
+              <label class="font-semibold text-slate-400">Consecutive Losses on this Stage:</label>
+              <span id="simDisplayFails" class="font-mono font-bold text-emerald-400">0</span>
+            </div>
+            <input type="range" id="simSliderFails" min="0" max="6" value="0" class="w-full accent-emerald-500 cursor-pointer" oninput="onSimInputChanged()">
+          </div>
+
+          <!-- Win Streak Stepper -->
+          <div class="text-xs">
+            <div class="flex items-center justify-between mb-1">
+              <label class="font-semibold text-slate-400">Consecutive Win Streak:</label>
+              <span id="simDisplayWins" class="font-mono font-bold text-amber-400">0</span>
+            </div>
+            <input type="range" id="simSliderWins" min="0" max="10" value="0" class="w-full accent-amber-500 cursor-pointer" oninput="onSimInputChanged()">
+          </div>
+        </div>
+
+        <!-- Live Resolution Output Card (3 cols) -->
+        <div class="lg:col-span-3 p-5 sm:p-6 rounded-3xl bg-[#090d18] border border-purple-500/30 shadow-xl flex flex-col justify-between gap-5">
+          
+          <div class="flex flex-col gap-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span class="text-xs font-mono font-bold uppercase tracking-wider text-slate-300">Resolved Client Level Binary</span>
+              </div>
+              <span id="simPityStatusBadge" class="text-xs font-mono px-2.5 py-0.5 rounded-full font-bold bg-slate-800 text-slate-300 border border-slate-700">
+                Baseline Seed
+              </span>
+            </div>
+
+            <!-- Main File Resolution Display -->
+            <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 flex flex-col gap-2">
+              <span class="text-[10px] font-mono uppercase text-slate-500">Resolved Local Cache Binary Path:</span>
+              <div id="simResolvedPath" class="text-sm font-mono font-bold text-emerald-400 break-all select-all">
+                backend/games/blast/vault_v1/arc_linear/b01/l001_clb.bin
+              </div>
+            </div>
+
+            <!-- Granular Breakdown Details -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+              <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800/80">
+                <span class="text-slate-500 block text-[10px] font-medium">Matched Phase:</span>
+                <span id="simResPhaseName" class="font-bold text-white mt-0.5 block truncate">Linear Onboarding</span>
+              </div>
+              <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800/80">
+                <span class="text-slate-500 block text-[10px] font-medium">Archetype & Batch:</span>
+                <span id="simResArchBatch" class="font-bold text-blue-300 mt-0.5 block font-mono">arc_linear / b01</span>
+              </div>
+              <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800/80">
+                <span class="text-slate-500 block text-[10px] font-medium">Level Index:</span>
+                <span id="simResLevelFile" class="font-bold text-amber-300 mt-0.5 block font-mono">l001</span>
+              </div>
+              <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800/80">
+                <span class="text-slate-500 block text-[10px] font-medium">Applied Seed:</span>
+                <span id="simResSeedTag" class="font-bold text-emerald-300 mt-0.5 block font-mono">clb (Calibrated)</span>
+              </div>
+            </div>
+
+            <!-- Resolution Explanation / Narrative -->
+            <div id="simResolutionNarrative" class="p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-xs text-blue-200 leading-relaxed flex items-start gap-2.5">
+              <i data-lucide="info" class="w-4 h-4 mt-0.5 shrink-0 text-blue-400"></i>
+              <span id="simNarrativeText">
+                Stage 1 falls into Phase 1 (Stages 1-20). The player is assigned Calibrated seed (clb) as baseline policy.
+              </span>
+            </div>
+          </div>
+
+          <!-- Network & Cache Performance Stats -->
+          <div class="pt-3 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400 font-mono">
+            <div class="flex items-center gap-1.5 text-emerald-400">
+              <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
+              <span>FlatBuffer Ingestion: ~720 bytes</span>
+            </div>
+            <div class="flex items-center gap-1.5 text-blue-400">
+              <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+              <span>Resolution Time: &lt;0.1 ms</span>
+            </div>
+            <div class="flex items-center gap-1.5 text-purple-400">
+              <i data-lucide="hard-drive" class="w-3.5 h-3.5"></i>
+              <span>Offline Ready: Yes (Zero HTTP Lag)</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- 📦 EXPORT BATCH MODAL                                                     -->
+  <!-- ========================================================================= -->
+  <div id="modalExportBatch" onclick="if(event.target === this) closeExportModal()" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 cursor-pointer">
+    <div class="bg-[#0b101d] border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl flex flex-col gap-5">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
+            <i data-lucide="package-plus" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-white">Export Studio Levels as New Batch</h3>
+            <p class="text-[11px] text-slate-400">Compiles currently staged levels into write-once batch</p>
+          </div>
+        </div>
+        <button onclick="closeExportModal()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="flex flex-col gap-3.5 text-xs">
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">Target Archetype:</label>
+          <select id="exportSelectArchetype" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-emerald-500">
+            <option value="arc_sawtooth">Sawtooth Archetype (Dynamic Climax & Breathers)</option>
+            <option value="arc_linear">Linear Archetype (Monotonic Progression)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">Batch Label:</label>
+          <input type="text" id="exportInputLabel" placeholder="e.g. Expansion Pack 1 - Sawtooth Flow" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-emerald-500">
+        </div>
+
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">Description / Notes:</label>
+          <textarea id="exportInputDesc" rows="3" placeholder="Document the pacing curve or difficulty tuning of this batch..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-emerald-500"></textarea>
+        </div>
+
+        <div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[11px] flex items-start gap-2">
+          <i data-lucide="info" class="w-4 h-4 mt-0.5 shrink-0 text-amber-400"></i>
+          <span>This will create a new auto-incremented batch folder (e.g. <code class="font-mono font-bold">b02</code>) with complete 3-seed variants (<code class="font-mono">frg</code>, <code class="font-mono">clb</code>, <code class="font-mono">tgt</code>) and generate an immutable <code class="font-mono">batch_manifest.json</code>.</span>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-800">
+        <button onclick="closeExportModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition">
+          Cancel
+        </button>
+        <button id="btnSubmitExport" onclick="submitExportBatch()" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition flex items-center gap-1.5">
+          <i data-lucide="check" class="w-3.5 h-3.5"></i>
+          <span>Create & Freeze Batch</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 🔍 MANIFEST INSPECTOR MODAL                                               -->
+  <!-- ========================================================================= -->
+  <div id="modalInspectManifest" onclick="if(event.target === this) closeManifestModal()" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 cursor-pointer">
+    <div class="bg-[#0b101d] border border-slate-800 rounded-3xl max-w-2xl w-full p-6 shadow-2xl flex flex-col gap-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center border border-blue-500/20">
+            <i data-lucide="file-json" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h3 id="inspectManifestTitle" class="text-sm font-bold text-white">Batch Manifest</h3>
+            <p id="inspectManifestSubtitle" class="text-[11px] font-mono text-slate-400">batch_manifest.json</p>
+          </div>
+        </div>
+        <button onclick="closeManifestModal()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <pre id="inspectManifestContent" class="p-4 rounded-2xl bg-slate-950 border border-slate-800 font-mono text-xs text-emerald-400 overflow-x-auto max-h-96 select-all"></pre>
+
+      <div class="flex items-center justify-between pt-2 border-t border-slate-800">
+        <span class="text-[11px] text-slate-500 font-mono">Immutable Batch Contract</span>
+        <button onclick="copyManifestContent()" class="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition flex items-center gap-1.5">
+          <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+          <span id="labelCopyManifest">Copy JSON</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 📂 PROGRESSION MODULE CONTENTS & BATCH EXPLORER MODAL                     -->
+  <!-- ========================================================================= -->
+  <div id="modalModuleContents" onclick="if(event.target === this) closeModuleContentsModal()" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 cursor-pointer">
+    <div class="bg-[#0b101d] border border-slate-800 rounded-3xl max-w-4xl w-full max-h-[90vh] p-6 shadow-2xl flex flex-col gap-4">
+      <!-- Header -->
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20 shadow-sm">
+            <i data-lucide="folder-tree" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <h3 id="moduleContentsModalTitle" class="text-base font-bold text-white tracking-tight">Progression Module</h3>
+              <span id="moduleContentsModalBadge" class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 font-bold"></span>
+            </div>
+            <p id="moduleContentsModalPath" class="text-xs font-mono text-slate-400 mt-0.5 truncate max-w-xl"></p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="btnModalOpenFolder" onclick="openCurrentModalFolderInExplorer()" class="px-3 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center gap-1.5 transition shadow-sm cursor-pointer" title="Open this folder in Windows Explorer">
+            <i data-lucide="folder-open" class="w-3.5 h-3.5 text-emerald-400"></i>
+            <span>Open in Explorer</span>
+          </button>
+          <button onclick="copyCurrentModalPath()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition cursor-pointer" title="Copy Folder Path">
+            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+          </button>
+          <button onclick="closeModuleContentsModal()" class="text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-slate-800 transition cursor-pointer">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Filter / Search & Stats Bar -->
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 bg-slate-900/60 rounded-2xl border border-slate-800/80">
+        <div class="relative w-full sm:w-80">
+          <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5"></i>
+          <input type="text" id="moduleContentsSearch" oninput="filterModuleContentsFiles()" placeholder="Filter files (e.g. l001, manifest, .bin)..." class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500">
+        </div>
+        <div id="moduleContentsStats" class="flex items-center gap-3 text-xs font-mono text-slate-400 w-full sm:w-auto justify-end">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+      <!-- Scrollable Folder & File Tree Container -->
+      <div id="moduleContentsTreeContainer" class="overflow-y-auto max-h-[55vh] pr-1 flex flex-col gap-4">
+        <!-- Populated dynamically -->
+      </div>
+
+      <!-- Footer -->
+      <div class="flex items-center justify-between pt-3 border-t border-slate-800 text-xs text-slate-500">
+        <span class="flex items-center gap-1.5">
+          <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i>
+          <span>Verified Batch File Structure</span>
+        </span>
+        <button onclick="closeModuleContentsModal()" class="px-4 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition cursor-pointer">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 🛡️ BATCH HEALTH & INTEGRITY AUDIT MODAL                                     -->
+  <!-- ========================================================================= -->
+  <div id="modalBatchHealth" onclick="if(event.target === this) closeBatchHealthModal()" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 cursor-pointer">
+    <div class="bg-[#0b101d] border border-slate-800 rounded-3xl max-w-2xl w-full p-6 shadow-2xl flex flex-col gap-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-3">
+          <div id="healthModalIconContainer" class="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
+            <i data-lucide="shield-check" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="text-base font-bold text-white">Batch Health & Integrity Audit</h3>
+              <span id="healthModalBatchBadge" class="text-xs font-mono px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700"></span>
+            </div>
+            <p id="healthModalSubtitle" class="text-xs font-mono text-slate-400 mt-0.5">Auditing variant seeds and binary checksums...</p>
+          </div>
+        </div>
+        <button onclick="closeBatchHealthModal()" class="text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-slate-800 transition">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Health Status Banner -->
+      <div id="healthStatusBanner" class="p-4 rounded-2xl flex items-center gap-3">
+        <!-- Populated dynamically -->
+      </div>
+
+      <!-- Audit Metrics Grid -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+        <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800/80">
+          <div class="text-[10px] text-slate-400 font-semibold uppercase">Verified Levels</div>
+          <div id="healthMetricVerified" class="text-lg font-bold font-mono text-white mt-1">0</div>
+        </div>
+        <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800/80">
+          <div class="text-[10px] text-slate-400 font-semibold uppercase">Actual Files</div>
+          <div id="healthMetricActual" class="text-lg font-bold font-mono text-white mt-1">0</div>
+        </div>
+        <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800/80">
+          <div class="text-[10px] text-slate-400 font-semibold uppercase">Expected Files</div>
+          <div id="healthMetricExpected" class="text-lg font-bold font-mono text-white mt-1">0</div>
+        </div>
+        <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800/80">
+          <div class="text-[10px] text-slate-400 font-semibold uppercase">Missing / Corrupt</div>
+          <div id="healthMetricDiscrepancies" class="text-lg font-bold font-mono text-emerald-400 mt-1">0</div>
+        </div>
+      </div>
+
+      <!-- Details / Issues Container -->
+      <div id="healthDetailsContainer" class="p-3 bg-slate-950 rounded-2xl border border-slate-800 max-h-48 overflow-y-auto text-xs font-mono">
+        <!-- Populated dynamically -->
+      </div>
+
+      <div class="flex items-center justify-between pt-2 border-t border-slate-800">
+        <span class="text-xs text-slate-500 font-mono">Immutable Content Protection</span>
+        <button onclick="closeBatchHealthModal()" class="px-4 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 🎮 LEVEL GRID & GOALS PREVIEW MODAL (2-COLUMN SPLIT LAYOUT)                -->
+  <!-- ========================================================================= -->
+  <div id="modalLevelPreview" onclick="if(event.target === this) closeLevelPreviewModal()" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-4 cursor-pointer">
+    <div class="bg-[#0b101d] border border-slate-800 rounded-3xl max-w-6xl w-full p-4 sm:p-5 shadow-2xl flex flex-col gap-3 max-h-[96vh] cursor-default" onclick="event.stopPropagation()">
+      <!-- Header -->
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-2xl bg-purple-500/10 text-purple-400 flex items-center justify-center border border-purple-500/20 shadow-sm shrink-0">
+            <i data-lucide="layout-grid" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <h3 id="previewModalTitle" class="text-base font-bold text-white tracking-tight">Level Board Preview</h3>
+              <span id="previewModalTierBadge" class="text-xs font-mono px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-300 border border-purple-500/30 font-bold">Tier 1</span>
+            </div>
+            <p id="previewModalSubtitle" class="text-[11px] font-mono text-slate-400 mt-0.5">l001_clb.json</p>
+          </div>
+        </div>
+
+        <!-- Editable Level Navigation (Prev, Jump Input on Enter, Next) & Controls -->
+        <div class="flex items-center gap-1.5 sm:gap-2">
+          <!-- Flip Layout Columns Button -->
+          <button onclick="togglePreviewSplitLayout()" class="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-semibold flex items-center gap-1 transition cursor-pointer" title="Flip columns: Board Left / Board Right">
+            <i data-lucide="arrow-left-right" class="w-3.5 h-3.5"></i>
+          </button>
+
+          <button onclick="navigatePreviewLevel(-1)" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition flex items-center gap-1 cursor-pointer" title="Previous Level">
+            <i data-lucide="chevron-left" class="w-4 h-4"></i> Prev
+          </button>
+          
+          <!-- Jump to Level Input -->
+          <div class="flex items-center gap-1.5 bg-slate-900 border border-slate-700/80 rounded-xl px-2 py-1 shadow-inner" title="Type a level number and press ENTER to jump">
+            <span class="text-xs font-mono text-slate-400 font-semibold">Level</span>
+            <input type="number" 
+                   id="previewLevelInput" 
+                   min="1" 
+                   max="200" 
+                   value="1" 
+                   onkeydown="if(event.key==='Enter') jumpToPreviewLevelNumber(this.value)"
+                   onblur="jumpToPreviewLevelNumber(this.value)"
+                   class="w-14 bg-slate-950 border border-slate-700/80 rounded-lg px-1.5 py-0.5 text-center font-mono font-bold text-white text-xs focus:outline-none focus:border-purple-400">
+            <span id="previewLevelTotalLabel" class="text-xs font-mono text-slate-500">/ 200</span>
+          </div>
+
+          <button onclick="navigatePreviewLevel(1)" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition flex items-center gap-1 cursor-pointer" title="Next Level">
+            Next <i data-lucide="chevron-right" class="w-4 h-4"></i>
+          </button>
+
+          <!-- Play Level in HTML Button -->
+          <button onclick="openPlayTestLevel()" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-emerald-950/40 cursor-pointer" title="Playtest this specific level in HTML engine without Unity">
+            <i data-lucide="play" class="w-3.5 h-3.5 fill-current"></i> Play Level
+          </button>
+
+          <button onclick="closeLevelPreviewModal()" class="text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-slate-800 transition ml-1 cursor-pointer">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Main 2-Column Split: Left Side = Whole Board & Arsenal Preview; Right Side = UI Elements & Pacing Curve -->
+      <div id="previewSplitColumnsContainer" class="flex flex-col lg:flex-row items-start gap-4 overflow-y-auto max-h-[84vh] pr-1">
+        
+        <!-- LEFT COLUMN: COMPLETE GAME BOARD & ARSENAL VIEW -->
+        <div class="flex-1 lg:w-7/12 flex flex-col gap-3.5 p-4 rounded-3xl bg-[#070a13] border border-slate-800/90 shadow-inner h-fit w-full">
+          
+          <!-- Enemy Board Area -->
+          <div class="flex flex-col items-center gap-2">
+            <div class="w-full flex items-center justify-between px-2 text-xs font-mono">
+              <span class="text-slate-400 font-semibold flex items-center gap-1.5">
+                <i data-lucide="grid" class="w-3.5 h-3.5 text-purple-400"></i>
+                <span id="labelEnemyBoardTitle">Enemy Target Board</span>
+              </span>
+              <span id="previewBoardDimensions" class="text-slate-500">9x11 (99 Blocks)</span>
+            </div>
+
+            <!-- Board Grid -->
+            <div id="previewBoardGrid" class="flex flex-col items-center gap-1 select-none py-1 overflow-x-auto max-w-full">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+
+          <!-- Player Arsenal Columns Area (Directly below board, exact game view) -->
+          <div id="previewArsenalArea" class="pt-3.5 pb-2 border-t border-slate-800/80 flex flex-col items-center gap-2.5 w-full">
+            <div class="w-full flex items-center justify-between px-2 text-xs font-mono">
+              <span class="text-slate-400 font-semibold flex items-center gap-1.5">
+                <i data-lucide="layers" class="w-3.5 h-3.5 text-emerald-400"></i>
+                <span>Player Arsenal Dispatch Columns</span>
+              </span>
+              <span id="previewArsenalSummaryBadge" class="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                5 Columns
+              </span>
+            </div>
+
+            <div id="previewArsenalColumns" class="flex items-start justify-center gap-2.5 overflow-x-auto max-w-full pb-2 px-1">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT COLUMN: UI ELEMENTS, SEED SWITCHER, CURVES & ECONOMY -->
+        <div class="w-full lg:w-5/12 flex flex-col gap-3 h-fit">
+          
+          <!-- 1. Seed Variant Switcher Card -->
+          <div class="p-3 bg-slate-900/60 rounded-2xl border border-slate-800 flex flex-col gap-2 shadow-sm">
+            <span class="text-xs font-mono text-slate-400 font-semibold">Difficulty Seed Variant</span>
+            <div class="grid grid-cols-3 gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800 text-center">
+              <button id="previewSeedBtn_clb" onclick="switchPreviewSeed('clb')" class="py-1.5 px-2 rounded-lg text-xs font-bold transition bg-blue-600 text-white cursor-pointer truncate">CLB (Calibrated)</button>
+              <button id="previewSeedBtn_frg" onclick="switchPreviewSeed('frg')" class="py-1.5 px-2 rounded-lg text-xs font-bold transition text-slate-400 hover:text-slate-200 cursor-pointer truncate">FRG (Forgiving)</button>
+              <button id="previewSeedBtn_tgt" onclick="switchPreviewSeed('tgt')" class="py-1.5 px-2 rounded-lg text-xs font-bold transition text-slate-400 hover:text-slate-200 cursor-pointer truncate">TGT (Tight)</button>
+            </div>
+          </div>
+
+          <!-- 2. Level Goals & Obstacles Card -->
+          <div class="p-3 bg-slate-900/60 rounded-2xl border border-slate-800 flex flex-col gap-2 shadow-sm">
+            <div class="flex items-center justify-between text-xs font-mono">
+              <span class="text-slate-400 font-semibold">Objectives & Obstacles</span>
+              <span id="previewGoalClearPct" class="text-emerald-400 font-bold">100% Clear</span>
+            </div>
+
+            <div id="previewObstaclesSummaryGrid" class="grid grid-cols-3 gap-1.5 text-center text-xs font-mono">
+              <!-- Dynamic Obstacle badges -->
+            </div>
+          </div>
+
+          <!-- 3. Level Pacing Curve Card -->
+          <div class="p-3 bg-slate-900/60 rounded-2xl border border-slate-800 flex flex-col gap-2 shadow-sm">
+            <div class="flex items-center justify-between text-xs font-mono">
+              <span class="text-slate-400 font-semibold">Progression Pacing Curve</span>
+              <span id="previewCurvePhaseBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-300 border border-purple-500/30">
+                Pacing Position
+              </span>
+            </div>
+
+            <!-- Dynamic SVG Curve with Pinpoint Marker for Current Level -->
+            <div id="previewLevelCurveSvgContainer" class="w-full h-12 bg-slate-950/80 rounded-xl border border-slate-800/90 overflow-hidden relative cursor-pointer" title="Level Pacing Curve: Click anywhere on curve to jump to that level">
+              <!-- Rendered dynamically -->
+            </div>
+            
+            <div class="flex items-center justify-between text-[11px] font-mono text-slate-400">
+              <span id="previewCurveMetricText">Level 180 of 200 (90%)</span>
+              <span class="text-slate-500 text-[10px]">Click curve to jump</span>
+            </div>
+          </div>
+
+          <!-- 4. Ammo Economy & Solvability Meter Card -->
+          <div class="p-3 bg-slate-900/60 rounded-2xl border border-slate-800 flex flex-col gap-2 shadow-sm">
+            <div class="flex items-center justify-between text-xs font-mono">
+              <span class="text-slate-400 font-semibold">Ammo Economy Balance</span>
+              <div id="previewAmmoBufferBadge" class="flex items-center gap-1.5 text-[11px] font-bold text-emerald-400">
+                <!-- +185% Buffer -->
+              </div>
+            </div>
+
+            <!-- Economy Bar -->
+            <div class="w-full h-2 rounded-full bg-slate-950 overflow-hidden flex border border-slate-800">
+              <div id="previewBarEnemyHp" class="h-full bg-rose-500 transition-all duration-300" style="width: 45%;" title="Enemy Blocks HP"></div>
+              <div id="previewBarBufferAmmo" class="h-full bg-emerald-500 transition-all duration-300" style="width: 55%;" title="Ammo Buffer"></div>
+            </div>
+
+            <div class="flex items-center justify-between text-[11px] font-mono">
+              <span class="text-rose-400 flex items-center gap-1">
+                <span class="w-2 h-2 rounded-full bg-rose-500 inline-block"></span>
+                <span id="previewEnemyHpText">107 HP Target</span>
+              </span>
+              <span class="text-emerald-400 flex items-center gap-1">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
+                <span id="previewPlayerAmmoText">305 Ammo Buffer</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- 5. Footer Quick Info -->
+          <div class="flex items-center justify-between text-[11px] font-mono text-slate-500 px-1 pt-0.5">
+            <span id="previewFileInfoText">B01 • l180_clb.json</span>
+            <div class="flex items-center gap-2">
+              <button onclick="openPlayTestLevel()" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer" title="Playtest this level">
+                <i data-lucide="play" class="w-3.5 h-3.5 fill-current"></i> Play Level
+              </button>
+              <button onclick="closeLevelPreviewModal()" class="px-4 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition cursor-pointer">
+                Close
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- ✏️ EDIT BATCH METADATA MODAL                                               -->
+  <!-- ========================================================================= -->
+  <div id="modalEditBatch" onclick="if(event.target === this) closeEditBatchModal()" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 cursor-pointer">
+    <div class="bg-[#0b101d] border border-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl flex flex-col gap-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center border border-amber-500/20">
+            <i data-lucide="pencil" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-white">Edit Batch Metadata</h3>
+            <p id="editBatchSubtitle" class="text-[11px] font-mono text-slate-400">Mutable Draft Only</p>
+          </div>
+        </div>
+        <button onclick="closeEditBatchModal()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="flex flex-col gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Batch Label</label>
+          <input type="text" id="editBatchInputLabel" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Description</label>
+          <textarea id="editBatchInputDescription" rows="3" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 resize-none"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Tags (Comma-separated)</label>
+          <input type="text" id="editBatchInputTags" placeholder="e.g. season1, experimental, ab_test_b" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500">
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+        <button onclick="closeEditBatchModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition">
+          Cancel
+        </button>
+        <button onclick="submitEditBatchMetadata()" class="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold transition flex items-center gap-1.5">
+          <i data-lucide="check" class="w-3.5 h-3.5"></i>
+          <span>Save Changes</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 📋 CLONE BATCH CONFIRMATION MODAL                                          -->
+  <!-- ========================================================================= -->
+  <div id="modalCloneBatch" onclick="if(event.target === this) closeCloneBatchModal()" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 cursor-pointer">
+    <div class="bg-[#0b101d] border border-teal-500/30 rounded-3xl max-w-md w-full p-6 shadow-2xl flex flex-col gap-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-teal-500/10 text-teal-400 flex items-center justify-center border border-teal-500/20">
+            <i data-lucide="copy-plus" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-white">Clone Batch as Mutable Draft</h3>
+            <p id="cloneBatchSubtitle" class="text-[11px] font-mono text-slate-400">Fork into new sequential batch</p>
+          </div>
+        </div>
+        <button onclick="closeCloneBatchModal()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="p-3 rounded-2xl bg-slate-900/60 border border-slate-800 text-xs text-slate-300 leading-relaxed">
+        Copies all level variants, binary files, and manifests into a new unlocked batch folder. Ideal for balancing experiments or seasonal variants.
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-slate-300 mb-1">New Batch Label</label>
+        <input type="text" id="cloneBatchInputLabel" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-teal-500">
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+        <button onclick="closeCloneBatchModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition">
+          Cancel
+        </button>
+        <button id="btnSubmitCloneBatch" onclick="submitCloneBatch()" class="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-teal-500/20">
+          <i data-lucide="copy-plus" class="w-3.5 h-3.5"></i>
+          <span>Create Clone</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 🗑️ DELETE BATCH CONFIRMATION MODAL                                        -->
+  <!-- ========================================================================= -->
+  <div id="modalDeleteBatch" onclick="if(event.target === this) closeDeleteBatchModal()" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 cursor-pointer">
+    <div class="bg-[#0b101d] border border-rose-900/50 rounded-3xl max-w-md w-full p-6 shadow-2xl flex flex-col gap-5">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-rose-500/10 text-rose-400 flex items-center justify-center border border-rose-500/20">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-white">Delete Batch</h3>
+            <p id="deleteBatchSubtitle" class="text-[11px] font-mono text-slate-400">arc_sawtooth / b02</p>
+          </div>
+        </div>
+        <button onclick="closeDeleteBatchModal()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="flex flex-col gap-3 text-xs text-slate-300">
+        <p>
+          Are you sure you want to permanently delete <strong id="deleteBatchTargetName" class="text-white font-mono">B02</strong> from <strong id="deleteBatchTargetArch" class="text-amber-300 font-mono">arc_sawtooth</strong>?
+        </p>
+        <div class="p-3 rounded-xl bg-rose-950/40 border border-rose-500/30 text-rose-300 text-[11px] flex items-start gap-2">
+          <i data-lucide="alert-triangle" class="w-4 h-4 mt-0.5 shrink-0 text-rose-400"></i>
+          <span>This action is <strong>irreversible</strong>. The batch folder, all variant binaries (<code class="font-mono">frg</code>, <code class="font-mono">clb</code>, <code class="font-mono">tgt</code>), and <code class="font-mono">batch_manifest.json</code> will be deleted from disk.</span>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-800">
+        <button onclick="closeDeleteBatchModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition">
+          Cancel
+        </button>
+        <button id="btnConfirmDeleteBatch" onclick="confirmDeleteBatchAction()" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-lg shadow-rose-950/50">
+          <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+          <span>Delete Batch</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- ========================================================================= -->
+  <!-- ⚙️ DASHBOARD JAVASCRIPT CONTROLLER                                       -->
+  <!-- ========================================================================= -->
+  <script>
+    let activeDashboardTab = 'vault';
+    let currentDashboardGame = 'blast';
+    let currentDashboardVault = 'vault_v1';
+    let currentOverviewData = null;
+
+    // Active working state for editors
+    let workingJourney = null;
+    let workingCohort = null;
+
+    // Toast utility
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+      const toast = document.createElement('div');
+      const isErr = type === 'error';
+      toast.className = `px-4 py-2.5 rounded-xl text-xs font-semibold shadow-xl border pointer-events-auto flex items-center gap-2 transform transition-all duration-300 translate-y-2 opacity-0 ${
+        isErr 
+          ? 'bg-rose-950/90 border-rose-500/40 text-rose-200' 
+          : 'bg-emerald-950/90 border-emerald-500/40 text-emerald-200'
+      }`;
+      toast.innerHTML = `<i data-lucide="${isErr ? 'alert-triangle' : 'check-circle'}" class="w-4 h-4"></i><span>${message}</span>`;
+      container.appendChild(toast);
+      lucide.createIcons();
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+
+    // =========================================================================
+    // 📂 PROGRESSION MODULE CONTENTS & FOLDER CONTROLLER
+    // =========================================================================
+    let currentModalContentsArchId = null;
+    let currentModalContentsData = null;
+    let currentModalContentsPath = '';
+
+    function formatModuleName(archId, defaultName) {
+      if (!archId) return defaultName || '';
+      const raw = archId.replace(/^arc_/, '');
+      if (raw.toLowerCase() === 'royalrush') return 'RoyalRush';
+      if (raw.toLowerCase() === 'sawtooth') return 'Sawtooth';
+      if (raw.toLowerCase() === 'linear') return 'Linear';
+      return defaultName || raw.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    }
+
+    function formatBytes(bytes) {
+      if (!bytes || bytes <= 0) return '0 B';
+      const k = 1024;
+      const sizes = ['B', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    }
+
+    async function openModuleFolder(archId, batchId = '') {
+      try {
+        const query = new URLSearchParams({
+          game: currentDashboardGame,
+          vault: currentDashboardVault,
+          archetype: archId || '',
+          batch: batchId || ''
+        });
+        const res = await fetch(`/api/dashboard/open-folder?${query.toString()}`);
+        const result = await res.json();
+        if (!result.success) throw new Error(result.error || 'Failed to open folder');
+        const targetLabel = batchId ? `${archId}/${batchId}` : archId;
+        showToast(`Opened folder in File Explorer: ${result.path || targetLabel}`);
+      } catch (err) {
+        console.error('Error opening folder:', err);
+        showToast('Open folder failed: ' + err.message, 'error');
+      }
+    }
+
+    function openCurrentModalFolderInExplorer() {
+      if (currentModalContentsArchId) {
+        openModuleFolder(currentModalContentsArchId);
+      }
+    }
+
+    function copyCurrentModalPath() {
+      if (currentModalContentsPath) {
+        navigator.clipboard.writeText(currentModalContentsPath);
+        showToast('Folder path copied to clipboard!');
+      }
+    }
+
+    async function openModuleContentsModal(archId, moduleDisplayName) {
+      currentModalContentsArchId = archId;
+      const displayName = moduleDisplayName || formatModuleName(archId, archId);
+      
+      const modal = document.getElementById('modalModuleContents');
+      const titleEl = document.getElementById('moduleContentsModalTitle');
+      const badgeEl = document.getElementById('moduleContentsModalBadge');
+      const pathEl = document.getElementById('moduleContentsModalPath');
+      const container = document.getElementById('moduleContentsTreeContainer');
+      const searchInput = document.getElementById('moduleContentsSearch');
+      if (searchInput) searchInput.value = '';
+
+      if (titleEl) titleEl.textContent = `Progression Module - ${displayName}`;
+      if (badgeEl) badgeEl.textContent = archId;
+      
+      const defaultPath = `backend/games/${currentDashboardGame}/${currentDashboardVault}/${archId}/`;
+      currentModalContentsPath = defaultPath;
+      if (pathEl) pathEl.textContent = defaultPath;
+
+      if (container) {
+        container.innerHTML = `
+          <div class="p-12 text-center text-slate-400 flex flex-col items-center justify-center gap-2">
+            <div class="w-8 h-8 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin"></div>
+            <span class="text-xs">Loading batch folders and file hierarchy...</span>
+          </div>
+        `;
+      }
+
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        lucide.createIcons();
+      }
+
+      try {
+        const res = await fetch(`/api/dashboard/archetype-contents?game=${encodeURIComponent(currentDashboardGame)}&vault=${encodeURIComponent(currentDashboardVault)}&archetype=${encodeURIComponent(archId)}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Failed to fetch contents');
+
+        currentModalContentsData = data;
+        if (data.folderPath) {
+          currentModalContentsPath = data.folderPath;
+          if (pathEl) pathEl.textContent = data.folderPath;
+        }
+        renderModuleContentsTree(data);
+      } catch (err) {
+        console.warn('Detailed API fetch failed, falling back to overview cache:', err);
+        // Fallback using currentOverviewData
+        const fallbackArch = (currentOverviewData?.archetypes || []).find(a => a.archetypeId === archId);
+        if (fallbackArch) {
+          const fallbackData = {
+            archetypeId: archId,
+            archetypeName: fallbackArch.archetypeName,
+            folderPath: defaultPath,
+            batches: (fallbackArch.batches || []).map(b => ({
+              batchId: b.batchId,
+              label: b.label || b.batchId.toUpperCase(),
+              description: b.description || '',
+              isLocked: b.isLocked,
+              levelCount: b.levelCount || 0,
+              manifest: b.manifest || {},
+              fileCount: b.fileCount || (b.levelCount * 3 + 1),
+              totalBytes: 0,
+              files: []
+            }))
+          };
+          currentModalContentsData = fallbackData;
+          renderModuleContentsTree(fallbackData);
+        } else {
+          if (container) {
+            container.innerHTML = `
+              <div class="p-8 text-center text-rose-400 bg-rose-950/20 border border-rose-900/40 rounded-2xl text-xs">
+                Failed to load batch contents: ${escapeHtml(err.message)}
+              </div>
+            `;
+          }
+        }
+      }
+    }
+
+    function closeModuleContentsModal() {
+      const modal = document.getElementById('modalModuleContents');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+      currentModalContentsArchId = null;
+      currentModalContentsData = null;
+    }
+
+    function renderModuleContentsTree(data) {
+      const container = document.getElementById('moduleContentsTreeContainer');
+      const statsEl = document.getElementById('moduleContentsStats');
+      if (!container) return;
+
+      const batches = data.batches || [];
+      let totalFiles = 0;
+      let totalBytes = 0;
+      let totalLevels = 0;
+
+      batches.forEach(b => {
+        totalFiles += (b.fileCount || 0);
+        totalBytes += (b.totalBytes || 0);
+        totalLevels += (b.levelCount || 0);
+      });
+
+      if (statsEl) {
+        statsEl.innerHTML = `
+          <span>Batches: <strong class="text-white">${batches.length}</strong></span>
+          <span class="text-slate-600">|</span>
+          <span>Levels: <strong class="text-white">${totalLevels}</strong></span>
+          <span class="text-slate-600">|</span>
+          <span>Files: <strong class="text-white">${totalFiles}</strong></span>
+          ${totalBytes > 0 ? `<span class="text-slate-600">|</span><span>Size: <strong class="text-emerald-400">${formatBytes(totalBytes)}</strong></span>` : ''}
+        `;
+      }
+
+      if (batches.length === 0) {
+        container.innerHTML = `
+          <div class="p-8 text-center text-slate-500 bg-slate-900/30 rounded-2xl border border-slate-800 text-xs">
+            No batch folders exist in this module yet.
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      const query = (document.getElementById('moduleContentsSearch')?.value || '').trim().toLowerCase();
+
+      let html = '';
+      batches.forEach(batch => {
+        const isLocked = batch.isLocked;
+        const files = batch.files || [];
+        const filteredFiles = query 
+          ? files.filter(f => f.name.toLowerCase().includes(query) || f.ext.includes(query))
+          : files;
+
+        const manifestStr = JSON.stringify(batch.manifest || {}, null, 2);
+
+        html += `
+          <div class="p-4 rounded-2xl bg-[#090d18] border border-slate-800 shadow-sm flex flex-col gap-3">
+            <!-- Batch Header Row -->
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 pb-2.5 border-b border-slate-800/70">
+              <div class="flex items-center gap-2.5">
+                <div class="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
+                  <i data-lucide="folder" class="w-3.5 h-3.5"></i>
+                </div>
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="px-2 py-0.5 rounded-lg bg-slate-800 font-mono font-black text-xs text-white border border-slate-700">
+                    ${escapeHtml(batch.batchId.toUpperCase())}
+                  </span>
+                  <span class="text-xs font-bold text-slate-200">${escapeHtml(batch.label || batch.batchId)}</span>
+                  <span class="text-[10px] font-mono px-2 py-0.2 rounded-full border ${isLocked ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' : 'bg-amber-500/15 text-amber-300 border-amber-500/30'}">
+                    ${isLocked ? 'LOCKED' : 'MUTABLE'}
+                  </span>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] font-mono text-slate-400 bg-slate-900 px-2 py-1 rounded-lg border border-slate-800">
+                  ${batch.fileCount || filteredFiles.length} files (${batch.levelCount} levels)
+                </span>
+                <button onclick="openModuleFolder('${escapeHtml(data.archetypeId)}', '${escapeHtml(batch.batchId)}')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-emerald-500/20 text-slate-300 hover:text-emerald-300 border border-slate-700 hover:border-emerald-500/40 text-xs font-semibold flex items-center gap-1 transition shadow-sm cursor-pointer" title="Open this batch folder in File Explorer">
+                  <i data-lucide="folder-open" class="w-3 h-3 text-emerald-400"></i>
+                  <span>Open Folder</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Batch Files List -->
+            <div class="flex flex-col gap-1.5 font-mono text-xs">
+              <!-- Manifest File Entry -->
+              <div class="p-2 rounded-xl bg-slate-900/60 border border-slate-800/80 flex items-center justify-between gap-2 hover:bg-slate-900 transition">
+                <div class="flex items-center gap-2 truncate">
+                  <i data-lucide="file-json" class="w-3.5 h-3.5 text-blue-400 shrink-0"></i>
+                  <span class="text-blue-300 font-semibold truncate">batch_manifest.json</span>
+                  <span class="text-[10px] text-slate-500 px-1.5 py-0.2 rounded bg-slate-800">MANIFEST</span>
+                </div>
+                <button onclick='inspectManifest("${escapeHtml(data.archetypeId)}", "${escapeHtml(batch.batchId)}", ${JSON.stringify(manifestStr)})' class="px-2 py-0.5 rounded-lg bg-blue-500/15 hover:bg-blue-500/25 text-blue-300 border border-blue-500/30 text-[11px] font-semibold transition shrink-0 cursor-pointer">
+                  Preview JSON
+                </button>
+              </div>
+        `;
+
+        if (files.length > 0) {
+          const displayLimit = query ? 200 : 40;
+          const visibleFiles = filteredFiles.filter(f => f.name !== 'batch_manifest.json').slice(0, displayLimit);
+          const remainingCount = Math.max(0, filteredFiles.length - visibleFiles.length - 1);
+
+          html += `
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-1.5 mt-1 max-h-64 overflow-y-auto pr-1">
+          `;
+
+          visibleFiles.forEach(f => {
+            const isBin = f.ext === 'bin';
+            const seedBadge = f.name.includes('_clb') ? 'bg-blue-500/15 text-blue-300' :
+                              f.name.includes('_frg') ? 'bg-emerald-500/15 text-emerald-300' :
+                              f.name.includes('_tgt') ? 'bg-amber-500/15 text-amber-300' : 'bg-slate-800 text-slate-400';
+            const seedLabel = f.name.includes('_clb') ? 'CLB' :
+                              f.name.includes('_frg') ? 'FRG' :
+                              f.name.includes('_tgt') ? 'TGT' : f.ext.toUpperCase();
+
+            html += `
+              <div class="p-2 rounded-xl bg-slate-950/70 border border-slate-800/60 flex items-center justify-between gap-1.5 text-[11px] hover:border-slate-700 transition">
+                <div class="flex items-center gap-1.5 truncate">
+                  <i data-lucide="${isBin ? 'binary' : 'file-code'}" class="w-3 h-3 ${isBin ? 'text-purple-400' : 'text-emerald-400'} shrink-0"></i>
+                  <span class="text-slate-300 truncate" title="${escapeHtml(f.name)}">${escapeHtml(f.name)}</span>
+                </div>
+                <div class="flex items-center gap-1 shrink-0">
+                  ${!isBin ? `
+                    <button onclick="previewLevelFile('${escapeHtml(data.archetypeId)}', '${escapeHtml(batch.batchId)}', '${escapeHtml(f.name)}')" class="p-0.5 rounded hover:bg-purple-500/20 text-slate-400 hover:text-purple-300 transition" title="Preview this level grid">
+                      <i data-lucide="eye" class="w-3 h-3"></i>
+                    </button>
+                  ` : ''}
+                  <span class="text-[9px] font-bold px-1 py-0.2 rounded ${seedBadge}">${seedLabel}</span>
+                  <span class="text-[9px] text-slate-500">${formatBytes(f.size)}</span>
+                </div>
+              </div>
+            `;
+          });
+
+          html += `</div>`;
+
+          if (remainingCount > 0) {
+            html += `
+              <div class="text-center text-[11px] text-slate-500 py-1 bg-slate-900/30 rounded-xl border border-dashed border-slate-800/80">
+                + ${remainingCount} additional level files in this batch (use search above to filter, or click Open Folder)
+              </div>
+            `;
+          }
+        } else {
+          html += `
+            <div class="p-3 text-center text-[11px] text-slate-500 bg-slate-900/30 rounded-xl">
+              Contains ${batch.levelCount * 3} variant level files (.bin & .json) across frg / clb / tgt seeds.
+            </div>
+          `;
+        }
+
+        html += `
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+      lucide.createIcons();
+    }
+
+    function filterModuleContentsFiles() {
+      if (currentModalContentsData) {
+        renderModuleContentsTree(currentModalContentsData);
+      }
+    }
+
+
+    // =========================================================================
+    // 📈 PROGRESSION CURVE SPARKLINE RENDERER (FEATURE 3)
+    // =========================================================================
+    function renderSparkline(archId) {
+      const id = (archId || '').toLowerCase();
+      if (id.includes('sawtooth')) {
+        return `
+          <div class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-300 text-[11px] font-mono shadow-sm" title="Sawtooth Wave: Climax & Breather periodic spikes">
+            <svg class="w-16 h-4" viewBox="0 0 80 20" fill="none">
+              <path d="M 0 16 L 20 4 L 21 16 L 40 4 L 41 16 L 60 4 L 61 16 L 80 4" stroke="#f59e0b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="text-[10px] font-bold">Sawtooth</span>
+          </div>
+        `;
+      } else if (id.includes('royal') || id.includes('rush')) {
+        return `
+          <div class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-purple-500/10 border border-purple-500/25 text-purple-300 text-[11px] font-mono shadow-sm" title="Royal Rush: Rapid burst dopamine ladder">
+            <svg class="w-16 h-4" viewBox="0 0 80 20" fill="none">
+              <path d="M 0 16 L 15 16 L 25 10 L 40 10 L 50 4 L 65 4 L 80 2" stroke="#c084fc" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="text-[10px] font-bold">RoyalRush</span>
+          </div>
+        `;
+      } else {
+        return `
+          <div class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-blue-500/10 border border-blue-500/25 text-blue-300 text-[11px] font-mono shadow-sm" title="Linear Ramp: Monotonic difficulty pacing">
+            <svg class="w-16 h-4" viewBox="0 0 80 20" fill="none">
+              <path d="M 0 17 C 25 16, 50 10, 80 3" stroke="#60a5fa" stroke-width="2.2" stroke-linecap="round"/>
+            </svg>
+            <span class="text-[10px] font-bold">Linear</span>
+          </div>
+        `;
+      }
+    }
+
+    // =========================================================================
+    // 🔎 BATCH FILTER & SEARCH BAR (FEATURE 7)
+    // =========================================================================
+    const moduleBatchFilterStates = {};
+
+    function setBatchFilterState(archId, state) {
+      moduleBatchFilterStates[archId] = state;
+      const states = ['ALL', 'LOCKED', 'MUTABLE'];
+      states.forEach(s => {
+        const btn = document.getElementById(`filterBtn_${archId}_${s}`);
+        if (btn) {
+          if (s === state) {
+            btn.className = 'px-2.5 py-1 rounded-lg text-[11px] font-bold transition bg-slate-800 text-white';
+          } else {
+            btn.className = 'px-2.5 py-1 rounded-lg text-[11px] font-bold transition text-slate-400 hover:text-slate-200';
+          }
+        }
+      });
+      filterBatchesForModule(archId);
+    }
+
+    function filterBatchesForModule(archId) {
+      const searchInput = document.getElementById(`batchSearch_${archId}`);
+      const query = (searchInput?.value || '').trim().toLowerCase();
+      const statusFilter = moduleBatchFilterStates[archId] || 'ALL';
+
+      const cards = document.querySelectorAll(`.batch-card-${archId}`);
+      let visibleCount = 0;
+
+      cards.forEach(card => {
+        const batchId = card.getAttribute('data-batch-id') || '';
+        const batchLabel = card.getAttribute('data-batch-label') || '';
+        const isLocked = card.getAttribute('data-batch-locked') === 'true';
+
+        const matchesQuery = !query || batchId.includes(query) || batchLabel.includes(query);
+        const matchesStatus = (statusFilter === 'ALL') || 
+                              (statusFilter === 'LOCKED' && isLocked) || 
+                              (statusFilter === 'MUTABLE' && !isLocked);
+
+        if (matchesQuery && matchesStatus) {
+          card.classList.remove('hidden');
+          visibleCount++;
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+
+      const badge = document.getElementById(`batchCountBadge_${archId}`);
+      if (badge) {
+        badge.textContent = `${visibleCount} of ${cards.length} shown`;
+      }
+    }
+
+    // =========================================================================
+    // 🛡️ BATCH HEALTH & INTEGRITY AUDIT (FEATURE 1)
+    // =========================================================================
+    async function auditBatchHealth(archId, batchId) {
+      const modal = document.getElementById('modalBatchHealth');
+      const badge = document.getElementById('healthModalBatchBadge');
+      const subtitle = document.getElementById('healthModalSubtitle');
+      const banner = document.getElementById('healthStatusBanner');
+      const metricVerified = document.getElementById('healthMetricVerified');
+      const metricActual = document.getElementById('healthMetricActual');
+      const metricExpected = document.getElementById('healthMetricExpected');
+      const metricDiscrepancies = document.getElementById('healthMetricDiscrepancies');
+      const detailsContainer = document.getElementById('healthDetailsContainer');
+
+      if (badge) badge.textContent = `${archId} / ${batchId.toUpperCase()}`;
+      if (subtitle) subtitle.textContent = 'Auditing variant seeds (clb, frg, tgt) and binary checksums...';
+      if (banner) {
+        banner.className = 'p-4 rounded-2xl flex items-center gap-3 bg-slate-900 border border-slate-800 text-slate-400';
+        banner.innerHTML = `<div class="w-6 h-6 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin shrink-0"></div><span class="text-xs">Validating files on disk...</span>`;
+      }
+
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        lucide.createIcons();
+      }
+
+      try {
+        const query = new URLSearchParams({
+          game: currentDashboardGame,
+          vault: currentDashboardVault,
+          archetype: archId,
+          batch: batchId
+        });
+        const res = await fetch(`/api/dashboard/validate-batch?${query.toString()}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Audit failed');
+
+        if (metricVerified) metricVerified.textContent = `${data.verifiedLevels} / ${data.levelCount}`;
+        if (metricActual) metricActual.textContent = data.actualFiles;
+        if (metricExpected) metricExpected.textContent = data.expectedFiles;
+        const totalIssues = (data.missingCount || 0) + (data.corruptCount || 0);
+        if (metricDiscrepancies) {
+          metricDiscrepancies.textContent = totalIssues;
+          metricDiscrepancies.className = `text-lg font-bold font-mono ${totalIssues === 0 ? 'text-emerald-400' : 'text-rose-400'} mt-1`;
+        }
+
+        if (banner) {
+          if (data.isHealthy) {
+            banner.className = 'p-4 rounded-2xl flex items-center gap-3 bg-emerald-950/30 border border-emerald-500/40 text-emerald-300';
+            banner.innerHTML = `
+              <div class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <div class="text-sm font-bold">100% Healthy & CDN-Ready</div>
+                <div class="text-xs text-emerald-400/80 mt-0.5">All ${data.levelCount} levels possess valid .json & .bin pairs across CLB, FRG, and TGT difficulty seeds. Zero corrupt or missing files.</div>
+              </div>
+            `;
+          } else {
+            banner.className = 'p-4 rounded-2xl flex items-center gap-3 bg-rose-950/30 border border-rose-500/40 text-rose-300';
+            banner.innerHTML = `
+              <div class="w-8 h-8 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center shrink-0">
+                <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <div class="text-sm font-bold">${totalIssues} Discrepancies Detected</div>
+                <div class="text-xs text-rose-400/80 mt-0.5">Found missing or corrupt variant files. Review the log below before deploying.</div>
+              </div>
+            `;
+          }
+        }
+
+        if (detailsContainer) {
+          if (data.isHealthy) {
+            detailsContainer.innerHTML = `
+              <div class="text-emerald-400 text-xs flex items-center gap-2">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-400"></i>
+                <span>Manifest: levelCount=${data.levelCount}, locked=${data.manifest?.locked ? 'YES (Immutable)' : 'NO (Draft)'}</span>
+              </div>
+              <div class="text-slate-400 text-xs mt-1">Verified: l001_clb .. l${String(data.levelCount).padStart(3, '0')}_tgt binary streams validated.</div>
+            `;
+          } else {
+            let issueHtml = '<div class="text-rose-400 text-xs font-bold mb-1">Issue Log:</div>';
+            (data.missingFiles || []).forEach(f => {
+              issueHtml += `<div class="text-rose-300 text-[11px]">- Missing file: ${escapeHtml(f)}</div>`;
+            });
+            (data.corruptFiles || []).forEach(f => {
+              issueHtml += `<div class="text-amber-300 text-[11px]">- Zero-byte corrupt file: ${escapeHtml(f)}</div>`;
+            });
+            detailsContainer.innerHTML = issueHtml;
+          }
+        }
+        lucide.createIcons();
+      } catch (err) {
+        console.error('Audit error:', err);
+        showToast('Audit failed: ' + err.message, 'error');
+      }
+    }
+
+    function closeBatchHealthModal() {
+      const modal = document.getElementById('modalBatchHealth');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    // =========================================================================
+    // 🎮 LEVEL GRID & GOAL PREVIEWER (FEATURE 2)
+    // =========================================================================
+    let currentPreviewContext = {
+      archetype: '',
+      batchId: '',
+      levelNum: 1,
+      seed: 'clb',
+      maxLevels: 200,
+      levelData: null
+    };
+
+    let isPreviewLayoutFlipped = false;
+
+    function openPlayTestLevel() {
+      const game = currentDashboardGame || 'blast';
+      const vault = currentDashboardVault || 'vault_v1';
+      const arch = currentPreviewContext.archetype || 'arc_linear';
+      const batch = currentPreviewContext.batchId || 'b01';
+      const lvlStr = String(currentPreviewContext.levelNum).padStart(3, '0');
+      const filename = `l${lvlStr}_${currentPreviewContext.seed}.json`;
+
+      // Save active level preview data to sessionStorage for instantaneous zero-latency play
+      if (currentPreviewContext.levelData) {
+        try {
+          sessionStorage.setItem('thisisblast_play_level', JSON.stringify({
+            levelData: currentPreviewContext.levelData,
+            game: game,
+            vault: vault,
+            archetype: arch,
+            batchId: batch,
+            levelNum: currentPreviewContext.levelNum,
+            seed: currentPreviewContext.seed,
+            filename: filename,
+            maxLevels: currentPreviewContext.maxLevels || 200
+          }));
+        } catch (e) {
+          console.warn('Could not store play level in sessionStorage:', e);
+        }
+      }
+
+      const params = new URLSearchParams({
+        game: game,
+        vault: vault,
+        archetype: arch,
+        batch: batch,
+        filename: filename,
+        level: currentPreviewContext.levelNum,
+        seed: currentPreviewContext.seed
+      });
+
+      const playUrl = `/HTML_version/?${params.toString()}`;
+      window.open(playUrl, '_blank');
+    }
+
+    function closeLevelPreviewModal() {
+      const modal = document.getElementById('modalLevelPreview');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+      currentPreviewContext.levelData = null;
+    }
+
+    function togglePreviewSplitLayout() {
+      isPreviewLayoutFlipped = !isPreviewLayoutFlipped;
+      const container = document.getElementById('previewSplitColumnsContainer');
+      if (container) {
+        if (isPreviewLayoutFlipped) {
+          container.classList.remove('lg:flex-row');
+          container.classList.add('lg:flex-row-reverse');
+        } else {
+          container.classList.remove('lg:flex-row-reverse');
+          container.classList.add('lg:flex-row');
+        }
+      }
+    }
+
+    function previewBatchLevels(archId, batchId, levelNum = 1) {
+      currentPreviewContext.archetype = archId;
+      currentPreviewContext.batchId = batchId;
+      currentPreviewContext.levelNum = levelNum;
+      currentPreviewContext.seed = 'clb';
+      loadLevelPreviewData();
+    }
+
+    function previewLevelFile(archId, batchId, filename) {
+      currentPreviewContext.archetype = archId;
+      currentPreviewContext.batchId = batchId;
+      
+      const m = filename.match(/l(\d+)_([a-z]+)\.json/i);
+      if (m) {
+        currentPreviewContext.levelNum = parseInt(m[1], 10);
+        currentPreviewContext.seed = m[2].toLowerCase();
+      } else {
+        currentPreviewContext.levelNum = 1;
+        currentPreviewContext.seed = 'clb';
+      }
+      loadLevelPreviewData();
+    }
+
+    function switchPreviewSeed(newSeed) {
+      currentPreviewContext.seed = newSeed;
+      const seeds = ['clb', 'frg', 'tgt'];
+      seeds.forEach(s => {
+        const btn = document.getElementById(`previewSeedBtn_${s}`);
+        if (btn) {
+          if (s === newSeed) {
+            btn.className = 'py-1.5 px-2 rounded-lg text-xs font-bold transition bg-blue-600 text-white cursor-pointer truncate';
+          } else {
+            btn.className = 'py-1.5 px-2 rounded-lg text-xs font-bold transition text-slate-400 hover:text-slate-200 cursor-pointer truncate';
+          }
+        }
+      });
+      loadLevelPreviewData();
+    }
+
+    function jumpToPreviewLevelNumber(val) {
+      let num = parseInt(val, 10);
+      if (isNaN(num)) num = 1;
+      const maxL = currentPreviewContext.maxLevels || 200;
+      num = Math.max(1, Math.min(maxL, num));
+      currentPreviewContext.levelNum = num;
+      loadLevelPreviewData();
+    }
+
+    function navigatePreviewLevel(delta) {
+      const maxL = currentPreviewContext.maxLevels || 200;
+      let nextNum = currentPreviewContext.levelNum + delta;
+      if (nextNum < 1) nextNum = 1;
+      if (nextNum > maxL) nextNum = maxL;
+      currentPreviewContext.levelNum = nextNum;
+      loadLevelPreviewData();
+    }
+
+    async function loadLevelPreviewData() {
+      const modal = document.getElementById('modalLevelPreview');
+      const titleEl = document.getElementById('previewModalTitle');
+      const subEl = document.getElementById('previewModalSubtitle');
+      const tierEl = document.getElementById('previewModalTierBadge');
+      const inputEl = document.getElementById('previewLevelInput');
+      const totalLabel = document.getElementById('previewLevelTotalLabel');
+      const gridEl = document.getElementById('previewBoardGrid');
+      const fileInfoEl = document.getElementById('previewFileInfoText');
+
+      // Determine maxLevels from overview data
+      const curArch = (currentOverviewData?.archetypes || []).find(a => a.archetypeId === currentPreviewContext.archetype);
+      const curBatch = (curArch?.batches || []).find(b => b.batchId === currentPreviewContext.batchId);
+      const maxLevels = curBatch?.levelCount || 200;
+      currentPreviewContext.maxLevels = maxLevels;
+
+      const lvlStr = String(currentPreviewContext.levelNum).padStart(3, '0');
+      const filename = `l${lvlStr}_${currentPreviewContext.seed}.json`;
+
+      if (titleEl) titleEl.textContent = `Level ${currentPreviewContext.levelNum} - ${formatModuleName(currentPreviewContext.archetype, currentPreviewContext.archetype)}`;
+      if (subEl) subEl.textContent = `${currentPreviewContext.batchId.toUpperCase()} / ${filename}`;
+      if (fileInfoEl) fileInfoEl.textContent = `${currentPreviewContext.batchId.toUpperCase()} • ${filename}`;
+      if (inputEl) {
+        inputEl.value = currentPreviewContext.levelNum;
+        inputEl.max = maxLevels;
+      }
+      if (totalLabel) totalLabel.textContent = `/ ${maxLevels}`;
+
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        lucide.createIcons();
+      }
+
+      if (gridEl) {
+        gridEl.innerHTML = `
+          <div class="p-8 text-center text-slate-400 flex flex-col items-center justify-center gap-2">
+            <div class="w-6 h-6 rounded-full border-2 border-purple-500 border-t-transparent animate-spin"></div>
+            <span class="text-xs">Loading board grid...</span>
+          </div>
+        `;
+      }
+
+      try {
+        const query = new URLSearchParams({
+          game: currentDashboardGame,
+          vault: currentDashboardVault,
+          archetype: currentPreviewContext.archetype,
+          batch: currentPreviewContext.batchId,
+          filename: filename
+        });
+        const res = await fetch(`/api/dashboard/level-preview?${query.toString()}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Failed to load level data');
+
+        const lvl = data.levelData || {};
+        currentPreviewContext.levelData = lvl;
+
+        if (tierEl) tierEl.textContent = `Tier ${lvl.tier || 1}`;
+        renderBoardGrid(lvl);
+      } catch (err) {
+        console.error('Level preview error:', err);
+        if (gridEl) {
+          gridEl.innerHTML = `
+            <div class="p-6 text-center text-rose-400 bg-rose-950/20 border border-rose-900/40 rounded-xl text-xs">
+              Unable to load ${escapeHtml(filename)}: ${escapeHtml(err.message)}
+            </div>
+          `;
+        }
+      }
+    }
+
+    function renderBoardGrid(lvl) {
+      const gridEl = document.getElementById('previewBoardGrid');
+      const arsenalEl = document.getElementById('previewArsenalColumns');
+      const dimEl = document.getElementById('previewBoardDimensions');
+      const clearPctEl = document.getElementById('previewGoalClearPct');
+      const obstGrid = document.getElementById('previewObstaclesSummaryGrid');
+      const arsenalBadge = document.getElementById('previewArsenalSummaryBadge');
+      if (!gridEl) return;
+
+      const width = lvl.gridWidth || 7;
+      const height = lvl.gridHeight || 8;
+      const blocks = lvl.enemyBlocks || [];
+
+      if (dimEl) dimEl.textContent = `${width}x${height} (${blocks.length} Blocks)`;
+      if (clearPctEl) clearPctEl.textContent = `${lvl.clearPercentageRequired || 100}% Clear Required`;
+
+      // Dynamic tile sizing based on grid dimensions:
+      const maxDim = Math.max(width, height);
+      let tileSizeClass = 'w-8 h-8 sm:w-9 sm:h-9';
+      let arsenalBlockSizeClass = 'w-8 h-8 sm:w-9 sm:h-9';
+      let textSizeClass = 'text-xs';
+
+      if (maxDim >= 11) {
+        tileSizeClass = 'w-6 h-6 sm:w-7 sm:h-7';
+        arsenalBlockSizeClass = 'w-7 h-7 sm:w-8 sm:h-8';
+        textSizeClass = 'text-[10px]';
+      } else if (maxDim >= 9) {
+        tileSizeClass = 'w-7 h-7 sm:w-8 sm:h-8';
+        arsenalBlockSizeClass = 'w-7 h-7 sm:w-8 sm:h-8';
+        textSizeClass = 'text-[11px]';
+      }
+
+      // Color mapping matching game palette (High-Contrast & Distinguishable)
+      const colorBgMap = {
+        1: 'bg-red-600 text-white shadow-red-600/30',
+        2: 'bg-blue-600 text-white shadow-blue-600/30',
+        3: 'bg-emerald-500 text-white shadow-emerald-500/30',
+        4: 'bg-yellow-300 text-slate-900 shadow-yellow-300/30 font-black',
+        5: 'bg-purple-600 text-white shadow-purple-600/30',
+        6: 'bg-orange-500 text-white shadow-orange-500/30',
+        7: 'bg-teal-300 text-slate-900 shadow-teal-300/30 font-black',
+        8: 'bg-fuchsia-500 text-white shadow-fuchsia-500/30'
+      };
+
+      // Create 2D grid matrix
+      const matrix = Array.from({ length: height }, () => Array(width).fill(null));
+      blocks.forEach(b => {
+        if (b.y >= 0 && b.y < height && b.x >= 0 && b.x < width) {
+          matrix[b.y][b.x] = b;
+        }
+      });
+
+      // Count obstacle types
+      let stdCount = 0, hiddenCount = 0, chainedCount = 0, keyCount = 0, chestCount = 0, piggyCount = 0;
+      blocks.forEach(b => {
+        if (b.type === 0) stdCount++;
+        else if (b.type === 1) hiddenCount++;
+        else if (b.type === 2) chainedCount++;
+        else if (b.type === 4) keyCount++;
+        else if (b.type === 5) chestCount++;
+        else if (b.type === 6) piggyCount++;
+      });
+
+      if (obstGrid) {
+        obstGrid.innerHTML = `
+          <div class="p-1.5 rounded-xl bg-slate-950/70 border border-slate-800 flex items-center justify-between text-[11px]">
+            <span class="text-slate-400">Standard</span>
+            <span class="text-white font-bold">${stdCount}</span>
+          </div>
+          <div class="p-1.5 rounded-xl bg-slate-950/70 border border-slate-800 flex items-center justify-between text-[11px]">
+            <span class="text-sky-400">❓ Hidden</span>
+            <span class="text-sky-300 font-bold">${hiddenCount}</span>
+          </div>
+          <div class="p-1.5 rounded-xl bg-slate-950/70 border border-slate-800 flex items-center justify-between text-[11px]">
+            <span class="text-purple-400">🔗 Chained</span>
+            <span class="text-purple-300 font-bold">${Math.floor(chainedCount / 2)} prs</span>
+          </div>
+          <div class="p-1.5 rounded-xl bg-slate-950/70 border border-slate-800 flex items-center justify-between text-[11px]">
+            <span class="text-amber-400">🔑 Keys</span>
+            <span class="text-amber-300 font-bold">${keyCount}</span>
+          </div>
+          <div class="p-1.5 rounded-xl bg-slate-950/70 border border-slate-800 flex items-center justify-between text-[11px]">
+            <span class="text-yellow-400">📦 Chests</span>
+            <span class="text-yellow-300 font-bold">${chestCount}</span>
+          </div>
+          <div class="p-1.5 rounded-xl bg-slate-950/70 border border-slate-800 flex items-center justify-between text-[11px]">
+            <span class="text-pink-400">🐷 Piggies</span>
+            <span class="text-pink-300 font-bold">${piggyCount}</span>
+          </div>
+        `;
+      }
+
+      let boardHtml = '';
+      for (let y = height - 1; y >= 0; y--) {
+        boardHtml += '<div class="flex items-center gap-1 sm:gap-1.5">';
+        for (let x = 0; x < width; x++) {
+          const b = matrix[y][x];
+          if (b) {
+            const colorClass = colorBgMap[b.color] || 'bg-slate-700 text-white shadow-slate-700/25';
+            let iconOrText = '';
+            let borderStyle = 'border border-white/20';
+            
+            if (b.type === 1) { // Hidden
+              iconOrText = '<i data-lucide="help-circle" class="w-3.5 h-3.5 opacity-90"></i>';
+            } else if (b.type === 2) { // Interlocked
+              iconOrText = '<i data-lucide="link" class="w-3 h-3 opacity-90"></i>';
+            } else if (b.type === 4) { // Key
+              iconOrText = '<i data-lucide="key" class="w-3.5 h-3.5 text-amber-200"></i>';
+            } else if (b.type === 5) { // Chest
+              iconOrText = '<i data-lucide="package" class="w-3.5 h-3.5 text-yellow-300"></i>';
+              borderStyle = 'border-2 border-yellow-300';
+            } else if (b.type === 6) { // Piggy
+              iconOrText = '<i data-lucide="piggy-bank" class="w-3.5 h-3.5 text-pink-200"></i>';
+            } else {
+              iconOrText = `<span class="${textSizeClass} font-black opacity-90">${b.hp > 1 ? b.hp : ''}</span>`;
+            }
+
+            boardHtml += `
+              <div class="${tileSizeClass} rounded-xl ${colorClass} ${borderStyle} flex items-center justify-center shadow-md font-bold transition hover:scale-110 shrink-0" title="Block (${x}, ${y}): Color ${b.color}, HP ${b.hp}, Type ${b.type}">
+                ${iconOrText}
+              </div>
+            `;
+          } else {
+            boardHtml += `
+              <div class="${tileSizeClass} rounded-xl bg-slate-900/40 border border-slate-800/40 flex items-center justify-center shrink-0"></div>
+            `;
+          }
+        }
+        boardHtml += '</div>';
+      }
+
+      gridEl.innerHTML = boardHtml;
+
+      // Render Player Arsenal Dispatch Columns (Exact Game Preview: Full Stack of Blocks in each column)
+      if (arsenalEl) {
+        const cols = lvl.arsenalColumns || [];
+        let arsHtml = '';
+        if (arsenalBadge) arsenalBadge.textContent = `${cols.length} Columns`;
+
+        cols.forEach((col, idx) => {
+          const blocksInCol = col.blocks || [];
+          const totalBullets = blocksInCol.reduce((acc, b) => acc + (b.bulletCount || 0), 0);
+          const isColLocked = Boolean(col.isLockedInitially);
+
+          let blocksHtml = '';
+          blocksInCol.forEach((b, bIdx) => {
+            const colorClass = colorBgMap[b.color] || 'bg-slate-700 text-white shadow-slate-700/25';
+            const isHidden = Boolean(b.isHidden);
+            
+            blocksHtml += `
+              <div class="${arsenalBlockSizeClass} rounded-xl ${colorClass} border border-white/20 flex items-center justify-center font-black ${textSizeClass} shadow-md transition hover:scale-105 shrink-0" title="Block ${bIdx + 1}: Color ${b.color}, Bullets ${b.bulletCount}">
+                ${isHidden ? '<i data-lucide="help-circle" class="w-3.5 h-3.5 opacity-90"></i>' : b.bulletCount}
+              </div>
+            `;
+          });
+
+          arsHtml += `
+            <div class="flex flex-col items-center gap-1.5 p-2 rounded-2xl ${isColLocked ? 'bg-amber-950/20 border-amber-500/30' : 'bg-slate-900/90 border-slate-800'} border shadow-md min-w-[64px] sm:min-w-[72px]">
+              <div class="flex items-center gap-1">
+                <span class="text-[11px] font-mono text-slate-300 font-bold">Col ${idx + 1}</span>
+                ${isColLocked ? `<span title="Locked column - requires Key #${col.unlockKeyId || 1}"><i data-lucide="lock" class="w-3 h-3 text-amber-400"></i></span>` : ''}
+              </div>
+              
+              <!-- Vertical Block Queue Stack -->
+              <div class="flex flex-col items-center gap-1.5 w-full bg-slate-950/60 p-1.5 rounded-xl border border-slate-800/80">
+                ${blocksHtml || '<span class="text-[10px] text-slate-500 py-1">Empty</span>'}
+              </div>
+
+              <!-- Column Ammo & Block Count Footer -->
+              <div class="flex flex-col items-center text-center">
+                <span class="text-[10px] font-mono font-bold text-emerald-400">${totalBullets} Ammo</span>
+                <span class="text-[9px] font-mono text-slate-500">${blocksInCol.length} blks</span>
+              </div>
+            </div>
+          `;
+        });
+        arsenalEl.innerHTML = arsHtml || '<span class="text-xs text-slate-500">No arsenal columns</span>';
+      }
+
+      // Calculate total Enemy HP and total Ammo for level pacing & economy
+      let totalEnemyHp = 0;
+      blocks.forEach(b => totalEnemyHp += (b.hp || 1));
+      let totalAmmo = 0;
+      (lvl.arsenalColumns || []).forEach(c => (c.blocks || []).forEach(b => totalAmmo += (b.bulletCount || 0)));
+      
+      const bufferMargin = totalEnemyHp > 0 ? Math.round(((totalAmmo - totalEnemyHp) / totalEnemyHp) * 100) : 0;
+      const totalPool = Math.max(1, totalEnemyHp + totalAmmo);
+      const enemyPct = Math.round((totalEnemyHp / totalPool) * 100);
+      const ammoPct = 100 - enemyPct;
+
+      const barEnemy = document.getElementById('previewBarEnemyHp');
+      if (barEnemy) barEnemy.style.width = `${enemyPct}%`;
+      const barAmmo = document.getElementById('previewBarBufferAmmo');
+      if (barAmmo) barAmmo.style.width = `${ammoPct}%`;
+      
+      const hpTextEl = document.getElementById('previewEnemyHpText');
+      if (hpTextEl) hpTextEl.textContent = `${totalEnemyHp} HP Target`;
+      const ammoTextEl = document.getElementById('previewPlayerAmmoText');
+      if (ammoTextEl) ammoTextEl.textContent = `${totalAmmo} Ammo Buffer`;
+
+      const bufferBadge = document.getElementById('previewAmmoBufferBadge');
+      if (bufferBadge) {
+        bufferBadge.innerHTML = `
+          <span class="px-2 py-0.5 rounded-md ${bufferMargin >= 0 ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'}">
+            ${bufferMargin >= 0 ? '+' : ''}${bufferMargin}% Buffer
+          </span>
+          <span class="text-slate-400 text-[10px]">• 100% Solvable</span>
+        `;
+      }
+
+      // Archetype pacing phase calculation
+      const lvlNum = currentPreviewContext.levelNum;
+      const maxLvl = currentPreviewContext.maxLevels || 200;
+      const progressPct = ((lvlNum / maxLvl) * 100).toFixed(1);
+      
+      let phaseLabel = 'Pacing Phase';
+      let phaseClass = 'bg-blue-500/15 text-blue-300 border-blue-500/30';
+      const archLower = (currentPreviewContext.archetype || '').toLowerCase();
+
+      if (archLower.includes('sawtooth')) {
+        const wavePos = ((lvlNum - 1) % 10) + 1;
+        if (wavePos <= 6) {
+          phaseLabel = `Wave ${Math.ceil(lvlNum / 10)}: Rising Ramp (${wavePos}/10)`;
+          phaseClass = 'bg-amber-500/15 text-amber-300 border-amber-500/30';
+        } else if (wavePos <= 9) {
+          phaseLabel = `Wave ${Math.ceil(lvlNum / 10)}: Climax Boss Peak (${wavePos}/10)`;
+          phaseClass = 'bg-rose-500/15 text-rose-300 border-rose-500/30';
+        } else {
+          phaseLabel = `Wave ${Math.ceil(lvlNum / 10)}: Breather Drop (10/10)`;
+          phaseClass = 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30';
+        }
+      } else if (archLower.includes('royal') || archLower.includes('rush')) {
+        const burstStep = ((lvlNum - 1) % 5) + 1;
+        if (burstStep >= 4) {
+          phaseLabel = `Royal Surge: Rush Cascade (${burstStep}/5)`;
+          phaseClass = 'bg-purple-500/15 text-purple-300 border-purple-500/30';
+        } else {
+          phaseLabel = `Royal Surge: Build-Up (${burstStep}/5)`;
+          phaseClass = 'bg-indigo-500/15 text-indigo-300 border-indigo-500/30';
+        }
+      } else {
+        phaseLabel = `Linear Ramp: Level ${lvlNum} (${progressPct}%)`;
+        phaseClass = 'bg-blue-500/15 text-blue-300 border-blue-500/30';
+      }
+
+      const phaseBadge = document.getElementById('previewCurvePhaseBadge');
+      if (phaseBadge) {
+        phaseBadge.textContent = phaseLabel;
+        phaseBadge.className = `text-[10px] font-bold px-2 py-0.5 rounded-full border ${phaseClass}`;
+      }
+
+      const metricText = document.getElementById('previewCurveMetricText');
+      if (metricText) {
+        metricText.textContent = `Tier ${lvl.tier || 1} • Level ${lvlNum} of ${maxLvl} (${progressPct}%)`;
+      }
+
+      // Draw Level Curve SVG
+      renderInteractiveLevelCurveSvg(lvlNum, maxLvl, archLower);
+
+      lucide.createIcons();
+    }
+
+    function renderInteractiveLevelCurveSvg(currentLvl, maxLvl, archLower) {
+      const container = document.getElementById('previewLevelCurveSvgContainer');
+      if (!container) return;
+
+      const w = 600;
+      const h = 48;
+      const padding = 12;
+      const plotW = w - padding * 2;
+      const plotH = h - 14;
+
+      const points = [];
+      for (let i = 1; i <= maxLvl; i++) {
+        const x = padding + ((i - 1) / (maxLvl - 1)) * plotW;
+        let normDiff = 0.2;
+
+        if (archLower.includes('sawtooth')) {
+          const wavePos = ((i - 1) % 10) / 9;
+          const waveIdx = Math.floor((i - 1) / 10);
+          const baseRamp = 0.15 + (waveIdx / Math.max(1, maxLvl / 10)) * 0.35;
+          normDiff = baseRamp + (wavePos * 0.45);
+        } else if (archLower.includes('royal') || archLower.includes('rush')) {
+          const stepIdx = Math.floor((i - 1) / 5);
+          const burstPos = ((i - 1) % 5) / 4;
+          normDiff = 0.2 + (stepIdx / Math.max(1, maxLvl / 5)) * 0.35 + (burstPos * 0.35);
+        } else {
+          normDiff = 0.15 + (i / maxLvl) * 0.75;
+        }
+
+        normDiff = Math.max(0.1, Math.min(0.95, normDiff));
+        const y = h - padding - (normDiff * plotH);
+        points.push({ x, y, level: i });
+      }
+
+      let pathD = `M ${points[0].x} ${points[0].y}`;
+      for (let i = 1; i < points.length; i++) {
+        pathD += ` L ${points[i].x} ${points[i].y}`;
+      }
+
+      const fillD = `${pathD} L ${points[points.length - 1].x} ${h} L ${points[0].x} ${h} Z`;
+      const currPt = points[currentLvl - 1] || points[0];
+
+      let strokeColor = '#60a5fa';
+      let gradId = 'gradLinearLevel';
+      if (archLower.includes('sawtooth')) {
+        strokeColor = '#f59e0b';
+        gradId = 'gradSawtoothLevel';
+      } else if (archLower.includes('royal') || archLower.includes('rush')) {
+        strokeColor = '#c084fc';
+        gradId = 'gradRoyalLevel';
+      }
+
+      container.innerHTML = `
+        <svg class="w-full h-full cursor-pointer select-none" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" onclick="onCurveSvgClick(event, ${maxLvl})">
+          <defs>
+            <linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="${strokeColor}" stop-opacity="0.35"/>
+              <stop offset="100%" stop-color="${strokeColor}" stop-opacity="0.0"/>
+            </linearGradient>
+          </defs>
+
+          <!-- Fill Area -->
+          <path d="${fillD}" fill="url(#${gradId})"/>
+
+          <!-- Curve Line -->
+          <path d="${pathD}" stroke="${strokeColor}" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+
+          <!-- Vertical Marker Line on Current Level -->
+          <line x1="${currPt.x}" y1="0" x2="${currPt.x}" y2="${h}" stroke="#ffffff" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.8"/>
+
+          <!-- Glowing Pin Dot -->
+          <circle cx="${currPt.x}" cy="${currPt.y}" r="4.5" fill="${strokeColor}" stroke="#ffffff" stroke-width="2"/>
+        </svg>
+        <div style="left: ${Math.max(5, Math.min(92, (currPt.x / w) * 100))}%;" class="absolute top-1 -translate-x-1/2 pointer-events-none text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-slate-900/90 text-white border border-slate-700 shadow-sm whitespace-nowrap">
+          📍 Lvl ${currentLvl}
+        </div>
+      `;
+    }
+
+    function onCurveSvgClick(e, maxLvl) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const ratio = Math.max(0, Math.min(1, clickX / rect.width));
+      const targetLvl = Math.max(1, Math.min(maxLvl, Math.round(ratio * maxLvl)));
+      jumpToPreviewLevelNumber(targetLvl);
+    }
+    // =========================================================================
+    // ✏️ BATCH METADATA & TAG EDITOR (FEATURE 4)
+    // =========================================================================
+    let currentEditBatchContext = { archetype: '', batchId: '' };
+
+    function openEditBatchModal(archId, batchId, label, description, tags = []) {
+      currentEditBatchContext.archetype = archId;
+      currentEditBatchContext.batchId = batchId;
+
+      const sub = document.getElementById('editBatchSubtitle');
+      const inputLabel = document.getElementById('editBatchInputLabel');
+      const inputDesc = document.getElementById('editBatchInputDescription');
+      const inputTags = document.getElementById('editBatchInputTags');
+
+      if (sub) sub.textContent = `${archId} / ${batchId.toUpperCase()}`;
+      if (inputLabel) inputLabel.value = label || batchId.toUpperCase();
+      if (inputDesc) inputDesc.value = description || '';
+      if (inputTags) inputTags.value = Array.isArray(tags) ? tags.join(', ') : '';
+
+      const modal = document.getElementById('modalEditBatch');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        lucide.createIcons();
+      }
+    }
+
+    function closeEditBatchModal() {
+      const modal = document.getElementById('modalEditBatch');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    async function submitEditBatchMetadata() {
+      const inputLabel = document.getElementById('editBatchInputLabel');
+      const inputDesc = document.getElementById('editBatchInputDescription');
+      const inputTags = document.getElementById('editBatchInputTags');
+
+      const label = (inputLabel?.value || '').trim();
+      const description = (inputDesc?.value || '').trim();
+      const tags = (inputTags?.value || '').split(',').map(t => t.trim()).filter(Boolean);
+
+      try {
+        const res = await fetch('/api/dashboard/update-batch-metadata', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            game: currentDashboardGame,
+            vault: currentDashboardVault,
+            archetype: currentEditBatchContext.archetype,
+            batchId: currentEditBatchContext.batchId,
+            label,
+            description,
+            tags
+          })
+        });
+        const result = await res.json();
+        if (!result.success) throw new Error(result.error || 'Failed to update metadata');
+
+        showToast(`Batch ${currentEditBatchContext.batchId.toUpperCase()} updated successfully!`);
+        closeEditBatchModal();
+        await loadDashboardOverview();
+      } catch (err) {
+        console.error('Error saving metadata:', err);
+        showToast('Save failed: ' + err.message, 'error');
+      }
+    }
+
+    // =========================================================================
+    // 📦 ONE-CLICK CDN / ZIP EXPORTER (FEATURE 5)
+    // =========================================================================
+    function downloadBatchZip(archId, batchId) {
+      const query = new URLSearchParams({
+        game: currentDashboardGame,
+        vault: currentDashboardVault,
+        archetype: archId,
+        batch: batchId
+      });
+      showToast(`Packaging ${batchId.toUpperCase()} as ZIP archive...`);
+      const downloadUrl = `/api/dashboard/export-batch-zip?${query.toString()}`;
+      
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = `${currentDashboardGame}_${archId}_${batchId}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => a.remove(), 1000);
+    }
+
+    // =========================================================================
+    // 📋 BATCH CLONE / FORKING (FEATURE 6)
+    // =========================================================================
+    let currentCloneBatchContext = { archetype: '', sourceBatchId: '' };
+
+    function openCloneBatchModal(archId, batchId, label) {
+      currentCloneBatchContext.archetype = archId;
+      currentCloneBatchContext.sourceBatchId = batchId;
+
+      const sub = document.getElementById('cloneBatchSubtitle');
+      const inputLabel = document.getElementById('cloneBatchInputLabel');
+
+      if (sub) sub.textContent = `Source: ${archId} / ${batchId.toUpperCase()}`;
+      if (inputLabel) inputLabel.value = `${label || batchId.toUpperCase()} (Clone)`;
+
+      const modal = document.getElementById('modalCloneBatch');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        lucide.createIcons();
+      }
+    }
+
+    function closeCloneBatchModal() {
+      const modal = document.getElementById('modalCloneBatch');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    async function submitCloneBatch() {
+      const inputLabel = document.getElementById('cloneBatchInputLabel');
+      const newLabel = (inputLabel?.value || '').trim();
+      const btn = document.getElementById('btnSubmitCloneBatch');
+
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<div class="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin"></div> Cloning...`;
+      }
+
+      try {
+        const res = await fetch('/api/dashboard/clone-batch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            game: currentDashboardGame,
+            vault: currentDashboardVault,
+            archetype: currentCloneBatchContext.archetype,
+            sourceBatchId: currentCloneBatchContext.sourceBatchId,
+            newLabel
+          })
+        });
+        const result = await res.json();
+        if (!result.success) throw new Error(result.error || 'Failed to clone batch');
+
+        showToast(`Created clone: ${result.newBatchId.toUpperCase()} in ${currentCloneBatchContext.archetype}!`);
+        closeCloneBatchModal();
+        await loadDashboardOverview();
+      } catch (err) {
+        console.error('Clone batch error:', err);
+        showToast('Clone failed: ' + err.message, 'error');
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `<i data-lucide="copy-plus" class="w-3.5 h-3.5"></i><span>Create Clone</span>`;
+          lucide.createIcons();
+        }
+      }
+    }
+
+    // Switch Primary Navigation Tabs
+    function switchDashboardTab(tabId) {
+      activeDashboardTab = tabId;
+      try {
+        if (window.location.hash !== '#' + tabId) {
+          history.replaceState(null, '', '#' + tabId);
+        }
+      } catch (e) {}
+      const tabIds = ['vault', 'journeys', 'cohorts', 'simulator'];
+      tabIds.forEach(id => {
+        const btn = document.getElementById(`tabBtn_${id}`);
+        const panel = document.getElementById(`panel_${id}`);
+        if (btn && !btn.disabled) {
+          if (id === tabId) {
+            const activeColorClass = id === 'journeys' 
+              ? 'bg-blue-500/15 border border-blue-500/40 text-blue-300 shadow-sm' 
+              : id === 'cohorts'
+              ? 'bg-amber-500/15 border border-amber-500/40 text-amber-300 shadow-sm'
+              : id === 'simulator'
+              ? 'bg-purple-500/15 border border-purple-500/40 text-purple-300 shadow-sm'
+              : 'bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 shadow-sm';
+            btn.className = `px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-2 transition cursor-pointer ${activeColorClass}`;
+          } else {
+            btn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-2 transition cursor-pointer bg-slate-900/60 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200';
+          }
+        }
+        if (panel) {
+          if (id === tabId) {
+            panel.classList.remove('hidden');
+          } else {
+            panel.classList.add('hidden');
+          }
+        }
+      });
+      lucide.createIcons();
+      if (tabId === 'simulator') {
+        runSimulation();
+      }
+    }
+
+    function onDashboardGameChange(newGame) {
+      currentDashboardGame = newGame;
+      updateScopeDisplay();
+      loadDashboardOverview();
+    }
+
+    function onDashboardVaultChange(newVault) {
+      currentDashboardVault = newVault;
+      updateScopeDisplay();
+      loadDashboardOverview();
+    }
+
+    function updateScopeDisplay() {
+      const scopeEl = document.getElementById('labelDashboardScopePath');
+      if (scopeEl) {
+        scopeEl.textContent = `backend/games/${currentDashboardGame}/${currentDashboardVault}/`;
+      }
+    }
+
+    // =========================================================================
+    // 📡 DATA FETCHER: GET /api/dashboard/overview
+    // =========================================================================
+    async function loadDashboardOverview() {
+      const container = document.getElementById('vaultArchetypesContainer');
+      let data = null;
+      let isStaticMode = false;
+      try {
+        const res = await fetch(`/api/dashboard/overview?game=${encodeURIComponent(currentDashboardGame)}&vault=${encodeURIComponent(currentDashboardVault)}`);
+        if (res.ok) {
+          const jsonRes = await res.json();
+          if (jsonRes && jsonRes.success) data = jsonRes;
+        }
+      } catch (e) {}
+
+      if (!data) {
+        try {
+          const staticRes = await fetch('./overview.json');
+          if (staticRes.ok) {
+            const staticJson = await staticRes.json();
+            if (staticJson && staticJson.success) {
+              data = staticJson;
+              isStaticMode = true;
+            }
+          }
+        } catch (e) {}
+      }
+
+      if (data) {
+        currentOverviewData = data;
+        renderDashboardData(data);
+        populateJourneyEditor(data.journeys || []);
+        populateCohortEditor(data.cohorts || []);
+        populateSimulatorDropdowns(data.journeys || [], data.cohorts || []);
+        if (isStaticMode) {
+          showToast('Loaded interactive vault snapshot (Static Demo Mode)', 'info');
+        }
+        return;
+      }
+
+      try {
+        throw new Error('Unable to connect to backend or load overview.json');
+      } catch (err) {
+        console.error('Error fetching dashboard overview:', err);
+        showToast('Error loading overview data: ' + err.message, 'error');
+        if (container) {
+          container.innerHTML = `
+            <div class="p-8 rounded-2xl bg-rose-950/20 border border-rose-500/30 text-rose-300 text-center flex flex-col items-center gap-2">
+              <i data-lucide="alert-circle" class="w-6 h-6"></i>
+              <p class="text-xs font-semibold">Failed to connect to backend server or load game vault.</p>
+              <button onclick="loadDashboardOverview()" class="mt-2 px-3 py-1.5 bg-rose-900/50 hover:bg-rose-800 rounded-xl text-xs font-bold text-white transition">Retry</button>
+            </div>
+          `;
+          lucide.createIcons();
+        }
+      }
+    }
+
+    // =========================================================================
+    // 🎨 RENDER OVERVIEW DATA & VAULT BATCHES (PANEL A)
+    // =========================================================================
+    function renderDashboardData(data) {
+      const archetypes = data.archetypes || [];
+      const journeys = data.journeys || [];
+      const cohorts = data.cohorts || [];
+
+      let totalBatches = 0;
+      let totalLocked = 0;
+      let totalLevels = 0;
+
+      archetypes.forEach(a => {
+        (a.batches || []).forEach(b => {
+          totalBatches++;
+          if (b.isLocked) totalLocked++;
+          totalLevels += (b.levelCount || 0);
+        });
+      });
+
+      const badgeVault = document.getElementById('badgeVaultCount');
+      if (badgeVault) badgeVault.textContent = totalBatches;
+
+      const badgeJourneys = document.getElementById('badgeJourneyCount');
+      if (badgeJourneys) badgeJourneys.textContent = journeys.length;
+
+      const badgeCohorts = document.getElementById('badgeCohortCount');
+      if (badgeCohorts) badgeCohorts.textContent = cohorts.length;
+
+      const elArchCount = document.getElementById('statArchetypesCount');
+      if (elArchCount) elArchCount.textContent = archetypes.length;
+
+      const elBatchesCount = document.getElementById('statBatchesCount');
+      if (elBatchesCount) elBatchesCount.textContent = totalBatches;
+
+      const elLockedCount = document.getElementById('statLockedCount');
+      if (elLockedCount) elLockedCount.textContent = `${totalLocked} / ${totalBatches}`;
+
+      const elLevelsCount = document.getElementById('statTotalLevels');
+      if (elLevelsCount) elLevelsCount.textContent = totalLevels;
+
+      const container = document.getElementById('vaultArchetypesContainer');
+      if (!container) return;
+
+      if (archetypes.length === 0) {
+        container.innerHTML = `
+          <div class="p-12 text-center text-slate-400 bg-slate-900/30 rounded-2xl border border-slate-800 flex flex-col items-center justify-center gap-3">
+            <i data-lucide="folder-x" class="w-8 h-8 text-slate-600"></i>
+            <div>
+              <p class="text-sm font-bold text-slate-300">No Archetypes Found in this Vault Era</p>
+              <p class="text-xs text-slate-500 mt-0.5">Use "Export Studio Levels as New Batch" to generate the first batch.</p>
+            </div>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      let html = '';
+      archetypes.forEach(arch => {
+        const batchList = arch.batches || [];
+        const archIdLower = (arch.archetypeId || '').toLowerCase();
+        let archIcon = 'trending-up';
+        let archColor = 'text-blue-400';
+        let archBadgeBg = 'bg-blue-500/10 text-blue-300 border-blue-500/20';
+        let archDesc = 'Monotonic smooth difficulty ramp';
+
+        if (archIdLower.includes('sawtooth')) {
+          archIcon = 'activity';
+          archColor = 'text-amber-400';
+          archBadgeBg = 'bg-amber-500/10 text-amber-300 border-amber-500/20';
+          archDesc = 'Climax & breather periodic wave pacing';
+        } else if (archIdLower.includes('royal') || archIdLower.includes('rush')) {
+          archIcon = 'crown';
+          archColor = 'text-purple-400';
+          archBadgeBg = 'bg-purple-500/10 text-purple-300 border-purple-500/20';
+          archDesc = 'High-octane dopamine loops & rapid cascade merge pacing';
+        }
+
+        const moduleDisplayName = formatModuleName(arch.archetypeId, arch.archetypeName);
+
+        html += `
+          <div class="p-5 sm:p-6 rounded-3xl bg-slate-900/40 border border-slate-800/80 shadow-md flex flex-col gap-4">
+            
+            <!-- Progression Module Title Bar (Clickable to inspect batch contents) -->
+            <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 pb-3 border-b border-slate-800/60 p-2 -m-2 rounded-2xl hover:bg-slate-800/40 transition cursor-pointer group select-none" onclick="openModuleContentsModal('${escapeHtml(arch.archetypeId)}', '${escapeHtml(moduleDisplayName)}')" title="Click title bar to view batch contents & file structure">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700/80 flex items-center justify-center ${archColor} group-hover:scale-105 transition shadow-sm shrink-0">
+                  <i data-lucide="${archIcon}" class="w-4 h-4"></i>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <h3 class="text-base font-bold text-white tracking-tight group-hover:text-emerald-300 transition">
+                      Progression Module - ${escapeHtml(moduleDisplayName)}
+                    </h3>
+                    <code class="text-[11px] font-mono px-2 py-0.5 rounded-full ${archBadgeBg} border font-bold">
+                      ${escapeHtml(arch.archetypeId)}
+                    </code>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-0.5">
+                    ${archDesc}
+                  </p>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap w-full lg:w-auto justify-end">
+                <!-- Progression Curve Visualizer (Sparkline Chart) -->
+                ${renderSparkline(arch.archetypeId)}
+
+                <!-- Open Folder button against module title -->
+                <button onclick="event.stopPropagation(); openModuleFolder('${escapeHtml(arch.archetypeId)}')" class="px-2.5 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center gap-1.5 transition shadow-sm cursor-pointer" title="Open ${escapeHtml(moduleDisplayName)} folder in Windows Explorer">
+                  <i data-lucide="folder-open" class="w-3.5 h-3.5 text-emerald-400"></i>
+                  <span>Open Folder</span>
+                </button>
+
+                <!-- Inspect Contents Button -->
+                <button onclick="event.stopPropagation(); openModuleContentsModal('${escapeHtml(arch.archetypeId)}', '${escapeHtml(moduleDisplayName)}')" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold flex items-center gap-1.5 transition shadow-sm cursor-pointer" title="View batch folder structure and file list">
+                  <i data-lucide="folder-tree" class="w-3.5 h-3.5 text-blue-400"></i>
+                  <span>Contents</span>
+                </button>
+
+                <span class="text-xs font-mono text-slate-400 bg-slate-800/80 px-2.5 py-1.5 rounded-xl border border-slate-700 shrink-0">
+                  ${batchList.length} ${batchList.length === 1 ? 'Batch' : 'Batches'}
+                </span>
+              </div>
+            </div>
+
+            <!-- Feature 7: Batch Filter & Search Bar for this Progression Module -->
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-2.5 p-2.5 rounded-2xl bg-slate-900/60 border border-slate-800/80">
+              <div class="relative w-full sm:w-72">
+                <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5"></i>
+                <input type="text" 
+                       id="batchSearch_${escapeHtml(arch.archetypeId)}" 
+                       oninput="filterBatchesForModule('${escapeHtml(arch.archetypeId)}')" 
+                       placeholder="Filter batches in this module..." 
+                       class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500">
+              </div>
+
+              <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end text-xs">
+                <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
+                  <button onclick="setBatchFilterState('${escapeHtml(arch.archetypeId)}', 'ALL')" id="filterBtn_${escapeHtml(arch.archetypeId)}_ALL" class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition bg-slate-800 text-white">All</button>
+                  <button onclick="setBatchFilterState('${escapeHtml(arch.archetypeId)}', 'LOCKED')" id="filterBtn_${escapeHtml(arch.archetypeId)}_LOCKED" class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition text-slate-400 hover:text-slate-200">Locked</button>
+                  <button onclick="setBatchFilterState('${escapeHtml(arch.archetypeId)}', 'MUTABLE')" id="filterBtn_${escapeHtml(arch.archetypeId)}_MUTABLE" class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition text-slate-400 hover:text-slate-200">Mutable</button>
+                </div>
+                <span id="batchCountBadge_${escapeHtml(arch.archetypeId)}" class="text-[11px] font-mono text-slate-400 pl-1 whitespace-nowrap">
+                  ${batchList.length} of ${batchList.length} shown
+                </span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        `;
+
+        if (batchList.length === 0) {
+          html += `
+            <div class="col-span-full p-6 text-center text-slate-500 bg-slate-900/20 rounded-2xl border border-slate-800/50 text-xs">
+              No batches compiled in this archetype yet.
+            </div>
+          `;
+        } else {
+          batchList.forEach(batch => {
+            const isLocked = batch.isLocked;
+            const manifestStr = JSON.stringify(batch.manifest || {}, null, 2);
+
+            html += `
+              <div class="batch-card-${escapeHtml(arch.archetypeId)} p-4 rounded-2xl bg-[#090d18] border ${isLocked ? 'border-emerald-500/30 shadow-emerald-950/20' : 'border-slate-800 hover:border-slate-700'} shadow-lg flex flex-col justify-between gap-4 transition group" 
+                   data-batch-id="${escapeHtml(batch.batchId.toLowerCase())}" 
+                   data-batch-label="${escapeHtml((batch.label || '').toLowerCase())}" 
+                   data-batch-locked="${isLocked ? 'true' : 'false'}">
+                
+                <div class="flex flex-col gap-2.5">
+                  <div class="flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-2">
+                      <span class="px-2.5 py-1 rounded-xl bg-slate-800 text-white font-mono font-black text-xs border border-slate-700 group-hover:border-emerald-500/50 transition">
+                        ${escapeHtml(batch.batchId.toUpperCase())}
+                      </span>
+                      <span class="text-xs font-bold text-slate-200 tracking-tight">
+                        ${escapeHtml(batch.label || batch.batchId)}
+                      </span>
+                    </div>
+
+                    <span class="px-2 py-0.5 rounded-full font-mono text-[10px] font-bold flex items-center gap-1 border ${
+                      isLocked
+                        ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                        : 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+                    }">
+                      <i data-lucide="${isLocked ? 'lock' : 'unlock'}" class="w-3 h-3"></i>
+                      ${isLocked ? 'LOCKED' : 'MUTABLE'}
+                    </span>
+                  </div>
+
+                  <p class="text-xs text-slate-400 line-clamp-2 leading-relaxed">
+                    ${escapeHtml(batch.description || 'Pre-cached binary batch ready for CDN ingestion.')}
+                  </p>
+                </div>
+
+                <div class="flex flex-col gap-2 pt-2 border-t border-slate-800/60 text-xs">
+                  <div class="flex items-center justify-between text-slate-300">
+                    <span class="text-slate-500 flex items-center gap-1">
+                      <i data-lucide="layers" class="w-3.5 h-3.5 text-blue-400"></i> Levels:
+                    </span>
+                    <span class="font-mono font-bold text-white">${batch.levelCount} <span class="text-slate-500 font-normal">(${batch.levelCount * 3} variants)</span></span>
+                  </div>
+
+                  <div class="flex items-center justify-between text-slate-300">
+                    <span class="text-slate-500 flex items-center gap-1">
+                      <i data-lucide="cpu" class="w-3.5 h-3.5 text-purple-400"></i> Seeds:
+                    </span>
+                    <span class="font-mono text-[11px] text-slate-300">frg / clb / tgt</span>
+                  </div>
+
+                  <div class="flex items-center justify-between text-slate-300">
+                    <span class="text-slate-500 flex items-center gap-1">
+                      <i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-400"></i> Date:
+                    </span>
+                    <span class="font-mono text-slate-400 text-[11px]">${escapeHtml(batch.generatedAt || '2026-11-09')}</span>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-1.5 pt-2 border-t border-slate-800/80 flex-wrap">
+                  <!-- Lock / Unlock button -->
+                  <button onclick="toggleBatchLock('${escapeHtml(arch.archetypeId)}', '${escapeHtml(batch.batchId)}', ${!isLocked})" class="flex-1 py-1.5 px-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 min-w-[90px] ${
+                    isLocked 
+                      ? 'bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700' 
+                      : 'bg-emerald-600/90 hover:bg-emerald-500 text-white shadow-sm'
+                  }">
+                    <i data-lucide="${isLocked ? 'unlock' : 'lock'}" class="w-3.5 h-3.5"></i>
+                    <span>${isLocked ? 'Unlock' : 'Lock'}</span>
+                  </button>
+
+                  <!-- Feature 1: Health & Integrity Audit -->
+                  <button onclick="auditBatchHealth('${escapeHtml(arch.archetypeId)}', '${escapeHtml(batch.batchId)}')" class="p-1.5 rounded-xl bg-slate-800 hover:bg-emerald-500/20 hover:border-emerald-500/40 text-slate-300 hover:text-emerald-300 border border-slate-700 transition cursor-pointer" title="Run Health & Integrity Audit (3 seeds + binary check)">
+                    <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i>
+                  </button>
+
+                  <!-- Feature 2: Level Grid & Goal Previewer -->
+                  <button onclick="previewBatchLevels('${escapeHtml(arch.archetypeId)}', '${escapeHtml(batch.batchId)}', 1)" class="p-1.5 rounded-xl bg-slate-800 hover:bg-purple-500/20 hover:border-purple-500/40 text-slate-300 hover:text-purple-300 border border-slate-700 transition cursor-pointer" title="Preview Board Layouts & Goals">
+                    <i data-lucide="layout-grid" class="w-3.5 h-3.5 text-purple-400"></i>
+                  </button>
+
+                  <!-- Feature 4: Edit Details (Mutable Only) -->
+                  ${!isLocked ? `
+                    <button onclick="openEditBatchModal('${escapeHtml(arch.archetypeId)}', '${escapeHtml(batch.batchId)}', '${escapeHtml(batch.label || '')}', '${escapeHtml(batch.description || '')}', ${JSON.stringify(batch.manifest?.tags || [])})" class="p-1.5 rounded-xl bg-slate-800 hover:bg-amber-500/20 hover:border-amber-500/40 text-slate-300 hover:text-amber-300 border border-slate-700 transition cursor-pointer" title="Edit Batch Metadata & Tags">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5 text-amber-400"></i>
+                    </button>
+                  ` : ''}
+
+                  <!-- Feature 5: One-Click CDN / ZIP Exporter -->
+                  <button onclick="downloadBatchZip('${escapeHtml(arch.archetypeId)}', '${escapeHtml(batch.batchId)}')" class="p-1.5 rounded-xl bg-slate-800 hover:bg-blue-500/20 hover:border-blue-500/40 text-slate-300 hover:text-blue-300 border border-slate-700 transition cursor-pointer" title="Download Offline / CDN ZIP Package">
+                    <i data-lucide="download" class="w-3.5 h-3.5 text-blue-400"></i>
+                  </button>
+
+                  <!-- Feature 6: Clone Batch as New Draft -->
+                  <button onclick="openCloneBatchModal('${escapeHtml(arch.archetypeId)}', '${escapeHtml(batch.batchId)}', '${escapeHtml(batch.label || '')}')" class="p-1.5 rounded-xl bg-slate-800 hover:bg-teal-500/20 hover:border-teal-500/40 text-slate-300 hover:text-teal-300 border border-slate-700 transition cursor-pointer" title="Clone Batch as New Mutable Draft">
+                    <i data-lucide="copy-plus" class="w-3.5 h-3.5 text-teal-400"></i>
+                  </button>
+
+                  <!-- Inspect Manifest JSON -->
+                  <button onclick='inspectManifest("${escapeHtml(arch.archetypeId)}", "${escapeHtml(batch.batchId)}", ${JSON.stringify(manifestStr)})' class="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition" title="Inspect Manifest JSON">
+                    <i data-lucide="file-json" class="w-3.5 h-3.5 text-slate-400"></i>
+                  </button>
+
+                  <!-- Open Folder -->
+                  <button onclick="openModuleFolder('${escapeHtml(arch.archetypeId)}', '${escapeHtml(batch.batchId)}')" class="p-1.5 rounded-xl bg-slate-800 hover:bg-emerald-500/20 hover:border-emerald-500/40 text-slate-300 hover:text-emerald-300 border border-slate-700 transition cursor-pointer" title="Open batch ${escapeHtml(batch.batchId.toUpperCase())} folder in Windows Explorer">
+                    <i data-lucide="folder-open" class="w-3.5 h-3.5 text-emerald-400"></i>
+                  </button>
+
+                  <!-- Copy Path -->
+                  <button onclick="copyBatchPath('${escapeHtml(arch.archetypeId)}', '${escapeHtml(batch.batchId)}')" class="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition" title="Copy Path for Unity / CDN">
+                    <i data-lucide="copy" class="w-3.5 h-3.5 text-slate-400"></i>
+                  </button>
+
+                  <!-- Delete Batch (Unlocked Only) -->
+                  <button onclick="requestDeleteBatch('${escapeHtml(arch.archetypeId)}', '${escapeHtml(batch.batchId)}', ${isLocked})" class="p-2 rounded-xl transition ${
+                    isLocked 
+                      ? 'bg-slate-900/60 text-slate-600 border border-slate-800/80 cursor-not-allowed' 
+                      : 'bg-rose-950/40 hover:bg-rose-900/60 text-rose-400 border border-rose-800/40 hover:border-rose-600 shadow-sm'
+                  }" title="${isLocked ? 'Batch is locked (Production Immutable). Unlock first to delete.' : 'Delete Batch (' + escapeHtml(batch.batchId.toUpperCase()) + ')'}">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                  </button>
+                </div>
+
+              </div>
+            `;
+          });
+        }
+
+        html += `
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+      lucide.createIcons();
+    }
+
+    // =========================================================================
+    // 🔒 TOGGLE BATCH LOCK
+    // =========================================================================
+    async function toggleBatchLock(archetypeId, batchId, shouldLock) {
+      try {
+        const payload = {
+          game: currentDashboardGame,
+          vault: currentDashboardVault,
+          archetype: archetypeId,
+          batchId: batchId,
+          locked: shouldLock
+        };
+        const res = await fetch('/api/dashboard/toggle-batch-lock', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const result = await res.json();
+        if (!result.success) throw new Error(result.error || 'Failed to toggle lock status');
+        
+        showToast(`Batch ${batchId.toUpperCase()} is now ${shouldLock ? '🔒 LOCKED (Immutable)' : '🔓 MUTABLE DRAFT'}`);
+        await loadDashboardOverview();
+      } catch (err) {
+        console.error('Error toggling lock:', err);
+        showToast('Error: ' + err.message, 'error');
+      }
+    }
+
+    // =========================================================================
+    // 🗺️ PANEL B: JOURNEY BUILDER LOGIC (STEP 4)
+    // =========================================================================
+    function populateJourneyEditor(journeys) {
+      const select = document.getElementById('selectActiveJourney');
+      if (!select) return;
+
+      select.innerHTML = '';
+      if (journeys.length === 0) {
+        select.innerHTML = '<option value="">No journeys found</option>';
+        return;
+      }
+
+      journeys.forEach(j => {
+        const opt = document.createElement('option');
+        opt.value = j.journeyId;
+        opt.textContent = `${j.label || j.journeyId}`;
+        opt.className = 'bg-slate-900 text-slate-100';
+        select.appendChild(opt);
+      });
+
+      if (!workingJourney || !journeys.some(j => j.journeyId === workingJourney.journeyId)) {
+        onSelectJourney(journeys[0].journeyId);
+      } else {
+        renderJourneyDetails(workingJourney);
+      }
+    }
+
+    function onSelectJourney(journeyId) {
+      const journeys = (currentOverviewData && currentOverviewData.journeys) || [];
+      const found = journeys.find(j => j.journeyId === journeyId);
+      if (found) {
+        workingJourney = JSON.parse(JSON.stringify(found));
+        renderJourneyDetails(workingJourney);
+      }
+    }
+
+    function createNewJourney() {
+      workingJourney = {
+        journeyId: `journey_custom_${Date.now().toString().slice(-4)}`,
+        label: "New Custom Journey",
+        description: "Custom progression phase routing",
+        targetCohort: "cohort_core",
+        phases: [
+          { phaseIndex: 1, phaseName: "Intro Phase", stageStart: 1, stageEnd: 20, archetype: "arc_linear", batch: "b01" },
+          { phaseIndex: 2, phaseName: "Sawtooth Arc", stageStart: 21, stageEnd: 100, archetype: "arc_sawtooth", batch: "b01" }
+        ]
+      };
+      const select = document.getElementById('selectActiveJourney');
+      if (select) {
+        const opt = document.createElement('option');
+        opt.value = workingJourney.journeyId;
+        opt.textContent = `* ${workingJourney.label} (Unsaved)`;
+        opt.className = 'bg-slate-900 text-amber-300 font-bold';
+        select.appendChild(opt);
+        select.value = workingJourney.journeyId;
+      }
+      renderJourneyDetails(workingJourney);
+      showToast("Created new journey template.");
+    }
+
+    function renderJourneyDetails(journey) {
+      if (!journey) return;
+
+      const sel = document.getElementById('selectActiveJourney');
+      if (sel && journey.journeyId) sel.value = journey.journeyId;
+
+      document.getElementById('journeyInputId').value = journey.journeyId || '';
+      document.getElementById('journeyInputLabel').value = journey.label || '';
+      document.getElementById('journeyInputDesc').value = journey.description || '';
+      
+      const cohortSelect = document.getElementById('journeySelectTargetCohort');
+      if (cohortSelect && currentOverviewData && currentOverviewData.cohorts && currentOverviewData.cohorts.length > 0) {
+        cohortSelect.innerHTML = currentOverviewData.cohorts.map(c => 
+          `<option value="${escapeHtml(c.cohortId)}" ${c.cohortId === journey.targetCohort ? 'selected' : ''}>${escapeHtml(c.cohortId)} (${escapeHtml(c.label || c.cohortId)})</option>`
+        ).join('');
+      }
+      if (cohortSelect && journey.targetCohort) {
+        cohortSelect.value = journey.targetCohort;
+      }
+
+      renderPhaseRows(journey.phases || []);
+      renderVisualTimeline(journey.phases || []);
+    }
+
+    function renderPhaseRows(phases) {
+      const container = document.getElementById('journeyPhasesContainer');
+      if (!container) return;
+
+      if (!phases || phases.length === 0) {
+        container.innerHTML = `
+          <div class="p-6 text-center text-slate-500 bg-slate-950/40 rounded-2xl border border-slate-800 text-xs">
+            No phases configured. Click "+ Add Phase" to start routing stages.
+          </div>
+        `;
+        return;
+      }
+
+      let html = '';
+      phases.forEach((p, idx) => {
+        html += `
+          <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-xs transition hover:border-slate-700">
+            
+            <div class="flex items-center gap-2 w-full md:w-auto">
+              <span class="w-6 h-6 rounded-lg bg-blue-500/10 text-blue-400 font-mono font-bold flex items-center justify-center border border-blue-500/20 text-[11px] shrink-0">
+                ${idx + 1}
+              </span>
+              <input type="text" value="${escapeHtml(p.phaseName || `Phase ${idx+1}`)}" onchange="updatePhaseName(${idx}, this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-white font-bold w-full md:w-48 focus:outline-none focus:border-blue-500" placeholder="Phase Name">
+            </div>
+
+            <!-- Stage Range -->
+            <div class="flex items-center gap-2">
+              <span class="text-slate-500 font-medium">Stages:</span>
+              <input type="number" min="1" max="999" value="${p.stageStart || 1}" onchange="updatePhaseStart(${idx}, this.value)" class="w-16 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-center font-mono font-bold text-white focus:outline-none focus:border-blue-500">
+              <span class="text-slate-500">to</span>
+              <input type="number" min="1" max="999" value="${p.stageEnd || 20}" onchange="updatePhaseEnd(${idx}, this.value)" class="w-16 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-center font-mono font-bold text-white focus:outline-none focus:border-blue-500">
+            </div>
+
+            <!-- Archetype & Batch -->
+            <div class="flex items-center gap-2">
+              <select onchange="updatePhaseArchetype(${idx}, this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-slate-200 focus:outline-none focus:border-blue-500">
+                ${(() => {
+                  const defaultArchs = ['arc_sawtooth', 'arc_linear', 'arc_royalRush', 'arc_royal_rhythm', 'arc_boss_rush'];
+                  const vaultArchs = (currentOverviewData && currentOverviewData.archetypes) ? currentOverviewData.archetypes.map(a => a.archetypeId) : [];
+                  const allArchs = Array.from(new Set([...vaultArchs, ...defaultArchs, p.archetype].filter(Boolean)));
+                  return allArchs.map(a => `<option value="${escapeHtml(a)}" ${p.archetype === a ? 'selected' : ''}>${escapeHtml(a)}</option>`).join('');
+                })()}
+              </select>
+
+              <select onchange="updatePhaseBatch(${idx}, this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 font-mono text-emerald-400 font-bold focus:outline-none focus:border-blue-500">
+                ${(() => {
+                  const archObj = (currentOverviewData && currentOverviewData.archetypes) ? currentOverviewData.archetypes.find(a => a.archetypeId === p.archetype) : null;
+                  const availableBatches = archObj && archObj.batches && archObj.batches.length > 0 ? archObj.batches.map(b => b.batchId) : ['b01', 'b02', 'b03'];
+                  const allBatches = Array.from(new Set([...availableBatches, p.batch || 'b01']));
+                  return allBatches.map(b => `<option value="${escapeHtml(b)}" ${p.batch === b ? 'selected' : ''}>${escapeHtml(b)}</option>`).join('');
+                })()}
+              </select>
+            </div>
+
+            <!-- Seed Override & Delete -->
+            <div class="flex items-center gap-2 justify-end w-full md:w-auto">
+              <select onchange="updatePhaseSeedOverride(${idx}, this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-[11px] text-slate-300 focus:outline-none focus:border-blue-500" title="Optional Seed Override">
+                <option value="" ${!p.seedOverride ? 'selected' : ''}>Default (Inherit Cohort)</option>
+                <option value="frg" ${p.seedOverride === 'frg' ? 'selected' : ''}>Force frg</option>
+                <option value="clb" ${p.seedOverride === 'clb' ? 'selected' : ''}>Force clb</option>
+                <option value="tgt" ${p.seedOverride === 'tgt' ? 'selected' : ''}>Force tgt</option>
+              </select>
+
+              <button onclick="removeJourneyPhase(${idx})" class="p-1 text-slate-500 hover:text-rose-400 rounded-lg hover:bg-slate-900 transition" title="Delete Phase">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+      lucide.createIcons();
+    }
+
+    function renderVisualTimeline(phases) {
+      const timeline = document.getElementById('journeyVisualTimeline');
+      const badge = document.getElementById('journeyValidationBadge');
+      if (!timeline) return;
+
+      if (!phases || phases.length === 0) {
+        timeline.innerHTML = `<span class="text-xs text-slate-500 m-auto">Empty timeline</span>`;
+        return;
+      }
+
+      let totalMaxStage = Math.max(...phases.map(p => Number(p.stageEnd) || 0), 100);
+      let html = '';
+      let hasGap = false;
+      let hasOverlap = false;
+
+      const colors = ['bg-blue-600', 'bg-emerald-600', 'bg-amber-600', 'bg-purple-600', 'bg-cyan-600'];
+
+      phases.forEach((p, i) => {
+        const start = Number(p.stageStart) || 1;
+        const end = Number(p.stageEnd) || 20;
+        const span = Math.max(end - start + 1, 1);
+        const percent = ((span / totalMaxStage) * 100).toFixed(1);
+        const c = colors[i % colors.length];
+
+        if (i > 0) {
+          const prevEnd = Number(phases[i-1].stageEnd) || 0;
+          if (start > prevEnd + 1) hasGap = true;
+          if (start <= prevEnd) hasOverlap = true;
+        }
+
+        html += `
+          <div class="${c} h-full rounded-lg flex items-center justify-center text-[10px] font-bold text-white px-2 overflow-hidden truncate transition hover:opacity-90 cursor-default" style="flex: ${span}; min-width: 40px;" title="${escapeHtml(p.phaseName)} (Stages ${start}-${end})">
+            ${escapeHtml(p.phaseName)} [${start}..${end}]
+          </div>
+        `;
+      });
+
+      timeline.innerHTML = html;
+
+      if (badge) {
+        if (hasGap) {
+          badge.className = 'text-[11px] font-mono px-2.5 py-0.5 rounded-full font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30 flex items-center gap-1';
+          badge.innerHTML = `<i data-lucide="alert-triangle" class="w-3 h-3"></i> Stage Gap Detected`;
+        } else if (hasOverlap) {
+          badge.className = 'text-[11px] font-mono px-2.5 py-0.5 rounded-full font-semibold bg-rose-500/15 text-rose-300 border border-rose-500/30 flex items-center gap-1';
+          badge.innerHTML = `<i data-lucide="alert-octagon" class="w-3 h-3"></i> Stage Overlap Detected`;
+        } else {
+          badge.className = 'text-[11px] font-mono px-2.5 py-0.5 rounded-full font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex items-center gap-1';
+          badge.innerHTML = `<i data-lucide="check" class="w-3 h-3"></i> Valid Continuous Route (1..${totalMaxStage})`;
+        }
+        lucide.createIcons();
+      }
+    }
+
+    function addJourneyPhase() {
+      if (!workingJourney) return;
+      if (!workingJourney.phases) workingJourney.phases = [];
+      const len = workingJourney.phases.length;
+      let nextStart = 1;
+      if (len > 0) {
+        nextStart = (Number(workingJourney.phases[len - 1].stageEnd) || 0) + 1;
+      }
+      workingJourney.phases.push({
+        phaseIndex: len + 1,
+        phaseName: `Phase ${len + 1}`,
+        stageStart: nextStart,
+        stageEnd: nextStart + 19,
+        archetype: "arc_sawtooth",
+        batch: "b01"
+      });
+      renderPhaseRows(workingJourney.phases);
+      renderVisualTimeline(workingJourney.phases);
+    }
+
+    function removeJourneyPhase(idx) {
+      if (!workingJourney || !workingJourney.phases) return;
+      workingJourney.phases.splice(idx, 1);
+      workingJourney.phases.forEach((p, i) => p.phaseIndex = i + 1);
+      renderPhaseRows(workingJourney.phases);
+      renderVisualTimeline(workingJourney.phases);
+    }
+
+    function updatePhaseName(idx, val) {
+      if (workingJourney && workingJourney.phases[idx]) {
+        workingJourney.phases[idx].phaseName = val.trim();
+        renderVisualTimeline(workingJourney.phases);
+      }
+    }
+
+    function updatePhaseStart(idx, val) {
+      if (workingJourney && workingJourney.phases[idx]) {
+        workingJourney.phases[idx].stageStart = parseInt(val) || 1;
+        renderVisualTimeline(workingJourney.phases);
+      }
+    }
+
+    function updatePhaseEnd(idx, val) {
+      if (workingJourney && workingJourney.phases[idx]) {
+        workingJourney.phases[idx].stageEnd = parseInt(val) || 1;
+        renderVisualTimeline(workingJourney.phases);
+      }
+    }
+
+    function updatePhaseArchetype(idx, val) {
+      if (workingJourney && workingJourney.phases[idx]) {
+        workingJourney.phases[idx].archetype = val;
+      }
+    }
+
+    function updatePhaseBatch(idx, val) {
+      if (workingJourney && workingJourney.phases[idx]) {
+        workingJourney.phases[idx].batch = val;
+      }
+    }
+
+    function updatePhaseSeedOverride(idx, val) {
+      if (workingJourney && workingJourney.phases[idx]) {
+        workingJourney.phases[idx].seedOverride = val || null;
+      }
+    }
+
+    async function saveActiveJourney() {
+      if (!workingJourney) return;
+      
+      const journeyId = document.getElementById('journeyInputId').value.trim();
+      const label = document.getElementById('journeyInputLabel').value.trim();
+      const desc = document.getElementById('journeyInputDesc').value.trim();
+      const targetCohort = document.getElementById('journeySelectTargetCohort').value;
+
+      if (!journeyId) {
+        showToast('Journey ID cannot be empty', 'error');
+        return;
+      }
+
+      workingJourney.journeyId = journeyId;
+      workingJourney.label = label || journeyId;
+      workingJourney.description = desc;
+      workingJourney.targetCohort = targetCohort;
+
+      try {
+        const payload = {
+          game: currentDashboardGame,
+          journeyId: journeyId,
+          journey: workingJourney
+        };
+        const res = await fetch('/api/dashboard/save-journey', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const result = await res.json();
+        if (!result.success) throw new Error(result.error || 'Failed to save journey');
+
+        showToast(`Journey '${journeyId}' saved successfully!`);
+        await loadDashboardOverview();
+      } catch (err) {
+        console.error('Error saving journey:', err);
+        showToast('Save failed: ' + err.message, 'error');
+      }
+    }
+
+    // =========================================================================
+    // 🎯 PANEL C: COHORT & DDA LOGIC (STEP 5)
+    // =========================================================================
+    function populateCohortEditor(cohorts) {
+      const select = document.getElementById('selectActiveCohort');
+      if (!select) return;
+
+      select.innerHTML = '';
+      if (cohorts.length === 0) {
+        select.innerHTML = '<option value="">No cohorts found</option>';
+        return;
+      }
+
+      cohorts.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.cohortId;
+        opt.textContent = `${c.label || c.cohortId}`;
+        opt.className = 'bg-slate-900 text-slate-100';
+        select.appendChild(opt);
+      });
+
+      if (!workingCohort || !cohorts.some(c => c.cohortId === workingCohort.cohortId)) {
+        onSelectCohort(cohorts[0].cohortId);
+      } else {
+        renderCohortDetails(workingCohort);
+      }
+    }
+
+    function onSelectCohort(cohortId) {
+      const cohorts = (currentOverviewData && currentOverviewData.cohorts) || [];
+      const found = cohorts.find(c => c.cohortId === cohortId);
+      if (found) {
+        workingCohort = JSON.parse(JSON.stringify(found));
+        renderCohortDetails(workingCohort);
+      }
+    }
+
+    function createNewCohort() {
+      workingCohort = {
+        cohortId: `cohort_custom_${Date.now().toString().slice(-4)}`,
+        label: "New Player Cohort",
+        description: "Custom DDA pity and challenge rules",
+        defaultSeed: "clb",
+        rules: {
+          silentPityFailStreak: 2,
+          pitySeed: "frg",
+          winStreakChallenge: 6,
+          challengeSeed: "tgt"
+        }
+      };
+      renderCohortDetails(workingCohort);
+      showToast("Created new cohort profile.");
+    }
+
+    function renderCohortDetails(cohort) {
+      if (!cohort) return;
+
+      document.getElementById('cohortInputId').value = cohort.cohortId || '';
+      document.getElementById('cohortInputLabel').value = cohort.label || '';
+      document.getElementById('cohortInputDesc').value = cohort.description || '';
+
+      const defSeed = cohort.defaultSeed || 'clb';
+      const radios = document.getElementsByName('cohortDefaultSeed');
+      radios.forEach(r => {
+        r.checked = (r.value === defSeed);
+      });
+
+      const rules = cohort.rules || {};
+      document.getElementById('cohortInputPityStreak').value = rules.silentPityFailStreak ?? 2;
+      document.getElementById('cohortSelectPitySeed').value = rules.pitySeed || 'frg';
+      document.getElementById('cohortInputWinStreak').value = rules.winStreakChallenge ?? 6;
+      document.getElementById('cohortSelectChallengeSeed').value = rules.challengeSeed || 'tgt';
+
+      updateCohortJsonPreview();
+    }
+
+    function updateCohortJsonPreview() {
+      const id = document.getElementById('cohortInputId').value.trim() || 'cohort_id';
+      const label = document.getElementById('cohortInputLabel').value.trim() || 'Cohort Label';
+      const desc = document.getElementById('cohortInputDesc').value.trim();
+      
+      let defSeed = 'clb';
+      const radios = document.getElementsByName('cohortDefaultSeed');
+      radios.forEach(r => { if (r.checked) defSeed = r.value; });
+
+      const pityStreak = parseInt(document.getElementById('cohortInputPityStreak').value) || 2;
+      const pitySeed = document.getElementById('cohortSelectPitySeed').value;
+      const winStreak = parseInt(document.getElementById('cohortInputWinStreak').value) || 999;
+      const challengeSeed = document.getElementById('cohortSelectChallengeSeed').value;
+
+      const obj = {
+        cohortId: id,
+        label: label,
+        description: desc,
+        defaultSeed: defSeed,
+        rules: {
+          silentPityFailStreak: pityStreak,
+          pitySeed: pitySeed,
+          winStreakChallenge: winStreak,
+          challengeSeed: challengeSeed
+        }
+      };
+
+      const pre = document.getElementById('cohortJsonPreview');
+      if (pre) pre.textContent = JSON.stringify(obj, null, 2);
+      return obj;
+    }
+
+    async function saveActiveCohort() {
+      const cohortObj = updateCohortJsonPreview();
+      const cohortId = cohortObj.cohortId;
+
+      if (!cohortId) {
+        showToast('Cohort ID cannot be empty', 'error');
+        return;
+      }
+
+      try {
+        const payload = {
+          game: currentDashboardGame,
+          cohortId: cohortId,
+          cohort: cohortObj
+        };
+        const res = await fetch('/api/dashboard/save-cohort', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const result = await res.json();
+        if (!result.success) throw new Error(result.error || 'Failed to save cohort');
+
+        showToast(`Cohort '${cohortId}' saved successfully!`);
+        await loadDashboardOverview();
+      } catch (err) {
+        console.error('Error saving cohort:', err);
+        showToast('Save failed: ' + err.message, 'error');
+      }
+    }
+
+    // =========================================================================
+    // 🧪 PANEL D: LIVE RUNTIME SIMULATOR LOGIC (STEP 6)
+    // =========================================================================
+    function populateSimulatorDropdowns(journeys, cohorts) {
+      const jSelect = document.getElementById('simSelectJourney');
+      const cSelect = document.getElementById('simSelectCohort');
+      if (jSelect) {
+        jSelect.innerHTML = journeys.map(j => `<option value="${escapeHtml(j.journeyId)}" class="bg-slate-900">${escapeHtml(j.label || j.journeyId)}</option>`).join('');
+      }
+      if (cSelect) {
+        cSelect.innerHTML = cohorts.map(c => `<option value="${escapeHtml(c.cohortId)}" class="bg-slate-900">${escapeHtml(c.label || c.cohortId)}</option>`).join('');
+      }
+      runSimulation();
+    }
+
+    function onSimInputChanged() {
+      const stage = document.getElementById('simSliderStage').value;
+      const fails = document.getElementById('simSliderFails').value;
+      const wins = document.getElementById('simSliderWins').value;
+
+      document.getElementById('simDisplayStage').textContent = stage;
+      document.getElementById('simDisplayFails').textContent = fails;
+      document.getElementById('simDisplayWins').textContent = wins;
+
+      runSimulation();
+    }
+
+    function applySimPreset(preset) {
+      if (preset === 'onboarding') {
+        document.getElementById('simSliderStage').value = 1;
+        document.getElementById('simSliderFails').value = 0;
+        document.getElementById('simSliderWins').value = 0;
+      } else if (preset === 'pity') {
+        document.getElementById('simSliderStage').value = 28;
+        document.getElementById('simSliderFails').value = 2;
+        document.getElementById('simSliderWins').value = 0;
+      } else if (preset === 'streak') {
+        document.getElementById('simSliderStage').value = 45;
+        document.getElementById('simSliderFails').value = 0;
+        document.getElementById('simSliderWins').value = 6;
+      }
+      onSimInputChanged();
+    }
+
+    function runSimulation() {
+      if (!currentOverviewData) return;
+
+      const stage = parseInt(document.getElementById('simSliderStage').value) || 1;
+      const fails = parseInt(document.getElementById('simSliderFails').value) || 0;
+      const wins = parseInt(document.getElementById('simSliderWins').value) || 0;
+
+      const journeyId = document.getElementById('simSelectJourney').value;
+      const cohortId = document.getElementById('simSelectCohort').value;
+
+      const journeys = currentOverviewData.journeys || [];
+      const cohorts = currentOverviewData.cohorts || [];
+
+      const activeJourney = journeys.find(j => j.journeyId === journeyId) || journeys[0] || {};
+      const activeCohort = cohorts.find(c => c.cohortId === cohortId) || cohorts[0] || {};
+
+      // 1. Resolve Phase
+      const phases = activeJourney.phases || [];
+      let matchedPhase = phases.find(p => stage >= p.stageStart && stage <= p.stageEnd);
+      if (!matchedPhase && phases.length > 0) {
+        matchedPhase = phases[phases.length - 1]; // fallback to last phase
+      }
+
+      const phaseName = matchedPhase ? (matchedPhase.phaseName || 'Main Phase') : 'Fallback Phase';
+      const archetype = matchedPhase ? (matchedPhase.archetype || 'arc_sawtooth') : 'arc_sawtooth';
+      const batch = matchedPhase ? (matchedPhase.batch || 'b01') : 'b01';
+
+      // 2. Resolve Level Index (1..200)
+      const paddedId = String(stage).padStart(3, '0');
+      const levelIdStr = `l${paddedId}`;
+
+      // 3. Resolve Seed via Cohort DDA Rules
+      const rules = activeCohort.rules || {};
+      const defaultSeed = activeCohort.defaultSeed || 'clb';
+      const pityStreak = rules.silentPityFailStreak ?? 2;
+      const pitySeed = rules.pitySeed || 'frg';
+      const winStreakThresh = rules.winStreakChallenge ?? 6;
+      const challengeSeed = rules.challengeSeed || 'tgt';
+
+      let resolvedSeed = defaultSeed;
+      let seedReason = 'Cohort Default Policy';
+      let isPityActive = false;
+      let isChallengeActive = false;
+
+      if (matchedPhase && matchedPhase.seedOverride) {
+        resolvedSeed = matchedPhase.seedOverride;
+        seedReason = `Phase Override (${matchedPhase.seedOverride})`;
+      } else if (fails >= pityStreak) {
+        resolvedSeed = pitySeed;
+        isPityActive = true;
+        seedReason = `Silent Pity Triggered (${fails} consecutive losses)`;
+      } else if (wins >= winStreakThresh) {
+        resolvedSeed = challengeSeed;
+        isChallengeActive = true;
+        seedReason = `Win-Streak Challenge Triggered (${wins} win streak)`;
+      }
+
+      // 4. Update UI Outputs
+      const path = `backend/games/${currentDashboardGame}/${currentDashboardVault}/${archetype}/${batch}/${levelIdStr}_${resolvedSeed}.bin`;
+      
+      const elPath = document.getElementById('simResolvedPath');
+      if (elPath) elPath.textContent = path;
+
+      const elPhase = document.getElementById('simResPhaseName');
+      if (elPhase) elPhase.textContent = phaseName;
+
+      const elArch = document.getElementById('simResArchBatch');
+      if (elArch) elArch.textContent = `${archetype} / ${batch}`;
+
+      const elLevel = document.getElementById('simResLevelFile');
+      if (elLevel) elLevel.textContent = `${levelIdStr}.bin`;
+
+      const elSeed = document.getElementById('simResSeedTag');
+      if (elSeed) {
+        elSeed.textContent = `${resolvedSeed} (${seedReason.split(' ')[0]})`;
+      }
+
+      const badge = document.getElementById('simPityStatusBadge');
+      if (badge) {
+        if (isPityActive) {
+          badge.className = 'text-xs font-mono px-2.5 py-0.5 rounded-full font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
+          badge.textContent = '🛡️ SILENT PITY ACTIVE';
+        } else if (isChallengeActive) {
+          badge.className = 'text-xs font-mono px-2.5 py-0.5 rounded-full font-bold bg-purple-500/20 text-purple-300 border border-purple-500/40';
+          badge.textContent = '⚡ MASTERY CHALLENGE';
+        } else {
+          badge.className = 'text-xs font-mono px-2.5 py-0.5 rounded-full font-bold bg-slate-800 text-slate-300 border border-slate-700';
+          badge.textContent = '⚖️ BASELINE SEED';
+        }
+      }
+
+      const narrative = document.getElementById('simNarrativeText');
+      if (narrative) {
+        narrative.textContent = `Stage ${stage} matched "${phaseName}" [${matchedPhase ? matchedPhase.stageStart : 1}..${matchedPhase ? matchedPhase.stageEnd : 200}]. Archetype is ${archetype} (${batch}). Cohort "${activeCohort.label || activeCohort.cohortId}" resolved seed to "${resolvedSeed}" due to: ${seedReason}. Pre-cached size is ~720 bytes.`;
+      }
+    }
+
+    // =========================================================================
+    // 🔍 INSPECT MANIFEST & MODAL HELPERS
+    // =========================================================================
+    function inspectManifest(archetypeId, batchId, manifestContent) {
+      const modal = document.getElementById('modalInspectManifest');
+      const title = document.getElementById('inspectManifestTitle');
+      const sub = document.getElementById('inspectManifestSubtitle');
+      const code = document.getElementById('inspectManifestContent');
+
+      title.textContent = `Batch Manifest (${batchId.toUpperCase()})`;
+      sub.textContent = `backend/games/${currentDashboardGame}/${currentDashboardVault}/${archetypeId}/${batchId}/batch_manifest.json`;
+      code.textContent = manifestContent;
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      lucide.createIcons();
+    }
+
+    function closeManifestModal() {
+      const modal = document.getElementById('modalInspectManifest');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function copyManifestContent() {
+      const code = document.getElementById('inspectManifestContent');
+      navigator.clipboard.writeText(code.textContent);
+      const label = document.getElementById('labelCopyManifest');
+      label.textContent = 'Copied!';
+      setTimeout(() => label.textContent = 'Copy JSON', 2000);
+      showToast('Manifest JSON copied to clipboard');
+    }
+
+    function copyBatchPath(archetypeId, batchId) {
+      const path = `backend/games/${currentDashboardGame}/${currentDashboardVault}/${archetypeId}/${batchId}/`;
+      navigator.clipboard.writeText(path);
+      showToast(`Copied batch path: ${path}`);
+    }
+
+    // =========================================================================
+    // 🗑️ DELETE BATCH LOGIC
+    // =========================================================================
+    let pendingDeleteArchetype = null;
+    let pendingDeleteBatch = null;
+
+    function requestDeleteBatch(archetypeId, batchId, isLocked) {
+      if (isLocked) {
+        showToast(`Batch ${batchId.toUpperCase()} is locked (Production Immutable). Unlock it before deleting.`, 'error');
+        return;
+      }
+      pendingDeleteArchetype = archetypeId;
+      pendingDeleteBatch = batchId;
+
+      const subEl = document.getElementById('deleteBatchSubtitle');
+      const nameEl = document.getElementById('deleteBatchTargetName');
+      const archEl = document.getElementById('deleteBatchTargetArch');
+
+      if (subEl) subEl.textContent = `${archetypeId} / ${batchId}`;
+      if (nameEl) nameEl.textContent = batchId.toUpperCase();
+      if (archEl) archEl.textContent = archetypeId;
+
+      const modal = document.getElementById('modalDeleteBatch');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        lucide.createIcons();
+      }
+    }
+
+    function closeDeleteBatchModal() {
+      const modal = document.getElementById('modalDeleteBatch');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+      pendingDeleteArchetype = null;
+      pendingDeleteBatch = null;
+    }
+
+    async function confirmDeleteBatchAction() {
+      if (!pendingDeleteArchetype || !pendingDeleteBatch) return;
+
+      const btn = document.getElementById('btnConfirmDeleteBatch');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<div class="w-3 h-3 rounded-full border-2 border-white border-t-transparent animate-spin"></div><span>Deleting...</span>`;
+      }
+
+      try {
+        const payload = {
+          game: currentDashboardGame,
+          vault: currentDashboardVault,
+          archetype: pendingDeleteArchetype,
+          batchId: pendingDeleteBatch
+        };
+
+        const res = await fetch('/api/dashboard/delete-batch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const result = await res.json();
+        if (!result.success) throw new Error(result.error || 'Failed to delete batch');
+
+        showToast(`Batch ${pendingDeleteBatch.toUpperCase()} was permanently deleted.`);
+        closeDeleteBatchModal();
+        await loadDashboardOverview();
+      } catch (err) {
+        console.error('Delete batch error:', err);
+        showToast('Delete failed: ' + err.message, 'error');
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `<i data-lucide="trash-2" class="w-3.5 h-3.5"></i><span>Delete Batch</span>`;
+          lucide.createIcons();
+        }
+      }
+    }
+
+    function openExportModal() {
+      const modal = document.getElementById('modalExportBatch');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      lucide.createIcons();
+    }
+
+    function closeExportModal() {
+      const modal = document.getElementById('modalExportBatch');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    async function submitExportBatch() {
+      const arch = document.getElementById('exportSelectArchetype').value;
+      const label = document.getElementById('exportInputLabel').value.trim();
+      const desc = document.getElementById('exportInputDesc').value.trim();
+      const btn = document.getElementById('btnSubmitExport');
+
+      btn.disabled = true;
+      btn.innerHTML = `<div class="w-3 h-3 rounded-full border-2 border-white border-t-transparent animate-spin"></div><span>Exporting...</span>`;
+
+      try {
+        const payload = {
+          game: currentDashboardGame,
+          vault: currentDashboardVault,
+          archetype: arch,
+          label: label || 'Exported Studio Batch',
+          description: desc || 'Compiled level batch from Level Studio.',
+          levels: []
+        };
+
+        const res = await fetch('/api/dashboard/export-studio-batch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const result = await res.json();
+        if (!result.success) throw new Error(result.error || 'Failed to export batch');
+
+        showToast(`Exported batch ${result.batchId.toUpperCase()} to ${arch}!`);
+        closeExportModal();
+        await loadDashboardOverview();
+      } catch (err) {
+        console.error('Export error:', err);
+        showToast('Export failed: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5"></i><span>Create & Freeze Batch</span>`;
+        lucide.createIcons();
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // Initialize on page load
+    // Global keyboard listener for modal dismissal
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeLevelPreviewModal();
+        closeModuleContentsModal();
+        closeBatchHealthModal();
+        closeEditBatchModal();
+        closeCloneBatchModal();
+        closeDeleteBatchModal();
+        closeExportModal();
+        closeManifestModal();
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      updateScopeDisplay();
+      loadDashboardOverview();
+      const hash = window.location.hash.replace('#', '');
+      if (hash === 'journeys') {
+        switchDashboardTab('journeys');
+      }
+    });
+  </script>
+</body>
+</html>

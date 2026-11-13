@@ -1,0 +1,15 @@
+{
+  "journeyId": "journey_linear",
+  "label": "Linear Ramp Journey",
+  "description": "Smooth onboarding journey: monotonic difficulty progression from Tier 1 through Tier 5.",
+  "phases": [
+    {
+      "phaseIndex": 1,
+      "phaseName": "Gentle Linear Ramp",
+      "stageStart": 1,
+      "stageEnd": 200,
+      "archetype": "arc_linear",
+      "batch": "b01"
+    }
+  ]
+}

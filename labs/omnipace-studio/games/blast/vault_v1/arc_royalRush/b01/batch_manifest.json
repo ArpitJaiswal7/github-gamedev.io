@@ -1,0 +1,9 @@
+{
+  "batchId": "b01",
+  "archetype": "arc_royalRush",
+  "label": "Royal Rush Batch",
+  "description": "High-intensity fast dopamine flow batch (100 levels) with rapid clear loops.",
+  "generatedAt": "2026-11-09",
+  "levelCount": 100,
+  "locked": false
+}

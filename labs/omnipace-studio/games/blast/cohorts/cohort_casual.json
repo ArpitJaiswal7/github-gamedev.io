@@ -1,0 +1,12 @@
+{
+  "cohortId": "cohort_casual",
+  "label": "Casual / Relaxed Cohort",
+  "description": "Accessible difficulty. Always defaults to Forgiving seed (+40% ammo buffer) to minimize churn and maximize player comfort.",
+  "defaultSeed": "frg",
+  "rules": {
+    "silentPityFailStreak": 1,
+    "pitySeed": "frg",
+    "winStreakChallenge": 999,
+    "challengeSeed": "clb"
+  }
+}

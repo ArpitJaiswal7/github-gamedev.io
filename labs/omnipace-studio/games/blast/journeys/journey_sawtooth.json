@@ -1,0 +1,15 @@
+{
+  "journeyId": "journey_sawtooth",
+  "label": "Sawtooth Waves Journey",
+  "description": "Standard live-ops journey: recurring chapters with periodic boss climax spikes and post-boss recovery breather levels.",
+  "phases": [
+    {
+      "phaseIndex": 1,
+      "phaseName": "Main Sawtooth Progression",
+      "stageStart": 1,
+      "stageEnd": 200,
+      "archetype": "arc_sawtooth",
+      "batch": "b01"
+    }
+  ]
+}

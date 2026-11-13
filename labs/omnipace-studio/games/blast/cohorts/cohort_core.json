@@ -1,0 +1,12 @@
+{
+  "cohortId": "cohort_core",
+  "label": "Core / Balanced Cohort",
+  "description": "Standard balance. Starts on Calibrated seed, silently swaps to Forgiving on consecutive fails, and tests mastery with Tight on high win-streaks.",
+  "defaultSeed": "clb",
+  "rules": {
+    "silentPityFailStreak": 2,
+    "pitySeed": "frg",
+    "winStreakChallenge": 5,
+    "challengeSeed": "tgt"
+  }
+}

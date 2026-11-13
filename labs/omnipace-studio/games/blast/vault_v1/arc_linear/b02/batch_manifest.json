@@ -1,0 +1,13 @@
+{
+  "batchId": "b02",
+  "archetype": "arc_linear",
+  "label": "Linear 50-Level Track Batch",
+  "description": "50 levels calibrated across 3 difficulty seeds (frg, clb, tgt) with multi-track pacing progression.",
+  "generatedAt": "2026-11-09",
+  "levelCount": 50,
+  "locked": false,
+  "tags": [
+    "pacing_v1",
+    "linear_50"
+  ]
+}

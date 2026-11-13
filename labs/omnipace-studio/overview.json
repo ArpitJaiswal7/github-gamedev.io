@@ -1,0 +1,298 @@
+{
+  "success": true,
+  "game": "blast",
+  "vault": "vault_v1",
+  "config": {
+    "activeGame": "blast",
+    "activeVault": "vault_v1",
+    "defaultJourneyId": "journey_boss_rush",
+    "defaultCohortId": "cohort_veteran",
+    "hashingBuckets": [
+      {
+        "min": 0,
+        "max": 49,
+        "journeyId": "journey_boss_rush"
+      },
+      {
+        "min": 50,
+        "max": 99,
+        "journeyId": "journey_sawtooth"
+      }
+    ],
+    "serverVersion": "1.0.0"
+  },
+  "archetypes": [
+    {
+      "archetypeId": "arc_linear",
+      "archetypeName": "Linear",
+      "batches": [
+        {
+          "batchId": "b01",
+          "manifest": {
+            "batchId": "b01",
+            "archetype": "arc_linear",
+            "label": "Core Linear Batch",
+            "description": "Compiled 200-level Linear batch with 3 seeds and binary files.",
+            "generatedAt": "2026-11-09",
+            "levelCount": 200,
+            "locked": true
+          },
+          "fileCount": 1200,
+          "levelCount": 200,
+          "isLocked": true,
+          "label": "Core Linear Batch",
+          "description": "Compiled 200-level Linear batch with 3 seeds and binary files.",
+          "generatedAt": "2026-11-09"
+        },
+        {
+          "batchId": "b02",
+          "manifest": {
+            "batchId": "b02",
+            "archetype": "arc_linear",
+            "label": "Linear 50-Level Track Batch",
+            "description": "50 levels calibrated across 3 difficulty seeds (frg, clb, tgt) with multi-track pacing progression.",
+            "generatedAt": "2026-11-09",
+            "levelCount": 50,
+            "locked": false,
+            "tags": [
+              "pacing_v1",
+              "linear_50"
+            ]
+          },
+          "fileCount": 300,
+          "levelCount": 50,
+          "isLocked": false,
+          "label": "Linear 50-Level Track Batch",
+          "description": "50 levels calibrated across 3 difficulty seeds (frg, clb, tgt) with multi-track pacing progression.",
+          "generatedAt": "2026-11-09"
+        }
+      ]
+    },
+    {
+      "archetypeId": "arc_royalRush",
+      "archetypeName": "Royalrush",
+      "batches": [
+        {
+          "batchId": "b01",
+          "manifest": {
+            "batchId": "b01",
+            "archetype": "arc_royalRush",
+            "label": "Royal Rush Batch",
+            "description": "High-intensity fast dopamine flow batch (100 levels) with rapid clear loops.",
+            "generatedAt": "2026-11-09",
+            "levelCount": 100,
+            "locked": false
+          },
+          "fileCount": 600,
+          "levelCount": 100,
+          "isLocked": false,
+          "label": "Royal Rush Batch",
+          "description": "High-intensity fast dopamine flow batch (100 levels) with rapid clear loops.",
+          "generatedAt": "2026-11-09"
+        }
+      ]
+    },
+    {
+      "archetypeId": "arc_sawtooth",
+      "archetypeName": "Sawtooth",
+      "batches": [
+        {
+          "batchId": "b01",
+          "manifest": {
+            "batchId": "b01",
+            "archetype": "arc_sawtooth",
+            "label": "Core Sawtooth Batch",
+            "description": "Compiled 200-level Sawtooth batch with 3 seeds and binary files.",
+            "generatedAt": "2026-11-09",
+            "levelCount": 200,
+            "locked": true
+          },
+          "fileCount": 1200,
+          "levelCount": 200,
+          "isLocked": true,
+          "label": "Core Sawtooth Batch",
+          "description": "Compiled 200-level Sawtooth batch with 3 seeds and binary files.",
+          "generatedAt": "2026-11-09"
+        }
+      ]
+    }
+  ],
+  "journeys": [
+    {
+      "journeyId": "fallback_journey",
+      "label": "Universal Safety Fallback Journey",
+      "description": "Safe 1:1 stage-to-level mapping fallback used if any custom journey configuration is missing or corrupted. Ensures the client always receives a valid level without crashing.",
+      "phases": [
+        {
+          "phaseIndex": 1,
+          "phaseName": "Standard Default Fallback",
+          "stageStart": 1,
+          "stageEnd": 999,
+          "archetype": "arc_sawtooth",
+          "batch": "b01"
+        }
+      ]
+    },
+    {
+      "journeyId": "journey_boss_rush",
+      "label": "Boss Rush & Hardcore Crucible",
+      "description": "Starts directly with Tier 5 near-boss and chapter climax levels (Levels 40-50) from Stage 1 for high-friction player testing.",
+      "targetCohort": "cohort_veteran",
+      "phases": [
+        {
+          "phaseIndex": 1,
+          "phaseName": "Near-Boss Crucible",
+          "stageStart": 1,
+          "stageEnd": 15,
+          "archetype": "arc_linear",
+          "batch": "b02",
+          "seedOverride": "tgt"
+        },
+        {
+          "phaseIndex": 2,
+          "phaseName": "Climax Boss Spikes",
+          "stageStart": 16,
+          "stageEnd": 50,
+          "archetype": "arc_sawtooth",
+          "batch": "b01",
+          "seedOverride": "tgt"
+        }
+      ]
+    },
+    {
+      "journeyId": "journey_hybrid",
+      "label": "Hybrid Multi-Phase Journey",
+      "description": "Multi-tier journey: Stages 1-20 (Linear Onboarding), Stages 21-80 (Sawtooth Chapter Climaxes), Stages 81-120 (Royal Rhythm Dopamine Loops), Stages 121+ (Endgame Vault).",
+      "phases": [
+        {
+          "phaseIndex": 1,
+          "phaseName": "Linear Onboarding",
+          "stageStart": 1,
+          "stageEnd": 20,
+          "archetype": "arc_linear",
+          "batch": "b01"
+        },
+        {
+          "phaseIndex": 2,
+          "phaseName": "Sawtooth Chapter Climaxes",
+          "stageStart": 21,
+          "stageEnd": 80,
+          "archetype": "arc_sawtooth",
+          "batch": "b01"
+        },
+        {
+          "phaseIndex": 3,
+          "phaseName": "Royal Rhythm Dopamine Waves",
+          "stageStart": 81,
+          "stageEnd": 120,
+          "archetype": "arc_royal_rhythm",
+          "batch": "b01"
+        },
+        {
+          "phaseIndex": 4,
+          "phaseName": "Endgame Vault Challenge",
+          "stageStart": 121,
+          "stageEnd": 999,
+          "archetype": "arc_boss_rush",
+          "batch": "b01",
+          "seedOverride": "tgt"
+        }
+      ]
+    },
+    {
+      "journeyId": "journey_linear",
+      "label": "Linear Ramp Journey",
+      "description": "Smooth onboarding journey: monotonic difficulty progression from Tier 1 through Tier 5.",
+      "phases": [
+        {
+          "phaseIndex": 1,
+          "phaseName": "Gentle Linear Ramp",
+          "stageStart": 1,
+          "stageEnd": 200,
+          "archetype": "arc_linear",
+          "batch": "b01"
+        }
+      ]
+    },
+    {
+      "journeyId": "journey_royal_rush",
+      "label": "Royal Rush Journey",
+      "description": "High-octane dopamine flow: rapid clears, intense color clusters, and fast-paced cascade loops across 100 royal levels.",
+      "phases": [
+        {
+          "phaseIndex": 1,
+          "phaseName": "Royal Rush Cascade Pace",
+          "stageStart": 1,
+          "stageEnd": 100,
+          "archetype": "arc_royalRush",
+          "batch": "b01"
+        }
+      ]
+    },
+    {
+      "journeyId": "journey_sawtooth",
+      "label": "Sawtooth Waves Journey",
+      "description": "Standard live-ops journey: recurring chapters with periodic boss climax spikes and post-boss recovery breather levels.",
+      "phases": [
+        {
+          "phaseIndex": 1,
+          "phaseName": "Main Sawtooth Progression",
+          "stageStart": 1,
+          "stageEnd": 200,
+          "archetype": "arc_sawtooth",
+          "batch": "b01"
+        }
+      ]
+    }
+  ],
+  "cohorts": [
+    {
+      "cohortId": "cohort_casual",
+      "label": "Casual / Relaxed Cohort",
+      "description": "Accessible difficulty. Always defaults to Forgiving seed (+40% ammo buffer) to minimize churn and maximize player comfort.",
+      "defaultSeed": "frg",
+      "rules": {
+        "silentPityFailStreak": 1,
+        "pitySeed": "frg",
+        "winStreakChallenge": 999,
+        "challengeSeed": "clb"
+      }
+    },
+    {
+      "cohortId": "cohort_core",
+      "label": "Core / Balanced Cohort",
+      "description": "Standard balance. Starts on Calibrated seed, silently swaps to Forgiving on consecutive fails, and tests mastery with Tight on high win-streaks.",
+      "defaultSeed": "clb",
+      "rules": {
+        "silentPityFailStreak": 2,
+        "pitySeed": "frg",
+        "winStreakChallenge": 5,
+        "challengeSeed": "tgt"
+      }
+    },
+    {
+      "cohortId": "cohort_veteran",
+      "label": "Veteran / Hardcore Cohort",
+      "description": "High friction and tight economy. Defaults to Tight seed (+12% ammo buffer) for core players seeking mastery and high challenge.",
+      "defaultSeed": "tgt",
+      "rules": {
+        "silentPityFailStreak": 4,
+        "pitySeed": "clb",
+        "winStreakChallenge": 999,
+        "challengeSeed": "tgt"
+      }
+    },
+    {
+      "cohortId": "fallback_cohort",
+      "label": "Universal Safety Fallback Cohort",
+      "description": "Safe default loaded if any custom cohort name is missing or invalid. Always serves Calibrated seed with standard 2-fail pity.",
+      "defaultSeed": "clb",
+      "rules": {
+        "silentPityFailStreak": 2,
+        "pitySeed": "frg",
+        "winStreakChallenge": 6,
+        "challengeSeed": "tgt"
+      }
+    }
+  ]
+}
