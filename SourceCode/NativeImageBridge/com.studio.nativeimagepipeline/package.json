@@ -1,0 +1,21 @@
+{
+  "name": "com.studio.nativeimagepipeline",
+  "version": "1.0.0",
+  "displayName": "Native Image Pipeline (Android, iOS, WebGL)",
+  "description": "High-performance background image downloader, PNG-to-JPEG transcoder, multi-tier resizer (256px/1080px/custom), priority queue, and dual Cache/ROM storage manager for Unity (Android Java, iOS Obj-C++, WebGL jslib, and Editor).",
+  "unity": "2021.3",
+  "keywords": [
+    "image",
+    "pipeline",
+    "native",
+    "android",
+    "ios",
+    "webgl",
+    "cache",
+    "jigsaw",
+    "sprite"
+  ],
+  "author": {
+    "name": "Platform Services"
+  }
+}
