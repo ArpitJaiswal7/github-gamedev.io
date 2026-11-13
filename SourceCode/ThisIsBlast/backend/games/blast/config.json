@@ -1,0 +1,11 @@
+{
+  "activeGame": "blast",
+  "activeVault": "vault_v1",
+  "defaultJourneyId": "journey_boss_rush",
+  "defaultCohortId": "cohort_veteran",
+  "hashingBuckets": [
+    { "min": 0, "max": 49, "journeyId": "journey_boss_rush" },
+    { "min": 50, "max": 99, "journeyId": "journey_sawtooth" }
+  ],
+  "serverVersion": "1.0.0"
+}

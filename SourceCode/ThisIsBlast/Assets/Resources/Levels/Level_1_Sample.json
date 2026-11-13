@@ -1,0 +1,75 @@
+{
+  "levelId": 1,
+  "tier": 1,
+  "gridWidth": 5,
+  "gridHeight": 7,
+  "gridDepth": 1,
+  "arsenalColumnsCount": 5,
+  "winCondition": 0,
+  "clearPercentageRequired": 100.0,
+  "targetChestsRequired": 1,
+  "enemyBlocks": [
+    { "x": 0, "y": 0, "z": 0, "type": 0, "color": 2, "hp": 1, "hitThreshold": 10, "gemReward": 5, "partnerX": -1, "partnerY": -1, "unlockColIndex": -1 },
+    { "x": 0, "y": 1, "z": 0, "type": 0, "color": 2, "hp": 1, "hitThreshold": 10, "gemReward": 5, "partnerX": -1, "partnerY": -1, "unlockColIndex": -1 },
+    { "x": 0, "y": 2, "z": 0, "type": 0, "color": 1, "hp": 1, "hitThreshold": 10, "gemReward": 5, "partnerX": -1, "partnerY": -1, "unlockColIndex": -1 },
+    { "x": 0, "y": 3, "z": 0, "type": 0, "color": 1, "hp": 1, "hitThreshold": 10, "gemReward": 5, "partnerX": -1, "partnerY": -1, "unlockColIndex": -1 },
+    { "x": 1, "y": 0, "z": 0, "type": 0, "color": 2, "hp": 1, "hitThreshold": 10, "gemReward": 5, "partnerX": -1, "partnerY": -1, "unlockColIndex": -1 },
+    { "x": 1, "y": 1, "z": 0, "type": 0, "color": 1, "hp": 1, "hitThreshold": 10, "gemReward": 5, "partnerX": -1, "partnerY": -1, "unlockColIndex": -1 },
+    { "x": 1, "y": 2, "z": 0, "type": 0, "color": 1, "hp": 1, "hitThreshold": 10, "gemReward": 5, "partnerX": -1, "partnerY": -1, "unlockColIndex": -1 },
+    { "x": 1, "y": 3, "z": 0, "type": 0, "color": 3, "hp": 1, "hitThreshold": 10, "gemReward": 5, "partnerX": -1, "partnerY": -1, "unlockColIndex": -1 },
+    { "x": 2, "y": 0, "z": 0, "type": 0, "color": 3, "hp": 1, "hitThreshold": 10, "gemReward": 5, "partnerX": -1, "partnerY": -1, "unlockColIndex": -1 },
+    { "x": 2, "y": 1, "z": 0, "type": 0, "color": 3, "hp": 1, "hitThreshold": 10, "gemReward": 5, "partnerX": -1, "partnerY": -1, "unlockColIndex": -1 },
+    { "x": 2, "y": 2, "z": 0, "type": 0, "color": 1, "hp": 1, "hitThreshold": 10, "gemReward": 5, "partnerX": -1, "partnerY": -1, "unlockColIndex": -1 },
+    { "x": 2, "y": 3, "z": 0, "type": 0, "color": 2, "hp": 1, "hitThreshold": 10, "gemReward": 5, "partnerX": -1, "partnerY": -1, "unlockColIndex": -1 },
+    { "x": 3, "y": 0, "z": 0, "type": 0, "color": 3, "hp": 1, "hitThreshold": 10, "gemReward": 5, "partnerX": -1, "partnerY": -1, "unlockColIndex": -1 },
+    { "x": 3, "y": 1, "z": 0, "type": 0, "color": 2, "hp": 1, "hitThreshold": 10, "gemReward": 5, "partnerX": -1, "partnerY": -1, "unlockColIndex": -1 },
+    { "x": 3, "y": 2, "z": 0, "type": 0, "color": 2, "hp": 1, "hitThreshold": 10, "gemReward": 5, "partnerX": -1, "partnerY": -1, "unlockColIndex": -1 },
+    { "x": 4, "y": 0, "z": 0, "type": 0, "color": 1, "hp": 1, "hitThreshold": 10, "gemReward": 5, "partnerX": -1, "partnerY": -1, "unlockColIndex": -1 },
+    { "x": 4, "y": 1, "z": 0, "type": 0, "color": 1, "hp": 1, "hitThreshold": 10, "gemReward": 5, "partnerX": -1, "partnerY": -1, "unlockColIndex": -1 }
+  ],
+  "arsenalColumns": [
+    {
+      "columnIndex": 0,
+      "isLockedInitially": false,
+      "unlockKeyId": 0,
+      "blocks": [
+        { "color": 2, "bulletCount": 15, "tier": 1, "isHidden": false },
+        { "color": 1, "bulletCount": 15, "tier": 1, "isHidden": false }
+      ]
+    },
+    {
+      "columnIndex": 1,
+      "isLockedInitially": false,
+      "unlockKeyId": 0,
+      "blocks": [
+        { "color": 3, "bulletCount": 15, "tier": 1, "isHidden": false },
+        { "color": 2, "bulletCount": 15, "tier": 1, "isHidden": false }
+      ]
+    },
+    {
+      "columnIndex": 2,
+      "isLockedInitially": false,
+      "unlockKeyId": 0,
+      "blocks": [
+        { "color": 1, "bulletCount": 15, "tier": 1, "isHidden": false },
+        { "color": 3, "bulletCount": 15, "tier": 1, "isHidden": false }
+      ]
+    },
+    {
+      "columnIndex": 3,
+      "isLockedInitially": false,
+      "unlockKeyId": 0,
+      "blocks": [
+        { "color": 2, "bulletCount": 15, "tier": 1, "isHidden": false }
+      ]
+    },
+    {
+      "columnIndex": 4,
+      "isLockedInitially": false,
+      "unlockKeyId": 0,
+      "blocks": [
+        { "color": 1, "bulletCount": 15, "tier": 1, "isHidden": false }
+      ]
+    }
+  ]
+}

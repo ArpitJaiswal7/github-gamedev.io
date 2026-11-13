@@ -1,0 +1,26 @@
+{
+  "journeyId": "journey_boss_rush",
+  "label": "Boss Rush & Hardcore Crucible",
+  "description": "Starts directly with Tier 5 near-boss and chapter climax levels (Levels 40-50) from Stage 1 for high-friction player testing.",
+  "targetCohort": "cohort_veteran",
+  "phases": [
+    {
+      "phaseIndex": 1,
+      "phaseName": "Near-Boss Crucible",
+      "stageStart": 1,
+      "stageEnd": 15,
+      "archetype": "arc_linear",
+      "batch": "b02",
+      "seedOverride": "tgt"
+    },
+    {
+      "phaseIndex": 2,
+      "phaseName": "Climax Boss Spikes",
+      "stageStart": 16,
+      "stageEnd": 50,
+      "archetype": "arc_sawtooth",
+      "batch": "b01",
+      "seedOverride": "tgt"
+    }
+  ]
+}

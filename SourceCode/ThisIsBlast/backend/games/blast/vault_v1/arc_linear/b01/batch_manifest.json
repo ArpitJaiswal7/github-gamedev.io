@@ -1,0 +1,9 @@
+{
+  "batchId": "b01",
+  "archetype": "arc_linear",
+  "label": "Core Linear Batch",
+  "description": "Compiled 200-level Linear batch with 3 seeds and binary files.",
+  "generatedAt": "2026-11-09",
+  "levelCount": 200,
+  "locked": true
+}

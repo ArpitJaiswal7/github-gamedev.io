@@ -1,0 +1,12 @@
+{
+  "cohortId": "cohort_veteran",
+  "label": "Veteran / Hardcore Cohort",
+  "description": "High friction and tight economy. Defaults to Tight seed (+12% ammo buffer) for core players seeking mastery and high challenge.",
+  "defaultSeed": "tgt",
+  "rules": {
+    "silentPityFailStreak": 4,
+    "pitySeed": "clb",
+    "winStreakChallenge": 999,
+    "challengeSeed": "tgt"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "batchId": "b01",
+  "archetype": "arc_sawtooth",
+  "label": "Core Sawtooth Batch",
+  "description": "Compiled 200-level Sawtooth batch with 3 seeds and binary files.",
+  "generatedAt": "2026-11-09",
+  "levelCount": 200,
+  "locked": true
+}

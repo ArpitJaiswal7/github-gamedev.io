@@ -1,0 +1,15 @@
+{
+  "journeyId": "journey_royal_rush",
+  "label": "Royal Rush Journey",
+  "description": "High-octane dopamine flow: rapid clears, intense color clusters, and fast-paced cascade loops across 100 royal levels.",
+  "phases": [
+    {
+      "phaseIndex": 1,
+      "phaseName": "Royal Rush Cascade Pace",
+      "stageStart": 1,
+      "stageEnd": 100,
+      "archetype": "arc_royalRush",
+      "batch": "b01"
+    }
+  ]
+}

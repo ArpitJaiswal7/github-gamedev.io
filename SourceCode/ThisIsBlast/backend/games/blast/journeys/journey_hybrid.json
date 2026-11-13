@@ -1,0 +1,40 @@
+{
+  "journeyId": "journey_hybrid",
+  "label": "Hybrid Multi-Phase Journey",
+  "description": "Multi-tier journey: Stages 1-20 (Linear Onboarding), Stages 21-80 (Sawtooth Chapter Climaxes), Stages 81-120 (Royal Rhythm Dopamine Loops), Stages 121+ (Endgame Vault).",
+  "phases": [
+    {
+      "phaseIndex": 1,
+      "phaseName": "Linear Onboarding",
+      "stageStart": 1,
+      "stageEnd": 20,
+      "archetype": "arc_linear",
+      "batch": "b01"
+    },
+    {
+      "phaseIndex": 2,
+      "phaseName": "Sawtooth Chapter Climaxes",
+      "stageStart": 21,
+      "stageEnd": 80,
+      "archetype": "arc_sawtooth",
+      "batch": "b01"
+    },
+    {
+      "phaseIndex": 3,
+      "phaseName": "Royal Rhythm Dopamine Waves",
+      "stageStart": 81,
+      "stageEnd": 120,
+      "archetype": "arc_royal_rhythm",
+      "batch": "b01"
+    },
+    {
+      "phaseIndex": 4,
+      "phaseName": "Endgame Vault Challenge",
+      "stageStart": 121,
+      "stageEnd": 999,
+      "archetype": "arc_boss_rush",
+      "batch": "b01",
+      "seedOverride": "tgt"
+    }
+  ]
+}

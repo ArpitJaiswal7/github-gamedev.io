@@ -1,0 +1,19 @@
+{
+  "name": "com.arrowstrike.asset-organizer",
+  "version": "1.0.0",
+  "displayName": "Asset Organizer Tool",
+  "description": "Editor utility for pinning Project Window assets into color-coded groups with Project Window icon badges, Build Report style asset inspection, drag-and-drop organization, and Ctrl+Win+P quick pinning.",
+  "unity": "2021.3",
+  "keywords": [
+    "asset",
+    "organizer",
+    "pin",
+    "bookmark",
+    "groups",
+    "editor",
+    "project-window"
+  ],
+  "author": {
+    "name": "ArrowStrike Tools"
+  }
+}

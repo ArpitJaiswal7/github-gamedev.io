@@ -1,0 +1,21 @@
+{
+    "name": "Blockade2D.Tests",
+    "rootNamespace": "Blockade2D.Tests",
+    "references": [
+        "Blockade2D.Core"
+    ],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

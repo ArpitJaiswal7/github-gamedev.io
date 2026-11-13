@@ -1,0 +1,78 @@
+// FlatBuffers Schema for This Is Blast Levels
+// Used by flatc compiler: flatc -b LevelSchema.fbs Level_1_Sample.json -> outputs Level_1_Sample.bin
+
+namespace ThisIsBlast.Data;
+
+enum WinConditionType : byte {
+    ClearAll = 0,
+    ClearPercentage = 1,
+    OpenChests = 2
+}
+
+enum EnemyBlockType : byte {
+    Standard = 0,
+    Hidden = 1,
+    Interlocked = 2,
+    Locked = 3,
+    Key = 4,
+    Chest = 5,
+    PiggyBank = 6
+}
+
+enum BlockColor : byte {
+    None = 0,
+    Red = 1,
+    Yellow = 2,
+    Blue = 3,
+    Green = 4,
+    Orange = 5,
+    Purple = 6,
+    Pink = 7,
+    Cyan = 8
+}
+
+table EnemyBlockFb {
+    x: int = 0;
+    y: int = 0;
+    z: int = 0;
+    type: EnemyBlockType = Standard;
+    color: BlockColor = Red;
+    hp: int = 1;
+    hitThreshold: int = 10;
+    gemReward: int = 5;
+    partnerX: int = -1;
+    partnerY: int = -1;
+    unlockColIndex: int = -1;
+}
+
+table ArsenalBlockFb {
+    color: BlockColor = Red;
+    bulletCount: int = 20;
+    tier: int = 1;
+    isHidden: bool = false;
+}
+
+table ArsenalColumnFb {
+    columnIndex: int = 0;
+    isLockedInitially: bool = false;
+    unlockKeyId: int = 0;
+    blocks: [ArsenalBlockFb];
+}
+
+table LevelFb {
+    levelId: int = 1;
+    tier: int = 1;
+    gridWidth: int = 7;
+    gridHeight: int = 8;
+    gridDepth: int = 1;
+    arsenalColumnsCount: int = 5;
+
+    winCondition: WinConditionType = ClearAll;
+    clearPercentageRequired: float = 100.0;
+    targetChestsRequired: int = 1;
+
+    enemyBlocks: [EnemyBlockFb];
+    arsenalColumns: [ArsenalColumnFb];
+}
+
+root_type LevelFb;

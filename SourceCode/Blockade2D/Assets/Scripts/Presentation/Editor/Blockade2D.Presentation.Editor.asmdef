@@ -1,0 +1,21 @@
+{
+    "name": "Blockade2D.Presentation.Editor",
+    "rootNamespace": "Blockade2D.Presentation.Editor",
+    "references": [
+        "Blockade2D.Core",
+        "Blockade2D.Presentation",
+        "UnityEngine.UI",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

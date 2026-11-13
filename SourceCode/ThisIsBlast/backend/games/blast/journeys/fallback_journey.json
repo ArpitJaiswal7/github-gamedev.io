@@ -1,0 +1,15 @@
+{
+  "journeyId": "fallback_journey",
+  "label": "Universal Safety Fallback Journey",
+  "description": "Safe 1:1 stage-to-level mapping fallback used if any custom journey configuration is missing or corrupted. Ensures the client always receives a valid level without crashing.",
+  "phases": [
+    {
+      "phaseIndex": 1,
+      "phaseName": "Standard Default Fallback",
+      "stageStart": 1,
+      "stageEnd": 999,
+      "archetype": "arc_sawtooth",
+      "batch": "b01"
+    }
+  ]
+}
